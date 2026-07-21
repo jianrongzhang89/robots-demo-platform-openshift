@@ -1,0 +1,126 @@
+{{- $robots := .Values.robots -}}
+{{- $robotsEnv := "" -}}
+{{- range $robots -}}
+  {{- $robotsEnv = printf "%s%s:%v:%v:%v " $robotsEnv .name .initialPose.xPos .initialPose.yPos .initialPose.yaw -}}
+{{- end -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gazebo-sim
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: gazebo-sim
+    app.kubernetes.io/part-of: ros2-multi-robot-demo
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gazebo-sim
+  template:
+    metadata:
+      labels:
+        app: gazebo-sim
+        app.kubernetes.io/part-of: ros2-multi-robot-demo
+    spec:
+      serviceAccountName: ros2-demo
+      {{- if .Values.gazebo.gpu }}
+      tolerations:
+        - key: nvidia.com/gpu
+          operator: Exists
+          effect: NoSchedule
+      {{- end }}
+      containers:
+        # --- Main container: Gazebo simulation + noVNC visualization ---
+        - name: gazebo
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/entrypoint-gazebo.sh"]
+          ports:
+            - name: novnc
+              containerPort: 6080
+              protocol: TCP
+            - name: web
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: TURTLEBOT3_MODEL
+              value: waffle
+            - name: ROS_DISTRO
+              value: jazzy
+            - name: ROS_DOMAIN_ID
+              value: "0"
+            - name: WORLD_NAME
+              value: {{ .Values.gazebo.world | quote }}
+            - name: VNC_PORT
+              value: "5900"
+            - name: NOVNC_PORT
+              value: "6080"
+            - name: WEB_PORT
+              value: "8080"
+            # Space-separated "name:x:y:yaw" tuples — one per robot
+            - name: ROBOTS
+              value: {{ trimSuffix " " $robotsEnv | quote }}
+            {{- if .Values.gazebo.gpu }}
+            - name: NVIDIA_VISIBLE_DEVICES
+              value: all
+            - name: NVIDIA_DRIVER_CAPABILITIES
+              value: all
+            {{- end }}
+          resources:
+            requests:
+              cpu: {{ .Values.gazebo.resources.requests.cpu | quote }}
+              memory: {{ .Values.gazebo.resources.requests.memory | quote }}
+              {{- if .Values.gazebo.gpu }}
+              nvidia.com/gpu: "1"
+              {{- end }}
+            limits:
+              cpu: {{ .Values.gazebo.resources.limits.cpu | quote }}
+              memory: {{ .Values.gazebo.resources.limits.memory | quote }}
+              {{- if .Values.gazebo.gpu }}
+              nvidia.com/gpu: "1"
+              {{- end }}
+          readinessProbe:
+            tcpSocket:
+              port: 6080
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 20
+          livenessProbe:
+            tcpSocket:
+              port: 6080
+            initialDelaySeconds: 120
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 10
+
+        # --- Sidecar: zenoh-bridge-ros2dds in router mode ---
+        - name: zenoh-bridge
+          image: {{ .Values.zenohBridge.image }}
+          args: ["-c", "/zenoh-config/gazebo-bridge.json5"]
+          ports:
+            - name: zenoh
+              containerPort: 7447
+              protocol: TCP
+          env:
+            - name: ROS_DOMAIN_ID
+              value: "0"
+            - name: ROS_DISTRO
+              value: jazzy
+          volumeMounts:
+            - name: zenoh-config
+              mountPath: /zenoh-config
+              readOnly: true
+          resources:
+            requests:
+              cpu: {{ .Values.zenohResources.requests.cpu | quote }}
+              memory: {{ .Values.zenohResources.requests.memory | quote }}
+            limits:
+              cpu: {{ .Values.zenohResources.limits.cpu | quote }}
+              memory: {{ .Values.zenohResources.limits.memory | quote }}
+
+      volumes:
+        - name: zenoh-config
+          configMap:
+            name: zenoh-bridge-config

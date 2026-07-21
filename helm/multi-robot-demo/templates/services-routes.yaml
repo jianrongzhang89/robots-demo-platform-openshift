@@ -1,0 +1,108 @@
+# ClusterIP Service — exposes the Gazebo pod's zenoh router to Nav2 pods
+apiVersion: v1
+kind: Service
+metadata:
+  name: gazebo-sim-zenoh
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: gazebo-sim
+    app.kubernetes.io/part-of: ros2-multi-robot-demo
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  selector:
+    app: gazebo-sim
+  ports:
+    - name: zenoh
+      port: 7447
+      targetPort: 7447
+      protocol: TCP
+---
+# ClusterIP Service — noVNC browser access to Gazebo GUI
+apiVersion: v1
+kind: Service
+metadata:
+  name: gazebo-sim-novnc
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: gazebo-sim
+    app.kubernetes.io/part-of: ros2-multi-robot-demo
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  selector:
+    app: gazebo-sim
+  ports:
+    - name: novnc
+      port: 6080
+      targetPort: 6080
+      protocol: TCP
+---
+# ClusterIP Service — web landing page
+apiVersion: v1
+kind: Service
+metadata:
+  name: gazebo-sim-web
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: gazebo-sim
+    app.kubernetes.io/part-of: ros2-multi-robot-demo
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  selector:
+    app: gazebo-sim
+  ports:
+    - name: web
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+---
+# OpenShift Route — noVNC Gazebo GUI (browser-accessible)
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: ros2-multi-robot-novnc
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: gazebo-sim
+    app.kubernetes.io/part-of: ros2-multi-robot-demo
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  annotations:
+    haproxy.router.openshift.io/timeout: 10m
+spec:
+  {{- if .Values.routes.novncHost }}
+  host: {{ .Values.routes.novncHost }}
+  {{- end }}
+  to:
+    kind: Service
+    name: gazebo-sim-novnc
+    weight: 100
+  port:
+    targetPort: novnc
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
+---
+# OpenShift Route — web landing page
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: ros2-multi-robot-web
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: gazebo-sim
+    app.kubernetes.io/part-of: ros2-multi-robot-demo
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  {{- if .Values.routes.webHost }}
+  host: {{ .Values.routes.webHost }}
+  {{- end }}
+  to:
+    kind: Service
+    name: gazebo-sim-web
+    weight: 100
+  port:
+    targetPort: web
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

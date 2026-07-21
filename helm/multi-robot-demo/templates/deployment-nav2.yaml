@@ -1,0 +1,79 @@
+{{- range .Values.robots }}
+{{- $safeRobotName := .name | replace "_" "-" }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: robot-nav-{{ $safeRobotName }}
+  namespace: {{ $.Values.namespace }}
+  labels:
+    app: robot-nav-{{ $safeRobotName }}
+    app.kubernetes.io/part-of: ros2-multi-robot-demo
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: robot-nav-{{ $safeRobotName }}
+  template:
+    metadata:
+      labels:
+        app: robot-nav-{{ $safeRobotName }}
+        app.kubernetes.io/part-of: ros2-multi-robot-demo
+    spec:
+      serviceAccountName: ros2-demo
+      containers:
+        # --- Main container: Nav2 autonomy stack for {{ .name }} ---
+        - name: nav2
+          image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          command: ["/entrypoint-nav2.sh"]
+          env:
+            - name: ROBOT_NAME
+              value: {{ .name | quote }}
+            - name: INITIAL_X
+              value: {{ .initialPose.xPos | quote }}
+            - name: INITIAL_Y
+              value: {{ .initialPose.yPos | quote }}
+            - name: INITIAL_YAW
+              value: {{ .initialPose.yaw | quote }}
+            - name: TURTLEBOT3_MODEL
+              value: waffle
+            - name: ROS_DISTRO
+              value: jazzy
+            - name: ROS_DOMAIN_ID
+              value: "0"
+          resources:
+            requests:
+              cpu: {{ $.Values.nav2.resources.requests.cpu | quote }}
+              memory: {{ $.Values.nav2.resources.requests.memory | quote }}
+            limits:
+              cpu: {{ $.Values.nav2.resources.limits.cpu | quote }}
+              memory: {{ $.Values.nav2.resources.limits.memory | quote }}
+
+        # --- Sidecar: zenoh-bridge-ros2dds in peer mode ---
+        - name: zenoh-bridge
+          image: {{ $.Values.zenohBridge.image }}
+          args: ["-c", "/zenoh-config/nav2-bridge.json5"]
+          env:
+            - name: ROS_DOMAIN_ID
+              value: "0"
+            - name: ROS_DISTRO
+              value: jazzy
+          volumeMounts:
+            - name: zenoh-config
+              mountPath: /zenoh-config
+              readOnly: true
+          resources:
+            requests:
+              cpu: {{ $.Values.zenohResources.requests.cpu | quote }}
+              memory: {{ $.Values.zenohResources.requests.memory | quote }}
+            limits:
+              cpu: {{ $.Values.zenohResources.limits.cpu | quote }}
+              memory: {{ $.Values.zenohResources.limits.memory | quote }}
+
+      volumes:
+        - name: zenoh-config
+          configMap:
+            name: zenoh-bridge-config
+{{- end }}

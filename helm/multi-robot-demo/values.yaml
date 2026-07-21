@@ -1,0 +1,67 @@
+# Multi-robot ROS2 demo — Helm values
+# Extend to N robots by adding entries to the robots list.
+# Each entry generates one Nav2 Deployment and one zenoh-bridge peer.
+
+namespace: ros2-multi-robot
+
+# Container image — same image runs both gazebo and nav2 entrypoints
+image:
+  repository: quay.io/jianrzha/ros2-demo
+  tag: latest
+  pullPolicy: Always
+
+# Zenoh bridge sidecar image
+zenohBridge:
+  image: eclipse/zenoh-bridge-ros2dds:latest
+
+# Robot definitions — drives both Gazebo spawning and Nav2 Deployment generation
+robots:
+  - name: robot_1
+    initialPose:
+      xPos: -2.0
+      yPos: -0.5
+      yaw: 0.0
+  - name: robot_2
+    initialPose:
+      xPos: 2.0
+      yPos: 0.5
+      yaw: 3.14159
+
+# Gazebo simulation pod settings
+gazebo:
+  world: tb3_sandbox
+  # Set gpu: true and add nvidia.com/gpu resource requests for GPU nodes
+  gpu: false
+  resources:
+    requests:
+      cpu: "4"
+      memory: 4Gi
+    limits:
+      cpu: "8"
+      memory: 8Gi
+
+# Nav2 pod resource settings (applied to every robot-nav-* Deployment)
+nav2:
+  resources:
+    requests:
+      cpu: "2"
+      memory: 2Gi
+    limits:
+      cpu: "4"
+      memory: 4Gi
+
+# zenoh-bridge sidecar resource settings (same for gazebo and nav2 pods)
+zenohResources:
+  requests:
+    cpu: 500m
+    memory: 256Mi
+  limits:
+    cpu: "1"
+    memory: 512Mi
+
+# OpenShift Route hostnames — leave empty to let OpenShift auto-generate
+routes:
+  # e.g. gazebo-novnc.apps.cluster.example.com
+  novncHost: ""
+  # e.g. gazebo-web.apps.cluster.example.com
+  webHost: ""

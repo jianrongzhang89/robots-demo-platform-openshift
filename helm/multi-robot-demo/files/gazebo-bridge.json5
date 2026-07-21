@@ -1,0 +1,24 @@
+{
+  plugins: {
+    ros2dds: {
+      // No ROS namespace — Gazebo routes all namespaced robot topics (/robot_N/*)
+      // transparently; ROS2 namespacing on spawn_tb3 handles per-robot isolation.
+    }
+  },
+
+  // Router mode: accept incoming connections from each Nav2 pod's bridge
+  mode: "router",
+
+  listen: {
+    endpoints: [
+      "tcp/0.0.0.0:7447"
+    ]
+  },
+
+  // Scouting disabled — static endpoints only, no multicast
+  scouting: {
+    multicast: {
+      enabled: false
+    }
+  }
+}

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multi-Robot ROS2 + Gazebo Demo on OpenShift</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 760px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      line-height: 1.5;
+      color: #1a1a1a;
+    }
+    code, pre {
+      background: #f4f4f4;
+      padding: 0.15rem 0.35rem;
+      border-radius: 4px;
+    }
+    pre {
+      padding: 1rem;
+      overflow-x: auto;
+    }
+    a.button {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: 0.6rem 1rem;
+      background: #ee0000;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    a.button:hover { background: #cc0000; }
+  </style>
+</head>
+<body>
+  <h1>Multi-Robot ROS2 + Gazebo Demo on OpenShift</h1>
+  <p>
+    This is the Gazebo simulation pod. Multiple Nav2 navigation pods run independently,
+    each controlling one TurtleBot3 robot, connected via Zenoh.
+  </p>
+
+  <h2>View the Gazebo Simulation</h2>
+  <p>
+    Click the button below to open the Gazebo GUI in your browser via noVNC.
+    You will see 2 TurtleBot3 Waffle robots in the sandbox world.
+  </p>
+  <a class="button" id="novnc-link" href="#" target="_blank" rel="noopener">
+    Open Gazebo Visualization (noVNC)
+  </a>
+
+  <h2>What is Running</h2>
+  <ul>
+    <li><strong>This pod (gazebo-sim):</strong> Gazebo Harmonic, robot spawning, VNC visualization</li>
+    <li><strong>robot-nav-robot-1:</strong> Nav2 full navigation stack for robot_1 (AMCL + planner + controller)</li>
+    <li><strong>robot-nav-robot-2:</strong> Nav2 full navigation stack for robot_2 (AMCL + planner + controller)</li>
+    <li><strong>Communication:</strong> zenoh-bridge-ros2dds sidecars bridge namespaced ROS2 topics between pods over TCP</li>
+  </ul>
+
+  <h2>Architecture</h2>
+  <pre>
+Pod: gazebo-sim                       Pod: robot-nav-robot-1
+  ├── Gazebo server (physics)           ├── AMCL (localization /robot_1/*)
+  ├── spawn robot_1 at (-2, -0.5)      ├── planner_server, controller_server
+  ├── spawn robot_2 at (2, 0.5)        ├── bt_navigator, map_server
+  ├── Xvfb + x11vnc + noVNC            └── zenoh-bridge (peer → gazebo:7447)
+  └── zenoh-bridge (router :7447)
+                                        Pod: robot-nav-robot-2
+  Topics bridged (examples):             ├── AMCL (localization /robot_2/*)
+  /robot_1/scan  → robot-nav-robot-1     ├── planner_server, controller_server
+  /robot_2/scan  → robot-nav-robot-2     ├── bt_navigator, map_server
+  /robot_1/cmd_vel ← robot-nav-robot-1   └── zenoh-bridge (peer → gazebo:7447)
+  /robot_2/cmd_vel ← robot-nav-robot-2
+  </pre>
+
+  <h2>Verify Communication</h2>
+  <pre>
+# Check robot_1 Nav2 receives laser scan from Gazebo
+oc exec deployment/robot-nav-robot-1 -c nav2 -- bash -c \
+  'source /usr/lib64/ros-jazzy/setup.bash; timeout 5 ros2 topic echo /robot_1/scan --once'
+
+# Send a velocity command to robot_2
+oc exec deployment/robot-nav-robot-2 -c nav2 -- bash -c \
+  'source /usr/lib64/ros-jazzy/setup.bash;
+   ros2 topic pub /robot_2/cmd_vel geometry_msgs/msg/Twist \
+     "{linear: {x: 0.2}}" -t 5'
+  </pre>
+
+  <script>
+    const host = window.location.hostname.replace(/^ros2-multi-robot-web-/, 'ros2-multi-robot-novnc-');
+    const novncUrl = `https://${host}/vnc_lite.html?autoconnect=true&resize=remote`;
+    document.getElementById('novnc-link').href = novncUrl;
+  </script>
+</body>
+</html>
