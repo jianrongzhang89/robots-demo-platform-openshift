@@ -1,7 +1,8 @@
 {{- $robots := .Values.robots -}}
 {{- $robotsEnv := "" -}}
 {{- range $robots -}}
-  {{- $robotsEnv = printf "%s%s:%v:%v:%v " $robotsEnv .name .initialPose.xPos .initialPose.yPos .initialPose.yaw -}}
+  {{- $color := default "1,1,1" .color -}}
+  {{- $robotsEnv = printf "%s%s:%v:%v:%v:%s " $robotsEnv .name .initialPose.xPos .initialPose.yPos .initialPose.yaw $color -}}
 {{- end -}}
 apiVersion: apps/v1
 kind: Deployment

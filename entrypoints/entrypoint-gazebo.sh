@@ -5,8 +5,10 @@ set -eo pipefail
 # Spawns N robots from the ROBOTS env var, runs ros_gz_bridge per robot,
 # and serves the Gazebo GUI over noVNC.
 #
-# ROBOTS format: space-separated "name:x:y:yaw" tuples, e.g.:
-#   ROBOTS="robot_1:-2.0:-0.5:0.0 robot_2:2.0:0.5:3.14159"
+# ROBOTS format: space-separated "name:x:y:yaw:r,g,b" tuples, e.g.:
+#   ROBOTS="robot_1:-2.0:-0.5:0.0:0,0,1 robot_2:2.0:0.5:3.14159:1,0,0"
+# The r,g,b color (0-1 range) is applied to all robot visuals via a patched SDF xacro.
+# Omit color or use "1,1,1" for the default white.
 
 export HOME="/tmp/ros-home"
 mkdir -p "${HOME}" "${HOME}/.ros" "${HOME}/.gazebo" "${HOME}/.config" "${HOME}/.gz/sim/8"
@@ -49,8 +51,8 @@ WORLD_NAME="${WORLD_NAME:-tb3_sandbox}"
 DISPLAY_NUM="${DISPLAY_NUM:-99}"
 RESOLUTION="${RESOLUTION:-1280x720x24}"
 
-# Space-separated "name:x:y:yaw" robot definitions
-ROBOTS="${ROBOTS:-robot_1:-2.0:-0.5:0.0}"
+# Space-separated "name:x:y:yaw:r,g,b" robot definitions
+ROBOTS="${ROBOTS:-robot_1:-2.0:-0.5:0.0:1,1,1}"
 
 export DISPLAY=":${DISPLAY_NUM}"
 
@@ -104,19 +106,32 @@ done
 # --- 8. Spawn all robots ---
 SIM_DIR="${ROS_PREFIX}/share/nav2_minimal_tb3_sim"
 URDF_FILE="${SIM_DIR}/urdf/turtlebot3_waffle.urdf"
+BASE_SDF="${SIM_DIR}/urdf/gz_waffle.sdf.xacro"
 
 echo "[gazebo-pod] Spawning robots: ${ROBOTS}"
 SPAWN_PIDS=()
 for spec in ${ROBOTS}; do
-  IFS=: read -r rname rx ry ryaw <<< "${spec}"
-  echo "[gazebo-pod] Spawning ${rname} at (${rx}, ${ry}, yaw=${ryaw})..."
+  IFS=: read -r rname rx ry ryaw rcolor <<< "${spec}"
+  rcolor="${rcolor:-1,1,1}"
+  # Convert comma-separated r,g,b to space-separated for SDF diffuse tag
+  diffuse="$(echo "${rcolor}" | tr ',' ' ')"
+
+  # Generate a color-patched SDF xacro for this robot
+  PATCHED_SDF="/tmp/${rname}_waffle.sdf.xacro"
+  python3 -c "
+content = open('${BASE_SDF}').read()
+content = content.replace('<diffuse>1 1 1</diffuse>', '<diffuse>${diffuse}</diffuse>')
+open('${PATCHED_SDF}', 'w').write(content)
+"
+  echo "[gazebo-pod] Spawning ${rname} at (${rx}, ${ry}, yaw=${ryaw}) color=(${diffuse})..."
   ros2 launch nav2_minimal_tb3_sim spawn_tb3.launch.py \
     use_sim_time:=True \
     namespace:="${rname}" \
     robot_name:="${rname}" \
     x_pose:="${rx}" \
     y_pose:="${ry}" \
-    z_pose:=0.01 &
+    z_pose:=0.01 \
+    robot_sdf:="${PATCHED_SDF}" &
   SPAWN_PIDS+=($!)
 
   # robot_state_publisher per robot, scoped to its namespace

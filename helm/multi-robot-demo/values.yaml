@@ -17,11 +17,13 @@ zenohBridge:
 # Robot definitions — drives both Gazebo spawning and Nav2 Deployment generation
 robots:
   - name: robot_1
+    color: "0,0,1"      # blue (R,G,B in 0-1 range)
     initialPose:
       xPos: -2.0
       yPos: -0.5
       yaw: 0.0
   - name: robot_2
+    color: "1,0,0"      # red
     initialPose:
       xPos: 2.0
       yPos: 0.5
