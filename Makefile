@@ -1,9 +1,13 @@
 REGISTRY   ?= quay.io/jianrzha
 IMAGE      ?= ros2-demo
 TAG        ?= latest
-NAMESPACE  ?= ros2-multi-robot
+# Use ROS_DEMO_NS to avoid clashing with any NAMESPACE env var set by the shell
+ROS_DEMO_NS ?= ros2-multi-robot
 RELEASE    ?= multi-robot-demo
 CHART      := helm/multi-robot-demo
+
+# Convenience alias so existing targets keep working
+NAMESPACE  := $(ROS_DEMO_NS)
 
 IMAGE_REF  := $(REGISTRY)/$(IMAGE):$(TAG)
 
@@ -74,7 +78,8 @@ package: ## Package the Helm chart into a .tgz
 
 .PHONY: demo
 demo: ## Run the meet-demo: both robots navigate to swap positions
-	$(eval GZPOD := $(shell oc get pod -n $(NAMESPACE) -l app=gazebo-sim -o jsonpath='{.items[0].metadata.name}'))
+	$(eval GZPOD := $(shell oc get pod -n $(NAMESPACE) -l app=gazebo-sim -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
+	@test -n "$(GZPOD)" || { echo "ERROR: no gazebo-sim pod found in namespace '$(NAMESPACE)'. Run: make demo ROS_DEMO_NS=<your-namespace>"; exit 1; }
 	@echo "Copying demo script to $(GZPOD)..."
 	oc cp demo/meet_demo.py $(NAMESPACE)/$(GZPOD):/tmp/meet_demo.py -c gazebo
 	@echo "Teleporting robots to spawn positions..."
@@ -96,7 +101,8 @@ demo: ## Run the meet-demo: both robots navigate to swap positions
 
 .PHONY: reset
 reset: ## Teleport both robots back to their spawn positions
-	$(eval GZPOD := $(shell oc get pod -n $(NAMESPACE) -l app=gazebo-sim -o jsonpath='{.items[0].metadata.name}'))
+	$(eval GZPOD := $(shell oc get pod -n $(NAMESPACE) -l app=gazebo-sim -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
+	@test -n "$(GZPOD)" || { echo "ERROR: no gazebo-sim pod found in namespace '$(NAMESPACE)'. Run: make reset ROS_DEMO_NS=<your-namespace>"; exit 1; }
 	oc exec -n $(NAMESPACE) $(GZPOD) -c gazebo -- bash -c '\
 	  export HOME=/tmp/ros-home; \
 	  source /usr/lib64/ros-jazzy/setup.bash; \
