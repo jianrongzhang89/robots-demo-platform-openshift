@@ -3,13 +3,17 @@
 A Helm-deployed multi-robot simulation demonstrating how to run independent
 [ROS2](https://docs.ros.org/en/jazzy/) navigation stacks on
 [OpenShift](https://www.redhat.com/en/technologies/cloud-computing/openshift),
-with [Gazebo Harmonic](https://gazebosim.org/) physics and
+with [Gazebo Harmonic](https://gazebosim.org/) physics,
 [zenoh-bridge-ros2dds](https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds)
-as the cross-pod communication layer.
+sidecars for cross-pod DDS bridging, and a dedicated
+[Zenoh router](https://zenoh.io/) pod as the central communication hub.
 
 Two [TurtleBot3 Waffle](https://emanual.robotis.com/docs/en/platform/turtlebot3/overview/)
 robots — **blue** and **red** — run in isolated OpenShift pods, each with its
-own Nav2 autonomy stack, and are independently controllable in real time.
+own Nav2 autonomy stack (AMCL + planner + controller), and are independently
+controllable in real time. All four pods (Gazebo simulation, two Nav2 stacks,
+and the Zenoh router) connect through a single stable `zenoh-router` ClusterIP
+Service, so any pod can restart without disrupting the others.
 
 ---
 
