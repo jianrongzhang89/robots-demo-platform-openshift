@@ -1,21 +1,27 @@
 {
   plugins: {
     ros2dds: {
-      // No ROS namespace — Gazebo routes all namespaced robot topics (/robot_N/*)
-      // transparently; ROS2 namespacing on spawn_tb3 handles per-robot isolation.
+      // No namespace prefix — Gazebo topics are already namespaced by ROS2
+      // (/robot_1/*, /robot_2/*) via spawn_tb3 namespace argument.
     }
   },
 
-  // Router mode: accept incoming connections from each Nav2 pod's bridge
-  mode: "router",
+  // Client mode: connect to the dedicated zenoh-router pod.
+  // If the router restarts, the bridge retries automatically.
+  mode: "client",
 
-  listen: {
+  connect: {
     endpoints: [
-      "tcp/0.0.0.0:7447"
-    ]
+      "tcp/zenoh-router:7447"
+    ],
+    retry: {
+      period_init_ms: 1000,
+      period_max_ms: 16000,
+      period_increase_factor: 2
+    },
+    exit_on_failure: false
   },
 
-  // Scouting disabled — static endpoints only, no multicast
   scouting: {
     multicast: {
       enabled: false

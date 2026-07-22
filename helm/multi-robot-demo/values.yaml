@@ -10,7 +10,11 @@ image:
   tag: latest
   pullPolicy: Always
 
-# Zenoh bridge sidecar image
+# Dedicated Zenoh router pod — central hub; all bridges connect here as clients
+zenohRouter:
+  image: eclipse/zenoh:latest
+
+# Zenoh bridge sidecar image (runs in each Gazebo and Nav2 pod)
 zenohBridge:
   image: eclipse/zenoh-bridge-ros2dds:latest
 

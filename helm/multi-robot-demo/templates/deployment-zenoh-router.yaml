@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zenoh-router
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: zenoh-router
+    app.kubernetes.io/part-of: ros2-multi-robot-demo
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zenoh-router
+  template:
+    metadata:
+      labels:
+        app: zenoh-router
+        app.kubernetes.io/part-of: ros2-multi-robot-demo
+    spec:
+      serviceAccountName: ros2-demo
+      containers:
+        - name: zenoh-router
+          image: {{ .Values.zenohRouter.image }}
+          args: ["-c", "/zenoh-config/zenoh-router.json5"]
+          ports:
+            - name: zenoh
+              containerPort: 7447
+              protocol: TCP
+          volumeMounts:
+            - name: zenoh-config
+              mountPath: /zenoh-config
+              readOnly: true
+          resources:
+            requests:
+              cpu: 250m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          readinessProbe:
+            tcpSocket:
+              port: 7447
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 7447
+            initialDelaySeconds: 10
+            periodSeconds: 30
+      volumes:
+        - name: zenoh-config
+          configMap:
+            name: zenoh-bridge-config
+---
+# ClusterIP Service — stable DNS name for all bridges to connect to
+apiVersion: v1
+kind: Service
+metadata:
+  name: zenoh-router
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: zenoh-router
+    app.kubernetes.io/part-of: ros2-multi-robot-demo
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  selector:
+    app: zenoh-router
+  ports:
+    - name: zenoh
+      port: 7447
+      targetPort: 7447
+      protocol: TCP

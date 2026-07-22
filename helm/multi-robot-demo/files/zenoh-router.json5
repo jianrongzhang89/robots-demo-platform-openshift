@@ -1,0 +1,20 @@
+{
+  // Standalone Zenoh router — central discovery hub for all robot pods.
+  // Both the Gazebo bridge and all Nav2 bridges connect here as clients.
+  mode: "router",
+
+  listen: {
+    endpoints: [
+      "tcp/0.0.0.0:7447"
+    ]
+  },
+
+  scouting: {
+    multicast: {
+      enabled: false
+    },
+    gossip: {
+      enabled: true
+    }
+  }
+}

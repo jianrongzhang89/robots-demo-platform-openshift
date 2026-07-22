@@ -7,6 +7,8 @@ metadata:
     app.kubernetes.io/part-of: ros2-multi-robot-demo
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 data:
+  zenoh-router.json5: |-
+{{ .Files.Get "files/zenoh-router.json5" | indent 4 }}
   gazebo-bridge.json5: |-
 {{ .Files.Get "files/gazebo-bridge.json5" | indent 4 }}
   nav2-bridge.json5: |-

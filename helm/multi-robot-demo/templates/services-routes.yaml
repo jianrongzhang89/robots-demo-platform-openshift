@@ -1,22 +1,3 @@
-# ClusterIP Service — exposes the Gazebo pod's zenoh router to Nav2 pods
-apiVersion: v1
-kind: Service
-metadata:
-  name: gazebo-sim-zenoh
-  namespace: {{ .Values.namespace }}
-  labels:
-    app: gazebo-sim
-    app.kubernetes.io/part-of: ros2-multi-robot-demo
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-spec:
-  selector:
-    app: gazebo-sim
-  ports:
-    - name: zenoh
-      port: 7447
-      targetPort: 7447
-      protocol: TCP
----
 # ClusterIP Service — noVNC browser access to Gazebo GUI
 apiVersion: v1
 kind: Service

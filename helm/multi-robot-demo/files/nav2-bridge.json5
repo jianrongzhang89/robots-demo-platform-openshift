@@ -1,17 +1,18 @@
 {
   plugins: {
     ros2dds: {
-      // No namespace prefix needed — Nav2 already runs under /robot_N/ namespace,
+      // No namespace prefix — Nav2 already runs under /robot_N/ namespace,
       // so all its local DDS topics are already correctly prefixed.
     }
   },
 
-  // Peer mode: connect to the Gazebo pod's zenoh router, with retry on failure
-  mode: "peer",
+  // Client mode: connect to the dedicated zenoh-router pod.
+  // Nav2 pods survive Gazebo restarts because the router is independent.
+  mode: "client",
 
   connect: {
     endpoints: [
-      "tcp/gazebo-sim-zenoh:7447"
+      "tcp/zenoh-router:7447"
     ],
     retry: {
       period_init_ms: 1000,
