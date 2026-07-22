@@ -70,6 +70,45 @@ lint: ## Lint the Helm chart
 package: ## Package the Helm chart into a .tgz
 	helm package $(CHART) --destination dist/
 
+##@ Demo
+
+.PHONY: demo
+demo: ## Run the meet-demo: both robots navigate to swap positions
+	$(eval GZPOD := $(shell oc get pod -n $(NAMESPACE) -l app=gazebo-sim -o jsonpath='{.items[0].metadata.name}'))
+	@echo "Copying demo script to $(GZPOD)..."
+	oc cp demo/meet_demo.py $(NAMESPACE)/$(GZPOD):/tmp/meet_demo.py -c gazebo
+	@echo "Teleporting robots to spawn positions..."
+	oc exec -n $(NAMESPACE) $(GZPOD) -c gazebo -- bash -c '\
+	  export HOME=/tmp/ros-home; \
+	  source /usr/lib64/ros-jazzy/setup.bash; \
+	  for d in /usr/lib64/ros-jazzy/opt/*/lib64; do [ -d "$$d" ] && export LD_LIBRARY_PATH="$${d}:$${LD_LIBRARY_PATH:-}"; done; \
+	  gz service -s /world/tb3_sandbox/set_pose \
+	    --reqtype gz.msgs.Pose --reptype gz.msgs.Boolean \
+	    --req "name: \"robot_1\" position {x: -2.0 y: -0.5 z: 0.01} orientation {w: 1.0}" --timeout 3000; \
+	  gz service -s /world/tb3_sandbox/set_pose \
+	    --reqtype gz.msgs.Pose --reptype gz.msgs.Boolean \
+	    --req "name: \"robot_2\" position {x: 2.0 y: 0.5 z: 0.01} orientation {x: 0.0 y: 0.0 z: 1.0 w: 0.0}" --timeout 3000'
+	@echo "Starting meet demo (robots swap positions)..."
+	$(eval NAV1POD := $(shell oc get pod -n $(NAMESPACE) -l app=robot-nav-robot-1 -o jsonpath='{.items[0].metadata.name}'))
+	oc cp demo/meet_demo.py $(NAMESPACE)/$(NAV1POD):/tmp/meet_demo.py -c nav2
+	oc exec -n $(NAMESPACE) $(NAV1POD) -c nav2 -- bash -c \
+	  'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash; python3 /tmp/meet_demo.py'
+
+.PHONY: reset
+reset: ## Teleport both robots back to their spawn positions
+	$(eval GZPOD := $(shell oc get pod -n $(NAMESPACE) -l app=gazebo-sim -o jsonpath='{.items[0].metadata.name}'))
+	oc exec -n $(NAMESPACE) $(GZPOD) -c gazebo -- bash -c '\
+	  export HOME=/tmp/ros-home; \
+	  source /usr/lib64/ros-jazzy/setup.bash; \
+	  for d in /usr/lib64/ros-jazzy/opt/*/lib64; do [ -d "$$d" ] && export LD_LIBRARY_PATH="$${d}:$${LD_LIBRARY_PATH:-}"; done; \
+	  gz service -s /world/tb3_sandbox/set_pose \
+	    --reqtype gz.msgs.Pose --reptype gz.msgs.Boolean \
+	    --req "name: \"robot_1\" position {x: -2.0 y: -0.5 z: 0.01} orientation {w: 1.0}" --timeout 3000; \
+	  gz service -s /world/tb3_sandbox/set_pose \
+	    --reqtype gz.msgs.Pose --reptype gz.msgs.Boolean \
+	    --req "name: \"robot_2\" position {x: 2.0 y: 0.5 z: 0.01} orientation {x: 0.0 y: 0.0 z: 1.0 w: 0.0}" --timeout 3000; \
+	  echo "Both robots reset to spawn positions."'
+
 ##@ Utilities
 
 .PHONY: status
