@@ -16,42 +16,38 @@ own Nav2 autonomy stack, and are independently controllable in real time.
 ## Architecture
 
 ```
-┌─────────────────────────── OpenShift namespace: ros2-multi-robot ────────────────────────────┐
-│                                                                                               │
-│  ┌──────────────────────────────────────────────────────────────┐                            │
-│  │  Pod: gazebo-sim                                             │                            │
-│  │                                                              │                            │
-│  │  ┌─────────────────────────────────────────────────────┐    │                            │
-│  │  │  container: gazebo                                  │    │                            │
-│  │  │  • Gazebo Harmonic (headless physics server)        │    │                            │
-│  │  │  • Spawns robot_1 (blue) at (-2, -0.5)             │    │                            │
-│  │  │  • Spawns robot_2 (red)  at ( 2,  0.5)             │    │                            │
-│  │  │  • ros_gz_bridge per robot (Gz ↔ ROS2 topics)      │    │                            │
-│  │  │  • Gazebo GUI over Xvfb + x11vnc + noVNC (:6080)   │    │                            │
-│  │  │  • Web landing page (:8080)                         │    │                            │
-│  │  └─────────────────────────────────────────────────────┘    │                            │
-│  │  ┌─────────────────────────────────────────────────────┐    │  ClusterIP :7447           │
-│  │  │  sidecar: zenoh-bridge (ROUTER mode)                │◄───┼────────────────────────┐  │
-│  │  │  • bridges ALL /robot_N/* topics over TCP :7447     │    │                        │  │
-│  │  └─────────────────────────────────────────────────────┘    │                        │  │
-│  └──────────────────────────────────────────────────────────────┘                        │  │
-│                                                                                            │  │
-│  ┌────────────────────────────────────────┐  ┌────────────────────────────────────────┐  │  │
-│  │  Pod: robot-nav-robot-1                │  │  Pod: robot-nav-robot-2                │  │  │
-│  │                                        │  │                                        │  │  │
-│  │  container: nav2 (namespace=robot_1)   │  │  container: nav2 (namespace=robot_2)   │  │  │
-│  │  • AMCL  (localisation)               │  │  • AMCL  (localisation)               │  │  │
-│  │  • planner_server (global path)        │  │  • planner_server (global path)        │  │  │
-│  │  • controller_server (local control)   │  │  • controller_server (local control)   │  │  │
-│  │  • bt_navigator + map_server           │  │  • bt_navigator + map_server           │  │  │
-│  │  Topics: /robot_1/scan, /robot_1/odom  │  │  Topics: /robot_2/scan, /robot_2/odom  │  │  │
-│  │          /robot_1/cmd_vel, /robot_1/tf │  │          /robot_2/cmd_vel, /robot_2/tf │  │  │
-│  │                                        │  │                                        │  │  │
-│  │  sidecar: zenoh-bridge (PEER mode)     │  │  sidecar: zenoh-bridge (PEER mode)     │  │  │
-│  └──────────────────────┬─────────────────┘  └──────────────────────┬─────────────────┘  │  │
-│                         └───────────────────────────────────────────┘────────────────────┘  │
-│                                              TCP :7447 → gazebo-sim-zenoh ClusterIP Service  │
-└───────────────────────────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────── OpenShift namespace: ros2-multi-robot ──────────────────────────────┐
+│                                                                                                 │
+│  ┌──────────────────────────────────┐                                                          │
+│  │  Pod: zenoh-router               │  ← dedicated Zenoh hub; lifecycle independent of         │
+│  │  (eclipse/zenoh:latest)          │    Gazebo and Nav2                                       │
+│  │  mode: router, TCP :7447         │                                                          │
+│  └──────────────┬───────────────────┘                                                          │
+│      ClusterIP Service: zenoh-router:7447                                                       │
+│           ▲              ▲                      ▲                                               │
+│           │ (client)     │ (client)             │ (client)                                      │
+│  ┌────────┴─────────┐  ┌─┴──────────────────┐  ┌┴───────────────────┐                        │
+│  │ Pod: gazebo-sim  │  │ Pod: robot-nav-     │  │ Pod: robot-nav-    │                        │
+│  │                  │  │      robot-1        │  │      robot-2       │                        │
+│  │ container: gazebo│  │                     │  │                    │                        │
+│  │ • Gazebo Harmonic│  │ container: nav2     │  │ container: nav2    │                        │
+│  │ • Spawns robot_1 │  │ namespace=robot_1   │  │ namespace=robot_2  │                        │
+│  │   (blue,-2,-0.5) │  │ • AMCL              │  │ • AMCL             │                        │
+│  │ • Spawns robot_2 │  │ • planner_server    │  │ • planner_server   │                        │
+│  │   (red, 2, 0.5)  │  │ • controller_server │  │ • controller_server│                        │
+│  │ • ros_gz_bridge  │  │ • bt_navigator      │  │ • bt_navigator     │                        │
+│  │ • noVNC  (:6080) │  │ • map_server        │  │ • map_server       │                        │
+│  │ • web    (:8080) │  │                     │  │                    │                        │
+│  │                  │  │ /robot_1/scan       │  │ /robot_2/scan      │                        │
+│  │ sidecar:         │  │ /robot_1/odom       │  │ /robot_2/odom      │                        │
+│  │ zenoh-bridge     │  │ /robot_1/cmd_vel    │  │ /robot_2/cmd_vel   │                        │
+│  │ (client)         │  │ /robot_1/tf         │  │ /robot_2/tf        │                        │
+│  └──────────────────┘  │                     │  │                    │                        │
+│                        │ sidecar:            │  │ sidecar:           │                        │
+│                        │ zenoh-bridge        │  │ zenoh-bridge       │                        │
+│                        │ (client)            │  │ (client)           │                        │
+│                        └─────────────────────┘  └────────────────────┘                        │
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Key design decisions
@@ -59,7 +55,7 @@ own Nav2 autonomy stack, and are independently controllable in real time.
 | Concern | Choice | Reason |
 |---|---|---|
 | Cross-pod DDS | `zenoh-bridge-ros2dds` sidecar | DDS multicast is blocked by OVN-Kubernetes CNI; Zenoh bridges over TCP |
-| Zenoh topology | Gazebo = router, Nav2 pods = peers | Single stable endpoint; Nav2 pods reconnect automatically on restart |
+| Zenoh topology | Dedicated `zenoh-router` pod; all bridges = clients | Router lifecycle is independent of Gazebo and Nav2 — Gazebo restarts don't disconnect Nav2 pods |
 | Robot isolation | ROS2 namespaces (`/robot_1/`, `/robot_2/`) | Topics, TF, and actions are fully isolated per robot without zenoh namespace prefix |
 | Navigation map | Predefined `tb3_sandbox` map (AMCL) | Avoids SLAM instability; robots localize instantly at spawn |
 | Deployment | Helm chart (`helm/multi-robot-demo/`) | `values.yaml` `robots:` list drives N-robot scaling; one Deployment template per robot via `range` |
@@ -86,14 +82,16 @@ own Nav2 autonomy stack, and are independently controllable in real time.
         ├── Chart.yaml
         ├── values.yaml                   # Robot list, images, resources, route hosts
         ├── files/
-        │   ├── gazebo-bridge.json5       # Zenoh config: router mode
-        │   └── nav2-bridge.json5         # Zenoh config: peer mode
+        │   ├── zenoh-router.json5        # Zenoh config: standalone router
+        │   ├── gazebo-bridge.json5       # Zenoh config: client mode → zenoh-router
+        │   └── nav2-bridge.json5         # Zenoh config: client mode → zenoh-router
         └── templates/
             ├── configmap-zenoh.yaml
-            ├── deployment-gazebo.yaml    # Single Gazebo pod
-            ├── deployment-nav2.yaml      # {{- range .Values.robots }} → one pod per robot
+            ├── deployment-zenoh-router.yaml  # Dedicated Zenoh router pod + ClusterIP Service
+            ├── deployment-gazebo.yaml        # Single Gazebo pod
+            ├── deployment-nav2.yaml          # {{- range .Values.robots }} → one pod per robot
             ├── serviceaccount.yaml
-            └── services-routes.yaml      # ClusterIP services + OpenShift Routes
+            └── services-routes.yaml          # noVNC/web Services + OpenShift Routes
 ```
 
 ---
@@ -145,9 +143,10 @@ creates:
 
 | Resource | Count |
 |---|---|
+| Deployment (`zenoh-router`) | 1 |
 | Deployment (`gazebo-sim`) | 1 |
 | Deployment (`robot-nav-robot-1`, `robot-nav-robot-2`) | 1 per robot |
-| ClusterIP Services (zenoh, noVNC, web) | 3 |
+| ClusterIP Services (zenoh-router, noVNC, web) | 3 |
 | OpenShift Routes (noVNC, web) | 2 |
 | ConfigMap (`zenoh-bridge-config`) | 1 |
 | ServiceAccount (`ros2-demo`) | 1 |
@@ -159,8 +158,9 @@ make status    # oc get pods -n ros2-multi-robot -o wide
 make routes    # print noVNC and web route URLs
 ```
 
-Wait ~2 min for all pods to reach `2/2 Running`. The Gazebo pod readiness
-probe has a 60 s initial delay (Gazebo server startup).
+Wait ~2 min for all pods to reach `2/2 Running` (Gazebo and Nav2 pods) and
+`1/1 Running` (zenoh-router). The Gazebo pod readiness probe has a 60 s
+initial delay (Gazebo server startup).
 
 ### 5. Open the simulation
 
@@ -294,8 +294,9 @@ Then redeploy:
 make deploy
 ```
 
-One new `robot-nav-robot-3` Deployment and one new zenoh peer connection are
-created automatically. No template changes required.
+One new `robot-nav-robot-3` Deployment is created automatically and its
+zenoh-bridge sidecar connects to the shared `zenoh-router` pod as a new
+client. No template changes required.
 
 ### Change robot colours
 
@@ -376,13 +377,20 @@ Utilities
 Within each pod: standard ROS2 DDS (localhost, shared memory)
 Between pods:    Zenoh TCP transport via zenoh-bridge-ros2dds sidecars
 
-Gazebo pod            Nav2 robot-1 pod        Nav2 robot-2 pod
-  zenoh-bridge          zenoh-bridge            zenoh-bridge
-  (ROUTER :7447)  ◄──── (PEER)           ◄──── (PEER)
-       │                    │                       │
-  /robot_1/*           /robot_1/*              /robot_2/*
-  /robot_2/*           (local DDS)             (local DDS)
-  (local DDS)
+                     ┌──────────────────┐
+                     │   zenoh-router   │  eclipse/zenoh:latest
+                     │   mode: router   │  ClusterIP :7447
+                     └────────┬─────────┘
+             ┌────────────────┼─────────────────┐
+             │ (client)       │ (client)         │ (client)
+    ┌────────┴───────┐  ┌─────┴──────────┐  ┌───┴────────────┐
+    │  gazebo-sim    │  │ robot-nav-      │  │ robot-nav-     │
+    │  zenoh-bridge  │  │ robot-1        │  │ robot-2        │
+    │                │  │ zenoh-bridge   │  │ zenoh-bridge   │
+    │ /robot_1/*     │  │                │  │                │
+    │ /robot_2/*     │  │ /robot_1/*     │  │ /robot_2/*     │
+    │ (local DDS)    │  │ (local DDS)    │  │ (local DDS)    │
+    └────────────────┘  └────────────────┘  └────────────────┘
 ```
 
 - **DDS stays local:** each pod uses `ROS_DOMAIN_ID=0` with no cross-pod multicast
@@ -390,8 +398,10 @@ Gazebo pod            Nav2 robot-1 pod        Nav2 robot-2 pod
   `/robot_N/cmd_vel`, `/robot_N/tf`, `/clock` topics are bridged transparently
 - **No node changes:** ROS2 nodes publish/subscribe via DDS as usual; the bridge
   handles cross-pod routing invisibly
-- **Peer reconnection:** Nav2 bridge configs set `exit_on_failure: false` with
-  exponential-backoff retry, so Nav2 pods survive Gazebo pod restarts
+- **Independent router:** the `zenoh-router` pod lifecycle is decoupled from
+  Gazebo and Nav2 — restarting the Gazebo pod does not disconnect Nav2 bridges
+- **Client reconnection:** all bridge configs set `exit_on_failure: false` with
+  exponential-backoff retry (1 s → 16 s), so any pod survives router restarts
 
 ---
 
