@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rmf-core
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: rmf-core
+    app.kubernetes.io/part-of: ros2-multi-robot-demo
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rmf-core
+  template:
+    metadata:
+      labels:
+        app: rmf-core
+        app.kubernetes.io/part-of: ros2-multi-robot-demo
+    spec:
+      serviceAccountName: ros2-demo
+      containers:
+        - name: rmf-core
+          image: {{ .Values.rmf.image }}
+          imagePullPolicy: Always
+          command: ["/entrypoint-rmf.sh"]
+          ports:
+            - name: api
+              containerPort: 8000
+              protocol: TCP
+            - name: dashboard
+              containerPort: 3000
+              protocol: TCP
+          env:
+            # Separate DDS domain — RMF core never sees robot DDS traffic
+            - name: ROS_DOMAIN_ID
+              value: "55"
+            - name: ROS_DISTRO
+              value: jazzy
+            - name: RMW_IMPLEMENTATION
+              value: rmw_cyclonedds_cpp
+            - name: FLEET_CONFIG
+              value: /opt/ros2-demo/rmf/fleet_config.yaml
+            - name: NAV_GRAPH
+              value: /opt/ros2-demo/rmf/nav_graph.yaml
+            - name: SERVER_URI
+              value: "ws://localhost:8000/_internal"
+          volumeMounts:
+            - name: rmf-config
+              mountPath: /opt/ros2-demo/rmf
+              readOnly: true
+            - name: zenoh-config
+              mountPath: /opt/ros2-demo/zenoh
+              readOnly: true
+          resources:
+            requests:
+              cpu: {{ .Values.rmf.resources.requests.cpu | quote }}
+              memory: {{ .Values.rmf.resources.requests.memory | quote }}
+            limits:
+              cpu: {{ .Values.rmf.resources.limits.cpu | quote }}
+              memory: {{ .Values.rmf.resources.limits.memory | quote }}
+          readinessProbe:
+            httpGet:
+              path: /user
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            failureThreshold: 10
+          livenessProbe:
+            httpGet:
+              path: /user
+              port: 8000
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            failureThreshold: 5
+      volumes:
+        - name: rmf-config
+          configMap:
+            name: rmf-config
+        - name: zenoh-config
+          configMap:
+            name: zenoh-bridge-config

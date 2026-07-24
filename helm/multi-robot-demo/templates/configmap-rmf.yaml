@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rmf-config
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/part-of: ros2-multi-robot-demo
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+data:
+  fleet_config.yaml: |-
+{{ .Files.Get "files/fleet_config.yaml" | indent 4 }}
+  nav_graph.yaml: |-
+{{ .Files.Get "files/nav_graph.yaml" | indent 4 }}

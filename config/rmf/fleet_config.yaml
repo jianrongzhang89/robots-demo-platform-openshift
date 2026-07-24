@@ -1,0 +1,70 @@
+# free_fleet fleet configuration for the tb3_sandbox multi-robot demo.
+# Modelled after the official free_fleet nav2_unique_multi_tb3 example config.
+# All coordinates are in Nav2 world frame (meters) with identity transform.
+
+rmf_fleet:
+  name: "turtlebot3"
+  limits:
+    linear: [0.5, 0.75]
+    angular: [0.6, 2.0]
+  profile:
+    footprint: 0.3
+    vicinity: 0.5
+  reversible: True
+  battery_system:
+    voltage: 12.0
+    capacity: 24.0        # Ahr — standard TurtleBot3 Waffle spec
+    charging_current: 5.0
+  mechanical_system:
+    mass: 20.0            # kg
+    moment_of_inertia: 10.0
+    friction_coefficient: 0.22
+  ambient_system:
+    power: 20.0           # W
+  tool_system:
+    power: 0.0
+  recharge_threshold: 0.05  # 5% — never triggers (robots start at 100%)
+  recharge_soc: 1.0
+  publish_fleet_state: 10.0
+  account_for_battery_drain: True  # True avoids the low_capacity planner error
+  task_capabilities:
+    loop: True
+    delivery: True
+  finishing_request: "nothing"
+  responsive_wait: True
+
+  robots:
+    robot_1:
+      charger: "charger_1"
+      responsive_wait: False
+      navigation_stack: 2
+      init_timeout_sec: 30
+      initial_map: "L1"
+      map_frame: "map"
+      robot_frame: "base_footprint"
+      maps:
+        L1:
+          map_url: "/opt/ros/jazzy/share/nav2_bringup/maps/tb3_sandbox.yaml"
+    robot_2:
+      charger: "charger_2"
+      responsive_wait: False
+      navigation_stack: 2
+      init_timeout_sec: 30
+      initial_map: "L1"
+      map_frame: "map"
+      robot_frame: "base_footprint"
+      maps:
+        L1:
+          map_url: "/opt/ros/jazzy/share/nav2_bringup/maps/tb3_sandbox.yaml"
+
+  robot_state_update_frequency: 10.0
+
+# Identity transform: RMF frame == Nav2 world frame (both in meters)
+reference_coordinates:
+  L1:
+    rmf:   [[ 0.0, 0.0], [5.0, 0.0], [0.0, 5.0], [5.0, 5.0]]
+    robot: [[ 0.0, 0.0], [5.0, 0.0], [0.0, 5.0], [5.0, 5.0]]
+
+fleet_manager:
+  zenoh:
+    router: "tcp/zenoh-router:7447"

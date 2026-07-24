@@ -1,0 +1,42 @@
+# tb3_sandbox navigation graph in traffic_editor format.
+# free_fleet FleetConfiguration.from_config_files() requires the [levels] key.
+# All coordinates are in Nav2 world frame (meters) — identity reference transform.
+#
+# IMPORTANT: Bidirectional lanes require TWO entries (A→B and B→A).
+# The official traffic_editor format does NOT use edge_type=0; it lists
+# each direction separately.
+#
+# Vertex index map:
+#   0 = robot_1_home   (-2.0, -0.5)
+#   1 = robot_2_home   ( 2.0,  0.5)
+#   2 = meeting_point  ( 0.0,  0.0)
+#   3 = charger_1      (-3.0, -1.0)
+#   4 = charger_2      ( 3.0,  1.0)
+
+building_name: tb3_sandbox
+doors: {}
+levels:
+  L1:
+    vertices:
+      - [-2.0, -0.5, {name: robot_1_home,  is_charger: false, is_holding_point: false, is_parking_spot: true}]
+      - [ 2.0,  0.5, {name: robot_2_home,  is_charger: false, is_holding_point: false, is_parking_spot: true}]
+      - [ 0.0,  0.0, {name: meeting_point, is_charger: false, is_holding_point: true,  is_parking_spot: false}]
+      - [-3.0, -1.0, {name: charger_1,     is_charger: true,  is_holding_point: false, is_parking_spot: false}]
+      - [ 3.0,  1.0, {name: charger_2,     is_charger: true,  is_holding_point: false, is_parking_spot: false}]
+
+    # Bidirectional lanes — list BOTH directions explicitly (official format)
+    lanes:
+      # robot_1_home (0) <-> meeting_point (2)
+      - [0, 2, {graph_idx: 0, speed_limit: 0.26}]
+      - [2, 0, {graph_idx: 0, speed_limit: 0.26}]
+      # meeting_point (2) <-> robot_2_home (1)
+      - [2, 1, {graph_idx: 0, speed_limit: 0.26}]
+      - [1, 2, {graph_idx: 0, speed_limit: 0.26}]
+      # robot_1_home (0) <-> charger_1 (3)
+      - [0, 3, {graph_idx: 0, speed_limit: 0.20}]
+      - [3, 0, {graph_idx: 0, speed_limit: 0.20}]
+      # robot_2_home (1) <-> charger_2 (4)
+      - [1, 4, {graph_idx: 0, speed_limit: 0.20}]
+      - [4, 1, {graph_idx: 0, speed_limit: 0.20}]
+
+lifts: {}

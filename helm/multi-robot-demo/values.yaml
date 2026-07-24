@@ -11,12 +11,13 @@ image:
   pullPolicy: Always
 
 # Dedicated Zenoh router pod — central hub; all bridges connect here as clients
+# Pinned to 1.5.0 to match free_fleet's eclipse-zenoh Python dependency.
 zenohRouter:
-  image: eclipse/zenoh:latest
+  image: eclipse/zenoh:1.5.0
 
 # Zenoh bridge sidecar image (runs in each Gazebo and Nav2 pod)
 zenohBridge:
-  image: eclipse/zenoh-bridge-ros2dds:latest
+  image: eclipse/zenoh-bridge-ros2dds:1.5.0
 
 # Robot definitions — drives both Gazebo spawning and Nav2 Deployment generation
 robots:
@@ -71,3 +72,17 @@ routes:
   novncHost: ""
   # e.g. gazebo-web.apps.cluster.example.com
   webHost: ""
+
+# Open-RMF fleet management — free_fleet_adapter + traffic schedule + dashboard
+rmf:
+  image: quay.io/jianrzha/ros2-rmf:latest
+  resources:
+    requests:
+      cpu: "2"
+      memory: 2Gi
+    limits:
+      cpu: "4"
+      memory: 4Gi
+  routes:
+    dashboardHost: ""   # e.g. rmf-dashboard.apps.cluster.example.com
+    apiHost: ""         # e.g. rmf-api.apps.cluster.example.com

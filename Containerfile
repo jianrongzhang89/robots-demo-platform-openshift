@@ -62,6 +62,7 @@ COPY entrypoints/entrypoint-gazebo.sh /entrypoint-gazebo.sh
 COPY entrypoints/entrypoint-nav2.sh /entrypoint-nav2.sh
 COPY config/worlds/ /opt/ros2-demo/worlds/
 COPY config/www/ /opt/ros2-demo/www/
+COPY config/nav2/ /opt/ros2-demo/nav2/
 
 RUN chmod +x /entrypoint-gazebo.sh /entrypoint-nav2.sh
 

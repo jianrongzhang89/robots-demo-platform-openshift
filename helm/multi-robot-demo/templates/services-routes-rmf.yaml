@@ -1,0 +1,75 @@
+# ClusterIP Service — rmf-web API server (internal use by dashboard)
+apiVersion: v1
+kind: Service
+metadata:
+  name: rmf-api-server
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: rmf-core
+    app.kubernetes.io/part-of: ros2-multi-robot-demo
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  selector:
+    app: rmf-core
+  ports:
+    - name: api
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+    - name: dashboard
+      port: 3000
+      targetPort: 3000
+      protocol: TCP
+---
+# OpenShift Route — rmf-web dashboard (browser-accessible)
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: rmf-dashboard
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: rmf-core
+    app.kubernetes.io/part-of: ros2-multi-robot-demo
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  {{- if .Values.rmf.routes.dashboardHost }}
+  host: {{ .Values.rmf.routes.dashboardHost }}
+  {{- end }}
+  to:
+    kind: Service
+    name: rmf-api-server
+    weight: 100
+  port:
+    targetPort: dashboard
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
+---
+# OpenShift Route — rmf-web API (for CLI access, excludes _internal WebSocket)
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: rmf-api
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: rmf-core
+    app.kubernetes.io/part-of: ros2-multi-robot-demo
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  annotations:
+    haproxy.router.openshift.io/timeout: 10m
+    haproxy.router.openshift.io/websocket: "true"
+spec:
+  {{- if .Values.rmf.routes.apiHost }}
+  host: {{ .Values.rmf.routes.apiHost }}
+  {{- end }}
+  to:
+    kind: Service
+    name: rmf-api-server
+    weight: 100
+  port:
+    targetPort: api
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

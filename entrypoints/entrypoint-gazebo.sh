@@ -134,10 +134,14 @@ open('${PATCHED_SDF}', 'w').write(content)
     robot_sdf:="${PATCHED_SDF}" &
   SPAWN_PIDS+=($!)
 
-  # robot_state_publisher per robot, scoped to its namespace
+  # robot_state_publisher per robot — remap /tf to /robot_N/tf so the Gazebo
+  # zenoh bridge routes it as "robot_N/tf" in Zenoh (what the Nav2 bridge and
+  # free_fleet_adapter subscribe to under the robot namespace).
   ros2 run robot_state_publisher robot_state_publisher \
     --ros-args \
     --remap __ns:=/"${rname}" \
+    --remap /tf:=/"${rname}"/tf \
+    --remap /tf_static:=/"${rname}"/tf_static \
     -p use_sim_time:=true \
     -p "robot_description:=$(cat "${URDF_FILE}")" &
 done
@@ -152,6 +156,29 @@ for i in $(seq 1 30); do
     break
   fi
   sleep 2
+done
+
+# --- 10. Per-robot clock relay ---
+# The Gazebo zenoh bridge routes /clock as bare Zenoh "clock".
+# Each Nav2 pod's bridge (namespace=/robot_N) expects "robot_N/clock".
+# Relay re-publishes /clock as /robot_N/clock so Nav2 use_sim_time works.
+echo "[gazebo-pod] Starting per-robot clock relays..."
+CLOCK_RELAY_SCRIPT="$(cat <<'PYEOF'
+import sys, rclpy
+from rclpy.node import Node
+from rosgraph_msgs.msg import Clock
+robot = sys.argv[1]
+rclpy.init()
+n = Node('clock_relay_' + robot.replace('_',''))
+pub = n.create_publisher(Clock, '/' + robot + '/clock', 10)
+n.create_subscription(Clock, '/clock', pub.publish, 10)
+rclpy.spin(n)
+PYEOF
+)"
+for spec in ${ROBOTS}; do
+  IFS=: read -r rname rx ry ryaw rcolor <<< "${spec}"
+  python3 -c "${CLOCK_RELAY_SCRIPT}" "${rname}" &
+  echo "[gazebo-pod] Clock relay started for ${rname}"
 done
 
 echo "[gazebo-pod] All ${#SPAWN_PIDS[@]} robot(s) spawned. Simulation ready."

@@ -1,8 +1,23 @@
 {
   plugins: {
     ros2dds: {
-      // No namespace prefix — Nav2 already runs under /robot_N/ namespace,
-      // so all its local DDS topics are already correctly prefixed.
+      // Expanded allowlist for Open-RMF free_fleet integration.
+      // In addition to sensor/cmd_vel traffic to/from Gazebo, the bridge
+      // now exposes TF (robot pose for free_fleet_adapter) and the
+      // NavigateToPose action (so free_fleet_adapter can send goals).
+      allow: {
+        // Outbound (robot → RMF): pose and battery state
+        publishers: [
+          ".*/(tf|tf_static|battery_state)"
+        ],
+        // Inbound (RMF → robot): navigation goals via Nav2 action
+        subscribers: [
+          ".*/navigate_to_pose/_action/.*"
+        ],
+        service_servers: [
+          ".*/navigate_to_pose/_action/.*"
+        ]
+      }
     }
   },
 

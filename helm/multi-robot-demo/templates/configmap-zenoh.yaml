@@ -11,5 +11,49 @@ data:
 {{ .Files.Get "files/zenoh-router.json5" | indent 4 }}
   gazebo-bridge.json5: |-
 {{ .Files.Get "files/gazebo-bridge.json5" | indent 4 }}
-  nav2-bridge.json5: |-
-{{ .Files.Get "files/nav2-bridge.json5" | indent 4 }}
+  fleet-adapter-zenoh.json5: |-
+{{ .Files.Get "files/fleet-adapter-zenoh.json5" | indent 4 }}
+  # Per-robot Nav2 bridge configs — each adds a namespace prefix so the bridge
+  # routes bare /tf as robot_N/tf (what free_fleet_adapter subscribes to).
+  # publishers:  local DDS topics that go OUT to Zenoh (Nav2 → router)
+  # subscribers: Zenoh topics that come IN from Zenoh (Gazebo → Nav2)
+{{- range .Values.robots }}
+  nav2-bridge-{{ .name }}.json5: |-
+    {
+      plugins: {
+        ros2dds: {
+          namespace: "/{{ .name }}",
+          allow: {
+            publishers: [
+              ".*/(tf|tf_static|battery_state|cmd_vel)"
+            ],
+            subscribers: [
+              ".*/tf",
+              ".*/tf_static",
+              ".*/scan",
+              ".*/odom",
+              ".*/imu",
+              ".*/joint_states",
+              ".*/clock",
+              ".*/robot_description",
+              ".*/navigate_to_pose/_action/.*"
+            ],
+            service_servers: [
+              ".*/navigate_to_pose/_action/.*"
+            ]
+          }
+        }
+      },
+      mode: "client",
+      connect: {
+        endpoints: ["tcp/zenoh-router:7447"],
+        retry: {
+          period_init_ms: 1000,
+          period_max_ms: 16000,
+          period_increase_factor: 2
+        },
+        exit_on_failure: false
+      },
+      scouting: { multicast: { enabled: false } }
+    }
+{{- end }}

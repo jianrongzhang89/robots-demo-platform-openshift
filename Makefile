@@ -1,6 +1,7 @@
-REGISTRY   ?= quay.io/jianrzha
-IMAGE      ?= ros2-demo
-TAG        ?= latest
+REGISTRY    ?= quay.io/jianrzha
+IMAGE       ?= ros2-demo
+IMAGE_RMF   ?= ros2-rmf
+TAG         ?= latest
 # Use ROS_DEMO_NS to avoid clashing with any NAMESPACE env var set by the shell
 ROS_DEMO_NS ?= ros2-multi-robot
 RELEASE    ?= multi-robot-demo
@@ -9,7 +10,8 @@ CHART      := helm/multi-robot-demo
 # Convenience alias so existing targets keep working
 NAMESPACE  := $(ROS_DEMO_NS)
 
-IMAGE_REF  := $(REGISTRY)/$(IMAGE):$(TAG)
+IMAGE_REF     := $(REGISTRY)/$(IMAGE):$(TAG)
+IMAGE_RMF_REF := $(REGISTRY)/$(IMAGE_RMF):$(TAG)
 
 # Auto-detect podman (handles non-standard install paths like /opt/podman/bin)
 PODMAN     := $(shell which podman 2>/dev/null || echo /opt/podman/bin/podman)
@@ -27,15 +29,26 @@ help: ## Show this help
 ##@ Build
 
 .PHONY: build
-build: ## Build the container image (requires podman)
+build: ## Build the Gazebo/Nav2 container image
 	$(PODMAN) build --platform linux/amd64 -t $(IMAGE_REF) -f Containerfile .
 
 .PHONY: push
-push: ## Push the container image to the registry
+push: ## Push the Gazebo/Nav2 image to the registry
 	$(PODMAN) push $(IMAGE_REF)
 
 .PHONY: build-push
-build-push: build push ## Build and push the container image
+build-push: build push ## Build and push the Gazebo/Nav2 image
+
+.PHONY: build-rmf
+build-rmf: ## Build the Open-RMF core container image (~20 min first build)
+	$(PODMAN) build --platform linux/amd64 -t $(IMAGE_RMF_REF) -f Containerfile.rmf .
+
+.PHONY: push-rmf
+push-rmf: ## Push the RMF image to the registry
+	$(PODMAN) push $(IMAGE_RMF_REF)
+
+.PHONY: build-push-rmf
+build-push-rmf: build-rmf push-rmf ## Build and push the RMF image
 
 ##@ Deploy
 
@@ -73,6 +86,28 @@ lint: ## Lint the Helm chart
 .PHONY: package
 package: ## Package the Helm chart into a .tgz
 	helm package $(CHART) --destination dist/
+
+##@ Open-RMF
+
+.PHONY: dispatch-patrol
+dispatch-patrol: ## Dispatch a patrol task: robot_1_home→meeting_point→robot_2_home (n=1)
+	$(eval RMFPOD := $(shell oc get pod -n $(NAMESPACE) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
+	@test -n "$(RMFPOD)" || { echo "ERROR: rmf-core pod not found in namespace '$(NAMESPACE)'"; exit 1; }
+	oc exec -n $(NAMESPACE) $(RMFPOD) -c rmf-core -- bash -c \
+	  'export HOME=/tmp/ros-home; \
+	   source /opt/ros/jazzy/setup.bash; \
+	   source /opt/free_fleet/install/setup.bash 2>/dev/null || true; \
+	   ros2 run rmf_demos_tasks dispatch_patrol \
+	     -p robot_1_home meeting_point robot_2_home -n 1 --use_sim_time'
+
+.PHONY: rmf-status
+rmf-status: ## Show fleet state from RMF (robot positions and task status)
+	$(eval RMFPOD := $(shell oc get pod -n $(NAMESPACE) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
+	@test -n "$(RMFPOD)" || { echo "ERROR: rmf-core pod not found"; exit 1; }
+	oc exec -n $(NAMESPACE) $(RMFPOD) -c rmf-core -- bash -c \
+	  'export HOME=/tmp/ros-home; \
+	   source /opt/ros/jazzy/setup.bash; \
+	   timeout 5 ros2 topic echo /fleet_states --once 2>/dev/null || echo "No fleet state yet"'
 
 ##@ Demo
 

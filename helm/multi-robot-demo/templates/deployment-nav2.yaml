@@ -51,7 +51,9 @@ spec:
               cpu: {{ $.Values.nav2.resources.limits.cpu | quote }}
               memory: {{ $.Values.nav2.resources.limits.memory | quote }}
 
-        # --- Sidecar: zenoh-bridge-ros2dds in peer mode ---
+        # --- Sidecar: zenoh-bridge-ros2dds with per-robot namespace ---
+        # The namespace prefix makes bare /tf appear as robot_N/tf over Zenoh,
+        # which is what free_fleet_adapter subscribes to for robot pose.
         - name: zenoh-bridge
           image: {{ $.Values.zenohBridge.image }}
           args: ["-c", "/zenoh-config/nav2-bridge.json5"]
@@ -62,7 +64,8 @@ spec:
               value: jazzy
           volumeMounts:
             - name: zenoh-config
-              mountPath: /zenoh-config
+              mountPath: /zenoh-config/nav2-bridge.json5
+              subPath: nav2-bridge-{{ .name }}.json5
               readOnly: true
           resources:
             requests:
