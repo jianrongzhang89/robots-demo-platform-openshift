@@ -75,6 +75,67 @@ RSP_PID=$!
 echo "[nav2-pod/${ROBOT_NAME}] Waiting 120s for Gazebo to start and Zenoh to bridge topics..."
 sleep 120
 
+# ── Tune stuck-recovery parameters ───────────────────────────────────────────
+# With real_time_factor=0.5 the stock defaults are far too slow for a demo:
+#   movement_time_allowance=10 sim-s  → 20 real-s before stuck is detected
+#   BackUp speed=0.025 m/s           → 12 real-s to back off 0.15 m
+# We patch the installed params file and recovery BT XML at startup so no
+# image rebuild is needed when tuning these values.
+
+CUSTOM_PARAMS="/tmp/nav2_params_${ROBOT_NAME}.yaml"
+CUSTOM_BT_DIR="/tmp/nav2_bt"
+CUSTOM_BT_XML="${CUSTOM_BT_DIR}/fast_recovery.xml"
+mkdir -p "${CUSTOM_BT_DIR}"
+
+# 1. Patch the BT XML: faster BackUp (0.15 m/s over 0.30 m = 4 real-s vs 12).
+#    Use Python for robust XML attribute editing.
+DEFAULT_BT="${ROS_PREFIX}/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml"
+python3 - "${DEFAULT_BT}" "${CUSTOM_BT_XML}" <<'PYEOF'
+import sys
+import xml.etree.ElementTree as ET
+
+src, dst = sys.argv[1], sys.argv[2]
+ET.register_namespace('', '')
+tree = ET.parse(src)
+for node in tree.iter('BackUp'):
+    node.set('backup_dist', '0.30')   # was 0.15 m
+    node.set('backup_speed', '0.15')  # was 0.025 m/s — 6× faster
+with open(dst, 'wb') as f:
+    tree.write(f, encoding='utf-8', xml_declaration=True)
+print(f'[tune] BackUp: dist=0.30 m  speed=0.15 m/s  (written to {dst})')
+PYEOF
+
+# 2. Patch the params file: faster stuck detection + point to custom BT XML.
+#    Text substitution preserves the original YAML format exactly (avoids the
+#    yaml.dump re-serialisation issue that broke param loading earlier).
+python3 - "${BRINGUP_DIR}/params/nav2_multirobot_params_all.yaml" \
+           "${CUSTOM_PARAMS}" "${CUSTOM_BT_XML}" <<'PYEOF'
+import sys, re
+
+src, dst, bt_xml = sys.argv[1], sys.argv[2], sys.argv[3]
+with open(src) as f:
+    content = f.read()
+
+# Reduce stuck-detection window: 10 sim-s → 3 sim-s (= 6 real-s at ×0.5).
+content = content.replace(
+    'movement_time_allowance: 10.0',
+    'movement_time_allowance: 3.0'
+)
+
+# Point bt_navigator to the faster-recovery BT XML.
+# Insert after action_server_result_timeout so the key sits inside
+# bt_navigator.ros__parameters where nav2 expects it.
+content = content.replace(
+    'action_server_result_timeout: 900.0',
+    f'action_server_result_timeout: 900.0\n    default_nav_to_pose_bt_xml: "{bt_xml}"'
+)
+
+with open(dst, 'w') as f:
+    f.write(content)
+print(f'[tune] movement_time_allowance: 3.0 sim-s  BT XML: {bt_xml}')
+print(f'[tune] Custom params written to {dst}')
+PYEOF
+
 # ── Launch Nav2 with proper multi-robot params ────────────────────────────────
 # use_namespace:=True activates PushROSNamespace so nodes run at /{ROBOT_NAME}/*
 # and ReplaceString substitutes <robot_namespace> → /{ROBOT_NAME} in the params
@@ -90,7 +151,7 @@ ros2 launch nav2_bringup bringup_launch.py \
   autostart:=True \
   use_composition:=False \
   map:="${BRINGUP_DIR}/maps/tb3_sandbox.yaml" \
-  params_file:="${BRINGUP_DIR}/params/nav2_multirobot_params_all.yaml" &
+  params_file:="${CUSTOM_PARAMS}" &
 NAV2_PID=$!
 
 # Wait for AMCL to load, then set initial pose so localization can start
