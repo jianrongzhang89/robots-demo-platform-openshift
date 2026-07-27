@@ -5,9 +5,16 @@
 -->
 <sdf version="1.8">
   <world name="tb3_sandbox">
-    <physics name="1ms" type="ignored">
-      <max_step_size>0.001</max_step_size>
-      <real_time_factor>1.0</real_time_factor>
+    <physics name="10ms" type="ignored">
+      <!-- Reduced from 1.0 to 0.5: CPU-only software rendering cannot sustain
+           real_time_factor=1.0 on constrained OpenShift nodes.  When the
+           physics loop falls behind, Gazebo may emit sim_clock values that
+           briefly jump backward, clearing Nav2's TF buffers and breaking
+           navigation.  At 0.5 the demo takes twice as long in wall time but
+           the simulation is stable.  max_step_size raised from 1 ms to 10 ms
+           (100 Hz physics) to reduce CPU load further. -->
+      <max_step_size>0.01</max_step_size>
+      <real_time_factor>0.5</real_time_factor>
     </physics>
 
     <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>

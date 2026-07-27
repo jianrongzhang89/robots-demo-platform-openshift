@@ -3,6 +3,15 @@
     ros2dds: {
       // No namespace prefix — Gazebo topics are already namespaced by ROS2
       // (/robot_1/*, /robot_2/*) via spawn_tb3 namespace argument.
+      //
+      // Exclude the absolute /tf and /tf_static topics.  spawn_tb3 may create
+      // additional RSP nodes that publish to the absolute /tf, causing conflicting
+      // DDS QoS profiles that trigger "Bad Parameter" errors in the bridge.
+      // All needed TF data is available through the namespaced /robot_N/tf[_static].
+      deny: {
+        publishers:  ["^/tf$", "^/tf_static$"],
+        subscribers: ["^/tf$", "^/tf_static$"],
+      },
     }
   },
 

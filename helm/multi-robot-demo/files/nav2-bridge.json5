@@ -3,6 +3,16 @@
     ros2dds: {
       // No namespace prefix — Nav2 already runs under /robot_N/ namespace,
       // so all its local DDS topics are already correctly prefixed.
+      //
+      // Exclude the absolute /tf and /tf_static topics.  With use_namespace:=True,
+      // Nav2 uses /robot_N/tf[_static] exclusively.  The absolute /tf has many
+      // incompatible DDS publishers (from multiple processes across pods), which
+      // causes "Bad Parameter" DDS reader creation errors in the bridge and breaks
+      // bridging for the namespaced /robot_N/tf topics as well.
+      deny: {
+        publishers:  ["^/tf$", "^/tf_static$"],
+        subscribers: ["^/tf$", "^/tf_static$"],
+      },
     }
   },
 

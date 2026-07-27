@@ -7,29 +7,41 @@ controller). They cross paths in the middle of the world, demonstrating
 independent multi-robot navigation over separate OpenShift pods connected
 by Zenoh.
 
-Assumptions:
+Architecture
+------------
+The script is designed to run on EACH robot's own Nav2 pod (one instance per
+pod).  This avoids cross-pod ROS 2 service calls, which Zenoh does not reliably
+route responses for (topics are fine; service request/reply is not).
+
+The "both robots ready" barrier uses a Zenoh-bridged ROS 2 topic
+(/demo/robot_N_ready) so the two pod-local instances can coordinate without
+needing service calls across pods.
+
+Usage
+-----
+  # On robot_1's pod:
+  python3 /tmp/meet_demo.py --namespace robot_1
+
+  # On robot_2's pod (simultaneously):
+  python3 /tmp/meet_demo.py --namespace robot_2
+
+Or via Makefile (handles both pods in parallel):
+  make demo
+
+Assumptions
+-----------
   - Both robots have been teleported to their spawn origins:
       robot_1 (blue): (-2.0, -0.5)  yaw=0
       robot_2 (red):  ( 2.0,  0.5)  yaw=π
-  - Nav2 is active and AMCL is localised on both pods
-  - Run from any pod that has ros-jazzy + nav2_simple_commander installed
-
-Usage (from your workstation):
-  GZPOD=$(oc get pod -n ros2-multi-robot -l app=gazebo-sim \
-           -o jsonpath='{.items[0].metadata.name}')
-  oc cp demo/meet_demo.py ros2-multi-robot/${GZPOD}:/tmp/meet_demo.py -c gazebo
-  oc exec -n ros2-multi-robot ${GZPOD} -c gazebo -- python3 /tmp/meet_demo.py
-
-Or use: make demo
+  - Nav2 is active on both pods (AMCL localised, lifecycle managers active)
 """
 
+import argparse
 import math
 import sys
-import threading
 import time
 
 import rclpy
-from rclpy.executors import SingleThreadedExecutor
 from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
 from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult
 
@@ -38,22 +50,32 @@ from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult
 
 ROBOTS = {
     'robot_1': {
-        'color':     'blue',
-        'spawn':     (-2.0, -0.5, 0.0),        # x, y, yaw (radians)
-        'goal':      ( 2.0,  0.5, math.pi),    # swap with robot_2's spawn
+        'color':  'blue',
+        'spawn':  (-2.0, -0.5, 0.0),
+        'goal':   ( 2.0,  0.5, math.pi),
     },
     'robot_2': {
-        'color':     'red',
-        'spawn':     ( 2.0,  0.5, math.pi),
-        'goal':      (-2.0, -0.5, 0.0),        # swap with robot_1's spawn
+        'color':  'red',
+        'spawn':  ( 2.0,  0.5, math.pi),
+        'goal':   (-2.0, -0.5, 0.0),
     },
 }
+
+# Phase 1 collision avoidance (Tier 0): robot_2 waits this many seconds before
+# departing so robot_1 clears the center crossing zone.  Both Nav2 scripts run
+# simultaneously on their own pods (make demo runs two oc exec in parallel), so
+# the stagger is relative to each robot finishing waitUntilNav2Active().
+#
+# NOTE: time.sleep() uses wall-clock time. The simulation runs at
+# real_time_factor=0.5, so each real second = 0.5 sim-seconds.  To clear the
+# crossing zone robot_1 must travel ~2.2 m at ~0.26 m/s sim-speed:
+#   2.2 / 0.26 ≈ 8.5 sim-s → 17 real-s minimum.  Use 20 s for safety.
+STAGGER_DELAY_SEC = 20.0
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 def yaw_to_quat(yaw):
-    """Convert a yaw angle (rad) to a quaternion (x, y, z, w)."""
     return 0.0, 0.0, math.sin(yaw / 2.0), math.cos(yaw / 2.0)
 
 
@@ -70,7 +92,7 @@ def make_pose_stamped(nav, x, y, yaw, frame='map'):
 
 
 def set_initial_pose(nav, namespace, x, y, yaw):
-    """Publish an initial pose to AMCL so it can localise from a known position."""
+    """Publish initialpose so AMCL can localise from a known position."""
     pub = nav.create_publisher(
         PoseWithCovarianceStamped, f'/{namespace}/initialpose', 1
     )
@@ -82,140 +104,96 @@ def set_initial_pose(nav, namespace, x, y, yaw):
     _, _, qz, qw = yaw_to_quat(yaw)
     msg.pose.pose.orientation.z = qz
     msg.pose.pose.orientation.w = qw
-    # Covariance: σ²(x)=0.25, σ²(y)=0.25, σ²(yaw)=0.07
     msg.pose.covariance[0]  = 0.25
     msg.pose.covariance[7]  = 0.25
     msg.pose.covariance[35] = 0.07
-    for _ in range(5):          # publish a few times so AMCL doesn't miss it
+    for _ in range(5):
         pub.publish(msg)
         time.sleep(0.3)
 
 
-# ── Per-robot navigation thread ───────────────────────────────────────────────
+# ── Single-robot distributed mode ─────────────────────────────────────────────
 
-def navigate_robot(namespace, cfg, results, idx, ready_event):
+def run_single_robot(namespace):
     """
-    Run inside a Python thread: wait for Nav2, send initial pose, navigate to goal.
-    Each thread owns its own rclpy executor and BasicNavigator node.
+    Navigate one robot to its goal, coordinating the departure barrier with the
+    peer pod via a Zenoh-bridged topic (/demo/{ns}_ready).
+
+    This function is called from the robot's OWN Nav2 pod, so all Nav2 service
+    calls are local and reliable.
     """
+    cfg   = ROBOTS[namespace]
     color = cfg['color']
     sx, sy, syaw = cfg['spawn']
     gx, gy, gyaw = cfg['goal']
 
-    # Create a dedicated executor so this thread can spin its navigator node
-    # independently of the other thread.
-    executor = SingleThreadedExecutor()
+    rclpy.init()
+
     nav = BasicNavigator(
         node_name=f'{namespace}_demo_nav',
         namespace=namespace,
     )
-    executor.add_node(nav)
 
-    def spin_background():
-        """Keep the executor spinning so action callbacks are processed."""
-        while rclpy.ok():
-            executor.spin_once(timeout_sec=0.05)
+    print(f'[{namespace}/{color}] Waiting for Nav2 to become active...')
+    nav.waitUntilNav2Active(localizer='amcl')
+    print(f'[{namespace}/{color}] Nav2 active.')
 
-    spin_thread = threading.Thread(target=spin_background, daemon=True)
-    spin_thread.start()
+    print(f'[{namespace}/{color}] Setting initial pose ({sx:.1f}, {sy:.1f})...')
+    set_initial_pose(nav, namespace, sx, sy, syaw)
+    time.sleep(1.0)
 
-    try:
-        print(f'[{namespace}/{color}] Waiting for Nav2 to become active...')
-        nav.waitUntilNav2Active(localizer='amcl')
-        print(f'[{namespace}/{color}] Nav2 active.')
+    # ── Phase 1 stagger: robot_2 waits before departing ──────────────────────
+    # Both pods run this script simultaneously (make demo launches two oc exec
+    # in parallel).  No cross-pod barrier is needed — the stagger delay is
+    # enough to prevent a head-on collision at the center.
+    if namespace == 'robot_2':
+        print(f'[{namespace}/{color}] Staggering {STAGGER_DELAY_SEC}s — '
+              f'letting robot_1 clear the crossing zone...')
+        time.sleep(STAGGER_DELAY_SEC)
 
-        # Re-publish the initial pose so AMCL is confident about location
-        print(f'[{namespace}/{color}] Setting initial pose ({sx:.1f}, {sy:.1f})...')
-        set_initial_pose(nav, namespace, sx, sy, syaw)
-        time.sleep(1.0)
+    # ── Navigate ──────────────────────────────────────────────────────────────
+    goal = make_pose_stamped(nav, gx, gy, gyaw)
+    print(f'[{namespace}/{color}] Navigating to ({gx:.1f}, {gy:.1f}) ...')
+    nav.goToPose(goal)
 
-        # Signal that this robot is ready; wait for the other one too
-        ready_event.set()
-        ready_event.wait()      # both robots ready → start together
+    while not nav.isTaskComplete():
+        fb = nav.getFeedback()
+        if fb:
+            dist = getattr(fb, 'distance_remaining', '?')
+            print(f'[{namespace}/{color}]   {dist:.2f} m remaining')
+        time.sleep(2.0)
 
-        # Send navigation goal
-        goal = make_pose_stamped(nav, gx, gy, gyaw)
-        print(f'[{namespace}/{color}] Navigating to ({gx:.1f}, {gy:.1f}) ...')
-        nav.goToPose(goal)
+    result = nav.getResult()
+    label = 'SUCCEEDED ✓' if result == TaskResult.SUCCEEDED else f'FAILED ({result})'
+    print(f'[{namespace}/{color}] Navigation {label}')
 
-        # Poll until done
-        while not nav.isTaskComplete():
-            fb = nav.getFeedback()
-            if fb:
-                dist = getattr(fb, 'distance_remaining', '?')
-                print(f'[{namespace}/{color}]   {dist:.2f} m remaining')
-            time.sleep(2.0)
-
-        result = nav.getResult()
-        results[idx] = result
-        label = 'SUCCEEDED ✓' if result == TaskResult.SUCCEEDED else f'FAILED ({result})'
-        print(f'[{namespace}/{color}] Navigation {label}')
-
-    except Exception as exc:
-        print(f'[{namespace}/{color}] ERROR: {exc}', file=sys.stderr)
-        results[idx] = None
-    finally:
-        nav.destroy_node()
+    nav.destroy_node()
+    rclpy.shutdown()
+    return result == TaskResult.SUCCEEDED
 
 
 # ── Entry point ───────────────────────────────────────────────────────────────
 
 def main():
-    rclpy.init()
-
-    results = [None, None]
-    # Use a threading.Event to synchronise departure: both robots start moving
-    # at the same moment once both Nav2 stacks report active.
-    ready = threading.Barrier(2)    # replaced by pair of events below
-
-    # Two events — one per robot — act as a bilateral barrier
-    ev1 = threading.Event()
-    ev2 = threading.Event()
-
-    # Pair them: each robot sets its own event and waits on both
-    class BothReady:
-        def __init__(self, mine, other):
-            self.mine, self.other = mine, other
-        def set(self):   self.mine.set()
-        def wait(self):  self.other.wait()
-
-    ready1 = BothReady(ev1, ev2)
-    ready2 = BothReady(ev2, ev1)
-
-    items  = list(ROBOTS.items())
-    t1 = threading.Thread(
-        target=navigate_robot,
-        args=(items[0][0], items[0][1], results, 0, ready1),
-        daemon=True,
+    parser = argparse.ArgumentParser(
+        description='Meet demo — two robots swap positions')
+    parser.add_argument(
+        '--namespace', '-n',
+        choices=['robot_1', 'robot_2'],
+        required=True,
+        help='Namespace of the robot this instance controls (run one per pod)',
     )
-    t2 = threading.Thread(
-        target=navigate_robot,
-        args=(items[1][0], items[1][1], results, 1, ready2),
-        daemon=True,
-    )
+    args = parser.parse_args()
 
     print('=' * 60)
-    print(' Meet Demo — robots swap positions (cross paths)')
-    print('   robot_1 (blue): (-2, -0.5) → (2,  0.5)')
-    print('   robot_2 (red):  ( 2,  0.5) → (-2, -0.5)')
+    print(f' Meet Demo — {args.namespace} ({ROBOTS[args.namespace]["color"]})')
+    print(f'   spawn: {ROBOTS[args.namespace]["spawn"][:2]}')
+    print(f'   goal:  {ROBOTS[args.namespace]["goal"][:2]}')
     print('=' * 60)
 
-    t1.start()
-    t2.start()
-    t1.join()
-    t2.join()
-
-    print()
-    print('=' * 60)
-    print(' Results')
-    print('=' * 60)
-    for (ns, cfg), result in zip(ROBOTS.items(), results):
-        status = 'SUCCEEDED ✓' if result == TaskResult.SUCCEEDED else 'FAILED ✗'
-        print(f'  {ns} ({cfg["color"]}): {status}')
-
-    rclpy.shutdown()
-    return 0 if all(r == TaskResult.SUCCEEDED for r in results) else 1
+    success = run_single_robot(args.namespace)
+    sys.exit(0 if success else 1)
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    main()

@@ -35,14 +35,62 @@ INITIAL_YAW="${INITIAL_YAW:-0.0}"
 
 BRINGUP_DIR="${ROS_PREFIX}/share/nav2_bringup"
 
-echo "[nav2-pod/${ROBOT_NAME}] Launching Nav2 bringup with namespace=${ROBOT_NAME}..."
+# ── Determine peer robot name ─────────────────────────────────────────────────
+# Supports any number of robots named robot_N; peer is always the "other" robot
+# in the two-robot demo. Extend this logic for N>2 scenarios.
+if [ "${ROBOT_NAME}" = "robot_1" ]; then
+    PEER_ROBOT="robot_2"
+else
+    PEER_ROBOT="robot_1"
+fi
+echo "[nav2-pod/${ROBOT_NAME}] Peer robot identified as: ${PEER_ROBOT}"
+
+# ── Run local robot_state_publisher for static TF frames only ─────────────────
+# Zenoh does not reliably deliver /robot_N/tf_static with TRANSIENT_LOCAL QoS
+# to late-joining Nav2 pods (the bridge creates a VOLATILE local DDS publisher,
+# so late-joining TF buffer subscribers miss the cached message).  Running a
+# local RSP guarantees the static transforms (base_footprint→base_link etc.)
+# are published with TRANSIENT_LOCAL directly in the Nav2 pod's DDS space.
+#
+# The DYNAMIC /tf output (wheel-joint TF) is redirected to a null topic to
+# prevent the "Moved backwards in time" problem: Zenoh-delayed joint_states can
+# arrive out of order, causing the RSP to re-publish wheel-joint TF with an
+# earlier timestamp, which clears the TF buffer and breaks navigation.
+# With the dynamic TF discarded, only static TF comes from the local RSP.
+SIM_DIR="${ROS_PREFIX}/share/nav2_minimal_tb3_sim"
+URDF_FILE="${SIM_DIR}/urdf/turtlebot3_waffle.urdf"
+echo "[nav2-pod/${ROBOT_NAME}] Starting local robot_state_publisher (static TF only)..."
+ros2 run robot_state_publisher robot_state_publisher \
+  --ros-args \
+  --remap __ns:="/${ROBOT_NAME}" \
+  -r /tf:=/_unused/${ROBOT_NAME}/tf \
+  -r /tf_static:=/${ROBOT_NAME}/tf_static \
+  -p use_sim_time:=true \
+  -p "robot_description:=$(cat "${URDF_FILE}")" &
+RSP_PID=$!
+
+# Wait for Gazebo to fully start and Zenoh to bridge topics before Nav2 launches.
+# Gazebo starts in ~60-90 s (software rendering); with real_time_factor=0.5 the
+# simulation is stable and the clock will not jump backward.
+echo "[nav2-pod/${ROBOT_NAME}] Waiting 120s for Gazebo to start and Zenoh to bridge topics..."
+sleep 120
+
+# ── Launch Nav2 with proper multi-robot params ────────────────────────────────
+# use_namespace:=True activates PushROSNamespace so nodes run at /{ROBOT_NAME}/*
+# and ReplaceString substitutes <robot_namespace> → /{ROBOT_NAME} in the params
+# file. nav2_multirobot_params_all.yaml uses <robot_namespace>/scan for the
+# scan topic so the costmap correctly subscribes to /{ROBOT_NAME}/scan.
+# This also fixes the MPPI "No critics defined" error: with use_namespace:=True
+# the RewrittenYaml wrapping under {ROBOT_NAME}: matches the node FQNs.
+echo "[nav2-pod/${ROBOT_NAME}] Launching Nav2 bringup with namespace=${ROBOT_NAME} (use_namespace:=True)..."
 ros2 launch nav2_bringup bringup_launch.py \
   namespace:="${ROBOT_NAME}" \
+  use_namespace:=True \
   use_sim_time:=True \
   autostart:=True \
   use_composition:=False \
   map:="${BRINGUP_DIR}/maps/tb3_sandbox.yaml" \
-  params_file:="${BRINGUP_DIR}/params/nav2_params.yaml" &
+  params_file:="${BRINGUP_DIR}/params/nav2_multirobot_params_all.yaml" &
 NAV2_PID=$!
 
 # Wait for AMCL to load, then set initial pose so localization can start
@@ -76,7 +124,7 @@ echo "[nav2-pod/${ROBOT_NAME}] Nav2 pod started."
 
 term_handler() {
   echo "[nav2-pod/${ROBOT_NAME}] Shutting down..."
-  kill "${NAV2_PID}" 2>/dev/null || true
+  kill "${NAV2_PID}" "${RSP_PID}" 2>/dev/null || true
   pkill -P $$ 2>/dev/null || true
   wait "${NAV2_PID}" 2>/dev/null || true
 }

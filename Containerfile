@@ -60,10 +60,11 @@ WORKDIR /opt/ros2-demo
 
 COPY entrypoints/entrypoint-gazebo.sh /entrypoint-gazebo.sh
 COPY entrypoints/entrypoint-nav2.sh /entrypoint-nav2.sh
+COPY entrypoints/tf_bridge.py /tf_bridge.py
 COPY config/worlds/ /opt/ros2-demo/worlds/
 COPY config/www/ /opt/ros2-demo/www/
 
-RUN chmod +x /entrypoint-gazebo.sh /entrypoint-nav2.sh
+RUN chmod +x /entrypoint-gazebo.sh /entrypoint-nav2.sh /tf_bridge.py
 
 EXPOSE 6080 8080
 

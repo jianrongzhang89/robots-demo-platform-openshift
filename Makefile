@@ -78,10 +78,12 @@ package: ## Package the Helm chart into a .tgz
 
 .PHONY: demo
 demo: ## Run the meet-demo: both robots navigate to swap positions
-	$(eval GZPOD := $(shell oc get pod -n $(NAMESPACE) -l app=gazebo-sim -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
-	@test -n "$(GZPOD)" || { echo "ERROR: no gazebo-sim pod found in namespace '$(NAMESPACE)'. Run: make demo ROS_DEMO_NS=<your-namespace>"; exit 1; }
-	@echo "Copying demo script to $(GZPOD)..."
-	oc cp demo/meet_demo.py $(NAMESPACE)/$(GZPOD):/tmp/meet_demo.py -c gazebo
+	$(eval GZPOD  := $(shell oc get pod -n $(NAMESPACE) -l app=gazebo-sim -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
+	$(eval NAV1POD := $(shell oc get pod -n $(NAMESPACE) -l app=robot-nav-robot-1 -o jsonpath='{.items[0].metadata.name}'))
+	$(eval NAV2POD := $(shell oc get pod -n $(NAMESPACE) -l app=robot-nav-robot-2 -o jsonpath='{.items[0].metadata.name}'))
+	@test -n "$(GZPOD)"   || { echo "ERROR: gazebo-sim pod not found in '$(NAMESPACE)'";   exit 1; }
+	@test -n "$(NAV1POD)" || { echo "ERROR: robot-nav-robot-1 pod not found in '$(NAMESPACE)'"; exit 1; }
+	@test -n "$(NAV2POD)" || { echo "ERROR: robot-nav-robot-2 pod not found in '$(NAMESPACE)'"; exit 1; }
 	@echo "Teleporting robots to spawn positions..."
 	oc exec -n $(NAMESPACE) $(GZPOD) -c gazebo -- bash -c '\
 	  export HOME=/tmp/ros-home; \
@@ -92,12 +94,24 @@ demo: ## Run the meet-demo: both robots navigate to swap positions
 	    --req "name: \"robot_1\" position {x: -2.0 y: -0.5 z: 0.01} orientation {w: 1.0}" --timeout 3000; \
 	  gz service -s /world/tb3_sandbox/set_pose \
 	    --reqtype gz.msgs.Pose --reptype gz.msgs.Boolean \
-	    --req "name: \"robot_2\" position {x: 2.0 y: 0.5 z: 0.01} orientation {x: 0.0 y: 0.0 z: 1.0 w: 0.0}" --timeout 3000'
-	@echo "Starting meet demo (robots swap positions)..."
-	$(eval NAV1POD := $(shell oc get pod -n $(NAMESPACE) -l app=robot-nav-robot-1 -o jsonpath='{.items[0].metadata.name}'))
+	    --req "name: \"robot_2\" position {x: 2.0 y: 0.5 z: 0.01} orientation {x: 0.0 y: 0.0 z: 1.0 w: 0.0}" --timeout 3000; \
+	  echo "Both robots reset."'
+	@echo "Copying demo script to both Nav2 pods..."
 	oc cp demo/meet_demo.py $(NAMESPACE)/$(NAV1POD):/tmp/meet_demo.py -c nav2
-	oc exec -n $(NAMESPACE) $(NAV1POD) -c nav2 -- bash -c \
-	  'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash; python3 /tmp/meet_demo.py'
+	oc cp demo/meet_demo.py $(NAMESPACE)/$(NAV2POD):/tmp/meet_demo.py -c nav2
+	@echo "Starting meet demo — each robot navigates from its own pod..."
+	@echo "  robot_1 (blue): (-2, -0.5) → (2, 0.5)"
+	@echo "  robot_2 (red):  ( 2,  0.5) → (-2, -0.5)"
+	@# Run both pods in parallel; wait for both to finish
+	@SETUP='export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash'; \
+	 oc exec -n $(NAMESPACE) $(NAV1POD) -c nav2 -- bash -c \
+	   "$$SETUP; python3 /tmp/meet_demo.py --namespace robot_1" & PID1=$$!; \
+	 oc exec -n $(NAMESPACE) $(NAV2POD) -c nav2 -- bash -c \
+	   "$$SETUP; python3 /tmp/meet_demo.py --namespace robot_2" & PID2=$$!; \
+	 wait $$PID1; R1=$$?; wait $$PID2; R2=$$?; \
+	 echo ""; echo "=== Results ==="; \
+	 [ $$R1 -eq 0 ] && echo "  robot_1 (blue): SUCCEEDED ✓" || echo "  robot_1 (blue): FAILED ✗"; \
+	 [ $$R2 -eq 0 ] && echo "  robot_2 (red):  SUCCEEDED ✓" || echo "  robot_2 (red):  FAILED ✗"
 
 .PHONY: reset
 reset: ## Teleport both robots back to their spawn positions
