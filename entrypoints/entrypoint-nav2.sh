@@ -123,11 +123,13 @@ content = content.replace(
 )
 
 # Point bt_navigator to the faster-recovery BT XML.
-# Insert after action_server_result_timeout so the key sits inside
-# bt_navigator.ros__parameters where nav2 expects it.
+# Use the 'navigators:' key as anchor — it is unique to the bt_navigator
+# section, so this replacement cannot accidentally hit waypoint_follower
+# (which also has action_server_result_timeout: 900.0).
 content = content.replace(
-    'action_server_result_timeout: 900.0',
-    f'action_server_result_timeout: 900.0\n    default_nav_to_pose_bt_xml: "{bt_xml}"'
+    '    navigators: ["navigate_to_pose", "navigate_through_poses"]',
+    f'    default_nav_to_pose_bt_xml: "{bt_xml}"\n'
+    '    navigators: ["navigate_to_pose", "navigate_through_poses"]'
 )
 
 with open(dst, 'w') as f:
