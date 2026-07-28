@@ -94,11 +94,16 @@ with open(src) as f:
     content = f.read()
 content = content.replace(
     'xy_goal_tolerance: 0.25',
-    'xy_goal_tolerance: 0.10'   # 10 cm — visually at destination in Gazebo
+    'xy_goal_tolerance: 0.15'   # 15 cm — visually at dest; achievable for DWB
+)
+# Loosen yaw tolerance so orientation alignment doesn't block arrival
+content = content.replace(
+    'yaw_goal_tolerance: 0.25',
+    'yaw_goal_tolerance: 0.5'
 )
 with open(dst, 'w') as f:
     f.write(content)
-print(f'[params] xy_goal_tolerance patched to 0.10 m  (was 0.25 m)')
+print(f'[params] xy_goal_tolerance=0.15 m  yaw_goal_tolerance=0.5 rad  (were 0.25)')
 PYEOF
 
 echo "[nav2-pod/${ROBOT_NAME}] Launching Nav2 bringup with namespace=${ROBOT_NAME} (use_namespace:=True)..."
