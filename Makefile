@@ -109,7 +109,7 @@ demo: ## Run the meet-demo: both robots navigate to swap positions
 	@# 3. Wait for nav scripts; kill coordinator when both finish.
 	@SETUP='export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash'; \
 	 oc exec -n $(NAMESPACE) $(GZPOD) -c gazebo -- bash -c \
-	   "$$SETUP; python3 /tmp/coordinator.py" & COORD_PID=$$!; \
+	   "$$SETUP; timeout 600 python3 /tmp/coordinator.py" & COORD_PID=$$!; \
 	 sleep 2; \
 	 oc exec -n $(NAMESPACE) $(NAV1POD) -c nav2 -- bash -c \
 	   "$$SETUP; python3 /tmp/meet_demo.py --namespace robot_1" & PID1=$$!; \
@@ -117,6 +117,8 @@ demo: ## Run the meet-demo: both robots navigate to swap positions
 	   "$$SETUP; python3 /tmp/meet_demo.py --namespace robot_2" & PID2=$$!; \
 	 wait $$PID1; R1=$$?; wait $$PID2; R2=$$?; \
 	 kill $$COORD_PID 2>/dev/null || true; \
+	 oc exec -n $(NAMESPACE) $(GZPOD) -c gazebo -- \
+	   pkill -f "coordinator.py" 2>/dev/null || true; \
 	 echo ""; echo "=== Results ==="; \
 	 [ $$R1 -eq 0 ] && echo "  robot_1 (blue): SUCCEEDED ✓" || echo "  robot_1 (blue): FAILED ✗"; \
 	 [ $$R2 -eq 0 ] && echo "  robot_2 (red):  SUCCEEDED ✓" || echo "  robot_2 (red):  FAILED ✗"
