@@ -61,14 +61,20 @@ from std_msgs.msg import Bool
 
 ROBOTS = {
     'robot_1': {
-        'color': 'blue',
-        'spawn': (-2.0, -0.5, 0.0),
-        'goal':  ( 2.0,  0.5, math.pi),
+        'color':     'blue',
+        'spawn':     (-2.0, -0.5, 0.0),
+        'waypoints': [],                    # straight to goal
+        'goal':      ( 2.0,  0.5, math.pi),
     },
     'robot_2': {
-        'color': 'red',
-        'spawn': ( 2.0,  0.5, math.pi),
-        'goal':  (-2.0, -0.5, 0.0),
+        'color':  'red',
+        'spawn':  ( 2.0,  0.5, math.pi),
+        # Force robot_2 to move LEFT through the shared corridor first.
+        # (0.5, 0.1) lies on the direct line between the two spawn points
+        # (slope ≈ 0.25), so robot_2 enters the same corridor as robot_1
+        # and the two robots meet face-to-face — demonstrating the yield.
+        'waypoints': [(0.5, 0.1, math.pi)],
+        'goal':      (-2.0, -0.5, 0.0),
     },
 }
 
@@ -78,15 +84,18 @@ ROBOTS = {
 # This avoids head-on encounters in the shared corridor.
 # robot_2 departs when robot_1 has traveled this far along its path.
 # path length ≈ 4.8 m observed  →  separation at departure = 4.8 − threshold
-#   2.0 m threshold  →  2.8 m separation  (both robots moving for ~45 real-s)
+#   0.5 m threshold  →  4.3 m separation  (both robots in corridor simultaneously from start)
+#   2.0 m threshold  →  2.8 m separation  (robot_1 nearly done before robot_2 starts)
 #   3.5 m threshold  →  1.3 m separation  (robot_2 starts just as robot_1 finishes — too late)
-DEPARTURE_THRESHOLD_M = 2.0   # metres along robot_1's path before robot_2 may depart
+DEPARTURE_THRESHOLD_M = 0.5   # metres along robot_1's path before robot_2 may depart
 
-# At most MAX_YIELDS brief pauses during the traversal (yield signal from
-# coordinator). The pause is intentionally short: stopping robot_2 longer
-# turns it into a static LiDAR obstacle that disrupts robot_1's costmap.
-MAX_YIELDS      = 2
-YIELD_PAUSE_SEC = 15.0   # real-s  (7.5 sim-s at real_time_factor=0.5)
+# Proximity yield — robot_2 pauses when robots are this close.
+# Primary check uses /robot_1/amcl_pose + /robot_2/amcl_pose directly
+# (Zenoh pub/sub, always reliable).  Coordinator /demo/robot2_yield is
+# an optional cross-pod supplement.
+YIELD_TRIGGER_M = 2.0    # metres — yield when robots are closer than this
+MAX_YIELDS      = 2      # maximum number of yield pauses
+YIELD_PAUSE_SEC = 15.0   # real-s per pause  (7.5 sim-s at real_time_factor=0.5)
 
 # Gate phase timeouts.
 GATE_TIMEOUT_SEC = 120.0   # max time to wait for robot_1 to advance
@@ -166,21 +175,27 @@ def run_single_robot(namespace: str) -> bool:
     yield_now    = [False]   # yield signal from coordinator (optional)
     robot1_pos   = [None]    # robot_1's latest amcl_pose position
 
+    own_pos = [None]   # robot_2's own latest amcl_pose position
+
     if namespace == 'robot_2':
         be_qos = QoSProfile(depth=10)
 
-        # /robot_1/amcl_pose is published by robot_1's AMCL and bridged
-        # reliably via Zenoh to robot_2's pod (confirmed: regular pub/sub topic,
-        # no cross-pod service call needed).  robot_2 uses this to compute
-        # robot_1's path progress directly — no dependency on the coordinator's
-        # gate signal, which cannot be delivered cross-pod from the Gazebo container.
+        # /robot_1/amcl_pose — bridged reliably via Zenoh; used for gate tracking.
         nav.create_subscription(
             PoseWithCovarianceStamped,
             '/robot_1/amcl_pose',
             lambda m: robot1_pos.__setitem__(0, m.pose.pose.position),
             be_qos)
 
-        # Optional: yield signal from coordinator (best-effort).
+        # /robot_2/amcl_pose — local AMCL; used for direct proximity yield.
+        nav.create_subscription(
+            PoseWithCovarianceStamped,
+            '/robot_2/amcl_pose',
+            lambda m: own_pos.__setitem__(0, m.pose.pose.position),
+            be_qos)
+
+        # Optional: yield signal from coordinator (best-effort, may not arrive
+        # cross-pod from the Gazebo container).  Supplement with direct check.
         nav.create_subscription(
             Bool, '/demo/robot2_yield',
             lambda m: yield_now.__setitem__(0, m.data),
@@ -258,49 +273,73 @@ def run_single_robot(namespace: str) -> bool:
                       f'{fallback}s.')
                 time.sleep(fallback)
 
-    # ── Navigate ──────────────────────────────────────────────────────────────
-    goal = make_pose_stamped(nav, gx, gy, gyaw)
-    print(f'[{namespace}/{color}] Navigating to ({gx:.1f}, {gy:.1f}) ...')
-    nav.goToPose(goal)
+    # ── Navigate through waypoints then final goal ────────────────────────────
+    # Build the ordered target list: optional waypoints first, then final goal.
+    targets = [(wx, wy, wyaw) for wx, wy, wyaw in cfg.get('waypoints', [])]
+    targets.append((gx, gy, gyaw))
 
     yield_count = 0
+    final_result = TaskResult.FAILED
 
-    while not nav.isTaskComplete():
+    for t_idx, (tx, ty, tyaw) in enumerate(targets):
+        is_final = (t_idx == len(targets) - 1)
+        tag = f'goal ({tx:.1f},{ty:.1f})' if is_final else f'waypoint {t_idx+1} ({tx:.1f},{ty:.1f})'
+        print(f'[{namespace}/{color}] Navigating to {tag} ...')
 
-        # Phase 2: robot_2 yields briefly when coordinator signals proximity
-        if (namespace == 'robot_2'
-                and yield_now[0]
-                and yield_count < MAX_YIELDS):
-            yield_count += 1
-            print(f'[{namespace}/{color}] Yield #{yield_count}/{MAX_YIELDS} — '
-                  f'coordinator signalled proximity, pausing {YIELD_PAUSE_SEC}s...')
-            nav.cancelTask()
+        current_target = make_pose_stamped(nav, tx, ty, tyaw)
+        nav.goToPose(current_target)
 
-            # Wait for task to drain cleanly
-            while not nav.isTaskComplete():
-                time.sleep(0.1)
+        while not nav.isTaskComplete():
 
-            # Spin while paused so yield_now stays current
-            spin_sec(nav, YIELD_PAUSE_SEC)
+            # Phase 2: robot_2 yields when robots are too close.
+            # Primary: direct distance from own+peer amcl_pose (Zenoh pub/sub,
+            #   always reliable cross-pod — no service call needed).
+            # Fallback: coordinator /demo/robot2_yield topic (may not arrive
+            #   cross-pod from the Gazebo container).
+            _direct_trigger = (
+                robot1_pos[0] is not None
+                and own_pos[0] is not None
+                and math.hypot(robot1_pos[0].x - own_pos[0].x,
+                               robot1_pos[0].y - own_pos[0].y) < YIELD_TRIGGER_M
+            )
+            if (namespace == 'robot_2'
+                    and (_direct_trigger or yield_now[0])
+                    and yield_count < MAX_YIELDS):
+                yield_count += 1
+                print(f'[{namespace}/{color}] Yield #{yield_count}/{MAX_YIELDS} — '
+                      f'proximity signal, pausing {YIELD_PAUSE_SEC}s...')
+                nav.cancelTask()
 
-            print(f'[{namespace}/{color}] Resuming navigation.')
-            goal = make_pose_stamped(nav, gx, gy, gyaw)
-            nav.goToPose(goal)
-            continue
+                while not nav.isTaskComplete():
+                    time.sleep(0.1)
 
-        fb = nav.getFeedback()
-        if fb:
-            dist = getattr(fb, 'distance_remaining', '?')
-            print(f'[{namespace}/{color}]   {dist:.2f} m remaining')
-        time.sleep(2.0)
+                # Spin while paused so yield_now updates
+                spin_sec(nav, YIELD_PAUSE_SEC)
 
-    result = nav.getResult()
-    label  = 'SUCCEEDED ✓' if result == TaskResult.SUCCEEDED else f'FAILED ({result})'
+                print(f'[{namespace}/{color}] Resuming toward {tag}.')
+                # Re-issue the CURRENT target (waypoint or goal), not always goal
+                current_target = make_pose_stamped(nav, tx, ty, tyaw)
+                nav.goToPose(current_target)
+                continue
+
+            fb = nav.getFeedback()
+            if fb:
+                dist = getattr(fb, 'distance_remaining', '?')
+                print(f'[{namespace}/{color}]   {dist:.2f} m remaining')
+            time.sleep(2.0)
+
+        seg_result = nav.getResult()
+        if is_final:
+            final_result = seg_result
+        elif seg_result != TaskResult.SUCCEEDED:
+            print(f'[{namespace}/{color}] {tag} FAILED — continuing to next target.')
+
+    label = 'SUCCEEDED ✓' if final_result == TaskResult.SUCCEEDED else f'FAILED ({final_result})'
     print(f'[{namespace}/{color}] Navigation {label}')
 
     nav.destroy_node()
     rclpy.shutdown()
-    return result == TaskResult.SUCCEEDED
+    return final_result == TaskResult.SUCCEEDED
 
 
 # ── Entry point ───────────────────────────────────────────────────────────────
