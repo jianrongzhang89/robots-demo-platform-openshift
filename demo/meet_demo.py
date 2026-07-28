@@ -94,7 +94,7 @@ DEPARTURE_THRESHOLD_M = 0.5   # metres along robot_1's path before robot_2 may d
 # (Zenoh pub/sub, always reliable).  Coordinator /demo/robot2_yield is
 # an optional cross-pod supplement.
 YIELD_TRIGGER_M = 2.0    # metres — yield when robots are closer than this
-MAX_YIELDS      = 2      # maximum number of yield pauses
+MAX_YIELDS      = 1      # maximum yield pauses (1 is enough; more causes compounding costmap issues)
 YIELD_PAUSE_SEC = 15.0   # real-s per pause  (7.5 sim-s at real_time_factor=0.5)
 
 # Gate phase timeouts.
@@ -315,6 +315,14 @@ def run_single_robot(namespace: str) -> bool:
 
                 # Spin while paused so yield_now updates
                 spin_sec(nav, YIELD_PAUSE_SEC)
+
+                # Clear the local costmap so robot_2 does not re-plan around
+                # stale "robot_1 was here" obstacle cells left by the pause.
+                # This is a LOCAL service call on robot_2's own pod — reliable.
+                try:
+                    nav.clearLocalCostmap()
+                except Exception:
+                    pass
 
                 print(f'[{namespace}/{color}] Resuming toward {tag}.')
                 # Re-issue the CURRENT target (waypoint or goal), not always goal
