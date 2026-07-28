@@ -72,17 +72,20 @@ ROBOTS = {
     },
 }
 
-# Phase 2 yield parameters (robot_2 only).
-# At most MAX_YIELDS brief pauses during the traversal; each pause is
-# YIELD_PAUSE_SEC real-seconds (= × 0.5 sim-seconds at real_time_factor=0.5).
-# The pause is intentionally short: stopping robot_2 for longer turns it into
-# a static LiDAR obstacle that disrupts robot_1's costmap.
+# Phase 2 coordinator parameters (robot_2 only).
+# robot_2 subscribes to /robot_1/amcl_pose and departs once robot_1 has
+# advanced DEPARTURE_THRESHOLD_M metres along its spawn→goal path.
+# This avoids head-on encounters in the shared corridor.
+DEPARTURE_THRESHOLD_M = 3.5   # metres along robot_1's path before robot_2 may depart
+
+# At most MAX_YIELDS brief pauses during the traversal (yield signal from
+# coordinator). The pause is intentionally short: stopping robot_2 longer
+# turns it into a static LiDAR obstacle that disrupts robot_1's costmap.
 MAX_YIELDS      = 2
 YIELD_PAUSE_SEC = 15.0   # real-s  (7.5 sim-s at real_time_factor=0.5)
 
-# Fallback: if the coordinator never opens the gate (coordinator not running),
-# robot_2 falls back to a fixed stagger after this many seconds.
-GATE_TIMEOUT_SEC = 120.0
+# Gate phase timeouts.
+GATE_TIMEOUT_SEC = 120.0   # max time to wait for robot_1 to advance
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -156,16 +159,24 @@ def run_single_robot(namespace: str) -> bool:
     )
 
     # ── Phase 2 coordinator subscriptions (robot_2 only) ─────────────────────
-    gate_open   = [False]   # departure gate from coordinator
-    yield_now   = [False]   # yield signal from coordinator
+    yield_now    = [False]   # yield signal from coordinator (optional)
+    robot1_pos   = [None]    # robot_1's latest amcl_pose position
 
     if namespace == 'robot_2':
         be_qos = QoSProfile(depth=10)
 
+        # /robot_1/amcl_pose is published by robot_1's AMCL and bridged
+        # reliably via Zenoh to robot_2's pod (confirmed: regular pub/sub topic,
+        # no cross-pod service call needed).  robot_2 uses this to compute
+        # robot_1's path progress directly — no dependency on the coordinator's
+        # gate signal, which cannot be delivered cross-pod from the Gazebo container.
         nav.create_subscription(
-            Bool, '/demo/robot2_gate',
-            lambda m: gate_open.__setitem__(0, m.data),
+            PoseWithCovarianceStamped,
+            '/robot_1/amcl_pose',
+            lambda m: robot1_pos.__setitem__(0, m.pose.pose.position),
             be_qos)
+
+        # Optional: yield signal from coordinator (best-effort).
         nav.create_subscription(
             Bool, '/demo/robot2_yield',
             lambda m: yield_now.__setitem__(0, m.data),
@@ -181,25 +192,67 @@ def run_single_robot(namespace: str) -> bool:
     time.sleep(1.0)
 
     # ── Phase 2 departure gate (robot_2 only) ─────────────────────────────────
-    if namespace == 'robot_2':
-        print(f'[{namespace}/{color}] Waiting for coordinator gate '
-              f'(robot_1 must reach {3.5:.1f} m along its path)...')
-        gate_deadline = time.time() + GATE_TIMEOUT_SEC
-        while not gate_open[0] and time.time() < gate_deadline:
-            spin_sec(nav, 1.0)
-            if not gate_open[0]:
-                # isTaskComplete spins too; use it to process callbacks cheaply
-                pass
+    # robot_2 subscribes to /robot_1/amcl_pose directly (Zenoh pub/sub, always
+    # works cross-pod) and computes robot_1's progress along its path.
+    # Departure is allowed once robot_1 has passed DEPARTURE_THRESHOLD_M — well
+    # past the corridor midpoint — so the two robots never enter the shared
+    # corridor simultaneously heading toward each other.
+    #
+    # Path from robot_1's spawn (-2,-0.5) toward goal (2,0.5):
+    #   direction = (4, 1), length ≈ 4.12 m  (DWB routes ~4.8 m with obstacles)
+    _PATH_LEN  = math.hypot(4.0, 1.0)
+    _PATH_UX   = 4.0 / _PATH_LEN
+    _PATH_UY   = 1.0 / _PATH_LEN
 
-        if gate_open[0]:
-            print(f'[{namespace}/{color}] Gate open — departing.')
-        else:
-            # Fallback: coordinator not running or gate signal not bridged.
-            # 50 s = proven-safe fixed stagger for this world/speed combination.
+    def _robot1_progress():
+        p = robot1_pos[0]
+        if p is None:
+            return 0.0
+        return (p.x - (-2.0)) * _PATH_UX + (p.y - (-0.5)) * _PATH_UY
+
+    if namespace == 'robot_2':
+        print(f'[{namespace}/{color}] Waiting for robot_1 AMCL to reinitialise '
+              f'and then reach {DEPARTURE_THRESHOLD_M:.1f} m along its path...')
+
+        # Phase A: wait for robot_1's AMCL to show it near its spawn.
+        # After `make reset` the previous run's AMCL pose is stale (robot_1 at
+        # goal ≈ 4 m progress).  We must see progress < 0.5 m before tracking,
+        # otherwise robot_2 would depart immediately on a stale reading.
+        REINIT_TIMEOUT = 60.0
+        reinit_deadline = time.time() + REINIT_TIMEOUT
+        saw_spawn = False
+        while time.time() < reinit_deadline:
+            spin_sec(nav, 1.0)
+            if robot1_pos[0] is not None and _robot1_progress() < 0.5:
+                saw_spawn = True
+                print(f'[{namespace}/{color}] robot_1 AMCL at spawn '
+                      f'({_robot1_progress():.2f} m) — now tracking progress.')
+                break
+
+        if not saw_spawn:
+            # AMCL never reset (previous run pose stuck) → fixed fallback
             fallback = 50.0
-            print(f'[{namespace}/{color}] Gate timeout — fallback stagger '
-                  f'{fallback}s.')
+            print(f'[{namespace}/{color}] AMCL reinit timeout — '
+                  f'fallback stagger {fallback}s.')
             time.sleep(fallback)
+        else:
+            # Phase B: wait for robot_1 to advance past the threshold.
+            gate_deadline = time.time() + GATE_TIMEOUT_SEC
+            while time.time() < gate_deadline:
+                spin_sec(nav, 1.0)
+                prog = _robot1_progress()
+                if prog >= DEPARTURE_THRESHOLD_M:
+                    print(f'[{namespace}/{color}] '
+                          f'robot_1 at {prog:.2f} m — departing.')
+                    break
+                if robot1_pos[0] is not None:
+                    print(f'[{namespace}/{color}]   robot_1 at {prog:.2f} m / '
+                          f'{DEPARTURE_THRESHOLD_M:.1f} m needed...')
+            else:
+                fallback = 50.0
+                print(f'[{namespace}/{color}] Gate timeout — fallback stagger '
+                      f'{fallback}s.')
+                time.sleep(fallback)
 
     # ── Navigate ──────────────────────────────────────────────────────────────
     goal = make_pose_stamped(nav, gx, gy, gyaw)
