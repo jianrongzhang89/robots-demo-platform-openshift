@@ -53,8 +53,8 @@ ROBOT1_PATH_UY   = 1.0 / _PATH_LEN   # unit direction y
 DEPARTURE_THRESHOLD_M = 3.5
 
 # Yield / resume thresholds (map-frame Euclidean metres)
-YIELD_TRIGGER_M  = 1.5
-RESUME_TRIGGER_M = 2.5
+YIELD_TRIGGER_M  = 2.0   # yield earlier — before they're deep in each other's LiDAR
+RESUME_TRIGGER_M = 3.0
 
 
 # ── Coordinator node ──────────────────────────────────────────────────────────

@@ -76,7 +76,11 @@ ROBOTS = {
 # robot_2 subscribes to /robot_1/amcl_pose and departs once robot_1 has
 # advanced DEPARTURE_THRESHOLD_M metres along its spawn→goal path.
 # This avoids head-on encounters in the shared corridor.
-DEPARTURE_THRESHOLD_M = 3.5   # metres along robot_1's path before robot_2 may depart
+# robot_2 departs when robot_1 has traveled this far along its path.
+# path length ≈ 4.8 m observed  →  separation at departure = 4.8 − threshold
+#   2.0 m threshold  →  2.8 m separation  (both robots moving for ~45 real-s)
+#   3.5 m threshold  →  1.3 m separation  (robot_2 starts just as robot_1 finishes — too late)
+DEPARTURE_THRESHOLD_M = 2.0   # metres along robot_1's path before robot_2 may depart
 
 # At most MAX_YIELDS brief pauses during the traversal (yield signal from
 # coordinator). The pause is intentionally short: stopping robot_2 longer
