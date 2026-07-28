@@ -9,31 +9,37 @@ by Zenoh.
 
 Architecture
 ------------
-The script is designed to run on EACH robot's own Nav2 pod (one instance per
-pod).  This avoids cross-pod ROS 2 service calls, which Zenoh does not reliably
+The script runs on EACH robot's own Nav2 pod (one instance per pod).
+This avoids cross-pod ROS 2 service calls, which Zenoh does not reliably
 route responses for (topics are fine; service request/reply is not).
 
-The "both robots ready" barrier uses a Zenoh-bridged ROS 2 topic
-(/demo/robot_N_ready) so the two pod-local instances can coordinate without
-needing service calls across pods.
+Collision avoidance strategy
+-----------------------------
+Tier 0 — departure stagger (only approach used here):
+
+  robot_2 waits STAGGER_DELAY_SEC real-seconds before departing.
+  With real_time_factor=0.5, 1 real-s = 0.5 sim-s.
+
+  The stagger must be long enough for robot_1 to complete most of its
+  path before robot_2 starts, so they are never heading toward each other
+  in the shared corridor at the same time.
+
+  Observed traversal time for a 4.8 m path: ~80–90 real-s.
+  Safe stagger = traversal_time × 0.6 ≈ 50 real-s.
+
+  A proximity-based yield (cancelling robot_2's goal and waiting) was
+  attempted but made things worse: stopping robot_2 mid-corridor creates
+  a static LiDAR obstacle that robot_1 cannot plan around, causing both
+  robots to fail.  Without inter-robot costmap sharing, reliably yielding
+  one robot for the other requires Phase 2 of the collision-avoidance
+  proposal (pose-coordinator node with Nav2 pause/resume).
 
 Usage
 -----
-  # On robot_1's pod:
-  python3 /tmp/meet_demo.py --namespace robot_1
-
-  # On robot_2's pod (simultaneously):
-  python3 /tmp/meet_demo.py --namespace robot_2
-
-Or via Makefile (handles both pods in parallel):
-  make demo
-
-Assumptions
------------
-  - Both robots have been teleported to their spawn origins:
-      robot_1 (blue): (-2.0, -0.5)  yaw=0
-      robot_2 (red):  ( 2.0,  0.5)  yaw=π
-  - Nav2 is active on both pods (AMCL localised, lifecycle managers active)
+  make demo                          # handles both pods in parallel
+  # or manually on each pod:
+  python3 /tmp/meet_demo.py --namespace robot_1   # on robot_1's pod
+  python3 /tmp/meet_demo.py --namespace robot_2   # on robot_2's pod
 """
 
 import argparse
@@ -61,16 +67,17 @@ ROBOTS = {
     },
 }
 
-# Phase 1 collision avoidance (Tier 0): robot_2 waits this many seconds before
-# departing so robot_1 clears the center crossing zone.  Both Nav2 scripts run
-# simultaneously on their own pods (make demo runs two oc exec in parallel), so
-# the stagger is relative to each robot finishing waitUntilNav2Active().
+# Tier 0: departure stagger (real-time seconds).
 #
-# NOTE: time.sleep() uses wall-clock time. The simulation runs at
-# real_time_factor=0.5, so each real second = 0.5 sim-seconds.  To clear the
-# crossing zone robot_1 must travel ~2.2 m at ~0.26 m/s sim-speed:
-#   2.2 / 0.26 ≈ 8.5 sim-s → 17 real-s minimum.  Use 20 s for safety.
-STAGGER_DELAY_SEC = 20.0
+# Rationale (real_time_factor=0.5, path ~4.8 m, observed speed ~0.06 m/s real):
+#   Traversal time ≈ 80 real-s.  To prevent crossing, robot_2 must not depart
+#   until robot_1 is past the midpoint of the shared corridor:
+#     safe stagger = traversal_time × 0.6 ≈ 50 real-s
+#
+# A shorter stagger (e.g. 20 s) lets both robots enter the shared corridor
+# simultaneously; they meet head-on, neither can see the other in its costmap
+# (no inter-robot costmap sharing is configured), and they push each other.
+STAGGER_DELAY_SEC = 50.0
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -116,11 +123,8 @@ def set_initial_pose(nav, namespace, x, y, yaw):
 
 def run_single_robot(namespace):
     """
-    Navigate one robot to its goal, coordinating the departure barrier with the
-    peer pod via a Zenoh-bridged topic (/demo/{ns}_ready).
-
-    This function is called from the robot's OWN Nav2 pod, so all Nav2 service
-    calls are local and reliable.
+    Navigate one robot to its goal.
+    Runs on the robot's OWN Nav2 pod so all Nav2 calls are local.
     """
     cfg   = ROBOTS[namespace]
     color = cfg['color']
@@ -142,13 +146,10 @@ def run_single_robot(namespace):
     set_initial_pose(nav, namespace, sx, sy, syaw)
     time.sleep(1.0)
 
-    # ── Phase 1 stagger: robot_2 waits before departing ──────────────────────
-    # Both pods run this script simultaneously (make demo launches two oc exec
-    # in parallel).  No cross-pod barrier is needed — the stagger delay is
-    # enough to prevent a head-on collision at the center.
+    # ── Tier 0: departure stagger ─────────────────────────────────────────────
     if namespace == 'robot_2':
         print(f'[{namespace}/{color}] Staggering {STAGGER_DELAY_SEC}s — '
-              f'letting robot_1 clear the crossing zone...')
+              f'letting robot_1 clear the corridor...')
         time.sleep(STAGGER_DELAY_SEC)
 
     # ── Navigate ──────────────────────────────────────────────────────────────
