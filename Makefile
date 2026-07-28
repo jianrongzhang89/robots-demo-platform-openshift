@@ -96,19 +96,27 @@ demo: ## Run the meet-demo: both robots navigate to swap positions
 	    --reqtype gz.msgs.Pose --reptype gz.msgs.Boolean \
 	    --req "name: \"robot_2\" position {x: 2.0 y: 0.5 z: 0.01} orientation {x: 0.0 y: 0.0 z: 1.0 w: 0.0}" --timeout 3000; \
 	  echo "Both robots reset."'
-	@echo "Copying demo script to both Nav2 pods..."
-	oc cp demo/meet_demo.py $(NAMESPACE)/$(NAV1POD):/tmp/meet_demo.py -c nav2
-	oc cp demo/meet_demo.py $(NAMESPACE)/$(NAV2POD):/tmp/meet_demo.py -c nav2
-	@echo "Starting meet demo — each robot navigates from its own pod..."
+	@echo "Copying demo scripts to pods..."
+	oc cp demo/meet_demo.py   $(NAMESPACE)/$(NAV1POD):/tmp/meet_demo.py   -c nav2
+	oc cp demo/meet_demo.py   $(NAMESPACE)/$(NAV2POD):/tmp/meet_demo.py   -c nav2
+	oc cp demo/coordinator.py $(NAMESPACE)/$(GZPOD):/tmp/coordinator.py   -c gazebo
+	@echo "Starting Phase 2 coordinator on Gazebo pod + nav scripts in parallel..."
 	@echo "  robot_1 (blue): (-2, -0.5) → (2, 0.5)"
 	@echo "  robot_2 (red):  ( 2,  0.5) → (-2, -0.5)"
-	@# Run both pods in parallel; wait for both to finish
+	@# 1. Launch coordinator on Gazebo pod (background); give it 2 s to
+	@#    subscribe before robot_2 needs the gate signal.
+	@# 2. Launch both nav scripts in parallel.
+	@# 3. Wait for nav scripts; kill coordinator when both finish.
 	@SETUP='export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash'; \
+	 oc exec -n $(NAMESPACE) $(GZPOD) -c gazebo -- bash -c \
+	   "$$SETUP; python3 /tmp/coordinator.py" & COORD_PID=$$!; \
+	 sleep 2; \
 	 oc exec -n $(NAMESPACE) $(NAV1POD) -c nav2 -- bash -c \
 	   "$$SETUP; python3 /tmp/meet_demo.py --namespace robot_1" & PID1=$$!; \
 	 oc exec -n $(NAMESPACE) $(NAV2POD) -c nav2 -- bash -c \
 	   "$$SETUP; python3 /tmp/meet_demo.py --namespace robot_2" & PID2=$$!; \
 	 wait $$PID1; R1=$$?; wait $$PID2; R2=$$?; \
+	 kill $$COORD_PID 2>/dev/null || true; \
 	 echo ""; echo "=== Results ==="; \
 	 [ $$R1 -eq 0 ] && echo "  robot_1 (blue): SUCCEEDED ✓" || echo "  robot_1 (blue): FAILED ✗"; \
 	 [ $$R2 -eq 0 ] && echo "  robot_2 (red):  SUCCEEDED ✓" || echo "  robot_2 (red):  FAILED ✗"
