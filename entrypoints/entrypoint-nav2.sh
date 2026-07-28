@@ -82,6 +82,25 @@ sleep 120
 # scan topic so the costmap correctly subscribes to /{ROBOT_NAME}/scan.
 # This also fixes the MPPI "No critics defined" error: with use_namespace:=True
 # the RewrittenYaml wrapping under {ROBOT_NAME}: matches the node FQNs.
+# ── Patch params: tighter goal tolerance ─────────────────────────────────────
+# The default xy_goal_tolerance is 0.25 m — the robot declares "SUCCEEDED"
+# up to 25 cm from the goal, which looks visually short in Gazebo.
+# Patch to 0.10 m so the robot parks within 10 cm of the target position.
+CUSTOM_PARAMS="/tmp/nav2_params_${ROBOT_NAME}.yaml"
+python3 - "${BRINGUP_DIR}/params/nav2_multirobot_params_all.yaml" "${CUSTOM_PARAMS}" <<'PYEOF'
+import sys
+src, dst = sys.argv[1], sys.argv[2]
+with open(src) as f:
+    content = f.read()
+content = content.replace(
+    'xy_goal_tolerance: 0.25',
+    'xy_goal_tolerance: 0.10'   # 10 cm — visually at destination in Gazebo
+)
+with open(dst, 'w') as f:
+    f.write(content)
+print(f'[params] xy_goal_tolerance patched to 0.10 m  (was 0.25 m)')
+PYEOF
+
 echo "[nav2-pod/${ROBOT_NAME}] Launching Nav2 bringup with namespace=${ROBOT_NAME} (use_namespace:=True)..."
 ros2 launch nav2_bringup bringup_launch.py \
   namespace:="${ROBOT_NAME}" \
@@ -90,7 +109,7 @@ ros2 launch nav2_bringup bringup_launch.py \
   autostart:=True \
   use_composition:=False \
   map:="${BRINGUP_DIR}/maps/tb3_sandbox.yaml" \
-  params_file:="${BRINGUP_DIR}/params/nav2_multirobot_params_all.yaml" &
+  params_file:="${CUSTOM_PARAMS}" &
 NAV2_PID=$!
 
 # Wait for AMCL to load, then set initial pose so localization can start
