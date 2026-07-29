@@ -97,8 +97,8 @@ demo: ## Run the meet-demo: both robots navigate to swap positions
 	    --req "name: \"robot_2\" position {x: 2.0 y: 0.5 z: 0.01} orientation {x: 0.0 y: 0.0 z: 1.0 w: 0.0}" --timeout 3000; \
 	  echo "Both robots reset."'
 	@echo "Copying demo script to both Nav2 pods..."
-	oc cp demo/meet_demo.py $(NAMESPACE)/$(NAV1POD):/tmp/meet_demo.py -c nav2
-	oc cp demo/meet_demo.py $(NAMESPACE)/$(NAV2POD):/tmp/meet_demo.py -c nav2
+	oc cp demos/collision-avoidance/meet_demo.py $(NAMESPACE)/$(NAV1POD):/tmp/meet_demo.py -c nav2
+	oc cp demos/collision-avoidance/meet_demo.py $(NAMESPACE)/$(NAV2POD):/tmp/meet_demo.py -c nav2
 	@echo "Starting meet demo — each robot navigates from its own pod..."
 	@echo "  robot_1 (blue): (-2, -0.5) → (2, 0.5)"
 	@echo "  robot_2 (red):  ( 2,  0.5) → (-2, -0.5)"
