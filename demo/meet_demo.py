@@ -63,16 +63,18 @@ ROBOTS = {
     'robot_1': {
         'color':     'blue',
         'spawn':     (-2.0, -0.5, 0.0),
-        'waypoints': [],                    # straight to goal
+        # Waypoint (0.5, 0.1) lies on the diagonal between the two spawns.
+        # Forces robot_1 through the shared corridor so it meets robot_2.
+        # Without this waypoint DWB may choose a different route and they
+        # never encounter each other.
+        'waypoints': [(0.5, 0.1, math.pi)],
         'goal':      ( 2.0,  0.5, math.pi),
     },
     'robot_2': {
         'color':  'red',
         'spawn':  ( 2.0,  0.5, math.pi),
-        # Force robot_2 to move LEFT through the shared corridor first.
-        # (0.5, 0.1) lies on the direct line between the two spawn points
-        # (slope ≈ 0.25), so robot_2 enters the same corridor as robot_1
-        # and the two robots meet face-to-face — demonstrating the yield.
+        # Same shared-corridor waypoint — robot_2 moves left into the
+        # corridor first, heading directly toward robot_1.
         'waypoints': [(0.5, 0.1, math.pi)],
         'goal':      (-2.0, -0.5, 0.0),
     },
@@ -82,12 +84,7 @@ ROBOTS = {
 # robot_2 subscribes to /robot_1/amcl_pose and departs once robot_1 has
 # advanced DEPARTURE_THRESHOLD_M metres along its spawn→goal path.
 # This avoids head-on encounters in the shared corridor.
-# robot_2 departs when robot_1 has traveled this far along its path.
-# path length ≈ 4.8 m observed  →  separation at departure = 4.8 − threshold
-#   0.5 m threshold  →  4.3 m separation  (both robots in corridor simultaneously from start)
-#   2.0 m threshold  →  2.8 m separation  (robot_1 nearly done before robot_2 starts)
-#   3.5 m threshold  →  1.3 m separation  (robot_2 starts just as robot_1 finishes — too late)
-DEPARTURE_THRESHOLD_M = 0.5   # metres along robot_1's path before robot_2 may depart
+# (DEPARTURE_THRESHOLD_M removed — replaced by a fixed 5 s stagger)
 
 # Proximity yield — robot_2 pauses when robots are this close.
 # Primary check uses /robot_1/amcl_pose + /robot_2/amcl_pose directly
@@ -97,8 +94,6 @@ YIELD_TRIGGER_M = 2.0    # metres — yield when robots are closer than this
 MAX_YIELDS      = 1      # maximum yield pauses (1 is enough; more causes compounding costmap issues)
 YIELD_PAUSE_SEC = 15.0   # real-s per pause  (7.5 sim-s at real_time_factor=0.5)
 
-# Gate phase timeouts.
-GATE_TIMEOUT_SEC = 120.0   # max time to wait for robot_1 to advance
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -180,13 +175,6 @@ def run_single_robot(namespace: str) -> bool:
     if namespace == 'robot_2':
         be_qos = QoSProfile(depth=10)
 
-        # /robot_1/amcl_pose — bridged reliably via Zenoh; used for gate tracking.
-        nav.create_subscription(
-            PoseWithCovarianceStamped,
-            '/robot_1/amcl_pose',
-            lambda m: robot1_pos.__setitem__(0, m.pose.pose.position),
-            be_qos)
-
         # /robot_2/amcl_pose — local AMCL; used for direct proximity yield.
         nav.create_subscription(
             PoseWithCovarianceStamped,
@@ -194,8 +182,14 @@ def run_single_robot(namespace: str) -> bool:
             lambda m: own_pos.__setitem__(0, m.pose.pose.position),
             be_qos)
 
-        # Optional: yield signal from coordinator (best-effort, may not arrive
-        # cross-pod from the Gazebo container).  Supplement with direct check.
+        # /robot_1/amcl_pose — Zenoh-bridged; used for direct proximity yield.
+        nav.create_subscription(
+            PoseWithCovarianceStamped,
+            '/robot_1/amcl_pose',
+            lambda m: robot1_pos.__setitem__(0, m.pose.pose.position),
+            be_qos)
+
+        # Optional: coordinator yield signal (best-effort cross-pod).
         nav.create_subscription(
             Bool, '/demo/robot2_yield',
             lambda m: yield_now.__setitem__(0, m.data),
@@ -210,68 +204,17 @@ def run_single_robot(namespace: str) -> bool:
     set_initial_pose(nav, namespace, sx, sy, syaw)
     time.sleep(1.0)
 
-    # ── Phase 2 departure gate (robot_2 only) ─────────────────────────────────
-    # robot_2 subscribes to /robot_1/amcl_pose directly (Zenoh pub/sub, always
-    # works cross-pod) and computes robot_1's progress along its path.
-    # Departure is allowed once robot_1 has passed DEPARTURE_THRESHOLD_M — well
-    # past the corridor midpoint — so the two robots never enter the shared
-    # corridor simultaneously heading toward each other.
-    #
-    # Path from robot_1's spawn (-2,-0.5) toward goal (2,0.5):
-    #   direction = (4, 1), length ≈ 4.12 m  (DWB routes ~4.8 m with obstacles)
-    _PATH_LEN  = math.hypot(4.0, 1.0)
-    _PATH_UX   = 4.0 / _PATH_LEN
-    _PATH_UY   = 1.0 / _PATH_LEN
-
-    def _robot1_progress():
-        p = robot1_pos[0]
-        if p is None:
-            return 0.0
-        return (p.x - (-2.0)) * _PATH_UX + (p.y - (-0.5)) * _PATH_UY
-
+    # ── Departure stagger (robot_2 only) ─────────────────────────────────────
+    # Fixed 5 s stagger so robot_2 departs shortly after robot_1.
+    # Both robots now share the same waypoint (0.5, 0.1), so they enter the
+    # shared corridor from opposite ends and are guaranteed to meet.
+    # The AMCL-tracking gate was removed: it waited up to 60 s for the stale
+    # previous-run AMCL pose to reset, making robot_2 start far too late.
     if namespace == 'robot_2':
-        print(f'[{namespace}/{color}] Waiting for robot_1 AMCL to reinitialise '
-              f'and then reach {DEPARTURE_THRESHOLD_M:.1f} m along its path...')
-
-        # Phase A: wait for robot_1's AMCL to show it near its spawn.
-        # After `make reset` the previous run's AMCL pose is stale (robot_1 at
-        # goal ≈ 4 m progress).  We must see progress < 0.5 m before tracking,
-        # otherwise robot_2 would depart immediately on a stale reading.
-        REINIT_TIMEOUT = 60.0
-        reinit_deadline = time.time() + REINIT_TIMEOUT
-        saw_spawn = False
-        while time.time() < reinit_deadline:
-            spin_sec(nav, 1.0)
-            if robot1_pos[0] is not None and _robot1_progress() < 0.5:
-                saw_spawn = True
-                print(f'[{namespace}/{color}] robot_1 AMCL at spawn '
-                      f'({_robot1_progress():.2f} m) — now tracking progress.')
-                break
-
-        if not saw_spawn:
-            # AMCL never reset (previous run pose stuck) → fixed fallback
-            fallback = 50.0
-            print(f'[{namespace}/{color}] AMCL reinit timeout — '
-                  f'fallback stagger {fallback}s.')
-            time.sleep(fallback)
-        else:
-            # Phase B: wait for robot_1 to advance past the threshold.
-            gate_deadline = time.time() + GATE_TIMEOUT_SEC
-            while time.time() < gate_deadline:
-                spin_sec(nav, 1.0)
-                prog = _robot1_progress()
-                if prog >= DEPARTURE_THRESHOLD_M:
-                    print(f'[{namespace}/{color}] '
-                          f'robot_1 at {prog:.2f} m — departing.')
-                    break
-                if robot1_pos[0] is not None:
-                    print(f'[{namespace}/{color}]   robot_1 at {prog:.2f} m / '
-                          f'{DEPARTURE_THRESHOLD_M:.1f} m needed...')
-            else:
-                fallback = 50.0
-                print(f'[{namespace}/{color}] Gate timeout — fallback stagger '
-                      f'{fallback}s.')
-                time.sleep(fallback)
+        stagger = 5.0
+        print(f'[{namespace}/{color}] Staggering {stagger}s — '
+              f'letting robot_1 enter the corridor first...')
+        time.sleep(stagger)
 
     # ── Navigate through waypoints then final goal ────────────────────────────
     # Build the ordered target list: optional waypoints first, then final goal.
