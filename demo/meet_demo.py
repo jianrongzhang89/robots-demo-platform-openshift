@@ -54,7 +54,6 @@ from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
 from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult
 from rclpy.qos import QoSProfile
 from rclpy.task import Future as RclpyFuture
-from std_msgs.msg import Bool
 
 
 # ── Robot configuration ───────────────────────────────────────────────────────
@@ -167,7 +166,6 @@ def run_single_robot(namespace: str) -> bool:
     )
 
     # ── Phase 2 coordinator subscriptions (robot_2 only) ─────────────────────
-    yield_now    = [False]   # yield signal from coordinator (optional)
     robot1_pos   = [None]    # robot_1's latest amcl_pose position
 
     own_pos = [None]   # robot_2's own latest amcl_pose position
@@ -189,11 +187,6 @@ def run_single_robot(namespace: str) -> bool:
             lambda m: robot1_pos.__setitem__(0, m.pose.pose.position),
             be_qos)
 
-        # Optional: coordinator yield signal (best-effort cross-pod).
-        nav.create_subscription(
-            Bool, '/demo/robot2_yield',
-            lambda m: yield_now.__setitem__(0, m.data),
-            be_qos)
 
     # ── Nav2 startup ──────────────────────────────────────────────────────────
     print(f'[{namespace}/{color}] Waiting for Nav2 to become active...')
@@ -239,14 +232,14 @@ def run_single_robot(namespace: str) -> bool:
             #   always reliable cross-pod — no service call needed).
             # Fallback: coordinator /demo/robot2_yield topic (may not arrive
             #   cross-pod from the Gazebo container).
-            _direct_trigger = (
+            _too_close = (
                 robot1_pos[0] is not None
                 and own_pos[0] is not None
                 and math.hypot(robot1_pos[0].x - own_pos[0].x,
                                robot1_pos[0].y - own_pos[0].y) < YIELD_TRIGGER_M
             )
             if (namespace == 'robot_2'
-                    and (_direct_trigger or yield_now[0])
+                    and _too_close
                     and yield_count < MAX_YIELDS):
                 yield_count += 1
                 print(f'[{namespace}/{color}] Yield #{yield_count}/{MAX_YIELDS} — '
