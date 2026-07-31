@@ -75,6 +75,32 @@ spec:
               cpu: {{ $.Values.zenohResources.limits.cpu | quote }}
               memory: {{ $.Values.zenohResources.limits.memory | quote }}
 
+        # --- Sidecar: clock-only bridge (no namespace) ---
+        # Subscribes to Zenoh bare "clock" -> delivers to local /clock.
+        # The main bridge uses namespace /robot_N so it maps robot_N/X -> /X,
+        # meaning it can only subscribe to robot_N/clock. But Gazebo publishes
+        # to bare Zenoh key "clock". This sidecar bridges that gap.
+        - name: zenoh-clock-bridge
+          image: {{ $.Values.zenohBridge.image }}
+          args: ["-c", "/zenoh-config/clock-bridge.json5"]
+          env:
+            - name: ROS_DOMAIN_ID
+              value: "0"
+            - name: ROS_DISTRO
+              value: jazzy
+          volumeMounts:
+            - name: zenoh-config
+              mountPath: /zenoh-config/clock-bridge.json5
+              subPath: clock-bridge.json5
+              readOnly: true
+          resources:
+            requests:
+              cpu: 200m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+
       volumes:
         - name: zenoh-config
           configMap:

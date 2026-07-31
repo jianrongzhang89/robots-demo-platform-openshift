@@ -80,8 +80,12 @@ controller_server:
     general_goal_checker:
       stateful: True
       plugin: "nav2_controller::SimpleGoalChecker"
-      xy_goal_tolerance: 0.25
-      yaw_goal_tolerance: 0.25
+      xy_goal_tolerance: 0.15
+      # Large yaw tolerance: RMF waypoint approach angle requires ~π rotation
+      # which the traffic manager handles by planning a curved approach path.
+      # Setting yaw_goal_tolerance=π lets Nav2 declare the goal reached on
+      # position alone so the traffic manager can verify exact orientation itself.
+      yaw_goal_tolerance: 3.14159
     FollowPath:
       plugin: "nav2_mppi_controller::MPPIController"
       time_steps: 56

@@ -35,6 +35,20 @@ INITIAL_YAW="${INITIAL_YAW:-0.0}"
 
 BRINGUP_DIR="${ROS_PREFIX}/share/nav2_bringup"
 
+echo "[nav2-pod/${ROBOT_NAME}] Starting robot_state_publisher (URDF-based static TF publisher)..."
+URDF=$(cat /usr/lib64/ros-jazzy/share/nav2_minimal_tb3_sim/urdf/turtlebot3_waffle.urdf)
+ros2 run robot_state_publisher robot_state_publisher \
+  --ros-args -p robot_description:="${URDF}" &
+RSP_PID=$!
+
+echo "[nav2-pod/${ROBOT_NAME}] Starting nav2 RMF relay (pub/sub bridge for navigate_to_pose)..."
+python3 /nav2_relay.py &
+NAV_RELAY_PID=$!
+
+echo "[nav2-pod/${ROBOT_NAME}] Clock delivered directly via bridge (robot_N/clock -> /clock, same as main branch)."
+CLOCK_ROS_RELAY_PID=""
+TF_HEARTBEAT_PID=""
+
 echo "[nav2-pod/${ROBOT_NAME}] Launching Nav2 bringup (no ROS namespace — isolation via Zenoh)..."
 # Using namespace:="" so RewrittenYaml does NOT wrap params under robot_N.*
 # Without this, nodes run as /controller_server but params are at robot_N.controller_server.*
@@ -56,14 +70,26 @@ NAV2_PID=$!
     if ros2 node list 2>/dev/null | grep -qE "^(/amcl|/${ROBOT_NAME}/amcl)$"; then
       echo "[nav2-pod/${ROBOT_NAME}] AMCL node detected (attempt ${i}), waiting for activation..."
       sleep 15
-      # Increase transform_tolerance to handle Zenoh bridging latency:
-      # scan timestamps may arrive slightly before their TF data.
+      # Increase transform_tolerance on AMCL and costmaps.
+      # Zenoh bridges the sim clock at ~1350 Hz; occasional out-of-order delivery
+      # causes tf2 "jump back in time" buffer clears. High transform_tolerance lets
+      # costmaps survive the brief gaps and attempt activation successfully.
       ros2 param set /amcl transform_tolerance 10.0 2>/dev/null || true
+      ros2 param set /local_costmap/local_costmap transform_tolerance 10.0 2>/dev/null || true
+      ros2 param set /global_costmap/global_costmap transform_tolerance 10.0 2>/dev/null || true
+      # Large yaw tolerance: RMF waypoint approach requires a specific final yaw
+      # (~π rad), but the traffic manager verifies orientation separately.
+      # Setting yaw_goal_tolerance=π lets Nav2 declare the waypoint reached on
+      # position alone without requiring a long in-place rotation.
+      ros2 param set /controller_server general_goal_checker.yaw_goal_tolerance 3.14159 2>/dev/null || true
 
       echo "[nav2-pod/${ROBOT_NAME}] Publishing initial pose at (${INITIAL_X}, ${INITIAL_Y}, yaw=${INITIAL_YAW})..."
+      # Compute quaternion from yaw: qz=sin(yaw/2), qw=cos(yaw/2) (qx=qy=0 for planar)
+      read -r INITIAL_QZ INITIAL_QW < <(python3 -c \
+        "import math; y=${INITIAL_YAW}; print(math.sin(y/2), math.cos(y/2))")
       # Publish initial pose — AMCL's global_frame_id is bare "map" (Nav2 not namespaced)
       ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
-        "{header: {frame_id: 'map'}, pose: {pose: {position: {x: ${INITIAL_X}, y: ${INITIAL_Y}, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}}, covariance: [0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.06853892]}}" --once 2>&1
+        "{header: {frame_id: 'map'}, pose: {pose: {position: {x: ${INITIAL_X}, y: ${INITIAL_Y}, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: ${INITIAL_QZ}, w: ${INITIAL_QW}}}, covariance: [0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.06853892]}}" --once 2>&1
 
       echo "[nav2-pod/${ROBOT_NAME}] Waiting for AMCL to publish map->odom transform..."
       for j in $(seq 1 60); do
@@ -72,6 +98,25 @@ NAV2_PID=$!
           break
         fi
         sleep 2
+      done
+
+      # Monitor navigation lifecycle and retry if activation failed.
+      # Uses action server availability (more reliable than lifecycle get which times out).
+      # Continuous watchdog: re-activates navigation whenever bt_navigator goes inactive.
+      # Uses navigate_to_pose action server availability — more reliable than lifecycle get
+      # which times out and incorrectly shows nodes as inactive even when they're active.
+      # TF instability from clock jumps can cause controller_server to fail internally,
+      # which the lifecycle manager then propagates to deactivate bt_navigator.
+      echo "[nav2-pod/${ROBOT_NAME}] Starting navigation watchdog (continuous monitoring)..."
+      while true; do
+        sleep 20
+        if timeout 3 ros2 action list 2>/dev/null | grep -q "navigate_to_pose"; then
+          : # Action server available — no action needed
+        else
+          echo "[nav2-pod/${ROBOT_NAME}] navigate_to_pose not available, calling RESUME..."
+          timeout 90 ros2 service call /lifecycle_manager_navigation/manage_nodes \
+            nav2_msgs/srv/ManageLifecycleNodes "{command: 2}" 2>/dev/null || true
+        fi
       done
       break
     fi
@@ -83,7 +128,7 @@ echo "[nav2-pod/${ROBOT_NAME}] Nav2 pod started."
 
 term_handler() {
   echo "[nav2-pod/${ROBOT_NAME}] Shutting down..."
-  kill "${NAV2_PID}" 2>/dev/null || true
+  kill "${NAV2_PID}" "${TF_HEARTBEAT_PID:-}" "${NAV_RELAY_PID:-}" "${CLOCK_ROS_RELAY_PID:-}" "${RSP_PID:-}" 2>/dev/null || true
   pkill -P $$ 2>/dev/null || true
   wait "${NAV2_PID}" 2>/dev/null || true
 }

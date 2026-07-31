@@ -3,6 +3,14 @@
     ros2dds: {
       // No namespace prefix — Gazebo topics are already namespaced by ROS2
       // (/robot_1/*, /robot_2/*) via spawn_tb3 namespace argument.
+      // Restrict subscriber routes (Zenoh→DDS) to ONLY velocity commands.
+      // Without this, the bridge creates feedback loops for /clock and sensor topics
+      // (it routes DDS→Zenoh AND Zenoh→DDS for the same keys, causing exponential
+      // message duplication that overflows the Zenoh router queue).
+      allow: {
+        publishers: [".*"],          // allow all DDS→Zenoh routes (sensor data, clock, TF, etc.)
+        subscribers: [".*/cmd_vel"]  // Zenoh→DDS only for velocity commands; prevents feedback loops on clock/sensors
+      }
     }
   },
 

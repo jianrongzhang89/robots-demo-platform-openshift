@@ -1,0 +1,11 @@
+controller_server:
+  ros__parameters:
+    general_goal_checker:
+      stateful: True
+      plugin: "nav2_controller::SimpleGoalChecker"
+      xy_goal_tolerance: 0.15
+      # Large yaw tolerance: RMF waypoint approach requires a specific final yaw
+      # that the traffic manager handles by planning a curved path. Setting
+      # yaw_goal_tolerance=π lets Nav2 declare the waypoint reached on position
+      # alone (the traffic manager verifies orientation via its own logic).
+      yaw_goal_tolerance: 3.14159

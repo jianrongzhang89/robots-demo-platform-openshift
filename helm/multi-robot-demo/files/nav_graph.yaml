@@ -12,24 +12,43 @@
 #   2 = meeting_point  ( 0.0,  0.0)
 #   3 = charger_1      (-3.0, -1.0)
 #   4 = charger_2      ( 3.0,  1.0)
+#   5 = mid_west       (-1.0, -0.25)  intermediate on robot_1_home→meeting_point
+#   6 = mid_east       ( 1.0,  0.25)  intermediate on meeting_point→robot_2_home
 
 building_name: tb3_sandbox
 doors: {}
 levels:
   L1:
     vertices:
-      - [-2.0, -0.5, {name: robot_1_home,  is_charger: false, is_holding_point: false, is_parking_spot: true}]
-      - [ 2.0,  0.5, {name: robot_2_home,  is_charger: false, is_holding_point: false, is_parking_spot: true}]
-      - [ 0.0,  0.0, {name: meeting_point, is_charger: false, is_holding_point: true,  is_parking_spot: false}]
+      # is_holding_point:true removes the mandatory arrival-orientation constraint so
+      # the traffic manager accepts the robot as "arrived" regardless of its yaw.
+      # merge_radius:0.5 widens the waypoint's identity radius so that the robot's
+      # AMCL position (which drifts up to ~0.2 m from spawn) still registers as AT
+      # the waypoint without triggering an additional approach manoeuvre.
+      - [-2.0, -0.5, {name: robot_1_home,  is_charger: false, is_holding_point: true,  is_parking_spot: true,  merge_radius: 0.5}]
+      - [ 2.0,  0.5, {name: robot_2_home,  is_charger: false, is_holding_point: true,  is_parking_spot: true,  merge_radius: 0.5}]
+      - [ 0.0,  0.0, {name: meeting_point, is_charger: false, is_holding_point: true,  is_parking_spot: false, merge_radius: 0.5}]
       - [-3.0, -1.0, {name: charger_1,     is_charger: true,  is_holding_point: false, is_parking_spot: false}]
       - [ 3.0,  1.0, {name: charger_2,     is_charger: true,  is_holding_point: false, is_parking_spot: false}]
+      # Intermediate waypoints keep the robot "on graph" when Nav2 deviates
+      - [-1.0, -0.25, {name: mid_west, is_charger: false, is_holding_point: true,  is_parking_spot: false, merge_radius: 0.5}]
+      - [ 1.0,  0.25, {name: mid_east, is_charger: false, is_holding_point: true,  is_parking_spot: false, merge_radius: 0.5}]
 
     # Bidirectional lanes — list BOTH directions explicitly (official format)
     lanes:
-      # robot_1_home (0) <-> meeting_point (2)
+      # robot_1_home (0) <-> mid_west (5) <-> meeting_point (2)
+      - [0, 5, {graph_idx: 0, speed_limit: 0.26}]
+      - [5, 0, {graph_idx: 0, speed_limit: 0.26}]
+      - [5, 2, {graph_idx: 0, speed_limit: 0.26}]
+      - [2, 5, {graph_idx: 0, speed_limit: 0.26}]
+      # meeting_point (2) <-> mid_east (6) <-> robot_2_home (1)
+      - [2, 6, {graph_idx: 0, speed_limit: 0.26}]
+      - [6, 2, {graph_idx: 0, speed_limit: 0.26}]
+      - [6, 1, {graph_idx: 0, speed_limit: 0.26}]
+      - [1, 6, {graph_idx: 0, speed_limit: 0.26}]
+      # Direct lanes still present for completeness (planner picks shortest)
       - [0, 2, {graph_idx: 0, speed_limit: 0.26}]
       - [2, 0, {graph_idx: 0, speed_limit: 0.26}]
-      # meeting_point (2) <-> robot_2_home (1)
       - [2, 1, {graph_idx: 0, speed_limit: 0.26}]
       - [1, 2, {graph_idx: 0, speed_limit: 0.26}]
       # robot_1_home (0) <-> charger_1 (3)

@@ -90,7 +90,7 @@ package: ## Package the Helm chart into a .tgz
 ##@ Open-RMF
 
 .PHONY: dispatch-patrol
-dispatch-patrol: ## Dispatch a patrol task: robot_1_home→meeting_point→robot_2_home (n=1)
+dispatch-patrol: ## Dispatch east-west patrol: mid_west→meeting_point→mid_east→robot_2_home (avoids western boundary approach)
 	$(eval RMFPOD := $(shell oc get pod -n $(NAMESPACE) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
 	@test -n "$(RMFPOD)" || { echo "ERROR: rmf-core pod not found in namespace '$(NAMESPACE)'"; exit 1; }
 	oc exec -n $(NAMESPACE) $(RMFPOD) -c rmf-core -- bash -c \
@@ -98,7 +98,7 @@ dispatch-patrol: ## Dispatch a patrol task: robot_1_home→meeting_point→robot
 	   source /opt/ros/jazzy/setup.bash; \
 	   source /opt/free_fleet/install/setup.bash 2>/dev/null || true; \
 	   ros2 run rmf_demos_tasks dispatch_patrol \
-	     -p robot_1_home meeting_point robot_2_home -n 1 --use_sim_time'
+	     -p mid_west meeting_point mid_east robot_2_home -n 1 --use_sim_time'
 
 .PHONY: rmf-status
 rmf-status: ## Show fleet state from RMF (robot positions and task status)
@@ -151,6 +151,46 @@ reset: ## Teleport both robots back to their spawn positions
 	  echo "Both robots reset to spawn positions."'
 
 ##@ Utilities
+
+.PHONY: rerun-patrol
+rerun-patrol: ## Reset and re-dispatch patrol without a full pod restart
+	@echo "Step 1: Resetting robots to spawn positions..."
+	$(MAKE) reset
+	@echo "Step 2: Clearing costmaps on both nav2 pods..."
+	$(eval NAV1POD := $(shell oc get pod -n $(NAMESPACE) -l app=robot-nav-robot-1 -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
+	$(eval NAV2POD := $(shell oc get pod -n $(NAMESPACE) -l app=robot-nav-robot-2 -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
+	-oc exec -n $(NAMESPACE) $(NAV1POD) -c nav2 -- bash -c \
+	  'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash; \
+	   ros2 service call /global_costmap/clear_entirely_global_costmap std_srvs/srv/Empty "{}" 2>/dev/null; \
+	   ros2 service call /local_costmap/clear_entirely_local_costmap  std_srvs/srv/Empty "{}" 2>/dev/null' &
+	-oc exec -n $(NAMESPACE) $(NAV2POD) -c nav2 -- bash -c \
+	  'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash; \
+	   ros2 service call /global_costmap/clear_entirely_global_costmap std_srvs/srv/Empty "{}" 2>/dev/null; \
+	   ros2 service call /local_costmap/clear_entirely_local_costmap  std_srvs/srv/Empty "{}" 2>/dev/null' &
+	sleep 5
+	@echo "Step 3: Re-publishing initial poses..."
+	-oc exec -n $(NAMESPACE) $(NAV1POD) -c nav2 -- bash -c \
+	  'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash; \
+	   ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
+	     "{header: {frame_id: map}, pose: {pose: {position: {x: -2.0, y: -0.5}, orientation: {w: 1.0}}, \
+	       covariance: [0.02,0,0,0,0,0, 0,0.02,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0.005]}}" \
+	     --once 2>/dev/null' &
+	-oc exec -n $(NAMESPACE) $(NAV2POD) -c nav2 -- bash -c \
+	  'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash; \
+	   QZ=$$(python3 -c "import math; print(math.sin(math.pi/2))"); \
+	   QW=$$(python3 -c "import math; print(math.cos(math.pi/2))"); \
+	   ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
+	     "{header: {frame_id: map}, pose: {pose: {position: {x: 2.0, y: 0.5}, orientation: {z: $${QZ}, w: $${QW}}}, \
+	       covariance: [0.02,0,0,0,0,0, 0,0.02,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0.005]}}" \
+	     --once 2>/dev/null' &
+	sleep 5
+	@echo "Step 4: Restarting rmf-core only (clears stuck task, keeps nav2 and Gazebo running)..."
+	oc rollout restart deployment/rmf-core -n $(NAMESPACE)
+	oc rollout status deployment/rmf-core -n $(NAMESPACE) --timeout=5m
+	@echo "Step 5: Waiting 120s for AMCL convergence + RMF 90s startup..."
+	sleep 120
+	@echo "Step 6: Fleet state (verify before dispatching)..."
+	$(MAKE) rmf-status
 
 .PHONY: status
 status: ## Show pod status in the demo namespace

@@ -1,0 +1,33 @@
+{
+  // Clock relay bridge: subscribes to Zenoh "clock_relay/clock_bridge" (published
+  // by the RMF pod's monotonic clock relay) and delivers to local DDS /clock_bridge.
+  // namespace "/clock_relay" maps: Zenoh clock_relay/X -> DDS /X
+  // Specifically: clock_relay/clock_bridge -> /clock_bridge
+  //
+  // The nav2_relay.py node subscribes to /clock_bridge on DDS (triggering this
+  // bridge to create the subscriber route) and republishes filtered to /clock.
+  // This gives Nav2 nodes a monotonic /clock without any loop or dual-publisher issue.
+  plugins: {
+    ros2dds: {
+      namespace: "/clock_relay",
+      allow: {
+        subscribers: ["^/clock_bridge$"]
+      }
+    }
+  },
+  mode: "client",
+  connect: {
+    endpoints: ["tcp/zenoh-router:7447"],
+    retry: {
+      period_init_ms: 1000,
+      period_max_ms: 16000,
+      period_increase_factor: 2
+    },
+    exit_on_failure: false
+  },
+  scouting: {
+    multicast: {
+      enabled: false
+    }
+  }
+}

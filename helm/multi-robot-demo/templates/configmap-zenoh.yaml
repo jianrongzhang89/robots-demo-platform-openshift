@@ -13,6 +13,8 @@ data:
 {{ .Files.Get "files/gazebo-bridge.json5" | indent 4 }}
   fleet-adapter-zenoh.json5: |-
 {{ .Files.Get "files/fleet-adapter-zenoh.json5" | indent 4 }}
+  clock-bridge.json5: |-
+{{ .Files.Get "files/clock-bridge.json5" | indent 4 }}
   # Per-robot Nav2 bridge configs — each adds a namespace prefix so the bridge
   # routes bare /tf as robot_N/tf (what free_fleet_adapter subscribes to).
   # publishers:  local DDS topics that go OUT to Zenoh (Nav2 → router)
@@ -23,9 +25,18 @@ data:
       plugins: {
         ros2dds: {
           namespace: "/{{ .name }}",
+          // Prevent the bridge from blocking indefinitely when the DDS service
+          // writer can't immediately find a matching reader (e.g. QoS negotiation
+          // during action server initialization). Without this, action send_goal
+          // calls block the bridge's Tokio runtime and never return a Zenoh reply.
+          reliable_routes_blocking: false,
           allow: {
             publishers: [
-              ".*/(tf|tf_static|battery_state|cmd_vel)"
+              // tf_static omitted: static TF originates from Gazebo's robot_state_publisher,
+              // not from nav2 pods. Including it creates a feedback loop (nav bridge receives
+              // robot_1/tf_static from Zenoh, delivers to DDS /tf_static, then re-publishes
+              // it back to Zenoh as robot_1/tf_static, confusing the TRANSIENT_LOCAL cache).
+              ".*/(tf|battery_state|cmd_vel|amcl_pose|rmf_navigate_result)"
             ],
             subscribers: [
               ".*/tf",
@@ -34,12 +45,19 @@ data:
               ".*/odom",
               ".*/imu",
               ".*/joint_states",
-              ".*/clock",
+              // clock omitted — handled by the dedicated clock-bridge sidecar
+              // which subscribes to bare Zenoh "clock" without namespace prefix
               ".*/robot_description",
-              ".*/navigate_to_pose/_action/.*"
+              ".*/rmf_navigate_cmd",
+              // cmd_vel subscriber keepalive: the nav bridge subscribes to
+              // robot_N/cmd_vel on Zenoh so the Gazebo bridge's Subscriber route
+              // (Zenoh:robot_N/cmd_vel -> DDS:/robot_N/cmd_vel) stays alive.
+              // Without this, the route drops ~80s after startup when the nav
+              // bridge's cmd_vel Publisher route is garbage-collected.
+              ".*/cmd_vel"
             ],
-            service_servers: [
-              ".*/navigate_to_pose/_action/.*"
+            action_servers: [
+              ".*/navigate_to_pose"
             ]
           }
         }
