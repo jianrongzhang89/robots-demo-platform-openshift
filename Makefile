@@ -67,11 +67,12 @@ undeploy: ## Uninstall the Helm release
 	oc delete namespace $(NAMESPACE) --ignore-not-found
 
 .PHONY: restart
-restart: ## Rolling restart of all demo pods
+restart: ## Rolling restart of all demo pods (Gazebo + nav2 + rmf-core)
 	oc rollout restart deployment/gazebo-sim -n $(NAMESPACE)
 	@for d in $$(oc get deployments -n $(NAMESPACE) -o name | grep robot-nav); do \
 	  oc rollout restart $$d -n $(NAMESPACE); \
 	done
+	oc rollout restart deployment/rmf-core -n $(NAMESPACE)
 
 ##@ Helm
 
