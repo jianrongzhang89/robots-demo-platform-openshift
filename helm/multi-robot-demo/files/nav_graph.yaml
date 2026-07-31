@@ -51,10 +51,10 @@ levels:
       - [2, 0, {graph_idx: 0, speed_limit: 0.26}]
       - [2, 1, {graph_idx: 0, speed_limit: 0.26}]
       - [1, 2, {graph_idx: 0, speed_limit: 0.26}]
-      # robot_1_home (0) <-> charger_1 (3)
+      # robot_1_home (0) <-> charger_1 (3) — required by free_fleet_adapter
       - [0, 3, {graph_idx: 0, speed_limit: 0.20}]
       - [3, 0, {graph_idx: 0, speed_limit: 0.20}]
-      # robot_2_home (1) <-> charger_2 (4)
+      # robot_2_home (1) <-> charger_2 (4) — required by free_fleet_adapter
       - [1, 4, {graph_idx: 0, speed_limit: 0.20}]
       - [4, 1, {graph_idx: 0, speed_limit: 0.20}]
 
