@@ -69,7 +69,10 @@ NAV2_PID=$!
   for i in $(seq 1 180); do
     if ros2 node list 2>/dev/null | grep -qE "^(/amcl|/${ROBOT_NAME}/amcl)$"; then
       echo "[nav2-pod/${ROBOT_NAME}] AMCL node detected (attempt ${i}), waiting for activation..."
-      sleep 15
+      # Wait 45s: AMCL needs time to configure+activate its lifecycle, during which
+      # the TF buffer may clear several times due to sim-clock jumps after Gazebo
+      # restarts. 45s covers the typical worst-case activation window.
+      sleep 45
       # Increase transform_tolerance on AMCL and costmaps.
       # Zenoh bridges the sim clock at ~1350 Hz; occasional out-of-order delivery
       # causes tf2 "jump back in time" buffer clears. High transform_tolerance lets
@@ -87,9 +90,12 @@ NAV2_PID=$!
       # Compute quaternion from yaw: qz=sin(yaw/2), qw=cos(yaw/2) (qx=qy=0 for planar)
       read -r INITIAL_QZ INITIAL_QW < <(python3 -c \
         "import math; y=${INITIAL_YAW}; print(math.sin(y/2), math.cos(y/2))")
-      # Publish initial pose — AMCL's global_frame_id is bare "map" (Nav2 not namespaced)
+      # Publish initial pose — use --times 10 instead of --once so the message
+      # is sent even if AMCL's /initialpose subscriber isn't ready yet. AMCL
+      # will receive one of the 10 publications once it activates.
       ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
-        "{header: {frame_id: 'map'}, pose: {pose: {position: {x: ${INITIAL_X}, y: ${INITIAL_Y}, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: ${INITIAL_QZ}, w: ${INITIAL_QW}}}, covariance: [0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.06853892]}}" --once 2>&1
+        "{header: {frame_id: 'map'}, pose: {pose: {position: {x: ${INITIAL_X}, y: ${INITIAL_Y}, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: ${INITIAL_QZ}, w: ${INITIAL_QW}}}, covariance: [0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.06853892]}}" \
+        --times 10 2>/dev/null || true
 
       echo "[nav2-pod/${ROBOT_NAME}] Waiting for AMCL to publish map->odom transform..."
       for j in $(seq 1 60); do
