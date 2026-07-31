@@ -48,13 +48,7 @@ data:
               // clock omitted — handled by the dedicated clock-bridge sidecar
               // which subscribes to bare Zenoh "clock" without namespace prefix
               ".*/robot_description",
-              ".*/rmf_navigate_cmd",
-              // cmd_vel subscriber keepalive: the nav bridge subscribes to
-              // robot_N/cmd_vel on Zenoh so the Gazebo bridge's Subscriber route
-              // (Zenoh:robot_N/cmd_vel -> DDS:/robot_N/cmd_vel) stays alive.
-              // Without this, the route drops ~80s after startup when the nav
-              // bridge's cmd_vel Publisher route is garbage-collected.
-              ".*/cmd_vel"
+              ".*/rmf_navigate_cmd"
             ],
             action_servers: [
               ".*/navigate_to_pose"

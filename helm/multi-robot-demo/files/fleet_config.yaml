@@ -12,14 +12,13 @@ rmf_fleet:
     linear: [0.02, 0.5]
     angular: [0.1, 1.0]
   profile:
-    # footprint ≥ 1.0 m so the planner can snap the robot onto a lane even when
-    # Nav2's path deviated up to ~0.9 m perpendicular from the graph lane.
-    # Also ensures the robot is considered "arrived" at a waypoint before a new
-    # replan would normally be triggered.
-    footprint: 1.2
-    # vicinity 2.5 m: robot considered "on graph" when within this radius of
-    # any waypoint.  Must exceed max off-lane displacement (≈1.5 m observed).
-    vicinity: 2.5
+    # footprint: robot's physical radius for collision planning (m).
+    # Also used for "arrived at waypoint" detection — keep it near actual robot size.
+    footprint: 0.3
+    # vicinity: radius within which a robot is snapped onto the traffic graph (m).
+    # 1.0 m tolerates typical AMCL drift (~0.2 m) plus slight off-lane deviations.
+    # Must be less than half the distance between adjacent waypoints (~2.5 m apart).
+    vicinity: 1.0
   reversible: True
   battery_system:
     voltage: 12.0
