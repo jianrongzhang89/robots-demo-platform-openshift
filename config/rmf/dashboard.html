@@ -102,7 +102,8 @@ async function refreshFleet() {
   conn.innerHTML = '<span class="dot ok"></span>Connected';
 
   const tbody = document.getElementById('fleet-body');
-  const robots = data.flatMap(f => (f.robots || []).map(r => ({...r, fleet: f.name})));
+  // API returns robots as an object keyed by name, not an array
+  const robots = data.flatMap(f => Object.values(f.robots || {}).map(r => ({...r, fleet: f.name})));
   if (!robots.length) {
     tbody.innerHTML = '<tr><td colspan="4" class="empty">No robots reported</td></tr>';
     return;
@@ -110,6 +111,7 @@ async function refreshFleet() {
   tbody.innerHTML = robots.map(r => {
     const x = r.location?.x?.toFixed(2) ?? '?';
     const y = r.location?.y?.toFixed(2) ?? '?';
+    const status = r.status || (r.task_id ? 'working' : 'idle');
     return `<tr><td>${r.name}</td><td>(${x}, ${y})</td><td>${badge(r.task_id)}</td><td>${r.task_id || '—'}</td></tr>`;
   }).join('');
 }
@@ -117,37 +119,38 @@ async function refreshFleet() {
 async function refreshTasks() {
   const data = await fetchJSON('/tasks?limit=20');
   const el = document.getElementById('tasks-list');
-  const tasks = (data?.items || []).filter(t => t.status !== 'completed' && t.status !== 'failed' && t.status !== 'canceled');
+  // API returns plain array or object with items
+  const all = Array.isArray(data) ? data : (data?.items || []);
+  const tasks = all.filter(t => !['completed','failed','canceled','skipped'].includes(t.status));
   if (!tasks.length) {
     el.innerHTML = '<div class="empty">No active tasks</div>';
     return;
   }
   el.innerHTML = tasks.map(t => `
     <div class="task-row">
-      <code style="font-size:12px;color:#8b949e;">${t.booking?.id || '?'}</code>
-      <span class="badge working">${t.status}</span>
-      <span style="font-size:13px;">${t.category} — ${JSON.stringify(t.description || {})}</span>
+      <code style="font-size:12px;color:#8b949e;">${t.booking?.id || t.task_id || '?'}</code>
+      <span class="badge working">${t.status || 'active'}</span>
+      <span style="font-size:13px;">${t.category || t.type || 'task'}</span>
     </div>`).join('');
 }
 
 async function dispatchPatrol() {
   const places = document.getElementById('waypoints').value.trim().split(/\s+/);
   const rounds = parseInt(document.getElementById('rounds').value);
+  // Use /tasks/dispatch_task endpoint (rmf-web jazzy API)
   const body = {
     type: 'dispatch_task_request',
     request: {
+      unix_millis_earliest_start_time: 0,
       category: 'patrol',
-      description: { places, rounds },
-      unix_millis_earliest_start_time: 0
+      description: { places, rounds }
     }
   };
-  const r = await fetch(API + '/tasks/activity_discovery', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({category:'patrol'})}).catch(()=>null);
-  // Use the dispatch endpoint
-  const resp = await fetch(API + '/tasks', {
+  const resp = await fetch(API + '/tasks/dispatch_task', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify(body)
-  });
+  }).catch(e => ({ ok: false, status: String(e) }));
   const toast = document.getElementById('toast');
   toast.style.display = 'block';
   toast.textContent = resp.ok ? '✓ Patrol dispatched' : '✗ Dispatch failed: ' + resp.status;
