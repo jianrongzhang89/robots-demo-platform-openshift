@@ -31,8 +31,9 @@ levels:
       - [-3.0, -1.0, {name: charger_1,     is_charger: true,  is_holding_point: false, is_parking_spot: false}]
       - [ 3.0,  1.0, {name: charger_2,     is_charger: true,  is_holding_point: false, is_parking_spot: false}]
       # Intermediate waypoints keep the robot "on graph" when Nav2 deviates
-      - [-1.0, -0.25, {name: mid_west, is_charger: false, is_holding_point: true,  is_parking_spot: false, merge_radius: 0.5}]
-      - [ 1.0,  0.25, {name: mid_east, is_charger: false, is_holding_point: true,  is_parking_spot: false, merge_radius: 0.5}]
+      - [-1.0, -0.25, {name: mid_west,    is_charger: false, is_holding_point: true,  is_parking_spot: false, merge_radius: 0.5}]
+      - [ 1.0,  0.25, {name: mid_east,    is_charger: false, is_holding_point: true,  is_parking_spot: false, merge_radius: 0.5}]
+      - [ 1.5, -0.25, {name: approach_r2, is_charger: false, is_holding_point: true,  is_parking_spot: false, merge_radius: 0.5}]
 
     # Bidirectional lanes — list BOTH directions explicitly (official format)
     lanes:
@@ -46,6 +47,12 @@ levels:
       - [6, 2, {graph_idx: 0, speed_limit: 0.26}]
       - [6, 1, {graph_idx: 0, speed_limit: 0.26}]
       - [1, 6, {graph_idx: 0, speed_limit: 0.26}]
+      # approach_r2 (7): SE staging point before robot_2_home to avoid northern walls
+      # From meeting_point ESE to approach_r2, then NNE to robot_2_home
+      - [2, 7, {graph_idx: 0, speed_limit: 0.26}]
+      - [7, 2, {graph_idx: 0, speed_limit: 0.26}]
+      - [7, 1, {graph_idx: 0, speed_limit: 0.26}]
+      - [1, 7, {graph_idx: 0, speed_limit: 0.26}]
       # Direct lanes still present for completeness (planner picks shortest)
       - [0, 2, {graph_idx: 0, speed_limit: 0.26}]
       - [2, 0, {graph_idx: 0, speed_limit: 0.26}]

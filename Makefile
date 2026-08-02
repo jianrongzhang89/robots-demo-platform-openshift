@@ -91,7 +91,7 @@ package: ## Package the Helm chart into a .tgz
 ##@ Open-RMF
 
 .PHONY: dispatch-patrol
-dispatch-patrol: ## Dispatch patrol: mid_west→meeting_point→mid_east→robot_2_home
+dispatch-patrol: ## Dispatch patrol: mid_west→meeting_point (robot_1 meets robot_2 at meeting_point)
 	$(eval RMFPOD := $(shell oc get pod -n $(NAMESPACE) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
 	@test -n "$(RMFPOD)" || { echo "ERROR: rmf-core pod not found in namespace '$(NAMESPACE)'"; exit 1; }
 	oc exec -n $(NAMESPACE) $(RMFPOD) -c rmf-core -- bash -c \
@@ -99,7 +99,7 @@ dispatch-patrol: ## Dispatch patrol: mid_west→meeting_point→mid_east→robot
 	   source /opt/ros/jazzy/setup.bash; \
 	   source /opt/free_fleet/install/setup.bash 2>/dev/null || true; \
 	   ros2 run rmf_demos_tasks dispatch_patrol \
-	     -p mid_west meeting_point mid_east robot_2_home -n 1 --use_sim_time'
+	     -p mid_west meeting_point -n 1 --use_sim_time'
 
 .PHONY: rmf-status
 rmf-status: ## Show fleet state from RMF (robot positions and task status)

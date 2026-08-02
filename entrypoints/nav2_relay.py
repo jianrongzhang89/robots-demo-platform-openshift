@@ -161,6 +161,11 @@ class NavRelay(Node):
                 self.get_logger().info(
                     f"[nav_relay] goal {goal_id}: REACHED ({dist:.2f}m)"
                 )
+                # Reset odom reference to waypoint so the next leg starts drift-free.
+                # Accumulated odom error from wall collisions on this leg is discarded.
+                with self._pose_lock:
+                    self._initial_x = goal_x - self._odom_x
+                    self._initial_y = goal_y - self._odom_y
                 with self._lock:
                     if self._active_goal_id == goal_id:
                         self._active_goal_id = None
