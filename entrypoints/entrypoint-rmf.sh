@@ -215,6 +215,12 @@ else
   API_PID=""
 fi
 
+# Serve the custom fleet dashboard on port 3000
+echo "[rmf-pod] Serving fleet dashboard on port 3000..."
+cd /opt/rmf-dashboard
+python3 -m http.server 3000 2>/dev/null &
+DASHBOARD_PID=$!
+
 # battery_soc=1.0 is hardcoded in the adapter patch — no relay needed.
 # (fake CDR relay caused pycdr2 struct.error crashes in _battery_state_callback)
 
@@ -264,7 +270,7 @@ echo "=================================================="
 term_handler() {
   echo "[rmf-pod] Shutting down..."
   kill "${ADAPTER_PID:-}" "${DISPATCHER_PID:-}" "${SCHEDULE_PID:-}" \
-       "${API_PID:-}" "${CLOCK_RELAY_PID:-}" \
+       "${API_PID:-}" "${DASHBOARD_PID:-}" "${CLOCK_RELAY_PID:-}" \
        "${D55_ZENOH_PID:-}" "${D55_ROS_PID:-}" "${CMDVEL_KEEP_PID:-}" 2>/dev/null || true
   rm -f /tmp/d55clock /tmp/d55_zenoh_half.py /tmp/d55_ros_half.py
   pkill -P $$ 2>/dev/null || true

@@ -91,6 +91,10 @@ COPY config/rmf/ /opt/ros2-demo/rmf/
 COPY entrypoints/entrypoint-rmf.sh /entrypoint-rmf.sh
 RUN chmod +x /entrypoint-rmf.sh
 
-EXPOSE 8000
+# Custom lightweight dashboard served on port 3000 via Python http.server
+RUN mkdir -p /opt/rmf-dashboard
+COPY config/rmf/dashboard.html /opt/rmf-dashboard/index.html
+
+EXPOSE 8000 3000
 
 CMD ["/entrypoint-rmf.sh"]

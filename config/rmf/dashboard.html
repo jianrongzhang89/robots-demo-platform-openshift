@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Open-RMF Fleet Dashboard</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; background: #0d1117; color: #e6edf3; }
+  header { background: #161b22; border-bottom: 1px solid #30363d; padding: 12px 24px; display: flex; align-items: center; gap: 16px; }
+  header h1 { margin: 0; font-size: 18px; color: #58a6ff; }
+  .status { font-size: 12px; color: #8b949e; margin-left: auto; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+  .dot.ok { background: #3fb950; }
+  .dot.err { background: #f85149; }
+  main { padding: 24px; max-width: 900px; margin: 0 auto; }
+  section { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+  h2 { margin: 0 0 16px; font-size: 15px; color: #58a6ff; border-bottom: 1px solid #30363d; padding-bottom: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: #8b949e; font-weight: normal; padding: 6px 8px; border-bottom: 1px solid #30363d; }
+  td { padding: 8px; border-bottom: 1px solid #21262d; }
+  tr:last-child td { border-bottom: none; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .badge.idle { background: #21262d; color: #8b949e; }
+  .badge.working { background: #1f6feb; color: #fff; }
+  .badge.charging { background: #3fb950; color: #000; }
+  button { padding: 8px 16px; border-radius: 6px; border: 1px solid #30363d; background: #238636; color: #fff; cursor: pointer; font-size: 13px; }
+  button:hover { background: #2ea043; }
+  button.dispatch { background: #1f6feb; }
+  button.dispatch:hover { background: #388bfd; }
+  input, select { padding: 7px 10px; border-radius: 6px; border: 1px solid #30363d; background: #0d1117; color: #e6edf3; font-size: 13px; }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .task-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #21262d; }
+  .task-row:last-child { border-bottom: none; }
+  .empty { color: #8b949e; font-size: 13px; font-style: italic; }
+  #toast { position: fixed; bottom: 24px; right: 24px; background: #3fb950; color: #000; padding: 10px 18px; border-radius: 6px; display: none; font-size: 13px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🤖 Open-RMF Fleet Dashboard</h1>
+  <div class="status" id="conn"><span class="dot err"></span>Connecting…</div>
+</header>
+<main>
+  <!-- Fleet State -->
+  <section>
+    <h2>Fleet State</h2>
+    <table id="fleet-table">
+      <thead><tr><th>Robot</th><th>Position (x, y)</th><th>Status</th><th>Task</th></tr></thead>
+      <tbody id="fleet-body"><tr><td colspan="4" class="empty">Loading…</td></tr></tbody>
+    </table>
+  </section>
+
+  <!-- Active Tasks -->
+  <section>
+    <h2>Active Tasks</h2>
+    <div id="tasks-list"><div class="empty">No active tasks</div></div>
+  </section>
+
+  <!-- Dispatch Patrol -->
+  <section>
+    <h2>Dispatch Patrol</h2>
+    <div class="row" style="margin-bottom:10px;">
+      <label style="font-size:13px;color:#8b949e;">Waypoints (space-separated):</label>
+      <input id="waypoints" value="robot_1_home mid_west meeting_point" style="flex:1;min-width:280px;">
+      <select id="rounds"><option value="1">1 round</option><option value="2">2 rounds</option><option value="3">3 rounds</option></select>
+      <button class="dispatch" onclick="dispatchPatrol()">▶ Dispatch</button>
+    </div>
+    <div style="font-size:12px;color:#8b949e;">Available waypoints: robot_1_home, mid_west, meeting_point, mid_east, approach_r2, robot_2_home</div>
+  </section>
+</main>
+<div id="toast">✓ Task dispatched</div>
+<script>
+const API = '';  // same origin — the API server serves this page
+
+async function fetchJSON(path) {
+  try {
+    const r = await fetch(API + path);
+    if (!r.ok) throw new Error(r.status);
+    return await r.json();
+  } catch(e) { return null; }
+}
+
+function badge(task) {
+  if (!task) return '<span class="badge idle">Idle</span>';
+  return '<span class="badge working">Working</span>';
+}
+
+async function refreshFleet() {
+  const data = await fetchJSON('/fleets');
+  const conn = document.getElementById('conn');
+  if (!data) {
+    conn.innerHTML = '<span class="dot err"></span>API unreachable';
+    return;
+  }
+  conn.innerHTML = '<span class="dot ok"></span>Connected';
+
+  const tbody = document.getElementById('fleet-body');
+  const robots = data.flatMap(f => (f.robots || []).map(r => ({...r, fleet: f.name})));
+  if (!robots.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="empty">No robots reported</td></tr>';
+    return;
+  }
+  tbody.innerHTML = robots.map(r => {
+    const x = r.location?.x?.toFixed(2) ?? '?';
+    const y = r.location?.y?.toFixed(2) ?? '?';
+    return `<tr><td>${r.name}</td><td>(${x}, ${y})</td><td>${badge(r.task_id)}</td><td>${r.task_id || '—'}</td></tr>`;
+  }).join('');
+}
+
+async function refreshTasks() {
+  const data = await fetchJSON('/tasks?limit=20');
+  const el = document.getElementById('tasks-list');
+  const tasks = (data?.items || []).filter(t => t.status !== 'completed' && t.status !== 'failed' && t.status !== 'canceled');
+  if (!tasks.length) {
+    el.innerHTML = '<div class="empty">No active tasks</div>';
+    return;
+  }
+  el.innerHTML = tasks.map(t => `
+    <div class="task-row">
+      <code style="font-size:12px;color:#8b949e;">${t.booking?.id || '?'}</code>
+      <span class="badge working">${t.status}</span>
+      <span style="font-size:13px;">${t.category} — ${JSON.stringify(t.description || {})}</span>
+    </div>`).join('');
+}
+
+async function dispatchPatrol() {
+  const places = document.getElementById('waypoints').value.trim().split(/\s+/);
+  const rounds = parseInt(document.getElementById('rounds').value);
+  const body = {
+    type: 'dispatch_task_request',
+    request: {
+      category: 'patrol',
+      description: { places, rounds },
+      unix_millis_earliest_start_time: 0
+    }
+  };
+  const r = await fetch(API + '/tasks/activity_discovery', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({category:'patrol'})}).catch(()=>null);
+  // Use the dispatch endpoint
+  const resp = await fetch(API + '/tasks', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(body)
+  });
+  const toast = document.getElementById('toast');
+  toast.style.display = 'block';
+  toast.textContent = resp.ok ? '✓ Patrol dispatched' : '✗ Dispatch failed: ' + resp.status;
+  toast.style.background = resp.ok ? '#3fb950' : '#f85149';
+  setTimeout(() => toast.style.display = 'none', 3000);
+  refresh();
+}
+
+function refresh() { refreshFleet(); refreshTasks(); }
+refresh();
+setInterval(refresh, 3000);
+</script>
+</body>
+</html>
