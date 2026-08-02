@@ -113,6 +113,8 @@ NAV2_PID=$!
       # which times out and incorrectly shows nodes as inactive even when they're active.
       # TF instability from clock jumps can cause controller_server to fail internally,
       # which the lifecycle manager then propagates to deactivate bt_navigator.
+      KEEPALIVE_PID=""
+
       echo "[nav2-pod/${ROBOT_NAME}] Starting navigation watchdog (continuous monitoring)..."
       while true; do
         sleep 20
@@ -134,7 +136,7 @@ echo "[nav2-pod/${ROBOT_NAME}] Nav2 pod started."
 
 term_handler() {
   echo "[nav2-pod/${ROBOT_NAME}] Shutting down..."
-  kill "${NAV2_PID}" "${TF_HEARTBEAT_PID:-}" "${NAV_RELAY_PID:-}" "${CLOCK_ROS_RELAY_PID:-}" "${RSP_PID:-}" 2>/dev/null || true
+  kill "${NAV2_PID}" "${TF_HEARTBEAT_PID:-}" "${NAV_RELAY_PID:-}" "${CLOCK_ROS_RELAY_PID:-}" "${RSP_PID:-}" "${KEEPALIVE_PID:-}" 2>/dev/null || true
   pkill -P $$ 2>/dev/null || true
   wait "${NAV2_PID}" 2>/dev/null || true
 }

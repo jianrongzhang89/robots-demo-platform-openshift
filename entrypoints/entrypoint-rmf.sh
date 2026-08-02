@@ -88,6 +88,32 @@ PYEOF
 CLOCK_RELAY_PID=$!
 sleep 2
 
+# cmd_vel Zenoh keepalive: subscribe to robot_N/cmd_vel from this Zenoh session.
+# The nav bridge (zenoh-bridge-ros2dds) creates/maintains its DDS→Zenoh route for
+# cmd_vel ONLY while there is a Zenoh subscriber. When the Gazebo bridge session
+# changes (~90s after startup), the route drops. This persistent subscriber
+# prevents the dropout by acting as an always-on consumer of the cmd_vel stream.
+echo "[rmf-pod] Starting cmd_vel Zenoh keepalive (robot_1/cmd_vel + robot_2/cmd_vel)..."
+python3 - <<'CMDVEL_KEEP_EOF' &
+import zenoh, time
+
+conf = zenoh.Config()
+conf.insert_json5("connect/endpoints", '["tcp/zenoh-router:7447"]')
+conf.insert_json5("mode", '"client"')
+conf.insert_json5("scouting/multicast/enabled", "false")
+z = zenoh.open(conf)
+
+# Subscribe to cmd_vel for both robots — no-op callback keeps the routes alive
+for key in ["robot_1/cmd_vel", "robot_2/cmd_vel"]:
+    z.declare_subscriber(key, lambda s: None)
+
+print("[rmf-pod] cmd_vel Zenoh keepalive active")
+while True:
+    time.sleep(10)
+CMDVEL_KEEP_EOF
+CMDVEL_KEEP_PID=$!
+sleep 2
+
 # Domain-55 /clock relay so free_fleet_adapter can run with -sim (sim time).
 # Two-process pipeline through a FIFO avoids the segfault that occurs when
 # rclpy (CycloneDDS) and zenoh share the same Python process.
@@ -239,7 +265,7 @@ term_handler() {
   echo "[rmf-pod] Shutting down..."
   kill "${ADAPTER_PID:-}" "${DISPATCHER_PID:-}" "${SCHEDULE_PID:-}" \
        "${API_PID:-}" "${CLOCK_RELAY_PID:-}" \
-       "${D55_ZENOH_PID:-}" "${D55_ROS_PID:-}" 2>/dev/null || true
+       "${D55_ZENOH_PID:-}" "${D55_ROS_PID:-}" "${CMDVEL_KEEP_PID:-}" 2>/dev/null || true
   rm -f /tmp/d55clock /tmp/d55_zenoh_half.py /tmp/d55_ros_half.py
   pkill -P $$ 2>/dev/null || true
   wait "${ADAPTER_PID}" 2>/dev/null || true
