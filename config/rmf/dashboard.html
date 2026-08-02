@@ -70,7 +70,14 @@
 </main>
 <div id="toast">✓ Task dispatched</div>
 <script>
-const API = '';  // same origin — the API server serves this page
+// Dashboard served on port 3000; API is on port 8000 (rmf-api route).
+// Auto-derive the API URL by replacing 'rmf-dashboard' with 'rmf-api'.
+// CORS is open (allow_origins=["*"]) so cross-origin calls work fine.
+const API = (function() {
+  const h = window.location.hostname.replace('rmf-dashboard', 'rmf-api');
+  const proto = window.location.protocol;
+  return proto + '//' + h;  // no port — OpenShift routes handle TLS on 443
+})();
 
 async function fetchJSON(path) {
   try {

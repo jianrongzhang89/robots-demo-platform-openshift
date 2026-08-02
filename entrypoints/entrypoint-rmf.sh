@@ -215,10 +215,9 @@ else
   API_PID=""
 fi
 
-# Serve the custom fleet dashboard on port 3000
+# Serve the fleet dashboard on port 3000 (CORS open on API → cross-origin works)
 echo "[rmf-pod] Serving fleet dashboard on port 3000..."
-cd /opt/rmf-dashboard
-python3 -m http.server 3000 2>/dev/null &
+cd /opt/rmf-dashboard && python3 -m http.server 3000 2>/dev/null &
 DASHBOARD_PID=$!
 
 # battery_soc=1.0 is hardcoded in the adapter patch — no relay needed.

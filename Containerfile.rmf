@@ -77,7 +77,8 @@ RUN git clone --depth 1 -b jazzy https://github.com/open-rmf/rmf-web.git . \
     && sed -i \
          's/user_dep = authenticator.fastapi_dep()/async def _demo_user():\n    return type("U", (), {"username": "admin", "is_admin": True})()\nuser_dep = _demo_user/' \
          api_server/authenticator.py \
-    && rm -rf /opt/rmf-web/.git
+    && rm -rf /opt/rmf-web/.git \
+    && echo "Dashboard will be injected at /dashboard route via entrypoint"
 
 # Runtime dirs
 RUN mkdir -p /tmp/ros-home/.ros \
@@ -91,7 +92,7 @@ COPY config/rmf/ /opt/ros2-demo/rmf/
 COPY entrypoints/entrypoint-rmf.sh /entrypoint-rmf.sh
 RUN chmod +x /entrypoint-rmf.sh
 
-# Custom lightweight dashboard served on port 3000 via Python http.server
+# Custom lightweight dashboard — served by the API server at /dashboard
 RUN mkdir -p /opt/rmf-dashboard
 COPY config/rmf/dashboard.html /opt/rmf-dashboard/index.html
 
