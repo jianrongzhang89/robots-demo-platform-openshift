@@ -31,11 +31,10 @@ NEW_TF_SUB = '''        self.tf_sub = self.zenoh_session.declare_subscriber(
         # cross-pod use. odom is in the odom frame (starts at 0,0 at boot, not map
         # origin), so it gives wrong coordinates for robots spawned at non-origin
         # positions (-2,-0.5) and (2,0.5). amcl_pose gives true map-frame x/y/yaw.
-        import threading as _threading, struct as _struct, math as _math
+        import threading as _threading, struct as _struct, math as _math, os as _os
         self._odom_x = None
         self._odom_y = None
         self._odom_yaw = None
-        _pose_ready = _threading.Event()
 
         def _amcl_pose_cb(sample):
             try:
@@ -54,7 +53,6 @@ NEW_TF_SUB = '''        self.tf_sub = self.zenoh_session.declare_subscriber(
                                 self._odom_y = float(py)
                                 self._odom_yaw = float(
                                     _math.atan2(2*(ow*oz), 1 - 2*(oz**2)))
-                                _pose_ready.set()
                                 return
                     except Exception:
                         continue
@@ -65,14 +63,21 @@ NEW_TF_SUB = '''        self.tf_sub = self.zenoh_session.declare_subscriber(
             namespacify("amcl_pose", self.robot_name),
             _amcl_pose_cb
         )
-        # Block up to 90 seconds: AMCL needs time to converge at real_time_factor=0.5
-        if not _pose_ready.wait(timeout=90.0):
-            self.node.get_logger().warn(
-                f"[patch] No amcl_pose data for {self.robot_name} after 90s, using (0,0,0)"
-            )
-            self._odom_x = 0.0
-            self._odom_y = 0.0
-            self._odom_yaw = 0.0'''
+        # Non-blocking: use env-var spawn position as the initial cache value.
+        # This eliminates the 90-second race against AMCL startup timing.
+        # ROBOT_N_INITIAL_X/Y/YAW must match the Gazebo spawn positions (set in Helm).
+        _robot_env = self.robot_name.upper().replace('-', '_')
+        _env_x   = float(_os.environ.get(f'{_robot_env}_INITIAL_X',   '0.0'))
+        _env_y   = float(_os.environ.get(f'{_robot_env}_INITIAL_Y',   '0.0'))
+        _env_yaw = float(_os.environ.get(f'{_robot_env}_INITIAL_YAW', '0.0'))
+        if self._odom_x is None:
+            self._odom_x   = _env_x
+            self._odom_y   = _env_y
+            self._odom_yaw = _env_yaw
+            self.node.get_logger().info(
+                f"[patch] Using env-var spawn for {self.robot_name}: "
+                f"({self._odom_x:.2f}, {self._odom_y:.2f}, yaw={self._odom_yaw:.3f})"
+            )'''
 
 src = src.replace(OLD_TF_SUB, NEW_TF_SUB, 1)
 
@@ -194,7 +199,7 @@ import struct as _psnstruct, time as _psntime, threading as _psnthread
 class _PubSubNavHandle:
     """Navigation handle using pub/sub relay instead of broken action queryable."""
 
-    def __init__(self, robot_name, zenoh_session, node, x, y, yaw):
+    def __init__(self, robot_name, zenoh_session, node, x, y, yaw, execution=None):
         self._robot_name = robot_name
         self._node = node
         self._x = x; self._y = y; self._yaw = yaw
@@ -202,6 +207,9 @@ class _PubSubNavHandle:
         self._done = False
         self._succeeded = False
         self._lock = _psnthread.Lock()
+        # execution.finished() signals the patrol task to advance to the next waypoint.
+        # Without this call, the patrol stays stuck at the current waypoint forever.
+        self._execution = execution
 
         result_key = namespacify("rmf_navigate_result", robot_name)
         self._result_sub = zenoh_session.declare_subscriber(result_key, self._on_result)
@@ -231,7 +239,15 @@ class _PubSubNavHandle:
 
     def execute(self):
         cmd = f"{self._goal_id} {self._x:.6f} {self._y:.6f} {self._yaw:.6f}"
-        self._cmd_pub.put(self._str_cdr(cmd))
+        encoded = self._str_cdr(cmd)
+        # Publish the goal command multiple times over 3 seconds.
+        # The Zenoh→DDS route for rmf_navigate_cmd may not be established
+        # immediately after creating a new publisher — retrying ensures delivery.
+        def _publish_loop():
+            for _ in range(4):
+                self._cmd_pub.put(encoded)
+                _psntime.sleep(0.8)
+        _psnthread.Thread(target=_publish_loop, daemon=True).start()
         self._node.get_logger().info(
             f"[nav_relay] goal {self._goal_id}: ({self._x:.2f}, {self._y:.2f}, {self._yaw:.2f})"
         )
@@ -244,6 +260,13 @@ class _PubSubNavHandle:
                 except Exception:
                     pass
                 if self._succeeded:
+                    # Notify the C++ fleet adapter that this navigation step is complete.
+                    # This allows the patrol task to advance to the next waypoint.
+                    if self._execution is not None:
+                        try:
+                            self._execution.finished()
+                        except Exception:
+                            pass
                     return (True, True)
                 raise RequestAborted(f"goal {self._goal_id} failed")
         return (False, False)
@@ -293,6 +316,7 @@ NEW_NAV_CREATION = '''            self.nav_handle = _PubSubNavHandle(
                 destination.position[0],
                 destination.position[1],
                 destination.position[2],
+                execution,
             )'''
 
 if OLD_NAV_CREATION in src:

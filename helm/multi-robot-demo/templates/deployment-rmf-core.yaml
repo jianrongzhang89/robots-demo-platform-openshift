@@ -45,6 +45,20 @@ spec:
               value: /opt/ros2-demo/rmf/nav_graph.yaml
             - name: SERVER_URI
               value: "ws://localhost:8000/_internal"
+            # Robot spawn positions — used by patch_adapter.py as initial position cache
+            # so the fleet adapter never blocks waiting for amcl_pose at startup.
+            - name: ROBOT_1_INITIAL_X
+              value: "-2.0"
+            - name: ROBOT_1_INITIAL_Y
+              value: "-0.5"
+            - name: ROBOT_1_INITIAL_YAW
+              value: "0.0"
+            - name: ROBOT_2_INITIAL_X
+              value: "2.0"
+            - name: ROBOT_2_INITIAL_Y
+              value: "0.5"
+            - name: ROBOT_2_INITIAL_YAW
+              value: "3.14159"
           volumeMounts:
             - name: rmf-config
               mountPath: /opt/ros2-demo/rmf

@@ -53,15 +53,17 @@ RUN git clone --depth 1 https://github.com/open-rmf/free_fleet.git src/free_flee
     && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release \
     && rm -rf build log src/.git \
     && ADAPTER=/opt/free_fleet/install/free_fleet_adapter/lib/python3.12/site-packages/free_fleet_adapter/nav2_robot_adapter.py \
+    && ADAPTER2=/opt/free_fleet/install/free_fleet_adapter/lib/free_fleet_adapter/nav2_robot_adapter.py \
     && sed -i \
          's/namespacify(self\.map_frame, self\.robot_name)/self.map_frame/g' \
-         "${ADAPTER}" \
+         "${ADAPTER}" "${ADAPTER2}" \
     && sed -i \
          's/namespacify(self\.robot_frame, self\.robot_name)/self.robot_frame/g' \
-         "${ADAPTER}" \
+         "${ADAPTER}" "${ADAPTER2}" \
     && echo "Patched namespacify calls — adapter uses map_frame/robot_frame directly" \
     && python3 /patch_adapter.py "${ADAPTER}" \
-    && echo "Patched get_pose to use odom Zenoh key instead of TF"
+    && python3 /patch_adapter.py "${ADAPTER2}" \
+    && echo "Patched both adapter paths"
 
 # Build rmf-web API server (no React dashboard — avoids pnpm OOM in 6GB VM)
 WORKDIR /opt/rmf-web
