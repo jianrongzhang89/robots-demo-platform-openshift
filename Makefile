@@ -91,7 +91,7 @@ package: ## Package the Helm chart into a .tgz
 ##@ Open-RMF
 
 .PHONY: dispatch-patrol
-dispatch-patrol: ## Dispatch patrol: robot_1_home→mid_west→meeting_point (forces assignment to robot_1)
+dispatch-patrol: ## Dispatch patrol: robot_1_home→mid_west→meeting_point (robot_1 only)
 	$(eval RMFPOD := $(shell oc get pod -n $(NAMESPACE) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
 	@test -n "$(RMFPOD)" || { echo "ERROR: rmf-core pod not found in namespace '$(NAMESPACE)'"; exit 1; }
 	oc exec -n $(NAMESPACE) $(RMFPOD) -c rmf-core -- bash -c \
@@ -100,6 +100,25 @@ dispatch-patrol: ## Dispatch patrol: robot_1_home→mid_west→meeting_point (fo
 	   source /opt/free_fleet/install/setup.bash 2>/dev/null || true; \
 	   ros2 run rmf_demos_tasks dispatch_patrol \
 	     -p robot_1_home mid_west meeting_point -n 1 --use_sim_time'
+
+.PHONY: dispatch-dual-patrol
+dispatch-dual-patrol: ## Dual patrol: robot_1 (west→east) and robot_2 (east→west) both converge at meeting_point
+	$(eval RMFPOD := $(shell oc get pod -n $(NAMESPACE) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
+	@test -n "$(RMFPOD)" || { echo "ERROR: rmf-core pod not found in namespace '$(NAMESPACE)'"; exit 1; }
+	@echo "Dispatching robot_1 patrol: robot_1_home → mid_west → meeting_point"
+	oc exec -n $(NAMESPACE) $(RMFPOD) -c rmf-core -- bash -c \
+	  'export HOME=/tmp/ros-home; \
+	   source /opt/ros/jazzy/setup.bash; \
+	   source /opt/free_fleet/install/setup.bash 2>/dev/null || true; \
+	   ros2 run rmf_demos_tasks dispatch_patrol \
+	     -p robot_1_home mid_west meeting_point -n 1 --use_sim_time'
+	@echo "Dispatching robot_2 patrol: robot_2_home → meeting_point"
+	oc exec -n $(NAMESPACE) $(RMFPOD) -c rmf-core -- bash -c \
+	  'export HOME=/tmp/ros-home; \
+	   source /opt/ros/jazzy/setup.bash; \
+	   source /opt/free_fleet/install/setup.bash 2>/dev/null || true; \
+	   ros2 run rmf_demos_tasks dispatch_patrol \
+	     -p robot_2_home meeting_point -n 1 --use_sim_time'
 
 .PHONY: rmf-status
 rmf-status: ## Show fleet state from RMF (robot positions and task status)

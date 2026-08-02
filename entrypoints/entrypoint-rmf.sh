@@ -103,13 +103,19 @@ conf.insert_json5("mode", '"client"')
 conf.insert_json5("scouting/multicast/enabled", "false")
 z = zenoh.open(conf)
 
-# Subscribe to cmd_vel for both robots — no-op callback keeps the routes alive
-for key in ["robot_1/cmd_vel", "robot_2/cmd_vel"]:
-    z.declare_subscriber(key, lambda s: None)
-
-print("[rmf-pod] cmd_vel Zenoh keepalive active")
+# Periodically re-subscribe every 55s to force route re-creation.
+# The zenoh-bridge-ros2dds removes the DDS→Zenoh route when the first
+# subscriber retires (~90s), even if other subscribers exist. Re-subscribing
+# triggers the nav bridge to create a fresh route before the old one dies.
+KEYS = ["robot_1/cmd_vel", "robot_2/cmd_vel"]
+print("[rmf-pod] cmd_vel Zenoh keepalive active (refreshes every 55s)")
 while True:
-    time.sleep(10)
+    subs = [z.declare_subscriber(k, lambda s: None) for k in KEYS]
+    time.sleep(55)
+    for sub in subs:
+        try: sub.undeclare()
+        except: pass
+    time.sleep(0.5)  # brief gap triggers route re-creation on next subscribe
 CMDVEL_KEEP_EOF
 CMDVEL_KEEP_PID=$!
 sleep 2

@@ -25,9 +25,10 @@ import os
 
 # P controller parameters
 GOAL_TOLERANCE = 0.35  # m — stop when within this distance of goal
-ALIGN_THRESHOLD = 1.5  # rad (~86°) — drive forward unless facing nearly backwards.
-# Increased from 0.5: at 0.5 the robot overshoots past threshold, linear.x drops
-# to 0, and it oscillates (pure spin) indefinitely. 1.5 rad prevents oscillation.
+ALIGN_THRESHOLD = 3.15  # rad — always drive forward (never pure-spin).
+# Any finite threshold causes oscillation: robot overshoots, |yaw_err| > threshold,
+# linear.x drops to 0, robot spins CW/CCW, overshoots again, cycles forever.
+# Setting threshold > π means linear.x is always commanded (standard P controller).
 LINEAR_KP  = 0.4       # forward speed gain
 ANGULAR_KP = 1.2       # turning gain
 MAX_LINEAR  = 0.20     # m/s max forward speed
