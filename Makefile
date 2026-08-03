@@ -67,8 +67,11 @@ undeploy: ## Uninstall the Helm release
 	oc delete namespace $(NAMESPACE) --ignore-not-found
 
 .PHONY: restart
-restart: ## Rolling restart of all demo pods (Gazebo + nav2 + rmf-core)
+restart: ## Rolling restart of all demo pods (Gazebo first, then nav2 + rmf-core)
+	@echo "Step 1: Restarting Gazebo and waiting for it to be fully ready..."
 	oc rollout restart deployment/gazebo-sim -n $(NAMESPACE)
+	oc rollout status deployment/gazebo-sim -n $(NAMESPACE) --timeout=5m
+	@echo "Step 2: Restarting nav2 pods (Gazebo is ready, odom is fresh)..."
 	@for d in $$(oc get deployments -n $(NAMESPACE) -o name | grep robot-nav); do \
 	  oc rollout restart $$d -n $(NAMESPACE); \
 	done
@@ -102,23 +105,12 @@ dispatch-patrol: ## Dispatch patrol: robot_1_home→mid_west→meeting_point (ro
 	     -p robot_1_home mid_west meeting_point -n 1 --use_sim_time'
 
 .PHONY: dispatch-dual-patrol
-dispatch-dual-patrol: ## Dual patrol: robot_1 (west→east) and robot_2 (east→west) both converge at meeting_point
+dispatch-dual-patrol: ## Dual patrol: both robots converge at meeting_point via direct Zenoh (bypasses RMF traffic scheduler)
 	$(eval RMFPOD := $(shell oc get pod -n $(NAMESPACE) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
 	@test -n "$(RMFPOD)" || { echo "ERROR: rmf-core pod not found in namespace '$(NAMESPACE)'"; exit 1; }
-	@echo "Dispatching robot_1 patrol: robot_1_home → mid_west → meeting_point"
-	oc exec -n $(NAMESPACE) $(RMFPOD) -c rmf-core -- bash -c \
-	  'export HOME=/tmp/ros-home; \
-	   source /opt/ros/jazzy/setup.bash; \
-	   source /opt/free_fleet/install/setup.bash 2>/dev/null || true; \
-	   ros2 run rmf_demos_tasks dispatch_patrol \
-	     -p robot_1_home mid_west meeting_point -n 1 --use_sim_time'
-	@echo "Dispatching robot_2 patrol: robot_2_home → meeting_point"
-	oc exec -n $(NAMESPACE) $(RMFPOD) -c rmf-core -- bash -c \
-	  'export HOME=/tmp/ros-home; \
-	   source /opt/ros/jazzy/setup.bash; \
-	   source /opt/free_fleet/install/setup.bash 2>/dev/null || true; \
-	   ros2 run rmf_demos_tasks dispatch_patrol \
-	     -p robot_2_home meeting_point -n 1 --use_sim_time'
+	@echo "Dispatching dual patrol: robot_1 (home→mid_west→meeting_point) and robot_2 (home→meeting_point)"
+	oc cp entrypoints/dual_patrol.py $(NAMESPACE)/$(RMFPOD):/tmp/dual_patrol.py -c rmf-core
+	oc exec -n $(NAMESPACE) $(RMFPOD) -c rmf-core -- python3 /tmp/dual_patrol.py
 
 .PHONY: rmf-status
 rmf-status: ## Show fleet state from RMF (robot positions and task status)

@@ -131,6 +131,7 @@ open('${PATCHED_SDF}', 'w').write(content)
     x_pose:="${rx}" \
     y_pose:="${ry}" \
     z_pose:=0.01 \
+    yaw_pose:="${ryaw}" \
     robot_sdf:="${PATCHED_SDF}" &
   SPAWN_PIDS+=($!)
 
@@ -144,6 +145,29 @@ open('${PATCHED_SDF}', 'w').write(content)
     --remap /tf_static:=/"${rname}"/tf_static \
     -p use_sim_time:=true \
     -p "robot_description:=$(cat "${URDF_FILE}")" &
+done
+
+# --- 8b. Set correct spawn orientation via gz set_pose ---
+# spawn_tb3.launch.py ignores yaw_pose — the model always spawns at yaw=0.
+# Use gz service set_pose to apply the correct orientation after spawning.
+echo "[gazebo-pod] Waiting for Gazebo world to be ready before setting robot orientations..."
+for i in $(seq 1 30); do
+  if gz topic -l 2>/dev/null | grep -q "/world/${WORLD_NAME}/"; then
+    break
+  fi
+  sleep 2
+done
+sleep 5  # extra settle time for spawn to complete
+
+for spec in ${ROBOTS}; do
+  IFS=: read -r rname rx ry ryaw rcolor <<< "${spec}"
+  # Compute quaternion for yaw: qz=sin(yaw/2), qw=cos(yaw/2)
+  read -r qz qw < <(python3 -c "import math; y=${ryaw}; print(math.sin(y/2), math.cos(y/2))")
+  echo "[gazebo-pod] Setting ${rname} pose: (${rx}, ${ry}) yaw=${ryaw} qz=${qz} qw=${qw}"
+  gz service -s /world/${WORLD_NAME}/set_pose \
+    --reqtype gz.msgs.Pose --reptype gz.msgs.Boolean \
+    --req "name: \"${rname}\" position {x: ${rx} y: ${ry} z: 0.01} orientation {x: 0.0 y: 0.0 z: ${qz} w: ${qw}}" \
+    --timeout 3000 2>/dev/null || true
 done
 
 # --- 9. Launch Gazebo GUI client for visualization ---

@@ -28,7 +28,12 @@ RUN dnf install -y \
       openbox \
       xterm \
       python3 \
+      python3-pip \
     && dnf clean all
+
+# Install Python zenoh bindings so entrypoint-nav2.sh can run a local Zenoh
+# subscriber keepalive (prevents the nav bridge from retiring its cmd_vel route).
+RUN pip3 install --break-system-packages eclipse-zenoh==1.5.0
 
 RUN mkdir -p /tmp/.X11-unix && chmod 1777 /tmp/.X11-unix
 

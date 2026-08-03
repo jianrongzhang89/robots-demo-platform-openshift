@@ -113,7 +113,31 @@ NAV2_PID=$!
       # which times out and incorrectly shows nodes as inactive even when they're active.
       # TF instability from clock jumps can cause controller_server to fail internally,
       # which the lifecycle manager then propagates to deactivate bt_navigator.
-      KEEPALIVE_PID=""
+      # Local Zenoh cmd_vel subscriber: keep the nav bridge's DDS→Zenoh route alive.
+      # A LOCAL subscriber in the same pod prevents the route from being removed
+      # when external subscribers (Gazebo bridge) change Zenoh sessions (~90s).
+      python3 -c "
+import zenoh, time, sys, signal
+# Ignore SIGTERM/SIGINT so this keepalive process survives pod lifecycle events.
+signal.signal(signal.SIGTERM, lambda s, f: None)
+signal.signal(signal.SIGINT, lambda s, f: None)
+# Auto-restart loop: catch BaseException (includes SystemExit + KeyboardInterrupt)
+# so SIGTERM cannot kill this process.
+while True:
+    try:
+        conf = zenoh.Config()
+        conf.insert_json5('connect/endpoints', '[\"tcp/zenoh-router:7447\"]')
+        conf.insert_json5('mode', '\"client\"')
+        conf.insert_json5('scouting/multicast/enabled', 'false')
+        z = zenoh.open(conf)
+        sub = z.declare_subscriber('${ROBOT_NAME}/cmd_vel', lambda s: None)
+        print('[nav2-pod] local cmd_vel Zenoh keepalive active', flush=True)
+        while True: time.sleep(10)
+    except BaseException as e:
+        print(f'[nav2-pod] keepalive restart: {e}', flush=True)
+        time.sleep(5)
+" &
+      KEEPALIVE_PID=$!
 
       echo "[nav2-pod/${ROBOT_NAME}] Starting navigation watchdog (continuous monitoring)..."
       while true; do
