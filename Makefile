@@ -112,6 +112,14 @@ dispatch-dual-patrol: ## Dual patrol: both robots converge at meeting_point via 
 	oc cp entrypoints/dual_patrol.py $(NAMESPACE)/$(RMFPOD):/tmp/dual_patrol.py -c rmf-core
 	oc exec -n $(NAMESPACE) $(RMFPOD) -c rmf-core -- python3 /tmp/dual_patrol.py
 
+.PHONY: dispatch-swap-patrol
+dispatch-swap-patrol: ## Swap patrol: robots swap spawn positions (collision-free via offset paths)
+	$(eval RMFPOD := $(shell oc get pod -n $(NAMESPACE) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
+	@test -n "$(RMFPOD)" || { echo "ERROR: rmf-core pod not found in namespace '$(NAMESPACE)'"; exit 1; }
+	@echo "Swap patrol: robot_1 → robot_2_home, robot_2 → robot_1_home (via offset paths)"
+	oc cp entrypoints/swap_patrol.py $(NAMESPACE)/$(RMFPOD):/tmp/swap_patrol.py -c rmf-core
+	oc exec -n $(NAMESPACE) $(RMFPOD) -c rmf-core -- python3 /tmp/swap_patrol.py
+
 .PHONY: rmf-status
 rmf-status: ## Show fleet state from RMF (robot positions and task status)
 	$(eval RMFPOD := $(shell oc get pod -n $(NAMESPACE) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
