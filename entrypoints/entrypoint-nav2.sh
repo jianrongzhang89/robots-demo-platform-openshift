@@ -77,14 +77,14 @@ NAV2_PID=$!
       # Zenoh bridges the sim clock at ~1350 Hz; occasional out-of-order delivery
       # causes tf2 "jump back in time" buffer clears. High transform_tolerance lets
       # costmaps survive the brief gaps and attempt activation successfully.
-      ros2 param set /amcl transform_tolerance 10.0 2>/dev/null || true
-      ros2 param set /local_costmap/local_costmap transform_tolerance 10.0 2>/dev/null || true
-      ros2 param set /global_costmap/global_costmap transform_tolerance 10.0 2>/dev/null || true
+      timeout 8 ros2 param set /amcl transform_tolerance 10.0 2>/dev/null || true
+      timeout 8 ros2 param set /local_costmap/local_costmap transform_tolerance 10.0 2>/dev/null || true
+      timeout 8 ros2 param set /global_costmap/global_costmap transform_tolerance 10.0 2>/dev/null || true
       # Large yaw tolerance: RMF waypoint approach requires a specific final yaw
       # (~π rad), but the traffic manager verifies orientation separately.
       # Setting yaw_goal_tolerance=π lets Nav2 declare the waypoint reached on
       # position alone without requiring a long in-place rotation.
-      ros2 param set /controller_server general_goal_checker.yaw_goal_tolerance 3.14159 2>/dev/null || true
+      timeout 8 ros2 param set /controller_server general_goal_checker.yaw_goal_tolerance 3.14159 2>/dev/null || true
 
       echo "[nav2-pod/${ROBOT_NAME}] Publishing initial pose at (${INITIAL_X}, ${INITIAL_Y}, yaw=${INITIAL_YAW})..."
       # Compute quaternion from yaw: qz=sin(yaw/2), qw=cos(yaw/2) (qx=qy=0 for planar)
@@ -114,15 +114,12 @@ NAV2_PID=$!
       # TF instability from clock jumps can cause controller_server to fail internally,
       # which the lifecycle manager then propagates to deactivate bt_navigator.
       # Local Zenoh cmd_vel subscriber: keep the nav bridge's DDS→Zenoh route alive.
-      # A LOCAL subscriber in the same pod prevents the route from being removed
-      # when external subscribers (Gazebo bridge) change Zenoh sessions (~90s).
+      # Auto-restart loop catches BaseException and ignores SIGTERM/SIGINT so
+      # this process survives for the lifetime of the pod.
       python3 -c "
 import zenoh, time, sys, signal
-# Ignore SIGTERM/SIGINT so this keepalive process survives pod lifecycle events.
 signal.signal(signal.SIGTERM, lambda s, f: None)
 signal.signal(signal.SIGINT, lambda s, f: None)
-# Auto-restart loop: catch BaseException (includes SystemExit + KeyboardInterrupt)
-# so SIGTERM cannot kill this process.
 while True:
     try:
         conf = zenoh.Config()

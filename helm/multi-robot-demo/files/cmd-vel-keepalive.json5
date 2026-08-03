@@ -1,0 +1,41 @@
+{
+  // Persistent cmd_vel keepalive sidecar.
+  //
+  // Subscribes to Zenoh "<robot_N>/cmd_vel" (all robots) and creates a harmless
+  // DDS publisher for "/<robot_N>/cmd_vel_ka" in the nav pod — the DDS side is
+  // unused, but the Zenoh subscription is what matters: it keeps the nav bridge's
+  // DDS→Zenoh route for /cmd_vel alive even when the Gazebo bridge changes
+  // Zenoh sessions (~81 s).
+  //
+  // Running as a Kubernetes sidecar container (not a bash background process)
+  // means it cannot die without K8s restarting the pod — fully reliable.
+  //
+  // No namespace: Zenoh key "<robot_N>/cmd_vel" maps directly to DDS
+  // "/<robot_N>/cmd_vel_ka".  The nav bridge (namespace "/<robot_N>") would
+  // try to forward "/<robot_N>/cmd_vel_ka" → Zenoh "<robot_N>/<robot_N>/cmd_vel_ka"
+  // (double prefix, different key) — no feedback loop.
+  plugins: {
+    ros2dds: {
+      allow: {
+        // Exact keys only — avoids infinite cascade through nav bridge namespace
+        // (which would turn robot_1/cmd_vel → robot_1/robot_1/cmd_vel → ...).
+        subscribers: ["robot_1/cmd_vel", "robot_2/cmd_vel"]
+      }
+    }
+  },
+  mode: "client",
+  connect: {
+    endpoints: ["tcp/zenoh-router:7447"],
+    retry: {
+      period_init_ms: 1000,
+      period_max_ms: 16000,
+      period_increase_factor: 2
+    },
+    exit_on_failure: false
+  },
+  scouting: {
+    multicast: {
+      enabled: false
+    }
+  }
+}

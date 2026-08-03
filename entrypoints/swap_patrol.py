@@ -2,15 +2,21 @@
 """
 Swap-position patrol: robot_1 and robot_2 travel to each other's spawn position.
 
-Collision avoidance via vertically offset paths:
-  robot_1 (blue, SW -2,-0.5): home → south_pass (0,-0.5) → robot_2_home (2,0.5)
-  robot_2 (red,  NE  2, 0.5): home → north_pass (0, 0.5) → robot_1_home (-2,-0.5)
+The tb3_sandbox has a 3×3 grid of internal pillars at
+  x ∈ {-1.1, 0, 1.1}  ×  y ∈ {-1.1, 0, 1.1}
+which block diagonal cross-sandbox paths. Safe clear corridors exist at y=±0.6
+(≥0.5 m from both pillar rows) and along the outer boundary (x=±2, no pillars).
 
-At the crossover region (x≈0), robot_1 is at y=-0.5 and robot_2 at y=+0.5,
-giving 1.0m separation — well above the 0.6m combined footprint.
+Routes:
+  robot_1 (blue): home → meeting_pt(0,0) → south(0,-0.6) → east(2,-0.6) → robot_2_home(2,0.5)
+  robot_2 (red):  home → [30s delay] → meeting_pt → north(0,0.6) → west(-2,0.6) → robot_1_home(-2,-0.5)
 
-Both robots run in parallel threads.  Uses the same CDR-encoded direct Zenoh
-dispatch as dual_patrol.py, bypassing the RMF traffic scheduler.
+Collision avoidance: robot_2 starts 30 s after robot_1 to avoid sharing the
+meeting_point area. After meeting_point, robot_1 uses the south corridor (y=-0.6)
+and robot_2 uses the north corridor (y=+0.6), keeping 1.2 m separation.
+
+Both robots use CDR-encoded direct Zenoh dispatch, bypassing the RMF traffic
+scheduler.
 """
 import zenoh, time, struct, threading, random
 
@@ -77,26 +83,33 @@ class NavAgent:
 
 def robot1_patrol(session):
     agent = NavAgent(session, "robot_1")
-    print("[robot_1] Swap patrol: home → south_pass → robot_2_home")
-    agent.navigate(-2.0, -0.5)   # robot_1_home (immediate — already there)
-    agent.navigate( 0.0, -0.5)   # south pass-through (y=-0.5, below robot_2)
-    agent.navigate( 2.0,  0.5)   # robot_2_home destination
+    print("[robot_1] Swap: home → meeting_pt → south(0,-0.6) → east(2,-0.6) → robot_2_home")
+    agent.navigate(-2.0, -0.5)   # robot_1_home (immediate)
+    agent.navigate( 0.0,  0.0)   # meeting_point
+    agent.navigate( 0.0, -0.6)   # move south into clear corridor (y=-0.6, ≥0.5m from pillars)
+    agent.navigate( 2.0, -0.6)   # travel east along clear corridor
+    agent.navigate( 2.0,  0.5)   # robot_2_home (no pillars at x=2)
     print("[robot_1] Swap patrol complete")
 
 
 def robot2_patrol(session):
     agent = NavAgent(session, "robot_2")
-    print("[robot_2] Swap patrol: home → north_pass → robot_1_home")
-    agent.navigate( 2.0,  0.5)   # robot_2_home (immediate — already there)
-    agent.navigate( 0.0,  0.5)   # north pass-through (y=+0.5, above robot_1)
-    agent.navigate(-2.0, -0.5)   # robot_1_home destination
+    # Delay so robot_1 clears the meeting_point region first (~30 s)
+    print("[robot_2] Waiting 30 s for robot_1 to clear meeting_point corridor...")
+    time.sleep(30)
+    print("[robot_2] Swap: home → meeting_pt → north(0,0.6) → west(-2,0.6) → robot_1_home")
+    agent.navigate( 2.0,  0.5)   # robot_2_home (immediate)
+    agent.navigate( 0.0,  0.0)   # meeting_point
+    agent.navigate( 0.0,  0.6)   # move north into clear corridor (y=+0.6, ≥0.5m from pillars)
+    agent.navigate(-2.0,  0.6)   # travel west along clear corridor
+    agent.navigate(-2.0, -0.5)   # robot_1_home (no pillars at x=-2)
     print("[robot_2] Swap patrol complete")
 
 
 if __name__ == "__main__":
     print("Swap patrol: robots travel to each other's spawn (collision-free)")
-    print(f"  robot_1 (blue): (-2,-0.5) → (0,-0.5) → (2,0.5)")
-    print(f"  robot_2 (red):  ( 2, 0.5) → (0, 0.5) → (-2,-0.5)")
+    print(f"  robot_1 (blue): home → center → south-corridor(y=-0.6) → robot_2_home(2,0.5)")
+    print(f"  robot_2 (red):  home → [30s] → center → north-corridor(y=+0.6) → robot_1_home(-2,-0.5)")
     print(f"Router: {ROUTER}")
 
     z = open_session()
