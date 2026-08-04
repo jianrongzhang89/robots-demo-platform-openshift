@@ -188,10 +188,30 @@ NAV2_PID=$!
       # which times out and incorrectly shows nodes as inactive even when they're active.
       # TF instability from clock jumps can cause controller_server to fail internally,
       # which the lifecycle manager then propagates to deactivate bt_navigator.
-      # cmd_vel keepalive is embedded in nav2_relay.py as a daemon thread
-      # (more reliable than a separate shell background process).
-      echo "[nav2-pod/${ROBOT_NAME}] cmd_vel keepalive: running inside nav2_relay.py"
-      KEEPALIVE_PID=""
+      # External Zenoh keepalive process (MUST be separate — zenoh+rclpy share
+      # the same Python process causes segfaults in CycloneDDS).
+      # Reconnects every 55 s to create fresh Zenoh subscriber events, which
+      # forces the nav bridge to recreate the DDS→Zenoh route after retirements.
+      python3 -c "
+import zenoh, time, sys, signal
+signal.signal(signal.SIGTERM, lambda s, f: None)
+signal.signal(signal.SIGINT, lambda s, f: None)
+while True:
+    try:
+        conf = zenoh.Config()
+        conf.insert_json5('connect/endpoints', '[\"tcp/zenoh-router:7447\"]')
+        conf.insert_json5('mode', '\"client\"')
+        conf.insert_json5('scouting/multicast/enabled', 'false')
+        z = zenoh.open(conf)
+        sub = z.declare_subscriber('${ROBOT_NAME}/cmd_vel', lambda s: None)
+        print('[nav2-pod] keepalive active for ${ROBOT_NAME}', flush=True)
+        time.sleep(55)
+        try: sub.undeclare(); z.close()
+        except: pass
+    except BaseException as e:
+        time.sleep(5)
+" &
+      KEEPALIVE_PID=$!
 
       echo "[nav2-pod/${ROBOT_NAME}] Starting navigation watchdog (continuous monitoring)..."
       while true; do
