@@ -50,15 +50,38 @@ CLOCK_ROS_RELAY_PID=""
 TF_HEARTBEAT_PID=""
 
 echo "[nav2-pod/${ROBOT_NAME}] Launching Nav2 bringup (no ROS namespace — isolation via Zenoh)..."
-# Using namespace:="" so RewrittenYaml does NOT wrap params under robot_N.*
-# Without this, nodes run as /controller_server but params are at robot_N.controller_server.*
-# which causes 'No critics defined for FollowPath' and Nav2 fails to start.
-# Robot isolation is handled by the per-robot zenoh bridge namespace instead.
+# Patch the default nav2_params.yaml to disable MPPI reversing.
+# allow_reversing=true (default) causes robots to drive backward toward goals.
+NAV2_PARAMS="${BRINGUP_DIR}/params/nav2_params.yaml"
+CUSTOM_PARAMS="/tmp/nav2_params_${ROBOT_NAME}.yaml"
+if [ -f "${NAV2_PARAMS}" ]; then
+  python3 -c "
+import yaml, sys
+with open('${NAV2_PARAMS}') as f:
+    p = yaml.safe_load(f) or {}
+cs = p.setdefault('controller_server', {}).setdefault('ros__parameters', {})
+# Disable backward driving (MPPI default allow_reversing=true causes westward driving)
+cs.setdefault('FollowPath', {})['allow_reversing'] = False
+# Lenient progress checker: sandbox navigation is slow at RTF=0.5
+# Default required_movement_radius=0.5m in 10 sim-s is too tight for cross-sandbox paths
+pc = cs.setdefault('progress_checker', {})
+pc['plugin'] = 'nav2_controller::SimpleProgressChecker'
+pc['required_movement_radius'] = 0.05  # only need 5 cm movement
+pc['movement_time_allowance'] = 60.0   # 60 sim-s = 120 wall-s at RTF=0.5
+with open('${CUSTOM_PARAMS}', 'w') as f:
+    yaml.dump(p, f, default_flow_style=False)
+print('[nav2-pod] Patched nav2 params: allow_reversing=false, lenient progress checker')
+" 2>/dev/null && PARAMS_ARG="params_file:=${CUSTOM_PARAMS}" || PARAMS_ARG=""
+else
+  PARAMS_ARG=""
+fi
+
 ros2 launch nav2_bringup bringup_launch.py \
   use_sim_time:=True \
   autostart:=True \
   use_composition:=False \
-  map:="${BRINGUP_DIR}/maps/tb3_sandbox.yaml" &
+  map:="${BRINGUP_DIR}/maps/tb3_sandbox.yaml" \
+  ${PARAMS_ARG} &
 NAV2_PID=$!
 
 # Wait for AMCL to load, then set initial pose so localization can start.
@@ -138,11 +161,15 @@ while True:
 
       echo "[nav2-pod/${ROBOT_NAME}] Starting navigation watchdog (continuous monitoring)..."
       while true; do
-        sleep 20
-        if timeout 3 ros2 action list 2>/dev/null | grep -q "navigate_to_pose"; then
-          : # Action server available — no action needed
+        sleep 10
+        # Check navigate_to_pose action server and bt_navigator lifecycle state.
+        # The action server may be listed but INACTIVE (rejecting goals); detect this
+        # by checking the lifecycle state directly.
+        BT_STATE=$(timeout 3 ros2 lifecycle get /bt_navigator 2>/dev/null | grep -oE "[a-z]+ \[[0-9]+\]" | head -1)
+        if echo "${BT_STATE}" | grep -q "active"; then
+          : # Nav2 active — no action needed
         else
-          echo "[nav2-pod/${ROBOT_NAME}] navigate_to_pose not available, calling RESUME..."
+          echo "[nav2-pod/${ROBOT_NAME}] bt_navigator not active (${BT_STATE}), calling RESUME..."
           timeout 90 ros2 service call /lifecycle_manager_navigation/manage_nodes \
             nav2_msgs/srv/ManageLifecycleNodes "{command: 2}" 2>/dev/null || true
         fi

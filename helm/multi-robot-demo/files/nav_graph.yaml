@@ -58,6 +58,9 @@ levels:
       - [2, 0, {graph_idx: 0, speed_limit: 0.26}]
       - [2, 1, {graph_idx: 0, speed_limit: 0.26}]
       - [1, 2, {graph_idx: 0, speed_limit: 0.26}]
+      # Direct cross-sandbox lanes for the swap demo — let Nav2 plan the path
+      - [0, 1, {graph_idx: 0, speed_limit: 0.26}]
+      - [1, 0, {graph_idx: 0, speed_limit: 0.26}]
       # robot_1_home (0) <-> charger_1 (3) — required by free_fleet_adapter
       - [0, 3, {graph_idx: 0, speed_limit: 0.20}]
       - [3, 0, {graph_idx: 0, speed_limit: 0.20}]

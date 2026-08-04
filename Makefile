@@ -113,12 +113,23 @@ dispatch-dual-patrol: ## Dual patrol: both robots converge at meeting_point via 
 	oc exec -n $(NAMESPACE) $(RMFPOD) -c rmf-core -- python3 /tmp/dual_patrol.py
 
 .PHONY: dispatch-swap-patrol
-dispatch-swap-patrol: ## Swap patrol: robots swap spawn positions (collision-free via offset paths)
+dispatch-swap-patrol: ## Swap patrol via RMF+Nav2: each robot navigates to the other's spawn (map-aware path planning)
 	$(eval RMFPOD := $(shell oc get pod -n $(NAMESPACE) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
 	@test -n "$(RMFPOD)" || { echo "ERROR: rmf-core pod not found in namespace '$(NAMESPACE)'"; exit 1; }
-	@echo "Swap patrol: robot_1 → robot_2_home, robot_2 → robot_1_home (via offset paths)"
-	oc cp entrypoints/swap_patrol.py $(NAMESPACE)/$(RMFPOD):/tmp/swap_patrol.py -c rmf-core
-	oc exec -n $(NAMESPACE) $(RMFPOD) -c rmf-core -- python3 /tmp/swap_patrol.py
+	@echo "Dispatching robot_1 swap patrol: robot_1_home → robot_2_home (via RMF + Nav2)"
+	oc exec -n $(NAMESPACE) $(RMFPOD) -c rmf-core -- bash -c \
+	  'export HOME=/tmp/ros-home; \
+	   source /opt/ros/jazzy/setup.bash; \
+	   source /opt/free_fleet/install/setup.bash 2>/dev/null || true; \
+	   ros2 run rmf_demos_tasks dispatch_patrol \
+	     -p robot_1_home robot_2_home -n 1 --use_sim_time'
+	@echo "Dispatching robot_2 swap patrol: robot_2_home → robot_1_home (via RMF + Nav2)"
+	oc exec -n $(NAMESPACE) $(RMFPOD) -c rmf-core -- bash -c \
+	  'export HOME=/tmp/ros-home; \
+	   source /opt/ros/jazzy/setup.bash; \
+	   source /opt/free_fleet/install/setup.bash 2>/dev/null || true; \
+	   ros2 run rmf_demos_tasks dispatch_patrol \
+	     -p robot_2_home robot_1_home -n 1 --use_sim_time'
 
 .PHONY: rmf-status
 rmf-status: ## Show fleet state from RMF (robot positions and task status)
