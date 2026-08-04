@@ -41,10 +41,14 @@ def _start_zenoh_keepalive(robot_name: str) -> None:
     reconnects on any Zenoh error so the nav-bridge DDS→Zenoh route for
     /cmd_vel is always alive.
     """
+    # Reconnect interval: 55 s is just under the ~81 s session-change point.
+    # Periodic reconnection creates fresh Zenoh subscription events which
+    # trigger the nav bridge to recreate the DDS→Zenoh route — the same
+    # mechanism that made the Python keepalive work on the main branch.
+    RECONNECT_INTERVAL = 55.0
+
     def _loop():
         import zenoh
-        # Note: signal.signal() cannot be called from a non-main thread.
-        # The daemon thread is automatically killed when the relay process exits.
         while True:
             try:
                 conf = zenoh.Config()
@@ -57,8 +61,15 @@ def _start_zenoh_keepalive(robot_name: str) -> None:
                                            lambda s: None)
                 print(f"[nav_relay] cmd_vel keepalive active for {robot_name}",
                       flush=True)
-                while True:
-                    time.sleep(10)
+                time.sleep(RECONNECT_INTERVAL)
+                # Deliberate periodic reconnection: creates a fresh Zenoh
+                # subscription event so the nav bridge recreates the DDS→Zenoh
+                # route after any session retirement.
+                try:
+                    sub.undeclare()
+                    z.close()
+                except Exception:
+                    pass
             except BaseException as exc:
                 print(f"[nav_relay] keepalive restart ({exc})", flush=True)
                 time.sleep(5)
