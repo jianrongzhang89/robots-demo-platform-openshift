@@ -60,49 +60,32 @@ with open('${NAV2_PARAMS}') as f:
     p = yaml.safe_load(f) or {}
 cs = p.setdefault('controller_server', {}).setdefault('ros__parameters', {})
 
-# ── MPPI tuning for tb3_sandbox (tight pillar corridors, RTF=0.5) ──────────
+# ── Switch to DWB controller — MPPI generates near-zero velocity for robot_2
+# at (2.0,0.5) because all forward trajectories are high-cost (pillar ahead).
+# DWB uses explicit DWA sampling which handles boundary positions better.
 fp = cs.setdefault('FollowPath', {})
-# allow_reversing=True so MPPI can compute valid paths through tight pillar grid.
-# PreferForwardCritic (weight=5.0 below) discourages backward motion instead.
-fp['allow_reversing'] = True
-fp['time_steps'] = 15              # short horizon: better for tight spaces (default 56)
-fp['batch_size'] = 2000            # more trajectories for complex environments (default 1000)
-fp['temperature'] = 0.3            # default 0.3 — keep moderate exploration
-fp['gamma'] = 0.015                # default 0.015
-fp['vx_max'] = 0.26                # match sandbox speed limit
-fp['vx_min'] = 0.0                 # no reverse
-fp['wz_max'] = 1.5                 # allow faster turning in narrow passages (default 1.9)
-fp['prune_distance'] = 0.8         # shorter look-back for plan pruning (default 1.7)
-fp['model_dt'] = 0.05              # simulation timestep (default 0.05)
-
-# Critic weights tuned for the pillar maze:
-# - Higher PathFollow: stay closer to the global plan (avoids getting stuck)
-# - Lower Obstacles: allow passing closer to pillars when plan requires it
-# - Enable PathAlign for direction following
-fp.setdefault('PathFollowCritic', {}).update({
-    'enabled': True, 'cost_weight': 5.0, 'cost_power': 1  # default 2.0
-})
-fp.setdefault('PathAlignCritic', {}).update({
-    'enabled': True, 'cost_weight': 14.0,  # default 14.0 — keep
-    'trajectory_point_step': 4, 'threshold_to_consider': 0.4
-})
-fp.setdefault('ObstaclesCritic', {}).update({
-    'enabled': True, 'cost_weight': 1.5,   # reduce from default 2.0
-    'inflation_layer_name': 'InflationLayer'
-})
-fp.setdefault('CostCritic', {}).update({
-    'enabled': True, 'cost_weight': 3.81,  # default 3.81 — keep
-    'cost_power': 1, 'collision_cost': 1e4, 'critical_cost': 300.0
-})
-fp.setdefault('GoalCritic', {}).update({
-    'enabled': True, 'cost_weight': 5.0, 'threshold_to_consider': 1.0
-})
-fp.setdefault('GoalAngleCritic', {}).update({
-    'enabled': True, 'cost_weight': 3.0, 'threshold_to_consider': 0.4
-})
-fp.setdefault('PreferForwardCritic', {}).update({
-    'enabled': True, 'cost_weight': 5.0   # stronger forward preference
-})
+fp['plugin'] = 'dwb_core::DWBLocalPlanner'
+fp['debug_trajectory_details'] = False
+fp['min_vel_x'] = 0.0;   fp['max_vel_x'] = 0.26
+fp['min_vel_y'] = 0.0;   fp['max_vel_y'] = 0.0
+fp['max_vel_theta'] = 1.0;  fp['min_speed_theta'] = 0.0
+fp['min_speed_xy'] = 0.0;   fp['max_speed_xy'] = 0.26
+fp['acc_lim_x'] = 2.5;  fp['decel_lim_x'] = -2.5
+fp['acc_lim_y'] = 0.0;  fp['decel_lim_y'] = 0.0
+fp['acc_lim_theta'] = 3.2;  fp['decel_lim_theta'] = -3.2
+fp['vx_samples'] = 20;   fp['vy_samples'] = 5;   fp['vtheta_samples'] = 20
+fp['sim_time'] = 1.7
+fp['linear_granularity'] = 0.05;  fp['angular_granularity'] = 0.025
+fp['transform_tolerance'] = 0.2
+fp['xy_goal_tolerance'] = 0.25;  fp['trans_stopped_velocity'] = 0.25
+fp['short_circuit_trajectory_evaluation'] = True;  fp['stateful'] = True
+fp['critics'] = ['RotateToGoal', 'Oscillation', 'BaseObstacle', 'GoalAlign', 'PathAlign', 'PathDist', 'GoalDist']
+fp['BaseObstacle.scale'] = 0.02
+fp['PathAlign.scale'] = 32.0;  fp['PathAlign.forward_point_distance'] = 0.1
+fp['GoalAlign.scale'] = 24.0;  fp['GoalAlign.forward_point_distance'] = 0.1
+fp['PathDist.scale'] = 32.0;   fp['GoalDist.scale'] = 24.0
+fp['RotateToGoal.scale'] = 32.0;  fp['RotateToGoal.slowing_factor'] = 5.0
+fp['RotateToGoal.lookahead_time'] = -1.0
 
 # ── Progress checker: lenient for slow RTF=0.5 sim ──────────────────────────
 pc = cs.setdefault('progress_checker', {})

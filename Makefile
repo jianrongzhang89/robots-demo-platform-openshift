@@ -115,7 +115,17 @@ dispatch-dual-patrol: ## Dual patrol: both robots converge at meeting_point via 
 .PHONY: dispatch-swap-patrol
 dispatch-swap-patrol: ## Swap patrol via RMF+Nav2: each robot navigates to the other's spawn (map-aware path planning)
 	$(eval RMFPOD := $(shell oc get pod -n $(NAMESPACE) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
+	$(eval NAV1POD := $(shell oc get pod -n $(NAMESPACE) -l app=robot-nav-robot-1 -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
+	$(eval NAV2POD := $(shell oc get pod -n $(NAMESPACE) -l app=robot-nav-robot-2 -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
 	@test -n "$(RMFPOD)" || { echo "ERROR: rmf-core pod not found in namespace '$(NAMESPACE)'"; exit 1; }
+	@echo "Clearing local costmaps so MPPI starts fresh from boundary positions..."
+	-oc exec -n $(NAMESPACE) $(NAV1POD) -c nav2 -- bash -c \
+	  'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash; \
+	   ros2 service call /local_costmap/clear_entirely_local_costmap std_srvs/srv/Empty "{}" 2>/dev/null' &
+	-oc exec -n $(NAMESPACE) $(NAV2POD) -c nav2 -- bash -c \
+	  'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash; \
+	   ros2 service call /local_costmap/clear_entirely_local_costmap std_srvs/srv/Empty "{}" 2>/dev/null' &
+	sleep 3
 	@echo "Dispatching robot_1 swap patrol: robot_1_home → robot_2_home (via RMF + Nav2)"
 	oc exec -n $(NAMESPACE) $(RMFPOD) -c rmf-core -- bash -c \
 	  'export HOME=/tmp/ros-home; \
