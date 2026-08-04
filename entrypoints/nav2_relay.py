@@ -17,6 +17,7 @@ new destination cancels the current Nav2 goal and starts a fresh one.
 """
 import math
 import threading
+import time
 import rclpy
 import rclpy.parameter
 from rclpy.node import Node
@@ -24,11 +25,46 @@ from rclpy.action import ActionClient
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from std_msgs.msg import String
 from rosgraph_msgs.msg import Clock
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, Twist
 from nav2_msgs.action import NavigateToPose
+import os
 
 DEST_TOL = 0.15          # m — destinations within this radius are "the same"
 SERVER_TIMEOUT = 15.0    # s — wait for action server
+
+
+def _start_zenoh_keepalive(robot_name: str) -> None:
+    """Run a persistent Zenoh cmd_vel keepalive in a daemon thread.
+
+    The thread is embedded in the relay process (which never exits), so it
+    is more reliable than a separate background shell process.  It auto-
+    reconnects on any Zenoh error so the nav-bridge DDS→Zenoh route for
+    /cmd_vel is always alive.
+    """
+    def _loop():
+        import zenoh
+        # Note: signal.signal() cannot be called from a non-main thread.
+        # The daemon thread is automatically killed when the relay process exits.
+        while True:
+            try:
+                conf = zenoh.Config()
+                conf.insert_json5("connect/endpoints",
+                                  '["tcp/zenoh-router:7447"]')
+                conf.insert_json5("mode", '"client"')
+                conf.insert_json5("scouting/multicast/enabled", "false")
+                z = zenoh.open(conf)
+                sub = z.declare_subscriber(f"{robot_name}/cmd_vel",
+                                           lambda s: None)
+                print(f"[nav_relay] cmd_vel keepalive active for {robot_name}",
+                      flush=True)
+                while True:
+                    time.sleep(10)
+            except BaseException as exc:
+                print(f"[nav_relay] keepalive restart ({exc})", flush=True)
+                time.sleep(5)
+
+    t = threading.Thread(target=_loop, daemon=True, name="keepalive")
+    t.start()
 
 
 class NavRelay(Node):
@@ -52,6 +88,20 @@ class NavRelay(Node):
         )
 
         self._nav_client = ActionClient(self, NavigateToPose, "navigate_to_pose")
+
+        # DDS /cmd_vel publisher: publishes zero-velocity heartbeat so the nav
+        # bridge always sees a DDS publisher and maintains the DDS→Zenoh route.
+        # Without this, the route is only created when Nav2 starts generating
+        # cmd_vel (after a navigation goal is accepted), which is too late.
+        self._cmd_vel_pub = self.create_publisher(Twist, "/cmd_vel", 10)
+        self.create_timer(5.0, lambda: self._cmd_vel_pub.publish(Twist()))
+
+        # Embedded keepalive: keeps the nav-bridge DDS→Zenoh route for /cmd_vel
+        # alive by maintaining a Zenoh subscription from within this process.
+        # Being a daemon thread inside the persistent relay process, it survives
+        # for the lifetime of the nav pod.
+        robot_name = os.environ.get("ROBOT_NAME", "robot_1")
+        _start_zenoh_keepalive(robot_name)
 
         # Mission state — guarded by _lock
         self._lock = threading.Lock()
@@ -166,22 +216,26 @@ class NavRelay(Node):
         goal.pose.pose.orientation.z = math.sin(yaw / 2.0)
         goal.pose.pose.orientation.w = math.cos(yaw / 2.0)
 
+        dest = (x, y)  # capture destination for the acceptance callback
         send_future = self._nav_client.send_goal_async(goal)
-        send_future.add_done_callback(lambda f: self._on_accepted(f, rmf_id))
+        send_future.add_done_callback(lambda f: self._on_accepted(f, rmf_id, dest))
 
-    def _on_accepted(self, future, rmf_id: str) -> None:
+    def _on_accepted(self, future, rmf_id: str, dest: tuple) -> None:
         handle = future.result()
         if not handle.accepted:
             self.get_logger().warn(f"[nav_relay] {rmf_id} rejected by Nav2")
             self._finish(rmf_id, False)
             return
 
-        # Store handle only if we're still the active mission
+        # Store handle if this mission's destination is still current.
+        # Check by DESTINATION (not rmf_id) because same-dest transfer may
+        # have updated rmf_id while the Nav2 acceptance was in flight.
         with self._lock:
-            if self._rmf_id == rmf_id:
+            dest_still_current = (self._dest == dest)
+            if dest_still_current:
                 self._handle = handle
             else:
-                # A newer mission took over; cancel this Nav2 goal silently
+                # A genuinely different destination took over; cancel
                 try:
                     handle.cancel_goal_async()
                 except Exception:

@@ -50,8 +50,7 @@ CLOCK_ROS_RELAY_PID=""
 TF_HEARTBEAT_PID=""
 
 echo "[nav2-pod/${ROBOT_NAME}] Launching Nav2 bringup (no ROS namespace — isolation via Zenoh)..."
-# Patch the default nav2_params.yaml to disable MPPI reversing.
-# allow_reversing=true (default) causes robots to drive backward toward goals.
+# Patch nav2_params.yaml with MPPI tuning for the tb3_sandbox pillar grid.
 NAV2_PARAMS="${BRINGUP_DIR}/params/nav2_params.yaml"
 CUSTOM_PARAMS="/tmp/nav2_params_${ROBOT_NAME}.yaml"
 if [ -f "${NAV2_PARAMS}" ]; then
@@ -60,17 +59,70 @@ import yaml, sys
 with open('${NAV2_PARAMS}') as f:
     p = yaml.safe_load(f) or {}
 cs = p.setdefault('controller_server', {}).setdefault('ros__parameters', {})
-# Disable backward driving (MPPI default allow_reversing=true causes westward driving)
-cs.setdefault('FollowPath', {})['allow_reversing'] = False
-# Lenient progress checker: sandbox navigation is slow at RTF=0.5
-# Default required_movement_radius=0.5m in 10 sim-s is too tight for cross-sandbox paths
+
+# ── MPPI tuning for tb3_sandbox (tight pillar corridors, RTF=0.5) ──────────
+fp = cs.setdefault('FollowPath', {})
+# allow_reversing=True so MPPI can compute valid paths through tight pillar grid.
+# PreferForwardCritic (weight=5.0 below) discourages backward motion instead.
+fp['allow_reversing'] = True
+fp['time_steps'] = 15              # short horizon: better for tight spaces (default 56)
+fp['batch_size'] = 2000            # more trajectories for complex environments (default 1000)
+fp['temperature'] = 0.3            # default 0.3 — keep moderate exploration
+fp['gamma'] = 0.015                # default 0.015
+fp['vx_max'] = 0.26                # match sandbox speed limit
+fp['vx_min'] = 0.0                 # no reverse
+fp['wz_max'] = 1.5                 # allow faster turning in narrow passages (default 1.9)
+fp['prune_distance'] = 0.8         # shorter look-back for plan pruning (default 1.7)
+fp['model_dt'] = 0.05              # simulation timestep (default 0.05)
+
+# Critic weights tuned for the pillar maze:
+# - Higher PathFollow: stay closer to the global plan (avoids getting stuck)
+# - Lower Obstacles: allow passing closer to pillars when plan requires it
+# - Enable PathAlign for direction following
+fp.setdefault('PathFollowCritic', {}).update({
+    'enabled': True, 'cost_weight': 5.0, 'cost_power': 1  # default 2.0
+})
+fp.setdefault('PathAlignCritic', {}).update({
+    'enabled': True, 'cost_weight': 14.0,  # default 14.0 — keep
+    'trajectory_point_step': 4, 'threshold_to_consider': 0.4
+})
+fp.setdefault('ObstaclesCritic', {}).update({
+    'enabled': True, 'cost_weight': 1.5,   # reduce from default 2.0
+    'inflation_layer_name': 'InflationLayer'
+})
+fp.setdefault('CostCritic', {}).update({
+    'enabled': True, 'cost_weight': 3.81,  # default 3.81 — keep
+    'cost_power': 1, 'collision_cost': 1e4, 'critical_cost': 300.0
+})
+fp.setdefault('GoalCritic', {}).update({
+    'enabled': True, 'cost_weight': 5.0, 'threshold_to_consider': 1.0
+})
+fp.setdefault('GoalAngleCritic', {}).update({
+    'enabled': True, 'cost_weight': 3.0, 'threshold_to_consider': 0.4
+})
+fp.setdefault('PreferForwardCritic', {}).update({
+    'enabled': True, 'cost_weight': 5.0   # stronger forward preference
+})
+
+# ── Progress checker: lenient for slow RTF=0.5 sim ──────────────────────────
 pc = cs.setdefault('progress_checker', {})
 pc['plugin'] = 'nav2_controller::SimpleProgressChecker'
-pc['required_movement_radius'] = 0.05  # only need 5 cm movement
-pc['movement_time_allowance'] = 60.0   # 60 sim-s = 120 wall-s at RTF=0.5
+pc['required_movement_radius'] = 0.05  # 5 cm minimum movement
+pc['movement_time_allowance'] = 60.0   # 60 sim-s = 120 wall-s allowance
+
+# ── Costmap tuning: reduce inflation so robots can pass through pillar gaps ─
+# Default inflation_radius=0.55m blocks the ~0.5m gaps between pillars.
+# Reduce to 0.20m so there is free space between pillars for the MPPI.
+# The nav2_params.yaml has double nesting: local_costmap.local_costmap.ros__parameters
+for top_key in ['local_costmap', 'global_costmap']:
+    inner_key = top_key  # e.g. 'local_costmap'
+    cmap_params = p.setdefault(top_key, {}).setdefault(inner_key, {}).setdefault('ros__parameters', {})
+    cmap_params.setdefault('inflation_layer', {})['inflation_radius'] = 0.20
+    cmap_params.setdefault('inflation_layer', {})['cost_scaling_factor'] = 5.0
+
 with open('${CUSTOM_PARAMS}', 'w') as f:
     yaml.dump(p, f, default_flow_style=False)
-print('[nav2-pod] Patched nav2 params: allow_reversing=false, lenient progress checker')
+print('[nav2-pod] Patched nav2 params: MPPI tuned for tb3_sandbox pillars')
 " 2>/dev/null && PARAMS_ARG="params_file:=${CUSTOM_PARAMS}" || PARAMS_ARG=""
 else
   PARAMS_ARG=""
@@ -136,35 +188,17 @@ NAV2_PID=$!
       # which times out and incorrectly shows nodes as inactive even when they're active.
       # TF instability from clock jumps can cause controller_server to fail internally,
       # which the lifecycle manager then propagates to deactivate bt_navigator.
-      # Local Zenoh cmd_vel subscriber: keep the nav bridge's DDS→Zenoh route alive.
-      # Auto-restart loop catches BaseException and ignores SIGTERM/SIGINT so
-      # this process survives for the lifetime of the pod.
-      python3 -c "
-import zenoh, time, sys, signal
-signal.signal(signal.SIGTERM, lambda s, f: None)
-signal.signal(signal.SIGINT, lambda s, f: None)
-while True:
-    try:
-        conf = zenoh.Config()
-        conf.insert_json5('connect/endpoints', '[\"tcp/zenoh-router:7447\"]')
-        conf.insert_json5('mode', '\"client\"')
-        conf.insert_json5('scouting/multicast/enabled', 'false')
-        z = zenoh.open(conf)
-        sub = z.declare_subscriber('${ROBOT_NAME}/cmd_vel', lambda s: None)
-        print('[nav2-pod] local cmd_vel Zenoh keepalive active', flush=True)
-        while True: time.sleep(10)
-    except BaseException as e:
-        print(f'[nav2-pod] keepalive restart: {e}', flush=True)
-        time.sleep(5)
-" &
-      KEEPALIVE_PID=$!
+      # cmd_vel keepalive is embedded in nav2_relay.py as a daemon thread
+      # (more reliable than a separate shell background process).
+      echo "[nav2-pod/${ROBOT_NAME}] cmd_vel keepalive: running inside nav2_relay.py"
+      KEEPALIVE_PID=""
 
       echo "[nav2-pod/${ROBOT_NAME}] Starting navigation watchdog (continuous monitoring)..."
       while true; do
         sleep 10
-        # Check navigate_to_pose action server and bt_navigator lifecycle state.
-        # The action server may be listed but INACTIVE (rejecting goals); detect this
-        # by checking the lifecycle state directly.
+
+        # Keepalive is embedded in nav2_relay.py (daemon thread) — no restart needed.
+        # Check bt_navigator lifecycle — call RESUME if INACTIVE
         BT_STATE=$(timeout 3 ros2 lifecycle get /bt_navigator 2>/dev/null | grep -oE "[a-z]+ \[[0-9]+\]" | head -1)
         if echo "${BT_STATE}" | grep -q "active"; then
           : # Nav2 active — no action needed
