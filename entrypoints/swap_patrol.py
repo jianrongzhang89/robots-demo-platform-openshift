@@ -22,7 +22,7 @@ scheduler.
 import zenoh, time, struct, threading, random
 
 ROUTER = "tcp/zenoh-router:7447"
-TIMEOUT_S = 90  # max wall-clock seconds to wait per leg
+TIMEOUT_S = 300  # max wall-clock seconds to wait per leg (Nav2 planning can be slow)
 
 
 def cdr(text):
@@ -58,28 +58,43 @@ class NavAgent:
             str_len = struct.unpack_from('<I', raw, 4)[0]
             text = raw[8:8 + str_len - 1].decode('utf-8', errors='ignore')
             parts = text.strip().split()
-            if len(parts) >= 2 and parts[0] == self._goal_id and parts[1] == 'OK':
-                self._ok = True
+            if len(parts) >= 2 and parts[0] == self._goal_id:
+                if parts[1] == 'OK':
+                    self._ok = True
+                # Wake on both OK and FAILED so retries happen quickly
                 self._done.set()
         except Exception:
             pass
 
-    def navigate(self, x, y, yaw=0.0):
+    def navigate(self, x, y, yaw=0.0, _retry=0):
         self._goal_id = str(random.randint(1000000, 9999999))
         self._done.clear()
         self._ok = False
         cmd = cdr(f"{self._goal_id} {x:.6f} {y:.6f} {yaw:.6f}")
-        print(f"  [{self.name}] goal {self._goal_id}: ({x:.2f}, {y:.2f})")
+        if _retry == 0:
+            print(f"  [{self.name}] goal {self._goal_id}: ({x:.2f}, {y:.2f})")
         for _ in range(4):
             self._pub.put(cmd)
             time.sleep(0.8)
-        self._done.wait(timeout=TIMEOUT_S)
-        if self._ok:
-            print(f"  [{self.name}] REACHED ({x:.2f}, {y:.2f})")
-            return True
-        else:
-            print(f"  [{self.name}] TIMEOUT navigating to ({x:.2f}, {y:.2f})")
-            return False
+        deadline = time.time() + TIMEOUT_S
+        while time.time() < deadline:
+            remaining = deadline - time.time()
+            self._done.wait(timeout=min(remaining, 30.0))
+            if self._ok:
+                print(f"  [{self.name}] REACHED ({x:.2f}, {y:.2f})")
+                return True
+            if self._done.is_set():
+                # FAILED result received — retry with new goal_id after a brief pause
+                self._done.clear()
+                self._ok = False
+                time.sleep(2.0)
+                self._goal_id = str(random.randint(1000000, 9999999))
+                cmd = cdr(f"{self._goal_id} {x:.6f} {y:.6f} {yaw:.6f}")
+                for _ in range(2):
+                    self._pub.put(cmd)
+                    time.sleep(0.8)
+        print(f"  [{self.name}] TIMEOUT navigating to ({x:.2f}, {y:.2f})")
+        return False
 
 
 DETOUR_Y1 = -1.8   # south corridor for robot_1: 0.70 m from nearest pillar row

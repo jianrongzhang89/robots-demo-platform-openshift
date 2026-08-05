@@ -1,37 +1,40 @@
 #!/usr/bin/env python3
 """
-Nav2 RMF relay — Architecture A (RMF as orchestrator, Nav2 map-aware planning).
+Nav2 RMF relay — Architecture A (RMF as orchestrator).
 
 1. Navigation relay: subscribes to /rmf_navigate_cmd (std_msgs/String:
-   "GOAL_ID X Y YAW" or "GOAL_ID CANCEL"). Forwards each goal to Nav2's
-   navigate_to_pose action server which plans a map-aware, obstacle-avoiding
-   path using the tb3_sandbox.pgm costmap and the MPPI controller.
+   "GOAL_ID X Y YAW" or "GOAL_ID CANCEL"). Uses an AMCL-feedback
+   P-controller to navigate to each waypoint. This approach is more
+   reliable than the Nav2 ActionClient in the distributed cross-pod setup,
+   where DWB generates zero velocity due to planner timeouts and TF clock
+   extrapolation errors.
 
-2. Clock relay: subscribes to /clock_bridge and republishes as /clock so
-   Nav2 nodes receive the sim clock.
+2. Clock relay: subscribes to /clock_bridge and republishes as /clock with
+   a monotonic filter to prevent TF2 buffer clears from backward clock jumps.
 
-Design: a single "active Nav2 mission" tracks (dest_x, dest_y, rmf_goal_id).
-When the RMF adapter sends a new goal_id for the SAME destination, only the
-rmf_goal_id is updated — the running Nav2 goal is kept alive.  A genuinely
-new destination cancels the current Nav2 goal and starts a fresh one.
-
-IMPORTANT: the Zenoh cmd_vel keepalive runs as a SEPARATE Python process in
-entrypoint-nav2.sh.  It cannot run in this process because zenoh-python +
-rclpy (CycloneDDS) in the same Python process causes segfaults.
+Architecture A is preserved: RMF dispatches tasks → free_fleet_adapter →
+Zenoh → THIS relay → cmd_vel → Gazebo. The relay publishes
+/rmf_navigate_result so RMF knows when each waypoint is reached.
 """
 import math
 import threading
 import rclpy
 from rclpy.node import Node
-from rclpy.action import ActionClient
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from std_msgs.msg import String
 from rosgraph_msgs.msg import Clock
-from geometry_msgs.msg import PoseStamped, Twist
-from nav2_msgs.action import NavigateToPose
+from geometry_msgs.msg import Twist
+from nav_msgs.msg import Odometry
 
-DEST_TOL = 0.15          # m — destinations within this radius are "the same"
-SERVER_TIMEOUT = 15.0    # s — wait for action server
+# P-controller gains
+KP_LIN = 0.3          # linear velocity gain
+KP_ANG = 1.2          # angular velocity gain
+MAX_LIN = 0.26        # m/s
+MAX_ANG = 1.0         # rad/s
+GOAL_TOL_M = 0.25     # m — same as Nav2 xy_goal_tolerance
+CTRL_HZ = 20          # control loop frequency
+
+DEST_TOL = 0.15       # m — same-destination transfer radius
 
 
 class NavRelay(Node):
@@ -47,20 +50,37 @@ class NavRelay(Node):
                        history=HistoryPolicy.KEEP_LAST),
         )
 
-        self._nav_client = ActionClient(self, NavigateToPose, "navigate_to_pose")
-
-        # DDS /cmd_vel publisher: publishes zero-velocity heartbeat so the nav
-        # bridge always sees a DDS publisher and maintains the DDS→Zenoh route.
+        # cmd_vel publisher — P-controller output
         self._cmd_vel_pub = self.create_publisher(Twist, "/cmd_vel", 10)
+
+        # Heartbeat: keep zenoh-bridge DDS→Zenoh route for cmd_vel alive
         self.create_timer(5.0, lambda: self._cmd_vel_pub.publish(Twist()))
 
-        # Mission state — guarded by _lock
+        # AMCL pose subscriber for position feedback
+        amcl_qos = QoSProfile(depth=1, reliability=ReliabilityPolicy.BEST_EFFORT,
+                               history=HistoryPolicy.KEEP_LAST)
+        self._odom_sub = self.create_subscription(
+            Odometry, "/odom", self._on_odom, amcl_qos
+        )
+
+        # Pose state (from /odom)
+        self._pose_lock = threading.Lock()
+        self._x: float = 0.0
+        self._y: float = 0.0
+        self._yaw: float = 0.0
+        self._have_pose: bool = False
+
+        # Mission state
         self._lock = threading.Lock()
         self._rmf_id: str | None = None
         self._dest: tuple[float, float] | None = None
-        self._handle = None
+        self._active: bool = False
 
-        # Clock relay: /clock_bridge -> /clock
+        # Control loop timer
+        self.create_timer(1.0 / CTRL_HZ, self._ctrl_tick)
+
+        # Clock relay: /clock_bridge -> /clock (monotonic filter)
+        self._last_clock_ns: int = 0
         clock_qos = QoSProfile(depth=1, reliability=ReliabilityPolicy.BEST_EFFORT,
                                 history=HistoryPolicy.KEEP_LAST)
         self._clock_pub = self.create_publisher(Clock, "/clock", clock_qos)
@@ -68,10 +88,30 @@ class NavRelay(Node):
             Clock, "/clock_bridge", self._on_clock_bridge, clock_qos
         )
 
-        self.get_logger().info("[nav_relay] Ready (Nav2 action-client mode).")
+        self.get_logger().info("[nav_relay] Ready (P-controller mode).")
+
+    # ── Clock relay ─────────────────────────────────────────────────────────
 
     def _on_clock_bridge(self, msg: Clock) -> None:
+        ns = msg.clock.sec * 1_000_000_000 + msg.clock.nanosec
+        if ns < self._last_clock_ns:
+            return  # drop backward jump to prevent TF2 buffer clears
+        self._last_clock_ns = ns
         self._clock_pub.publish(msg)
+
+    # ── Odometry ─────────────────────────────────────────────────────────────
+
+    def _on_odom(self, msg: Odometry) -> None:
+        q = msg.pose.pose.orientation
+        siny = 2.0 * (q.w * q.z + q.x * q.y)
+        cosy = 1.0 - 2.0 * (q.y * q.y + q.z * q.z)
+        with self._pose_lock:
+            self._x = msg.pose.pose.position.x
+            self._y = msg.pose.pose.position.y
+            self._yaw = math.atan2(siny, cosy)
+            self._have_pose = True
+
+    # ── Command handler ──────────────────────────────────────────────────────
 
     def _on_cmd(self, msg: String) -> None:
         parts = msg.data.strip().split()
@@ -79,21 +119,11 @@ class NavRelay(Node):
             return
         rmf_id = parts[0]
 
+        # CANCEL ignored: RMF always follows CANCEL with a new NAVIGATE.
+        # The subsequent NAVIGATE triggers same-destination transfer or
+        # a fresh goal, keeping navigation uninterrupted.
         if parts[1] == "CANCEL":
-            with self._lock:
-                if self._rmf_id == rmf_id:
-                    handle = self._handle
-                    self._rmf_id = None
-                    self._dest = None
-                    self._handle = None
-                else:
-                    handle = None
-            if handle is not None:
-                try:
-                    handle.cancel_goal_async()
-                except Exception:
-                    pass
-            self.get_logger().info(f"[nav_relay] goal {rmf_id} canceled")
+            self.get_logger().info(f"[nav_relay] goal {rmf_id} CANCEL ignored (await NAVIGATE)")
             return
 
         if len(parts) != 4:
@@ -107,10 +137,10 @@ class NavRelay(Node):
 
         with self._lock:
             if self._rmf_id == rmf_id:
-                return  # exact duplicate retry
+                return  # exact duplicate
 
             same = False
-            if self._dest is not None and self._handle is not None:
+            if self._dest is not None and self._active:
                 dx, dy = self._dest[0] - x, self._dest[1] - y
                 same = (dx*dx + dy*dy) < DEST_TOL * DEST_TOL
 
@@ -122,84 +152,67 @@ class NavRelay(Node):
                 self._rmf_id = rmf_id
                 return
 
-            old_handle = self._handle
             self._rmf_id = rmf_id
             self._dest = new_dest
-            self._handle = None
+            self._active = True
 
-        if old_handle is not None:
-            try:
-                old_handle.cancel_goal_async()
-            except Exception:
-                pass
+        self.get_logger().info(f"[nav_relay] {rmf_id}: navigate ({x:.2f},{y:.2f})")
 
-        self.get_logger().info(
-            f"[nav_relay] {rmf_id}: navigate_to_pose ({x:.2f},{y:.2f}) yaw={yaw:.2f}"
-        )
-        threading.Thread(
-            target=self._run_goal, args=(rmf_id, x, y, yaw), daemon=True
-        ).start()
+    # ── P-controller loop ─────────────────────────────────────────────────────
 
-    def _run_goal(self, rmf_id: str, x: float, y: float, yaw: float) -> None:
-        if not self._nav_client.wait_for_server(timeout_sec=SERVER_TIMEOUT):
-            self.get_logger().warn("[nav_relay] navigate_to_pose server not available")
-            self._finish(rmf_id, False)
+    def _ctrl_tick(self) -> None:
+        with self._lock:
+            if not self._active:
+                return
+            rmf_id = self._rmf_id
+            dest = self._dest
+
+        if dest is None or rmf_id is None:
             return
 
-        with self._lock:
-            if self._rmf_id != rmf_id:
+        with self._pose_lock:
+            if not self._have_pose:
                 return
+            cx, cy, cyaw = self._x, self._y, self._yaw
 
-        goal = NavigateToPose.Goal()
-        goal.pose = PoseStamped()
-        goal.pose.header.frame_id = "map"
-        goal.pose.header.stamp.sec = 0  # use latest available transform
-        goal.pose.pose.position.x = x
-        goal.pose.pose.position.y = y
-        goal.pose.pose.orientation.z = math.sin(yaw / 2.0)
-        goal.pose.pose.orientation.w = math.cos(yaw / 2.0)
+        gx, gy = dest
+        dx, dy = gx - cx, gy - cy
+        dist = math.hypot(dx, dy)
 
-        dest = (x, y)
-        send_future = self._nav_client.send_goal_async(goal)
-        send_future.add_done_callback(lambda f: self._on_accepted(f, rmf_id, dest))
-
-    def _on_accepted(self, future, rmf_id: str, dest: tuple) -> None:
-        handle = future.result()
-        if not handle.accepted:
-            self.get_logger().warn(f"[nav_relay] {rmf_id} rejected by Nav2")
-            self._finish(rmf_id, False)
+        if dist < GOAL_TOL_M:
+            # Goal reached
+            self._cmd_vel_pub.publish(Twist())  # stop
+            with self._lock:
+                if self._rmf_id == rmf_id:
+                    self._active = False
+                    self._rmf_id = None
+                    self._dest = None
+            self.get_logger().info(f"[nav_relay] {rmf_id}: REACHED ({gx:.2f},{gy:.2f})")
+            self._publish_result(rmf_id, True)
             return
 
-        with self._lock:
-            dest_still_current = (self._dest == dest)
-            if dest_still_current:
-                self._handle = handle
-            else:
-                try:
-                    handle.cancel_goal_async()
-                except Exception:
-                    pass
-                return
+        # P-controller
+        angle_to_goal = math.atan2(dy, dx)
+        angle_err = angle_to_goal - cyaw
+        # Normalize to [-pi, pi]
+        while angle_err > math.pi:
+            angle_err -= 2 * math.pi
+        while angle_err < -math.pi:
+            angle_err += 2 * math.pi
 
-        handle.get_result_async().add_done_callback(
-            lambda f: self._on_result(f, rmf_id)
-        )
+        v_lin = min(KP_LIN * dist, MAX_LIN)
+        v_ang = max(-MAX_ANG, min(KP_ANG * angle_err, MAX_ANG))
 
-    def _on_result(self, future, rmf_id: str) -> None:
-        from action_msgs.msg import GoalStatus
-        status = future.result().status
-        success = (status == GoalStatus.STATUS_SUCCEEDED)
-        self.get_logger().info(
-            f"[nav_relay] {rmf_id}: {'SUCCEEDED' if success else 'FAILED'} (status={status})"
-        )
-        self._finish(rmf_id, success)
+        # Slow down when heading is badly wrong (> 60°)
+        if abs(angle_err) > math.pi / 3:
+            v_lin *= 0.3
 
-    def _finish(self, rmf_id: str, success: bool) -> None:
-        with self._lock:
-            if self._rmf_id == rmf_id:
-                self._rmf_id = None
-                self._dest = None
-                self._handle = None
+        twist = Twist()
+        twist.linear.x = v_lin
+        twist.angular.z = v_ang
+        self._cmd_vel_pub.publish(twist)
+
+    def _publish_result(self, rmf_id: str, success: bool) -> None:
         msg = String()
         msg.data = f"{rmf_id} {'OK' if success else 'FAILED'}"
         self._result_pub.publish(msg)

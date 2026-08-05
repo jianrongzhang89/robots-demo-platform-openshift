@@ -66,32 +66,32 @@ cs = p.setdefault('controller_server', {}).setdefault('ros__parameters', {})
 fp = cs.setdefault('FollowPath', {})
 fp['plugin'] = 'dwb_core::DWBLocalPlanner'
 fp['debug_trajectory_details'] = False
-fp['min_vel_x'] = 0.0;   fp['max_vel_x'] = 0.26
+fp['min_vel_x'] = 0.06;  fp['max_vel_x'] = 0.26  # min_vel_x>0: no pure-rotation samples
 fp['min_vel_y'] = 0.0;   fp['max_vel_y'] = 0.0
 fp['max_vel_theta'] = 1.0;  fp['min_speed_theta'] = 0.0
-fp['min_speed_xy'] = 0.0;   fp['max_speed_xy'] = 0.26
+fp['min_speed_xy'] = 0.06;  fp['max_speed_xy'] = 0.26  # force forward motion
 fp['acc_lim_x'] = 2.5;  fp['decel_lim_x'] = -2.5
 fp['acc_lim_y'] = 0.0;  fp['decel_lim_y'] = 0.0
 fp['acc_lim_theta'] = 3.2;  fp['decel_lim_theta'] = -3.2
 fp['vx_samples'] = 20;   fp['vy_samples'] = 5;   fp['vtheta_samples'] = 20
-fp['sim_time'] = 1.7
+fp['sim_time'] = 2.5              # moderate lookahead; shorter = faster sampling
 fp['linear_granularity'] = 0.05;  fp['angular_granularity'] = 0.025
 fp['transform_tolerance'] = 0.2
 fp['xy_goal_tolerance'] = 0.25;  fp['trans_stopped_velocity'] = 0.25
 fp['short_circuit_trajectory_evaluation'] = True;  fp['stateful'] = True
-fp['critics'] = ['RotateToGoal', 'Oscillation', 'BaseObstacle', 'GoalAlign', 'PathAlign', 'PathDist', 'GoalDist']
-fp['BaseObstacle.scale'] = 0.02
-fp['PathAlign.scale'] = 32.0;  fp['PathAlign.forward_point_distance'] = 0.1
-fp['GoalAlign.scale'] = 24.0;  fp['GoalAlign.forward_point_distance'] = 0.1
-fp['PathDist.scale'] = 32.0;   fp['GoalDist.scale'] = 24.0
-fp['RotateToGoal.scale'] = 32.0;  fp['RotateToGoal.slowing_factor'] = 5.0
-fp['RotateToGoal.lookahead_time'] = -1.0
+# Drop RotateToGoal: it causes pure-rotation loop when path is replanned at 1 Hz
+fp['critics'] = ['Oscillation', 'BaseObstacle', 'GoalAlign', 'PathAlign', 'PathDist', 'GoalDist']
+fp['BaseObstacle.scale'] = 0.005   # very low: allow navigating through tight pillar gaps
+fp['lethal_cost_thresh'] = 254     # only reject truly lethal cells; INSCRIBED (253) allowed
+fp['PathAlign.scale'] = 8.0;   fp['PathAlign.forward_point_distance'] = 0.1
+fp['GoalAlign.scale'] = 6.0;   fp['GoalAlign.forward_point_distance'] = 0.1
+fp['PathDist.scale'] = 8.0;    fp['GoalDist.scale'] = 6.0
 
 # ── Progress checker: lenient for slow RTF=0.5 sim ──────────────────────────
 pc = cs.setdefault('progress_checker', {})
 pc['plugin'] = 'nav2_controller::SimpleProgressChecker'
 pc['required_movement_radius'] = 0.05  # 5 cm minimum movement
-pc['movement_time_allowance'] = 60.0   # 60 sim-s = 120 wall-s allowance
+pc['movement_time_allowance'] = 300.0  # 300 sim-s = 600 wall-s; generous for slow RTF
 
 # ── Costmap tuning: reduce inflation so robots can pass through pillar gaps ─
 # Default inflation_radius=0.55m blocks the ~0.5m gaps between pillars.
@@ -100,7 +100,7 @@ pc['movement_time_allowance'] = 60.0   # 60 sim-s = 120 wall-s allowance
 for top_key in ['local_costmap', 'global_costmap']:
     inner_key = top_key  # e.g. 'local_costmap'
     cmap_params = p.setdefault(top_key, {}).setdefault(inner_key, {}).setdefault('ros__parameters', {})
-    cmap_params.setdefault('inflation_layer', {})['inflation_radius'] = 0.20
+    cmap_params.setdefault('inflation_layer', {})['inflation_radius'] = 0.10  # reduced: widens pillar corridors
     cmap_params.setdefault('inflation_layer', {})['cost_scaling_factor'] = 5.0
 
 with open('${CUSTOM_PARAMS}', 'w') as f:

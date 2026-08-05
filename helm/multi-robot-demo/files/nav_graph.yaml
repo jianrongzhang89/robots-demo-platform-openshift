@@ -14,6 +14,22 @@
 #   4 = charger_2      ( 3.0,  1.0)
 #   5 = mid_west       (-1.0, -0.25)  intermediate on robot_1_home→meeting_point
 #   6 = mid_east       ( 1.0,  0.25)  intermediate on meeting_point→robot_2_home
+#   7 = approach_r2    ( 1.5, -0.25)
+#   8 = r1_nw          (-1.5,  0.55)  swap route for robot_1: narrow north corridor, west
+#   9 = r1_nc          ( 0.0,  0.55)  swap route for robot_1: narrow north corridor, center
+#  10 = r1_ne          ( 1.5,  0.55)  swap route for robot_1: narrow north corridor, east
+#  11 = r2_se          ( 1.5, -0.55)  swap route for robot_2: narrow south corridor, east
+#  12 = r2_sc          ( 0.0, -0.55)  swap route for robot_2: narrow south corridor, center
+#  13 = r2_sw          (-1.5, -0.55)  swap route for robot_2: narrow south corridor, west
+#  14 = r1_nwall_w     (-2.0,  1.8)   swap route: outer wall north corridor, west end
+#  15 = r1_nwall_e     ( 2.0,  1.8)   swap route: outer wall north corridor, east end
+#  16 = r2_swall_e     ( 2.0, -1.8)   swap route: outer wall south corridor, east end
+#  17 = r2_swall_w     (-2.0, -1.8)   swap route: outer wall south corridor, west end
+#
+# Outer wall corridor geometry (y=±1.8):
+#   0.70 m clear of y=±1.1 pillar rows → 0.35 m after 0.20 m inflation.
+#   Matches swap_patrol.py safe detour corridors. Robots travel along the outer wall
+#   (x=±2.0) which is free of all pillars (pillar cols at x=±1.1 and x=0).
 
 building_name: tb3_sandbox
 doors: {}
@@ -34,6 +50,26 @@ levels:
       - [-1.0, -0.25, {name: mid_west,    is_charger: false, is_holding_point: true,  is_parking_spot: false, merge_radius: 0.5}]
       - [ 1.0,  0.25, {name: mid_east,    is_charger: false, is_holding_point: true,  is_parking_spot: false, merge_radius: 0.5}]
       - [ 1.5, -0.25, {name: approach_r2, is_charger: false, is_holding_point: true,  is_parking_spot: false, merge_radius: 0.5}]
+      # Safe swap-route corridor at y=+0.55 for robot_1 (east-bound):
+      # Stays 0.20 m clear of pillar rows at y=0 and y=1.1 after 0.20 m inflation.
+      - [-1.5,  0.55, {name: r1_nw, is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.4}]
+      - [ 0.0,  0.55, {name: r1_nc, is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.4}]
+      - [ 1.5,  0.55, {name: r1_ne, is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.4}]
+      # Safe swap-route corridor at y=-0.55 for robot_2 (west-bound):
+      - [ 1.5, -0.55, {name: r2_se, is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.4}]
+      - [ 0.0, -0.55, {name: r2_sc, is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.4}]
+      - [-1.5, -0.55, {name: r2_sw, is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.4}]
+      # Outer wall corridor at y=±1.75 — mirrors swap_patrol.py safe detour paths.
+      # y=1.75: 0.65 m clear of y=1.1 pillar row; 0.25 m clear of y=2.0 boundary wall.
+      # With robot footprint r=0.22 m and inflation 0.10 m: min safe center = ±1.78 m from
+      # lethal wall → y=±1.75 has footprint at ±1.97 m, just inside inflation zone but
+      # NOT lethal (lethal_cost_thresh=254 accepts cost=253 INSCRIBED here).
+      # robot_1: home → south corridor (y=-1.75) → east → robot_2_home
+      # robot_2: home → north corridor (y=+1.75) → west → robot_1_home
+      - [-2.0,  1.75, {name: r1_nwall_w, is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.5}]
+      - [ 2.0,  1.75, {name: r1_nwall_e, is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.5}]
+      - [ 2.0, -1.75, {name: r2_swall_e, is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.5}]
+      - [-2.0, -1.75, {name: r2_swall_w, is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.5}]
 
     # Bidirectional lanes — list BOTH directions explicitly (official format)
     lanes:
@@ -48,7 +84,6 @@ levels:
       - [6, 1, {graph_idx: 0, speed_limit: 0.26}]
       - [1, 6, {graph_idx: 0, speed_limit: 0.26}]
       # approach_r2 (7): SE staging point before robot_2_home to avoid northern walls
-      # From meeting_point ESE to approach_r2, then NNE to robot_2_home
       - [2, 7, {graph_idx: 0, speed_limit: 0.26}]
       - [7, 2, {graph_idx: 0, speed_limit: 0.26}]
       - [7, 1, {graph_idx: 0, speed_limit: 0.26}]
@@ -58,7 +93,7 @@ levels:
       - [2, 0, {graph_idx: 0, speed_limit: 0.26}]
       - [2, 1, {graph_idx: 0, speed_limit: 0.26}]
       - [1, 2, {graph_idx: 0, speed_limit: 0.26}]
-      # Direct cross-sandbox lanes for the swap demo — let Nav2 plan the path
+      # Direct cross-sandbox lanes (kept for compatibility)
       - [0, 1, {graph_idx: 0, speed_limit: 0.26}]
       - [1, 0, {graph_idx: 0, speed_limit: 0.26}]
       # robot_1_home (0) <-> charger_1 (3) — required by free_fleet_adapter
@@ -67,5 +102,40 @@ levels:
       # robot_2_home (1) <-> charger_2 (4) — required by free_fleet_adapter
       - [1, 4, {graph_idx: 0, speed_limit: 0.20}]
       - [4, 1, {graph_idx: 0, speed_limit: 0.20}]
+      # Safe swap route: robot_1 east-bound via y=+0.55 corridor
+      # robot_1_home(0) → r1_nw(8) → r1_nc(9) → r1_ne(10) → robot_2_home(1)
+      - [0,  8, {graph_idx: 0, speed_limit: 0.26}]
+      - [8,  0, {graph_idx: 0, speed_limit: 0.26}]
+      - [8,  9, {graph_idx: 0, speed_limit: 0.26}]
+      - [9,  8, {graph_idx: 0, speed_limit: 0.26}]
+      - [9,  10, {graph_idx: 0, speed_limit: 0.26}]
+      - [10, 9, {graph_idx: 0, speed_limit: 0.26}]
+      - [10, 1, {graph_idx: 0, speed_limit: 0.26}]
+      - [1,  10, {graph_idx: 0, speed_limit: 0.26}]
+      # Safe swap route: robot_2 west-bound via y=-0.55 corridor
+      # robot_2_home(1) → r2_se(11) → r2_sc(12) → r2_sw(13) → robot_1_home(0)
+      - [1,  11, {graph_idx: 0, speed_limit: 0.26}]
+      - [11, 1,  {graph_idx: 0, speed_limit: 0.26}]
+      - [11, 12, {graph_idx: 0, speed_limit: 0.26}]
+      - [12, 11, {graph_idx: 0, speed_limit: 0.26}]
+      - [12, 13, {graph_idx: 0, speed_limit: 0.26}]
+      - [13, 12, {graph_idx: 0, speed_limit: 0.26}]
+      - [13, 0,  {graph_idx: 0, speed_limit: 0.26}]
+      - [0,  13, {graph_idx: 0, speed_limit: 0.26}]
+      # Outer wall swap route — 0.70 m clearance from pillar rows, mirrors swap_patrol.py
+      # robot_1: home(0) → r1_nwall_w(14) → r1_nwall_e(15) → robot_2_home(1)
+      # robot_2: home(1) → r2_swall_e(16) → r2_swall_w(17) → robot_1_home(0)
+      - [0,  14, {graph_idx: 0, speed_limit: 0.26}]
+      - [14, 0,  {graph_idx: 0, speed_limit: 0.26}]
+      - [14, 15, {graph_idx: 0, speed_limit: 0.26}]
+      - [15, 14, {graph_idx: 0, speed_limit: 0.26}]
+      - [15, 1,  {graph_idx: 0, speed_limit: 0.26}]
+      - [1,  15, {graph_idx: 0, speed_limit: 0.26}]
+      - [1,  16, {graph_idx: 0, speed_limit: 0.26}]
+      - [16, 1,  {graph_idx: 0, speed_limit: 0.26}]
+      - [16, 17, {graph_idx: 0, speed_limit: 0.26}]
+      - [17, 16, {graph_idx: 0, speed_limit: 0.26}]
+      - [17, 0,  {graph_idx: 0, speed_limit: 0.26}]
+      - [0,  17, {graph_idx: 0, speed_limit: 0.26}]
 
 lifts: {}
