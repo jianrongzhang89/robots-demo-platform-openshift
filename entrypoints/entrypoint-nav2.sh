@@ -69,7 +69,7 @@ cs = p.setdefault('controller_server', {}).setdefault('ros__parameters', {})
 fp = cs.setdefault('FollowPath', {})
 fp['plugin'] = 'nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController'
 fp['desired_linear_vel'] = 0.22         # m/s — slightly below max for stability
-fp['lookahead_dist'] = 0.4             # m — short lookahead for tight pillar gaps
+fp['lookahead_dist'] = 0.6             # m — longer carrot: less curvature near pillars
 fp['min_lookahead_dist'] = 0.3         # m
 fp['max_lookahead_dist'] = 0.9         # m
 fp['lookahead_time'] = 1.5             # s — time-based lookahead fallback
@@ -95,6 +95,23 @@ fp['max_robot_pose_search_dist'] = 10.0  # m — wide search for closest path po
 # Accept any final yaw — RMF sends nav_graph waypoint orientations which
 # may differ from robot's current heading by up to pi radians
 cs.setdefault('general_goal_checker', {})['yaw_goal_tolerance'] = 3.14159
+
+# ── collision_monitor: disable to prevent laser scan from slowing the robot
+# near pillars. The collision_monitor interprets the pillar's laser returns as
+# a collision hazard and reduces cmd_vel to near-zero ("approach" mode) even
+# though the physical gap (0.80m) is larger than the robot (0.44m wide).
+# RPP's use_collision_detection=False already handles this at the planner level;
+# the collision_monitor node causes double-suppression of velocity.
+cmon = p.setdefault('collision_monitor', {}).setdefault('ros__parameters', {})
+cmon['enabled'] = False
+
+# ── Global planner: switch NavFn from Dijkstra to A*.
+# Dijkstra hugs obstacle walls and produces paths with sharp turns near pillars.
+# A* with a straight-line heuristic finds shorter, smoother paths that require
+# less curvature — critical for RPP tracking through the pillar grid.
+pserver = p.setdefault('planner_server', {}).setdefault('ros__parameters', {})
+pserver.setdefault('GridBased', {})['use_astar'] = True
+pserver.setdefault('GridBased', {})['allow_unknown'] = True
 
 # ── BT XML: use single-plan-then-follow (no 1 Hz replanning).
 # navigate_to_pose_w_replanning_and_recovery replans every sim-second;
