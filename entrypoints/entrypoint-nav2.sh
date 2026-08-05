@@ -74,18 +74,35 @@ fp['acc_lim_x'] = 2.5;  fp['decel_lim_x'] = -2.5
 fp['acc_lim_y'] = 0.0;  fp['decel_lim_y'] = 0.0
 fp['acc_lim_theta'] = 3.2;  fp['decel_lim_theta'] = -3.2
 fp['vx_samples'] = 20;   fp['vy_samples'] = 5;   fp['vtheta_samples'] = 20
-fp['sim_time'] = 2.5              # moderate lookahead; shorter = faster sampling
+fp['sim_time'] = 3.5              # 0.9m lookahead: sees around center pillar
 fp['linear_granularity'] = 0.05;  fp['angular_granularity'] = 0.025
 fp['transform_tolerance'] = 0.2
 fp['xy_goal_tolerance'] = 0.25;  fp['trans_stopped_velocity'] = 0.25
+# Accept any final yaw — RMF sends nav_graph waypoint orientations which
+# may differ from robot's current heading by up to pi radians
+cs.setdefault('general_goal_checker', {})['yaw_goal_tolerance'] = 3.14159
 fp['short_circuit_trajectory_evaluation'] = True;  fp['stateful'] = True
-# Drop RotateToGoal: it causes pure-rotation loop when path is replanned at 1 Hz
-fp['critics'] = ['Oscillation', 'BaseObstacle', 'GoalAlign', 'PathAlign', 'PathDist', 'GoalDist']
+# Drop RotateToGoal (1Hz replan rotation loop) and Oscillation (penalizes
+# curved trajectories needed to navigate around center pillar).
+fp['critics'] = ['BaseObstacle', 'GoalAlign', 'PathAlign', 'PathDist', 'GoalDist']
 fp['BaseObstacle.scale'] = 0.005   # very low: allow navigating through tight pillar gaps
 fp['lethal_cost_thresh'] = 254     # only reject truly lethal cells; INSCRIBED (253) allowed
 fp['PathAlign.scale'] = 8.0;   fp['PathAlign.forward_point_distance'] = 0.1
 fp['GoalAlign.scale'] = 6.0;   fp['GoalAlign.forward_point_distance'] = 0.1
 fp['PathDist.scale'] = 8.0;    fp['GoalDist.scale'] = 6.0
+
+# ── BT XML: use single-plan-then-follow (no 1 Hz replanning).
+# navigate_to_pose_w_replanning_and_recovery replans every sim-second;
+# this resets the velocity_smoother's ramp-up window, capping effective speed
+# at a tiny fraction of max_vel_x. The w_recovery variant computes path once
+# and follows it — sufficient for obstacle-free outer corridors at y=±1.8.
+bt_nav = p.setdefault('bt_navigator', {}).setdefault('ros__parameters', {})
+share = '/usr/lib64/ros-jazzy/share/nav2_bt_navigator/behavior_trees'
+bt_nav['default_nav_to_pose_bt_xml'] = f'{share}/navigate_w_replanning_only_if_path_becomes_invalid.xml'
+# Use the same BT for navigate_through_poses to avoid dependency on behavior_server
+# (navigate_through_poses_w_replanning_and_recovery.xml requires spin action server
+# from behavior_server, which may not be ready when bt_navigator activates).
+bt_nav['default_nav_through_poses_bt_xml'] = f'{share}/navigate_w_replanning_only_if_path_becomes_invalid.xml'
 
 # ── Progress checker: lenient for slow RTF=0.5 sim ──────────────────────────
 pc = cs.setdefault('progress_checker', {})
@@ -100,7 +117,7 @@ pc['movement_time_allowance'] = 300.0  # 300 sim-s = 600 wall-s; generous for sl
 for top_key in ['local_costmap', 'global_costmap']:
     inner_key = top_key  # e.g. 'local_costmap'
     cmap_params = p.setdefault(top_key, {}).setdefault(inner_key, {}).setdefault('ros__parameters', {})
-    cmap_params.setdefault('inflation_layer', {})['inflation_radius'] = 0.10  # reduced: widens pillar corridors
+    cmap_params.setdefault('inflation_layer', {})['inflation_radius'] = 0.0   # zero inflation: robot stays within lethal=pillar boundary only
     cmap_params.setdefault('inflation_layer', {})['cost_scaling_factor'] = 5.0
 
 with open('${CUSTOM_PARAMS}', 'w') as f:

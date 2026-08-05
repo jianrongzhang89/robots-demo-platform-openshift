@@ -113,12 +113,12 @@ dispatch-dual-patrol: ## Dual patrol: both robots converge at meeting_point via 
 	oc exec -n $(NAMESPACE) $(RMFPOD) -c rmf-core -- python3 /tmp/dual_patrol.py
 
 .PHONY: dispatch-swap-patrol
-dispatch-swap-patrol: ## Swap patrol: robots reach each other's spawn via Zenoh→nav_relay→Nav2 (1-m step increments at y=±1.8)
+dispatch-swap-patrol: ## Swap patrol via RMF+Nav2: direct goal to each other's spawn (Nav2 plans through pillar grid)
 	$(eval RMFPOD := $(shell oc get pod -n $(NAMESPACE) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
-	@test -n "$(RMFPOD)" || { echo "ERROR: rmf-core pod not found in namespace '$(NAMESPACE)'"; exit 1; }
-	@echo "Waiting for Nav2 bt_navigator to become ACTIVE on both pods..."
 	$(eval NAV1POD := $(shell oc get pod -n $(NAMESPACE) -l app=robot-nav-robot-1 -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
 	$(eval NAV2POD := $(shell oc get pod -n $(NAMESPACE) -l app=robot-nav-robot-2 -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
+	@test -n "$(RMFPOD)" || { echo "ERROR: rmf-core pod not found in namespace '$(NAMESPACE)'"; exit 1; }
+	@echo "Waiting for Nav2 bt_navigator to become ACTIVE on both pods..."
 	@for pod in $(NAV1POD) $(NAV2POD); do \
 	  for i in $$(seq 1 60); do \
 	    state=$$(oc exec -n $(NAMESPACE) $$pod -c nav2 -- bash -c \
@@ -128,9 +128,19 @@ dispatch-swap-patrol: ## Swap patrol: robots reach each other's spawn via Zenoh�
 	    echo "$$state" | grep -q "active \[3\]" && break || sleep 5; \
 	  done; \
 	done
-	@echo "Dispatching swap patrol..."
-	oc cp entrypoints/swap_patrol.py $(NAMESPACE)/$(RMFPOD):/tmp/swap_patrol.py -c rmf-core
-	oc exec -n $(NAMESPACE) $(RMFPOD) -c rmf-core -- python3 -u /tmp/swap_patrol.py
+	@echo "Dispatching direct swap via RMF (Nav2 plans through pillar grid)..."
+	oc exec -n $(NAMESPACE) $(RMFPOD) -c rmf-core -- bash -c \
+	  'export HOME=/tmp/ros-home; \
+	   source /opt/ros/jazzy/setup.bash; \
+	   source /opt/free_fleet/install/setup.bash 2>/dev/null || true; \
+	   ros2 run rmf_demos_tasks dispatch_patrol \
+	     -p robot_1_home robot_2_home -n 1 --use_sim_time'
+	oc exec -n $(NAMESPACE) $(RMFPOD) -c rmf-core -- bash -c \
+	  'export HOME=/tmp/ros-home; \
+	   source /opt/ros/jazzy/setup.bash; \
+	   source /opt/free_fleet/install/setup.bash 2>/dev/null || true; \
+	   ros2 run rmf_demos_tasks dispatch_patrol \
+	     -p robot_2_home robot_1_home -n 1 --use_sim_time'
 
 .PHONY: rmf-status
 rmf-status: ## Show fleet state from RMF (robot positions and task status)
