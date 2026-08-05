@@ -66,16 +66,17 @@ class NavAgent:
         except Exception:
             pass
 
-    def navigate(self, x, y, yaw=0.0, _retry=0):
+    def navigate(self, x, y, yaw=0.0):
         self._goal_id = str(random.randint(1000000, 9999999))
         self._done.clear()
         self._ok = False
         cmd = cdr(f"{self._goal_id} {x:.6f} {y:.6f} {yaw:.6f}")
-        if _retry == 0:
-            print(f"  [{self.name}] goal {self._goal_id}: ({x:.2f}, {y:.2f})")
-        for _ in range(4):
-            self._pub.put(cmd)
-            time.sleep(0.8)
+        print(f"  [{self.name}] goal {self._goal_id}: ({x:.2f}, {y:.2f})")
+        # Send ONCE. The relay's same-destination transfer keeps the active
+        # Nav2 goal alive across RMF's CANCEL+NAVIGATE retry cycles.
+        # Multi-send patterns race with fast ABORT results: by the time the
+        # 2nd send arrives, state may have been cleared → new preempting goal.
+        self._pub.put(cmd)
         deadline = time.time() + TIMEOUT_S
         while time.time() < deadline:
             remaining = deadline - time.time()
@@ -84,15 +85,13 @@ class NavAgent:
                 print(f"  [{self.name}] REACHED ({x:.2f}, {y:.2f})")
                 return True
             if self._done.is_set():
-                # FAILED result received — retry with new goal_id after a brief pause
+                # FAILED result received — send a fresh goal_id after a pause
                 self._done.clear()
                 self._ok = False
-                time.sleep(2.0)
+                time.sleep(3.0)
                 self._goal_id = str(random.randint(1000000, 9999999))
                 cmd = cdr(f"{self._goal_id} {x:.6f} {y:.6f} {yaw:.6f}")
-                for _ in range(2):
-                    self._pub.put(cmd)
-                    time.sleep(0.8)
+                self._pub.put(cmd)
         print(f"  [{self.name}] TIMEOUT navigating to ({x:.2f}, {y:.2f})")
         return False
 
