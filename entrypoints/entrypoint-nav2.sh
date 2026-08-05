@@ -112,6 +112,7 @@ cmon['enabled'] = False
 pserver = p.setdefault('planner_server', {}).setdefault('ros__parameters', {})
 pserver.setdefault('GridBased', {})['use_astar'] = True
 pserver.setdefault('GridBased', {})['allow_unknown'] = True
+pserver.setdefault('GridBased', {})['tolerance'] = 0.5  # accept path ending within 0.5m of goal
 
 # ── BT XML: use single-plan-then-follow (no 1 Hz replanning).
 # navigate_to_pose_w_replanning_and_recovery replans every sim-second;

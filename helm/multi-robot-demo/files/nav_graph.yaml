@@ -93,9 +93,12 @@ levels:
       - [2, 0, {graph_idx: 0, speed_limit: 0.26}]
       - [2, 1, {graph_idx: 0, speed_limit: 0.26}]
       - [1, 2, {graph_idx: 0, speed_limit: 0.26}]
-      # Direct cross-sandbox lanes (kept for compatibility)
-      - [0, 1, {graph_idx: 0, speed_limit: 0.26}]
-      - [1, 0, {graph_idx: 0, speed_limit: 0.26}]
+      # Direct cross-sandbox lanes removed: forced routing via mid_west/mid_east
+      # so both robots take shorter path segments that A* can compute quickly.
+      # With direct 4m lanes the RMF gives robot_2 the full cross-sandbox route
+      # which causes NavFn A* to time out before the BT action server responds.
+      # - [0, 1, {graph_idx: 0, speed_limit: 0.26}]
+      # - [1, 0, {graph_idx: 0, speed_limit: 0.26}]
       # robot_1_home (0) <-> charger_1 (3) — required by free_fleet_adapter
       - [0, 3, {graph_idx: 0, speed_limit: 0.20}]
       - [3, 0, {graph_idx: 0, speed_limit: 0.20}]
