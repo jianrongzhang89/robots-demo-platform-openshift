@@ -122,12 +122,19 @@ pc['movement_time_allowance'] = 300.0  # 300 sim-s = 600 wall-s; generous for sl
 for top_key in ['local_costmap', 'global_costmap']:
     inner_key = top_key  # e.g. 'local_costmap'
     cmap_params = p.setdefault(top_key, {}).setdefault(inner_key, {}).setdefault('ros__parameters', {})
-    # Inflation strategy for RPP: global at 0.15m so paths route robot center
-    # ≥ 0.30m from pillar center (0.15+0.15) — keeps footprint (r=0.22m) clear
-    # of pillar surface (r=0.15m) by 0.08m. Local at 0.10m for RPP collision
-    # check (RPP uses local costmap; lighter inflation keeps carrot reachable).
+    # Inflation strategy for RPP:
+    # Global at 0.15m: paths route robot center ≥ 0.30m from pillar center,
+    #   giving footprint (r=0.22m) 0.08m clearance from pillar surface.
+    # robot_radius=0 on global costmap: lets NavFn plan FROM positions where the
+    #   physical footprint enters the inflation zone (near pillars). Without this
+    #   ComputePathToPose immediately ABORTs when the start pose is in high-cost
+    #   area — the robot can still physically navigate through because RPP with
+    #   use_collision_detection=False follows the global path without re-checking.
+    # Local at 0.10m: RPP reads local costmap for its path tracking.
     inflation = 0.15 if top_key == 'global_costmap' else 0.10
     cmap_params.setdefault('inflation_layer', {})['inflation_radius'] = inflation
+    if top_key == 'global_costmap':
+        cmap_params['robot_radius'] = 0.0  # point robot for global planning
     cmap_params.setdefault('inflation_layer', {})['cost_scaling_factor'] = 5.0
 
 with open('${CUSTOM_PARAMS}', 'w') as f:
