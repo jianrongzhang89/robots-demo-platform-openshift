@@ -44,6 +44,7 @@ from nav2_msgs.action import NavigateToPose
 
 DEST_TOL = 0.15          # m — same-destination transfer radius
 SERVER_TIMEOUT = 15.0    # s — wait for action server at startup
+FAIL_COOLDOWN = 5.0      # s — pause after rapid-abort to let bt_navigator recover
 
 
 class NavRelay(Node):
@@ -71,6 +72,7 @@ class NavRelay(Node):
         self._rmf_id: str | None = None
         self._dest: tuple[float, float] | None = None
         self._handle = None
+        self._last_fail_time: float = 0.0  # timestamp of last FAILED result
 
         # Clock relay: /clock_bridge → /clock (monotonic filter)
         self._last_clock_ns: int = 0
@@ -159,6 +161,21 @@ class NavRelay(Node):
     # ── Nav2 goal lifecycle ──────────────────────────────────────────────────
 
     def _run_goal(self, rmf_id: str, x: float, y: float, yaw: float) -> None:
+        # If the previous goal failed very recently (rapid-abort loop from
+        # bt_navigator crash/restart), pause to allow the lifecycle to recover.
+        import time as _time
+        with self._lock:
+            elapsed = _time.monotonic() - self._last_fail_time
+        if elapsed < FAIL_COOLDOWN:
+            remaining = FAIL_COOLDOWN - elapsed
+            self.get_logger().info(
+                f"[nav_relay] {rmf_id}: cooldown {remaining:.1f}s after rapid abort"
+            )
+            _time.sleep(remaining)
+            with self._lock:
+                if self._rmf_id != rmf_id:
+                    return  # superseded during cooldown
+
         if not self._nav_client.wait_for_server(timeout_sec=SERVER_TIMEOUT):
             self.get_logger().warn("[nav_relay] navigate_to_pose server not available")
             self._finish(rmf_id, False)
@@ -230,8 +247,14 @@ class NavRelay(Node):
                 # Do NOT clear state — the new goal is still running.
                 report_id = rmf_id
 
+        self._finish(report_id, success)
+
+    def _finish(self, rmf_id: str, success: bool) -> None:
+        import time as _time
+        if not success:
+            self._last_fail_time = _time.monotonic()
         msg = String()
-        msg.data = f"{report_id} {'OK' if success else 'FAILED'}"
+        msg.data = f"{rmf_id} {'OK' if success else 'FAILED'}"
         self._result_pub.publish(msg)
         self.get_logger().info(f"[nav_relay] result: {msg.data}")
 
