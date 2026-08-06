@@ -35,7 +35,7 @@ INITIAL_YAW="${INITIAL_YAW:-0.0}"
 
 BRINGUP_DIR="${ROS_PREFIX}/share/nav2_bringup"
 
-echo "[nav2-pod/${ROBOT_NAME}] Starting robot_state_publisher (URDF-based static TF publisher)..."
+echo "[nav2-pod/${ROBOT_NAME}] Starting robot_state_publisher (global TF frames — not namespaced)..."
 URDF=$(cat /usr/lib64/ros-jazzy/share/nav2_minimal_tb3_sim/urdf/turtlebot3_waffle.urdf)
 ros2 run robot_state_publisher robot_state_publisher \
   --ros-args -p robot_description:="${URDF}" &
@@ -113,6 +113,17 @@ pserver = p.setdefault('planner_server', {}).setdefault('ros__parameters', {})
 pserver.setdefault('GridBased', {})['use_astar'] = True
 pserver.setdefault('GridBased', {})['allow_unknown'] = True
 pserver.setdefault('GridBased', {})['tolerance'] = 0.5  # accept path ending within 0.5m of goal
+
+# ── AMCL frame IDs — keep GLOBAL (not namespaced).
+# RSP publishes global frames (base_footprint, odom) from the URDF link names.
+# The -r __ns:= trick only namespaces the node's ROS topics, NOT the TF frame
+# names (which come from the URDF). So AMCL must use the same global names.
+# Cross-pod TF contamination is not an issue here because /tf is not forwarded
+# between pods by the Zenoh bridge — each pod has its own isolated TF buffer.
+amcl_ros2 = p.setdefault('amcl', {}).setdefault('ros__parameters', {})
+amcl_ros2['base_frame_id']   = 'base_footprint'
+amcl_ros2['odom_frame_id']   = 'odom'
+amcl_ros2['global_frame_id'] = 'map'
 
 # ── BT XML: use single-plan-then-follow (no 1 Hz replanning).
 # navigate_to_pose_w_replanning_and_recovery replans every sim-second;

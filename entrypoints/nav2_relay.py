@@ -32,6 +32,7 @@ Python process to maintain the DDS→Zenoh cmd_vel route without causing the
 rclpy+zenoh segfault.
 """
 import math
+import os
 import threading
 import rclpy
 from rclpy.node import Node
@@ -45,6 +46,8 @@ from nav2_msgs.action import NavigateToPose
 DEST_TOL = 0.15          # m — same-destination transfer radius
 SERVER_TIMEOUT = 15.0    # s — wait for action server at startup
 FAIL_COOLDOWN = 5.0      # s — pause after rapid-abort to let bt_navigator recover
+
+NAV_ACTION = "navigate_to_pose"
 
 
 class NavRelay(Node):
@@ -60,7 +63,7 @@ class NavRelay(Node):
                        history=HistoryPolicy.KEEP_LAST),
         )
 
-        self._nav_client = ActionClient(self, NavigateToPose, "navigate_to_pose")
+        self._nav_client = ActionClient(self, NavigateToPose, NAV_ACTION)
 
         # Zero-velocity heartbeat keeps the nav-bridge DDS→Zenoh cmd_vel route
         # alive so the bridge doesn't retire it between goals.
