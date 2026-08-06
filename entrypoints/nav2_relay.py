@@ -49,6 +49,13 @@ FAIL_COOLDOWN = 5.0      # s — pause after rapid-abort to let bt_navigator rec
 
 NAV_ACTION = "navigate_to_pose"
 
+# In slam_toolbox localization mode, the map was built from odom(0,0)=spawn so
+# map frame origin = spawn position in world. RMF goals are in Gazebo world frame.
+# Transform map_coord = world_coord - spawn_pos = world_coord - INITIAL_XY.
+# NOTE: if map_start_pose correctly sets map→world alignment, set these to 0.
+_MAP_OFFSET_X = float(os.environ.get("INITIAL_X", "0.0"))
+_MAP_OFFSET_Y = float(os.environ.get("INITIAL_Y", "0.0"))
+
 
 class NavRelay(Node):
     def __init__(self):
@@ -192,8 +199,8 @@ class NavRelay(Node):
         goal.pose = PoseStamped()
         goal.pose.header.frame_id = "map"
         goal.pose.header.stamp.sec = 0  # use latest available transform
-        goal.pose.pose.position.x = x
-        goal.pose.pose.position.y = y
+        goal.pose.pose.position.x = x - _MAP_OFFSET_X
+        goal.pose.pose.position.y = y - _MAP_OFFSET_Y
         goal.pose.pose.orientation.z = math.sin(yaw / 2.0)
         goal.pose.pose.orientation.w = math.cos(yaw / 2.0)
 

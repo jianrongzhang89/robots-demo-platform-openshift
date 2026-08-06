@@ -132,6 +132,30 @@ pserver.setdefault('GridBased', {})['tolerance'] = 0.5  # accept path ending wit
 # The robot's 360° lidar sees the full tb3_sandbox in the first rotation, so
 # the map is substantially complete before navigation begins.
 # AMCL frame IDs — keep global (matching RSP's TF frames and pre-built map)
+# ── slam_toolbox localization mode params ────────────────────────────────────
+# Uses the pre-built serialized posegraph from /slam_maps/ (baked into image).
+# mode=localization: scan-matches against the stored map (no new mapping).
+# This gives ≤0.012 m drift in corridors vs AMCL's 0.10-0.24 m.
+slam = p.setdefault('slam_toolbox', {}).setdefault('ros__parameters', {})
+slam['odom_frame']            = 'odom'
+slam['map_frame']             = 'map'
+slam['base_frame']            = 'base_footprint'
+slam['scan_topic']            = '/scan'
+slam['use_sim_time']          = True
+slam['mode']                  = 'localization' # scan-match against pre-built slam map
+slam['map_file_name']         = '/slam_maps/${ROBOT_NAME}_slam'  # baked into image
+# map_start_pose: initial localization guess in map frame = world spawn coordinates.
+# Since the stored map was built from odom(0,0)=spawn, map_start_pose=spawn_world
+# sets the localization to start at the correct world position.
+slam['map_start_pose']        = [float('${INITIAL_X}'), float('${INITIAL_Y}'), float('${INITIAL_YAW}')]
+slam['debug_logging']         = False
+slam['transform_publish_period'] = 0.02
+slam['transform_timeout']     = 0.2
+slam['tf_buffer_duration']    = 30.0
+slam['stack_size_to_use']     = 40000000
+slam['enable_interactive_mode'] = False
+slam['minimum_time_interval'] = 0.5
+# AMCL frame IDs kept for backward compatibility with anything that still reads them
 amcl_params = p.setdefault('amcl', {}).setdefault('ros__parameters', {})
 amcl_params['base_frame_id']   = 'base_footprint'
 amcl_params['odom_frame_id']   = 'odom'
@@ -187,10 +211,10 @@ else
 fi
 
 ros2 launch nav2_bringup bringup_launch.py \
+  slam:=True \
   use_sim_time:=True \
   autostart:=True \
   use_composition:=False \
-  map:="${BRINGUP_DIR}/maps/tb3_sandbox.yaml" \
   ${PARAMS_ARG} &
 NAV2_PID=$!
 
@@ -198,14 +222,11 @@ NAV2_PID=$!
 # Nav2 bringup with namespace may register the node as /amcl (short) or
 # /${ROBOT_NAME}/amcl (full) depending on the version — check both.
 (
-  echo "[nav2-pod/${ROBOT_NAME}] Waiting for AMCL node to load..."
+  echo "[nav2-pod/${ROBOT_NAME}] Waiting for slam_toolbox node to load..."
   for i in $(seq 1 180); do
-    if ros2 node list 2>/dev/null | grep -qE "^(/amcl|/${ROBOT_NAME}/amcl)$"; then
-      echo "[nav2-pod/${ROBOT_NAME}] AMCL node detected (attempt ${i}), waiting for activation..."
-      # Wait 45s: AMCL needs time to configure+activate its lifecycle, during which
-      # the TF buffer may clear several times due to sim-clock jumps after Gazebo
-      # restarts. 45s covers the typical worst-case activation window.
-      sleep 45
+    if ros2 node list 2>/dev/null | grep -qE "^(/slam_toolbox)$"; then
+      echo "[nav2-pod/${ROBOT_NAME}] slam_toolbox detected (attempt ${i}), waiting for map to build..."
+      sleep 20
       # Increase transform_tolerance on AMCL and costmaps.
       # Zenoh bridges the sim clock at ~1350 Hz; occasional out-of-order delivery
       # causes tf2 "jump back in time" buffer clears. High transform_tolerance lets
@@ -214,7 +235,7 @@ NAV2_PID=$!
       timeout 8 ros2 param set /global_costmap/global_costmap transform_tolerance 10.0 2>/dev/null || true
       timeout 8 ros2 param set /controller_server general_goal_checker.yaw_goal_tolerance 3.14159 2>/dev/null || true
 
-      echo "[nav2-pod/${ROBOT_NAME}] Publishing initial pose at (${INITIAL_X}, ${INITIAL_Y}, yaw=${INITIAL_YAW})..."
+      echo "[nav2-pod/${ROBOT_NAME}] Publishing initial pose hint at (${INITIAL_X}, ${INITIAL_Y})..."
       read -r INITIAL_QZ INITIAL_QW < <(python3 -c \
         "import math; y=${INITIAL_YAW}; print(math.sin(y/2), math.cos(y/2))")
       ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
@@ -224,7 +245,7 @@ NAV2_PID=$!
       echo "[nav2-pod/${ROBOT_NAME}] Waiting for AMCL to publish map->odom transform..."
       for j in $(seq 1 60); do
         if timeout 5 ros2 run tf2_ros tf2_echo "map" "odom" 2>&1 | grep -q "Translation"; then
-          echo "[nav2-pod/${ROBOT_NAME}] Localization active — navigation stack ready."
+          echo "[nav2-pod/${ROBOT_NAME}] slam_toolbox localization active (map from /slam_maps/)."
           break
         fi
         sleep 2
