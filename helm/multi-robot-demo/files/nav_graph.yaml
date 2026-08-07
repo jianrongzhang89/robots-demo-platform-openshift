@@ -59,13 +59,21 @@ levels:
       - [ 1.5, -0.55, {name: r2_se, is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.4}]
       - [ 0.0, -0.55, {name: r2_sc, is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.4}]
       - [-1.5, -0.55, {name: r2_sw, is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.4}]
-      # Outer wall corridor at y=±1.75 — mirrors swap_patrol.py safe detour paths.
-      # y=1.75: 0.65 m clear of y=1.1 pillar row; 0.25 m clear of y=2.0 boundary wall.
-      # With robot footprint r=0.22 m and inflation 0.10 m: min safe center = ±1.78 m from
-      # lethal wall → y=±1.75 has footprint at ±1.97 m, just inside inflation zone but
-      # NOT lethal (lethal_cost_thresh=254 accepts cost=253 INSCRIBED here).
-      # robot_1: home → south corridor (y=-1.75) → east → robot_2_home
-      # robot_2: home → north corridor (y=+1.75) → west → robot_1_home
+      # ── Outer corridor waypoints (x=±1.5 to avoid corner obstacles at ±1.8) ──
+      # The sb3_sandbox has corner wall segments near (-1.8,-1.8) and (1.9,-1.8).
+      # Using x=±1.5 (not ±2.0) keeps A* paths clear of these obstacles.
+      #
+      # robot_1 south route: home(-2,-0.5) → s_in(-1.5,-1.75) → s_out(1.5,-1.75) → robot_2_home(2,0.5)
+      #   home → s_in:  diagonal SE, avoids corner; s_in→s_out: straight east at y=-1.75
+      #   s_out→home2: diagonal NE to robot_2_home — all clear of pillars and corners
+      #
+      # robot_2 north route: home(2,0.5) → n_in(1.5,1.75) → n_out(-1.5,1.75) → robot_1_home(-2,-0.5)
+      #   Symmetric: diagonal NW, straight west at y=1.75, diagonal SW to robot_1_home
+      - [-1.5, -1.75, {name: s_in,  is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.4}]
+      - [ 1.5, -1.75, {name: s_out, is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.4}]
+      - [ 1.5,  1.75, {name: n_in,  is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.4}]
+      - [-1.5,  1.75, {name: n_out, is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.4}]
+      # Legacy outer wall waypoints (kept for compatibility, not used in swap dispatch)
       - [-2.0,  1.75, {name: r1_nwall_w, is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.5}]
       - [ 2.0,  1.75, {name: r1_nwall_e, is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.5}]
       - [ 2.0, -1.75, {name: r2_swall_e, is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.5}]
@@ -125,9 +133,11 @@ levels:
       - [13, 12, {graph_idx: 0, speed_limit: 0.26}]
       - [13, 0,  {graph_idx: 0, speed_limit: 0.26}]
       - [0,  13, {graph_idx: 0, speed_limit: 0.26}]
-      # Outer wall swap route — 0.70 m clearance from pillar rows, mirrors swap_patrol.py
-      # robot_1: home(0) → r1_nwall_w(14) → r1_nwall_e(15) → robot_2_home(1)
-      # robot_2: home(1) → r2_swall_e(16) → r2_swall_w(17) → robot_1_home(0)
+      # ── Outer corridor swap route (x=±1.5 entries, avoids corner obstacles) ──
+      # Vertex index map: 14=s_in(-1.5,-1.75), 15=s_out(1.5,-1.75),
+      #                   16=n_in(1.5,1.75),   17=n_out(-1.5,1.75)
+      # robot_1 south route: home(0) → s_in(14) → s_out(15) → robot_2_home(1)
+      # robot_2 north route: home(1) → n_in(16) → n_out(17) → robot_1_home(0)
       - [0,  14, {graph_idx: 0, speed_limit: 0.26}]
       - [14, 0,  {graph_idx: 0, speed_limit: 0.26}]
       - [14, 15, {graph_idx: 0, speed_limit: 0.26}]
@@ -140,5 +150,8 @@ levels:
       - [17, 16, {graph_idx: 0, speed_limit: 0.26}]
       - [17, 0,  {graph_idx: 0, speed_limit: 0.26}]
       - [0,  17, {graph_idx: 0, speed_limit: 0.26}]
+      # Legacy outer wall waypoints (18-21: r1_nwall_w/e, r2_swall_e/w) — no lanes.
+      # Removed to prevent RMF routing swap traffic through the y=±1.75 outer wall
+      # vertices which create unwanted multi-hop paths via robot homes.
 
 lifts: {}

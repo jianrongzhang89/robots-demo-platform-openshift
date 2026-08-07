@@ -1,417 +1,450 @@
-# Multi-Robot ROS2 Demo on OpenShift
+# Two-Robot Swap Demo on OpenShift
 
-A Helm-deployed multi-robot simulation demonstrating how to run independent
-[ROS2](https://docs.ros.org/en/jazzy/) navigation stacks on
-[OpenShift](https://www.redhat.com/en/technologies/cloud-computing/openshift),
-with [Gazebo Harmonic](https://gazebosim.org/) physics,
-[zenoh-bridge-ros2dds](https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds)
-sidecars for cross-pod DDS bridging, and a dedicated
-[Zenoh router](https://zenoh.io/) pod as the central communication hub.
-
-Two [TurtleBot3 Waffle](https://emanual.robotis.com/docs/en/platform/turtlebot3/overview/)
-robots — **blue** and **red** — run in isolated OpenShift pods, each with its
-own Nav2 autonomy stack (AMCL + planner + controller), and are independently
-controllable in real time. All four pods (Gazebo simulation, two Nav2 stacks,
-and the Zenoh router) connect through a single stable `zenoh-router` ClusterIP
-Service, so any pod can restart without disrupting the others.
+A fully cloud-native robotics demo: two TurtleBot3 Waffle robots running
+[ROS2 Jazzy](https://docs.ros.org/en/jazzy/) + [Nav2](https://nav2.ros.org/)
+inside [OpenShift](https://www.redhat.com/en/technologies/cloud-computing/openshift)
+pods, orchestrated by [Open-RMF](https://www.open-rmf.org/), navigating a
+Gazebo Harmonic simulation environment through outer-corridor waypoints to swap
+positions — without any on-premise hardware.
 
 ---
 
-## Architecture
+## What the Demo Does
+
+Two robots start at opposite corners of a simulated indoor environment and
+**swap positions** simultaneously, each navigating around the outside of a
+3×3 pillar grid:
 
 ```
-┌─────────────────────────── OpenShift namespace: ros2-multi-robot ──────────────────────────────┐
-│                                                                                                 │
-│  ┌──────────────────────────────────┐                                                          │
-│  │  Pod: zenoh-router               │  ← dedicated Zenoh hub; lifecycle independent of         │
-│  │  (eclipse/zenoh:latest)          │    Gazebo and Nav2                                       │
-│  │  mode: router, TCP :7447         │                                                          │
-│  └──────────────┬───────────────────┘                                                          │
-│      ClusterIP Service: zenoh-router:7447                                                       │
-│           ▲              ▲                      ▲                                               │
-│           │ (client)     │ (client)             │ (client)                                      │
-│  ┌────────┴─────────┐  ┌─┴──────────────────┐  ┌┴───────────────────┐                        │
-│  │ Pod: gazebo-sim  │  │ Pod: robot-nav-     │  │ Pod: robot-nav-    │                        │
-│  │                  │  │      robot-1        │  │      robot-2       │                        │
-│  │ container: gazebo│  │                     │  │                    │                        │
-│  │ • Gazebo Harmonic│  │ container: nav2     │  │ container: nav2    │                        │
-│  │ • Spawns robot_1 │  │ namespace=robot_1   │  │ namespace=robot_2  │                        │
-│  │   (blue,-2,-0.5) │  │ • AMCL              │  │ • AMCL             │                        │
-│  │ • Spawns robot_2 │  │ • planner_server    │  │ • planner_server   │                        │
-│  │   (red, 2, 0.5)  │  │ • controller_server │  │ • controller_server│                        │
-│  │ • ros_gz_bridge  │  │ • bt_navigator      │  │ • bt_navigator     │                        │
-│  │ • noVNC  (:6080) │  │ • map_server        │  │ • map_server       │                        │
-│  │ • web    (:8080) │  │                     │  │                    │                        │
-│  │                  │  │ /robot_1/scan       │  │ /robot_2/scan      │                        │
-│  │ sidecar:         │  │ /robot_1/odom       │  │ /robot_2/odom      │                        │
-│  │ zenoh-bridge     │  │ /robot_1/cmd_vel    │  │ /robot_2/cmd_vel   │                        │
-│  │ (client)         │  │ /robot_1/tf         │  │ /robot_2/tf        │                        │
-│  └──────────────────┘  │                     │  │                    │                        │
-│                        │ sidecar:            │  │ sidecar:           │                        │
-│                        │ zenoh-bridge        │  │ zenoh-bridge       │                        │
-│                        │ (client)            │  │ (client)           │                        │
-│                        └─────────────────────┘  └────────────────────┘                        │
-└─────────────────────────────────────────────────────────────────────────────────────────────────┘
+robot_1_home(-2, -0.5)   ───south corridor (y=-1.75)───▶   robot_2_home(2, 0.5)
+robot_2_home( 2,  0.5)   ───north corridor (y=+1.75)───▶   robot_1_home(-2,-0.5)
 ```
 
-### Key design decisions
+The entire dispatch pipeline flows through Open-RMF:
 
-| Concern | Choice | Reason |
-|---|---|---|
-| Cross-pod DDS | `zenoh-bridge-ros2dds` sidecar | DDS multicast is blocked by OVN-Kubernetes CNI; Zenoh bridges over TCP |
-| Zenoh topology | Dedicated `zenoh-router` pod; all bridges = clients | Router lifecycle is independent of Gazebo and Nav2 — Gazebo restarts don't disconnect Nav2 pods |
-| Robot isolation | ROS2 namespaces (`/robot_1/`, `/robot_2/`) | Topics, TF, and actions are fully isolated per robot without zenoh namespace prefix |
-| Navigation map | Predefined `tb3_sandbox` map (AMCL) | Avoids SLAM instability; robots localize instantly at spawn |
-| Deployment | Helm chart (`helm/multi-robot-demo/`) | `values.yaml` `robots:` list drives N-robot scaling; one Deployment template per robot via `range` |
-| Robot colours | Per-robot diffuse in SDF xacro | `entrypoint-gazebo.sh` patches `gz_waffle.sdf.xacro` at spawn time from the `ROBOTS` env var |
+```
+make dispatch-swap-patrol
+      ↓
+  RMF dispatch_patrol task
+      ↓
+  free_fleet_adapter (bidding + execution)
+      ↓
+  Zenoh CDR pub  →  nav2_relay.py  →  Nav2 navigate_to_pose  →  /cmd_vel  →  Gazebo
+```
 
 ---
 
-## Repository structure
+## System Architecture
 
 ```
-.
-├── Containerfile                         # Single image: Fedora 43 + ROS Jazzy + Gazebo Harmonic + noVNC
-├── Makefile                              # build / push / deploy / reset / demo targets
-├── entrypoints/
-│   ├── entrypoint-gazebo.sh              # Gazebo pod: spawns N colour-coded robots
-│   └── entrypoint-nav2.sh               # Nav2 pod: namespaced Nav2 + AMCL initialisation
-├── config/
-│   ├── worlds/tb3_sandbox.sdf.xacro      # Gazebo world (turtlebot3_world + plugins)
-│   └── www/index.html                    # Web landing page served in the Gazebo pod
-├── demo/
-│   └── meet_demo.py                      # Autonomous meet demo (Nav2 Simple Commander)
-└── helm/
-    └── multi-robot-demo/
-        ├── Chart.yaml
-        ├── values.yaml                   # Robot list, images, resources, route hosts
-        ├── files/
-        │   ├── zenoh-router.json5        # Zenoh config: standalone router
-        │   ├── gazebo-bridge.json5       # Zenoh config: client mode → zenoh-router
-        │   └── nav2-bridge.json5         # Zenoh config: client mode → zenoh-router
-        └── templates/
-            ├── configmap-zenoh.yaml
-            ├── deployment-zenoh-router.yaml  # Dedicated Zenoh router pod + ClusterIP Service
-            ├── deployment-gazebo.yaml        # Single Gazebo pod
-            ├── deployment-nav2.yaml          # {{- range .Values.robots }} → one pod per robot
-            ├── serviceaccount.yaml
-            └── services-routes.yaml          # noVNC/web Services + OpenShift Routes
+┌─────────────────────── OpenShift namespace: ros2-multi-robot ───────────────────────┐
+│                                                                                      │
+│  ┌────────────────────────┐                                                          │
+│  │  Pod: zenoh-router     │  ← central Zenoh hub; all other pods connect here        │
+│  │  TCP :7447 (router)    │                                                          │
+│  └──────────┬─────────────┘                                                          │
+│             │ ClusterIP Service zenoh-router:7447                                    │
+│   ┌─────────┴──────────────────────────────────────────────────────────────┐         │
+│   │                                                                        │         │
+│   ▼                          ▼                        ▼                    ▼         │
+│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐  ┌────────────┐  │
+│  │  Pod: gazebo-sim │  │ Pod: robot-nav-1 │  │ Pod: robot-nav-2 │  │ Pod:       │  │
+│  │                  │  │                  │  │                  │  │ rmf-core   │  │
+│  │  gz sim (server) │  │  nav2 bringup    │  │  nav2 bringup    │  │            │  │
+│  │  robot_state_pub │  │  AMCL            │  │  AMCL            │  │ RMF fleet  │  │
+│  │  gz→ROS2 bridge  │  │  planner(A*)     │  │  planner(A*)     │  │ adapter    │  │
+│  │                  │  │  RPP controller  │  │  RPP controller  │  │ (free_     │  │
+│  │  ┌────────────┐  │  │  nav2_relay.py   │  │  nav2_relay.py   │  │  fleet)    │  │
+│  │  │zenoh-bridge│  │  │  ┌────────────┐  │  │  ┌────────────┐  │  │            │  │
+│  │  │  (sidecar) │  │  │  │zenoh-bridge│  │  │  │zenoh-bridge│  │  │ rmf-web    │  │
+│  │  └────────────┘  │  │  │  (sidecar) │  │  │  │  (sidecar) │  │  │ api-server │  │
+│  └──────────────────┘  │  └────────────┘  │  │  └────────────┘  │  └────────────┘  │
+│                         └──────────────────┘  └──────────────────┘                  │
+└──────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Pod Responsibilities
+
+| Pod | Image | Key Processes |
+|-----|-------|---------------|
+| `zenoh-router` | `eclipse/zenoh` | Zenoh router (TCP :7447) — the communication backbone |
+| `gazebo-sim` | `quay.io/jianrzha/ros2-demo` | Gazebo Harmonic server, ros_gz_bridge, robot_state_publisher |
+| `robot-nav-robot-1` | `quay.io/jianrzha/ros2-demo` | Nav2 bringup (AMCL+planner+controller), nav2_relay.py, zenoh-bridge-ros2dds |
+| `robot-nav-robot-2` | `quay.io/jianrzha/ros2-demo` | Same as robot-1 but for robot_2 |
+| `rmf-core` | `quay.io/jianrzha/ros2-rmf` | free_fleet_adapter, RMF traffic manager, rmf-web API server |
+
+---
+
+## How the Components Work Together
+
+### Zenoh as the Cross-Pod DDS Bridge
+
+Each pod runs a `zenoh-bridge-ros2dds` sidecar that translates between ROS2's
+DDS layer (local to the pod's network) and Zenoh pub/sub (routed through the
+central `zenoh-router` pod). This allows:
+
+- **Gazebo** to publish `/clock`, `/odom`, `/scan`, `/tf` to Zenoh
+- **Nav2 pods** to subscribe to those topics from Zenoh, and to publish
+  `/cmd_vel` back to Zenoh so Gazebo can apply it
+- **RMF** to send navigation commands and receive robot states via Zenoh
+
+Topic naming uses robot namespaces: `robot_1/cmd_vel`, `robot_2/odom`, etc.
+The bridges map these to/from the global ROS2 topic names within each pod.
+
+**Clock relay**: The sim clock (`/clock`) is bridged from Gazebo through Zenoh
+to each Nav2 pod. `nav2_relay.py` applies a monotonic filter before re-publishing
+to `/clock`, preventing backward timestamp jumps that would clear Nav2's TF buffer.
+
+**cmd_vel keepalive**: The Zenoh bridge only routes `robot_N/cmd_vel` from DDS
+to Zenoh while at least one Zenoh subscriber is interested. Each Nav2 pod runs
+a persistent Python Zenoh subscriber (the "keepalive") that holds the route open
+permanently — without it, the bridge would drop the route between goals and the
+robot would stop.
+
+### Nav2 Stack
+
+Each robot runs a complete Nav2 navigation stack in its own pod:
+
+- **AMCL** for localization using a pre-built occupancy map (`tb3_sandbox.pgm`)
+- **NavFn A\*** global planner with a point-robot footprint (`robot_radius=0`)
+  so that paths can be computed even when the start position is near obstacles
+- **Regulated Pure Pursuit (RPP)** controller: tracks a carrot-point on the
+  global path, producing forward velocity unconditionally. DWB was rejected
+  because its multi-critic trajectory sampling produces zero-velocity local
+  minima in the tb3_sandbox pillar grid
+- **Collision monitor**: disabled (FootprintApproach.enabled=False) — the pillar
+  grid caused false collision detections that zero-suppressed cmd_vel even when
+  the robot had a clear path
+
+### Open-RMF and free_fleet
+
+Open-RMF is the fleet management layer. The key components:
+
+- **free_fleet_adapter**: bridges between RMF's abstract `FleetUpdateHandle` API
+  and the actual robots. For each navigation step it publishes a CDR-encoded
+  string (`GOAL_ID X Y YAW`) to the Zenoh topic `robot_N/rmf_navigate_cmd`
+- **RMF traffic manager**: assigns patrol tasks to robots by lowest-cost bidding,
+  deconflicts lane usage, and advances the task state machine when each waypoint
+  is reached
+- **nav2_relay.py**: the Nav2 side of the free_fleet bridge. Subscribes to
+  `/rmf_navigate_cmd` (via Zenoh bridge → DDS), translates each command into a
+  `NavigateToPose` action goal sent to Nav2's bt_navigator, and publishes the
+  result back to `robot_N/rmf_navigate_result`
+
+**Navigation graph**: Defined in `helm/multi-robot-demo/files/nav_graph.yaml`.
+The swap demo uses four outer-corridor waypoints (indices 14-17):
+
+```
+s_in  (-1.5, -1.75)   s_out ( 1.5, -1.75)   # south corridor for robot_1
+n_in  ( 1.5,  1.75)   n_out (-1.5,  1.75)   # north corridor for robot_2
+```
+
+These corridors run along y=±1.75, giving 0.65 m clearance from the pillar
+rows at y=±1.1 and avoiding the corner wall segments near (±1.8, ±1.8).
+
+### nav2_relay.py — The Critical Bridge
+
+`nav2_relay.py` handles several subtle concurrency challenges:
+
+| Problem | Solution |
+|---------|----------|
+| RMF sends CANCEL+NAVIGATE pairs every ~20s | CANCEL-ignore: only NAVIGATE triggers action |
+| Fleet adapter re-publishes goal every 0.8s | `_last_sent_dest` window: retries within 25s of dispatch are absorbed without creating new Nav2 goals |
+| Race between goal completion and retry arrival | `_last_ok_dest` window: recently-completed destinations are reported OK immediately without re-navigation |
+| Zombie state (no thread after same-dest transfer) | `_run_active` guard: only one `_run_goal` thread executes at a time; zombie-fix spawns a new thread when `_handle=None` after same-dest transfer |
+| TF backward jumps clearing the buffer | Monotonic clock filter on `/clock_bridge → /clock` |
+
+---
+
+## Navigation Map — tb3_sandbox
+
+The simulation world is Gazebo's `tb3_sandbox.pgm`:
+
+- **Outer walls**: y ≈ ±2.65 (south/north)
+- **Pillar grid**: 3×3 array at x∈{-1.1, 0, 1.1} × y∈{-1.1, 0, 1.1}, radius 0.15 m
+- **Robot width**: 0.44 m (TurtleBot3 Waffle)
+- **Corridor clearance**: 0.65 m from pillar row to outer corridor at y=±1.75
+
+```
+y=+2.65  ─────────────────────────────── north wall ────────────────────────────
+y=+1.75  ···(n_out)──────────────────────────────────(n_in)···  ← north corridor
+y=+1.10  ●  ●  ●   ← pillar row
+y= 0.00  [r2_home]  ●  ●  ●   ←  pillar row (centre)
+y=-1.10  ●  ●  ●   ← pillar row
+y=-1.75  ···(s_in)───────────────────────────────────(s_out)···  ← south corridor
+y=-2.65  ─────────────────────────────── south wall ────────────────────────────
+         x=-2  -1.1    0   +1.1  +2
 ```
 
 ---
 
 ## Prerequisites
 
-| Tool | Version |
-|---|---|
-| `podman` | ≥ 4.x (macOS: `/opt/podman/bin/podman`) |
-| `helm` | ≥ 3.13 |
-| `oc` | ≥ 4.10 |
-| OpenShift cluster | ≥ 4.10 (tested on 4.10) |
-| quay.io push access | to `quay.io/jianrzha/ros2-demo` |
+- **OpenShift** 4.x cluster with GPU/Vulkan not required (software rendering via Mesa/llvmpipe)
+- **Helm 3** and **oc CLI** installed locally
+- **Podman** (for building images locally)
+- Container registry access (default: `quay.io/jianrzha`)
+
+Image tags used:
+- `quay.io/jianrzha/ros2-demo:swap-nav2` — Gazebo + Nav2 + nav2_relay
+- `quay.io/jianrzha/ros2-rmf:open-rmf` — free_fleet_adapter + RMF + rmf-web
 
 ---
 
-## Quickstart
+## Quick-Start: Running the Demo
 
-### 1. Log in
-
-```bash
-# OpenShift cluster
-oc login --token=<token> --server=https://api.<cluster>:6443
-
-# Container registry
-/opt/podman/bin/podman login quay.io
-```
-
-### 2. Build and push the container image
+### 1. Deploy
 
 ```bash
-make build-push
+# Install or upgrade all resources in the ros2-multi-robot namespace
+make deploy ROS_DEMO_NS=ros2-multi-robot
 ```
 
-This builds a single image (`quay.io/jianrzha/ros2-demo:latest`) used by both
-the Gazebo pod and the Nav2 pods (different entrypoints, same image).
+### 2. Wait for the Stack to Initialize (~3-4 min)
 
-> **First build:** ~10–15 min (Fedora 43 + ROS Jazzy COPR packages).  
-> **Subsequent builds:** ~2 min (only the final `COPY entrypoints/` layer changes).
-
-### 3. Deploy to OpenShift
+After Gazebo, Nav2, and RMF pods are running, AMCL needs time to converge
+and Nav2's lifecycle manager to activate. Monitor with:
 
 ```bash
-make deploy
+make status ROS_DEMO_NS=ros2-multi-robot
 ```
 
-This runs `helm upgrade --install` into the `ros2-multi-robot` namespace and
-creates:
-
-| Resource | Count |
-|---|---|
-| Deployment (`zenoh-router`) | 1 |
-| Deployment (`gazebo-sim`) | 1 |
-| Deployment (`robot-nav-robot-1`, `robot-nav-robot-2`) | 1 per robot |
-| ClusterIP Services (zenoh-router, noVNC, web) | 3 |
-| OpenShift Routes (noVNC, web) | 2 |
-| ConfigMap (`zenoh-bridge-config`) | 1 |
-| ServiceAccount (`ros2-demo`) | 1 |
-
-### 4. Check status
+Both nav pods should show `3/3 Running`. Then verify bt_navigator is active:
 
 ```bash
-make status    # oc get pods -n ros2-multi-robot -o wide
-make routes    # print noVNC and web route URLs
+NAV1POD=$(oc get pod -n ros2-multi-robot -l app=robot-nav-robot-1 \
+          -o jsonpath='{.items[0].metadata.name}')
+oc exec -n ros2-multi-robot $NAV1POD -c nav2 -- bash -c \
+  'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash; \
+   ros2 lifecycle get /bt_navigator'
+# Expected: active [3]
 ```
 
-Wait ~2 min for all pods to reach `2/2 Running` (Gazebo and Nav2 pods) and
-`1/1 Running` (zenoh-router). The Gazebo pod readiness probe has a 60 s
-initial delay (Gazebo server startup).
+> **If bt_navigator shows `inactive [2]`**, the lifecycle manager may have timed
+> out activating `planner_server` before AMCL published its TF. Run the recovery
+> sequence in the Troubleshooting section below.
 
-### 5. Open the simulation
-
-Navigate to the **noVNC route** printed by `make routes`:
-
-```
-https://ros2-multi-robot-novnc-ros2-multi-robot.apps.<cluster>
-```
-
-You should see two TurtleBot3 robots — blue (`robot_1`) and red (`robot_2`) —
-in the Gazebo GUI.
-
----
-
-## Moving the robots manually
-
-All commands use `oc exec` into the Nav2 pod. The `export HOME=/tmp/ros-home`
-prefix is required because ROS logging needs a writable directory.
+### 3. Open the Gazebo Viewer
 
 ```bash
-# Move blue robot (robot_1) forward
-POD1=$(oc get pod -n ros2-multi-robot -l app=robot-nav-robot-1 \
-        -o jsonpath='{.items[0].metadata.name}')
-oc exec -n ros2-multi-robot "$POD1" -c nav2 -- bash -c \
-  'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash
-   ros2 topic pub /robot_1/cmd_vel geometry_msgs/msg/Twist \
-     "{linear: {x: 0.3}}" --times 20 --rate 10'
+make routes ROS_DEMO_NS=ros2-multi-robot
+```
 
-# Move red robot (robot_2) backward
-POD2=$(oc get pod -n ros2-multi-robot -l app=robot-nav-robot-2 \
-        -o jsonpath='{.items[0].metadata.name}')
-oc exec -n ros2-multi-robot "$POD2" -c nav2 -- bash -c \
-  'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash
-   ros2 topic pub /robot_2/cmd_vel geometry_msgs/msg/Twist \
-     "{linear: {x: -0.3}}" --times 20 --rate 10'
+Open the noVNC URL shown (e.g. `https://novnc-ros2-multi-robot.apps.…/vnc_lite.html`)
+to see the Gazebo 3D view. The blue robot is `robot_1` (spawn at -2, -0.5) and
+the red robot is `robot_2` (spawn at 2, 0.5).
 
-# Spin in place
-#   angular.z > 0  → counter-clockwise
-#   angular.z < 0  → clockwise
+### 4. Dispatch the Swap
+
+```bash
+make dispatch-swap-patrol ROS_DEMO_NS=ros2-multi-robot
+```
+
+This dispatches two RMF patrol tasks simultaneously:
+- **robot_1**: `robot_1_home → s_in → s_out → robot_2_home`
+- **robot_2**: `robot_2_home → n_in → n_out → robot_1_home`
+
+Both robots should begin moving within a few seconds and complete the swap
+in roughly 50–55 sim-seconds (~2 minutes of wall time at RTF=0.5).
+
+### 5. Reset and Repeat
+
+```bash
+# Full reset: restart Gazebo + Nav2 pods (robots teleport back to spawn)
+make restart ROS_DEMO_NS=ros2-multi-robot
+
+# Then wait ~3-4 min for initialization, then dispatch again
+make dispatch-swap-patrol ROS_DEMO_NS=ros2-multi-robot
 ```
 
 ---
 
-## Autonomous Meet Demo
-
-`demo/meet_demo.py` uses the **Nav2 Simple Commander API** to autonomously
-navigate both robots to swap starting positions — crossing paths in the middle
-of the world.
-
-```
-robot_1 (blue)  (-2, -0.5)  ─────────────────────► (2, 0.5)
-                                       ✕
-robot_2 (red)   ( 2,  0.5)  ◄───────────────────── (-2, -0.5)
-```
-
-### Run
+## Build and Push Images
 
 ```bash
-make reset   # teleport both robots back to spawn positions
-make demo    # copy script + run autonomous navigation
+# Rebuild the Gazebo/Nav2 image
+make build-push REGISTRY=quay.io/jianrzha TAG=swap-nav2
+
+# Rebuild the RMF image (~15-20 min first build, faster with layer cache)
+make build-push-rmf REGISTRY=quay.io/jianrzha TAG=open-rmf
 ```
 
-Or step by step:
-
-```bash
-# 1. Reset robot positions
-make reset
-
-# 2. Copy the demo script into the Nav2 pod
-NAV1=$(oc get pod -n ros2-multi-robot -l app=robot-nav-robot-1 \
-        -o jsonpath='{.items[0].metadata.name}')
-oc cp demo/meet_demo.py ros2-multi-robot/${NAV1}:/tmp/meet_demo.py -c nav2
-
-# 3. Run the demo
-oc exec -n ros2-multi-robot "$NAV1" -c nav2 -- bash -c \
-  'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash
-   python3 /tmp/meet_demo.py'
-```
-
-### Expected output
-
-```
-============================================================
- Meet Demo — robots swap positions (cross paths)
-   robot_1 (blue): (-2, -0.5) → (2,  0.5)
-   robot_2 (red):  ( 2,  0.5) → (-2, -0.5)
-============================================================
-[robot_1/blue] Waiting for Nav2 to become active...
-[robot_2/red]  Waiting for Nav2 to become active...
-[robot_1/blue] Nav2 active. Setting initial pose (-2.0, -0.5)...
-[robot_2/red]  Nav2 active. Setting initial pose (2.0, 0.5)...
-[robot_1/blue] Navigating to (2.0, 0.5) ...
-[robot_2/red]  Navigating to (-2.0, -0.5) ...
-[robot_1/blue]   3.21 m remaining
-[robot_2/red]    3.18 m remaining
-...
-[robot_1/blue] Navigation SUCCEEDED ✓
-[robot_2/red]  Navigation SUCCEEDED ✓
-
-============================================================
- Results
-============================================================
-  robot_1 (blue): SUCCEEDED ✓
-  robot_2 (red):  SUCCEEDED ✓
-```
+Always rebuild both images when changing:
+- `entrypoints/entrypoint-nav2.sh` (Nav2 params, lifecycle setup, keepalive)
+- `entrypoints/nav2_relay.py` (RMF–Nav2 bridge logic)
+- `patch_adapter.py` (free_fleet_adapter modifications)
 
 ---
 
-## Configuration
+## Troubleshooting
 
-### Add a third robot
+### bt_navigator stays `inactive [2]` after startup
 
-Edit `helm/multi-robot-demo/values.yaml`:
-
-```yaml
-robots:
-  - name: robot_1
-    color: "0,0,1"      # blue
-    initialPose: { xPos: -2.0, yPos: -0.5, yaw: 0.0 }
-  - name: robot_2
-    color: "1,0,0"      # red
-    initialPose: { xPos: 2.0, yPos: 0.5, yaw: 3.14159 }
-  - name: robot_3
-    color: "0,0.8,0"    # green
-    initialPose: { xPos: 0.0, yPos: -2.0, yaw: 1.5708 }
-```
-
-Then redeploy:
+The `planner_server` timed out before AMCL published its map→odom TF. This
+happens intermittently on busy clusters. Fix:
 
 ```bash
-make deploy
+NAV_POD=$(oc get pod -n ros2-multi-robot -l app=robot-nav-robot-1 \
+          -o jsonpath='{.items[0].metadata.name}')
+
+# 1. Publish initial pose to kick AMCL into localizing
+oc exec -n ros2-multi-robot $NAV_POD -c nav2 -- bash -c \
+  'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash;
+   ros2 topic pub /initialpose geometry_msgs/msg/PoseWithCovarianceStamped \
+     "{header: {frame_id: map}, pose: {pose: {position: {x: -2.0, y: -0.5}},
+       covariance: [0.01,0,0,0,0,0, 0,0.01,0,0,0,0, 0,0,0,0,0,0,
+                    0,0,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0.01]}}" \
+     --times 3'
+
+# 2. Wait 15s for TF, then RESET + STARTUP the lifecycle manager
+sleep 15
+oc exec -n ros2-multi-robot $NAV_POD -c nav2 -- bash -c \
+  'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash;
+   ros2 service call /lifecycle_manager_navigation/manage_nodes \
+     nav2_msgs/srv/ManageLifecycleNodes "{command: 3}";
+   sleep 5;
+   ros2 service call /lifecycle_manager_navigation/manage_nodes \
+     nav2_msgs/srv/ManageLifecycleNodes "{command: 0}"'
 ```
 
-One new `robot-nav-robot-3` Deployment is created automatically and its
-zenoh-bridge sidecar connects to the shared `zenoh-router` pod as a new
-client. No template changes required.
+### Both robots don't move after dispatch
 
-### Change robot colours
+Check RMF accepted the tasks (not "battery capacity" error):
 
-Colours are RGB values in the 0–1 range passed via the `color:` field.
-Examples: `"1,0.5,0"` (orange), `"0.5,0,0.5"` (purple), `"1,1,0"` (yellow).
+```bash
+RMFPOD=$(oc get pod -n ros2-multi-robot -l app=rmf-core \
+         -o jsonpath='{.items[0].metadata.name}')
+oc logs -n ros2-multi-robot $RMFPOD -c rmf-core --since=120s | grep -E "ERROR|task"
+```
 
-### Use a GPU node for Gazebo
+If you see `insufficient battery capacity`, the nav_graph may have disconnected
+the swap-route waypoints. Re-deploy Helm:
 
 ```bash
 helm upgrade multi-robot-demo helm/multi-robot-demo \
-  --namespace ros2-multi-robot \
-  --reuse-values \
-  --set gazebo.gpu=true
+  --namespace ros2-multi-robot --reuse-values
+oc rollout restart deployment/rmf-core -n ros2-multi-robot
 ```
 
-With `gpu: true` the Gazebo deployment adds:
-- `nvidia.com/gpu: 1` resource request/limit
-- `nvidia.com/gpu: NoSchedule` toleration
-- `NVIDIA_VISIBLE_DEVICES=all` and `NVIDIA_DRIVER_CAPABILITIES=all` env vars
+### Robot stops mid-route and doesn't resume
 
-The entrypoint detects `nvidia-smi` at runtime and switches from llvmpipe
-software rendering to full GPU rendering automatically.
-
-### Adjust resource requests
+The Zenoh `cmd_vel` route from the Nav2 pod to Gazebo may have dropped. The
+permanent keepalive should prevent this, but if it happens:
 
 ```bash
-helm upgrade multi-robot-demo helm/multi-robot-demo \
-  --namespace ros2-multi-robot \
-  --reuse-values \
-  --set gazebo.resources.requests.cpu=2 \
-  --set nav2.resources.requests.memory=1Gi
+# Check: does Gazebo see robot_N's cmd_vel?
+GZPOD=$(oc get pod -n ros2-multi-robot -l app=gazebo-sim \
+        -o jsonpath='{.items[0].metadata.name}')
+oc exec -n ros2-multi-robot $GZPOD -c gazebo -- bash -c \
+  'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash;
+   timeout 8 ros2 topic hz /robot_2/cmd_vel'
+```
+
+If rate is 0, do a full `make restart` to restore all Zenoh routes.
+
+### Navigation stalls (progress checker fires after ~10 min wall-time)
+
+The progress checker fires after 300 sim-seconds without 5 cm of movement.
+When it fires, Nav2 aborts the current goal and the relay automatically retries.
+This self-recovers — just wait an extra ~2 min wall-time for the retry to complete.
+
+---
+
+## Key Configuration Files
+
+| File | Purpose |
+|------|---------|
+| `helm/multi-robot-demo/files/nav_graph.yaml` | RMF navigation graph — waypoints and lane connectivity |
+| `helm/multi-robot-demo/files/fleet_config.yaml` | RMF fleet parameters — battery model, speeds, charger locations |
+| `helm/multi-robot-demo/values.yaml` | Helm values — image refs, env vars (INITIAL_X/Y/YAW), resource limits |
+| `entrypoints/entrypoint-nav2.sh` | Nav2 pod startup — Nav2 YAML patching, AMCL initialization, lifecycle watchdog |
+| `entrypoints/nav2_relay.py` | RMF↔Nav2 bridge — navigate_to_pose dispatch, clock relay, race-condition guards |
+| `entrypoints/entrypoint-rmf.sh` | RMF pod startup — free_fleet_adapter launch, sim-clock relay |
+| `patch_adapter.py` | Patches free_fleet's nav2_robot_adapter at image build time |
+| `Containerfile` | Nav2/Gazebo image (Fedora 43 + ROS2 Jazzy + Nav2 + Zenoh python bindings) |
+| `Containerfile.rmf` | RMF image (same base + free_fleet + rmf_demos + rmf-web) |
+
+---
+
+## Known Limitations
+
+### RTF ≈ 0.5 (Half Real-Time)
+
+Gazebo runs at approximately half real-time on the cluster. Navigating a 3-metre
+corridor segment takes ~22 real seconds (11 sim-seconds at 0.22 m/s). The full
+swap completes in ~2 wall-clock minutes. This is a Gazebo software-rendering
+performance limitation — a GPU-accelerated node would reach RTF ≈ 1.0.
+
+### AMCL Localization Drift
+
+AMCL uses a particle filter which struggles in the symmetric pillar-grid corridors
+of tb3_sandbox (similar scan patterns at different positions). Drift of 0.1–0.2 m
+is typical. In practice this does not affect demo success because:
+- The Nav2 planner uses the costmap (not AMCL position) to find paths
+- The progress checker tolerates small positional errors
+- merge_radius=0.4 m on waypoints gives generous arrival detection
+
+For production use, slam_toolbox in localization mode would provide sub-centimetre
+accuracy at the cost of a serialized map pre-generated during a mapping run.
+
+### bt_navigator Lifecycle Startup Race
+
+On a busy OpenShift node, the `planner_server` activation sometimes times out
+(83 sim-seconds) before AMCL publishes its map→odom TF. The bond_timeout=300s
+YAML patch reduces this, but the RESET+STARTUP recovery procedure (above) is
+still occasionally needed on the first attempt. Subsequent `make restart` calls
+on the same node succeed reliably once the node's JVM and container overhead settles.
+
+### Zenoh Route Dropout (Legacy Issue, Mitigated)
+
+The zenoh-bridge-ros2dds only bridges DDS→Zenoh for topics where at least one
+Zenoh subscriber is active. Historically, the keepalive reconnected every 55s,
+creating a brief gap that caused the bridge to retire the `robot_N/cmd_vel`
+DDS subscription. This is fixed by holding the keepalive connection open
+permanently (`time.sleep(999999)`).
+
+### RMF Traffic Manager Routing
+
+RMF's lane graph routing can find unexpected multi-hop paths through legacy
+waypoints if the nav_graph has dense bidirectional lane connectivity. The current
+nav_graph isolates legacy outer-wall vertices (18–21: r1_nwall_w/e, r2_swall_e/w)
+by giving them zero lanes. If lanes are inadvertently restored, RMF may route
+robots through e.g. `n_in → robot_2_home → r1_nwall_e → …` instead of the
+direct `n_in → n_out` lane.
+
+### Single Nav2 Domain Per Pod
+
+Each robot's Nav2 stack runs without a ROS2 namespace (isolation is achieved
+via Zenoh topic prefixes). This means multiple Nav2 pods **cannot** run on the
+same Linux node if DDS discovery is network-scoped — each pod must be on a
+separate node, or DDS must be configured with unique domain IDs per pod. The
+Helm chart's `nodeAffinity` rules (if set) enforce this.
+
+---
+
+## Makefile Reference
+
+```bash
+make deploy              # Helm install/upgrade
+make restart             # Rolling restart (Gazebo first, then Nav2 + RMF)
+make dispatch-swap-patrol # Dispatch the two-robot swap via RMF patrol tasks
+make status              # Pod status
+make routes              # Show noVNC/rmf-web URLs
+make build-push          # Build + push the Nav2/Gazebo image
+make build-push-rmf      # Build + push the RMF image
+make rmf-status          # Fleet state from RMF topic
 ```
 
 ---
 
-## Makefile reference
+## Branch and Commit History
 
-```
-make help          Show all targets
+This demo lives on the `open-rmf-integration` branch of the
+`robots-demo-platform-openshift` repository. The key development milestones:
 
-Build
-  make build       Build the container image with podman
-  make push        Push to quay.io/jianrzha/ros2-demo:latest
-  make build-push  Build and push in one step
+1. **`main`**: P-controller relay + dedicated zenoh-router pod; single-robot meet demo
+2. **`open-rmf-integration`**: Open-RMF + free_fleet + Nav2 ActionClient relay;
+   two-robot swap via outer corridors
 
-Deploy
-  make deploy      helm upgrade --install into ros2-multi-robot namespace
-  make undeploy    helm uninstall + delete namespace
-  make restart     Rolling restart of all pods
-  make set-image   Upgrade with a new tag: make set-image TAG=v1.2
-
-Demo
-  make reset       Teleport both robots to spawn positions via gz service
-  make demo        Reset + copy meet_demo.py + run autonomous navigation
-
-Helm
-  make template    Render templates to stdout (for review)
-  make lint        Lint the Helm chart
-  make package     Package chart into dist/
-
-Utilities
-  make status      oc get pods
-  make routes      Print route URLs
-```
-
-> **Namespace override:** if your shell has a `NAMESPACE` env var set, use
-> `ROS_DEMO_NS=<ns>` instead:
-> ```bash
-> make reset ROS_DEMO_NS=ros2-multi-robot
-> make demo  ROS_DEMO_NS=ros2-multi-robot
-> ```
-
----
-
-## How it works — Zenoh bridge topology
-
-```
-Within each pod: standard ROS2 DDS (localhost, shared memory)
-Between pods:    Zenoh TCP transport via zenoh-bridge-ros2dds sidecars
-
-                     ┌──────────────────┐
-                     │   zenoh-router   │  eclipse/zenoh:latest
-                     │   mode: router   │  ClusterIP :7447
-                     └────────┬─────────┘
-             ┌────────────────┼─────────────────┐
-             │ (client)       │ (client)         │ (client)
-    ┌────────┴───────┐  ┌─────┴──────────┐  ┌───┴────────────┐
-    │  gazebo-sim    │  │ robot-nav-      │  │ robot-nav-     │
-    │  zenoh-bridge  │  │ robot-1        │  │ robot-2        │
-    │                │  │ zenoh-bridge   │  │ zenoh-bridge   │
-    │ /robot_1/*     │  │                │  │                │
-    │ /robot_2/*     │  │ /robot_1/*     │  │ /robot_2/*     │
-    │ (local DDS)    │  │ (local DDS)    │  │ (local DDS)    │
-    └────────────────┘  └────────────────┘  └────────────────┘
-```
-
-- **DDS stays local:** each pod uses `ROS_DOMAIN_ID=0` with no cross-pod multicast
-- **Zenoh carries everything:** all `/robot_N/scan`, `/robot_N/odom`,
-  `/robot_N/cmd_vel`, `/robot_N/tf`, `/clock` topics are bridged transparently
-- **No node changes:** ROS2 nodes publish/subscribe via DDS as usual; the bridge
-  handles cross-pod routing invisibly
-- **Independent router:** the `zenoh-router` pod lifecycle is decoupled from
-  Gazebo and Nav2 — restarting the Gazebo pod does not disconnect Nav2 bridges
-- **Client reconnection:** all bridge configs set `exit_on_failure: false` with
-  exponential-backoff retry (1 s → 16 s), so any pod survives router restarts
-
----
-
-## Based on
-
-- [lokeshrangineni/ros2-openshift-demo](https://github.com/lokeshrangineni/ros2-openshift-demo/tree/main/examples/distributed-zenoh) — single-robot distributed-zenoh reference
-- [eclipse-zenoh/zenoh-plugin-ros2dds](https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds) — Zenoh bridge
-- [ros-navigation/navigation2](https://github.com/ros-navigation/navigation2) — Nav2 + Simple Commander API
-- [ROBOTIS TurtleBot3](https://emanual.robotis.com/docs/en/platform/turtlebot3/) — robot model and simulation
+All significant fixes are documented in the session memory at
+`.claude/projects/…/memory/openrmf_integration_fixes.md`.

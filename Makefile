@@ -128,19 +128,19 @@ dispatch-swap-patrol: ## Swap patrol via RMF+Nav2: direct goal to each other's s
 	    echo "$$state" | grep -q "active \[3\]" && break || sleep 5; \
 	  done; \
 	done
-	@echo "Dispatching direct swap via RMF (Nav2 plans through pillar grid)..."
+	@echo "Dispatching via outer corridors (y=±1.75, avoiding pillar grid)..."
 	oc exec -n $(NAMESPACE) $(RMFPOD) -c rmf-core -- bash -c \
 	  'export HOME=/tmp/ros-home; \
 	   source /opt/ros/jazzy/setup.bash; \
 	   source /opt/free_fleet/install/setup.bash 2>/dev/null || true; \
 	   ros2 run rmf_demos_tasks dispatch_patrol \
-	     -p robot_1_home robot_2_home -n 1 --use_sim_time'
+	     -p robot_1_home s_in s_out robot_2_home -n 1 --use_sim_time'
 	oc exec -n $(NAMESPACE) $(RMFPOD) -c rmf-core -- bash -c \
 	  'export HOME=/tmp/ros-home; \
 	   source /opt/ros/jazzy/setup.bash; \
 	   source /opt/free_fleet/install/setup.bash 2>/dev/null || true; \
 	   ros2 run rmf_demos_tasks dispatch_patrol \
-	     -p robot_2_home robot_1_home -n 1 --use_sim_time'
+	     -p robot_2_home n_in n_out robot_1_home -n 1 --use_sim_time'
 
 .PHONY: rmf-status
 rmf-status: ## Show fleet state from RMF (robot positions and task status)

@@ -206,6 +206,7 @@ class _PubSubNavHandle:
         self._goal_id = str(int(_psntime.time() * 1000000) % 10000000)
         self._done = False
         self._succeeded = False
+        self._finished_called = False  # guard: execution.finished() must fire exactly once
         self._lock = _psnthread.Lock()
         # execution.finished() signals the patrol task to advance to the next waypoint.
         # Without this call, the patrol stays stuck at the current waypoint forever.
@@ -247,6 +248,9 @@ class _PubSubNavHandle:
             for _ in range(4):
                 self._cmd_pub.put(encoded)
                 _psntime.sleep(0.8)
+                with self._lock:
+                    if self._done:
+                        break  # goal completed — stop re-publishing to avoid preempting next leg
         _psnthread.Thread(target=_publish_loop, daemon=True).start()
         self._node.get_logger().info(
             f"[nav_relay] goal {self._goal_id}: ({self._x:.2f}, {self._y:.2f}, {self._yaw:.2f})"
@@ -260,9 +264,12 @@ class _PubSubNavHandle:
                 except Exception:
                     pass
                 if self._succeeded:
-                    # Notify the C++ fleet adapter that this navigation step is complete.
-                    # This allows the patrol task to advance to the next waypoint.
-                    if self._execution is not None:
+                    # Call execution.finished() exactly once. The C++ fleet adapter
+                    # calls update() in a polling loop, so without the guard it would
+                    # call execution.finished() on every tick, advancing the patrol
+                    # multiple waypoints per navigation step.
+                    if self._execution is not None and not self._finished_called:
+                        self._finished_called = True
                         try:
                             self._execution.finished()
                         except Exception:

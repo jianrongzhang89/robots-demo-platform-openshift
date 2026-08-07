@@ -42,7 +42,12 @@ ros2 run robot_state_publisher robot_state_publisher \
 RSP_PID=$!
 
 echo "[nav2-pod/${ROBOT_NAME}] Starting nav2 RMF relay (pub/sub bridge for navigate_to_pose)..."
-python3 /nav2_relay.py &
+# Watchdog loop: restart relay if it exits unexpectedly.
+(while true; do
+  python3 /nav2_relay.py 2>&1
+  echo "[nav2-pod/${ROBOT_NAME}] nav2_relay.py exited (exit=$?), restarting in 3s..."
+  sleep 3
+done) &
 NAV_RELAY_PID=$!
 
 echo "[nav2-pod/${ROBOT_NAME}] Clock delivered directly via bridge (robot_N/clock -> /clock, same as main branch)."
@@ -104,6 +109,11 @@ cs.setdefault('general_goal_checker', {})['yaw_goal_tolerance'] = 3.14159
 # the collision_monitor node causes double-suppression of velocity.
 cmon = p.setdefault('collision_monitor', {}).setdefault('ros__parameters', {})
 cmon['enabled'] = False
+# Disable the FootprintApproach polygon — even with enabled=False the node
+# still runs its polygon checks and zero-suppresses cmd_vel when the footprint
+# is inside the approach zone. Explicitly disabling the polygon ensures
+# cmd_vel_smoothed is passed through to cmd_vel without any velocity reduction.
+cmon.setdefault('FootprintApproach', {})['enabled'] = False
 
 # ── Global planner: switch NavFn from Dijkstra to A*.
 # Dijkstra hugs obstacle walls and produces paths with sharp turns near pillars.
@@ -132,34 +142,14 @@ pserver.setdefault('GridBased', {})['tolerance'] = 0.5  # accept path ending wit
 # The robot's 360° lidar sees the full tb3_sandbox in the first rotation, so
 # the map is substantially complete before navigation begins.
 # AMCL frame IDs — keep global (matching RSP's TF frames and pre-built map)
-# ── slam_toolbox localization mode params ────────────────────────────────────
-# Uses the pre-built serialized posegraph from /slam_maps/ (baked into image).
-# mode=localization: scan-matches against the stored map (no new mapping).
-# This gives ≤0.012 m drift in corridors vs AMCL's 0.10-0.24 m.
-slam = p.setdefault('slam_toolbox', {}).setdefault('ros__parameters', {})
-slam['odom_frame']            = 'odom'
-slam['map_frame']             = 'map'
-slam['base_frame']            = 'base_footprint'
-slam['scan_topic']            = '/scan'
-slam['use_sim_time']          = True
-slam['mode']                  = 'localization' # scan-match against pre-built slam map
-slam['map_file_name']         = '/slam_maps/${ROBOT_NAME}_slam'  # baked into image
-# map_start_pose: initial localization guess in map frame = world spawn coordinates.
-# Since the stored map was built from odom(0,0)=spawn, map_start_pose=spawn_world
-# sets the localization to start at the correct world position.
-slam['map_start_pose']        = [float('${INITIAL_X}'), float('${INITIAL_Y}'), float('${INITIAL_YAW}')]
-slam['debug_logging']         = False
-slam['transform_publish_period'] = 0.02
-slam['transform_timeout']     = 0.2
-slam['tf_buffer_duration']    = 30.0
-slam['stack_size_to_use']     = 40000000
-slam['enable_interactive_mode'] = False
-slam['minimum_time_interval'] = 0.5
-# AMCL frame IDs kept for backward compatibility with anything that still reads them
-amcl_params = p.setdefault('amcl', {}).setdefault('ros__parameters', {})
-amcl_params['base_frame_id']   = 'base_footprint'
-amcl_params['odom_frame_id']   = 'odom'
-amcl_params['global_frame_id'] = 'map'
+# ── AMCL localization: use pre-built pgm map (full sandbox coverage) ─────────
+# slam_toolbox posegraphs are in /slam_maps/ for reference but require the full
+# sandbox to be mapped (outer corridors) before localization works reliably.
+# AMCL with the pgm map covers the full sandbox from the start.
+amcl_ros2 = p.setdefault('amcl', {}).setdefault('ros__parameters', {})
+amcl_ros2['base_frame_id']   = 'base_footprint'
+amcl_ros2['odom_frame_id']   = 'odom'
+amcl_ros2['global_frame_id'] = 'map'
 
 # ── BT XML: use single-plan-then-follow (no 1 Hz replanning).
 # navigate_to_pose_w_replanning_and_recovery replans every sim-second;
@@ -202,19 +192,29 @@ for top_key in ['local_costmap', 'global_costmap']:
         cmap_params['robot_radius'] = 0.0  # point robot for global planning
     cmap_params.setdefault('inflation_layer', {})['cost_scaling_factor'] = 5.0
 
+# ── Lifecycle manager: extend bond_timeout so planner_server can wait ────────
+# planner_server's global_costmap blocks during activation waiting for the /map
+# topic from AMCL. If lifecycle_manager_localization hasn't yet activated AMCL,
+# the static_layer has no map and the costmap reports a TF lookup failure after
+# the bond_timeout expires (default 4s). Setting 300s gives AMCL enough time
+# to fully activate and publish /map before planner_server gives up.
+for lm_name in ['lifecycle_manager_navigation', 'lifecycle_manager_localization']:
+    lm = p.setdefault(lm_name, {}).setdefault('ros__parameters', {})
+    lm['bond_timeout'] = 300.0
+
 with open('${CUSTOM_PARAMS}', 'w') as f:
     yaml.dump(p, f, default_flow_style=False)
-print('[nav2-pod] Patched nav2 params: AMCL + A* + RPP for pillar-grid navigation')
+print('[nav2-pod] Patched nav2 params: AMCL + A* + RPP + 300s bond_timeout')
 " 2>/dev/null && PARAMS_ARG="params_file:=${CUSTOM_PARAMS}" || PARAMS_ARG=""
 else
   PARAMS_ARG=""
 fi
 
 ros2 launch nav2_bringup bringup_launch.py \
-  slam:=True \
   use_sim_time:=True \
   autostart:=True \
   use_composition:=False \
+  map:="${BRINGUP_DIR}/maps/tb3_sandbox.yaml" \
   ${PARAMS_ARG} &
 NAV2_PID=$!
 
@@ -222,11 +222,23 @@ NAV2_PID=$!
 # Nav2 bringup with namespace may register the node as /amcl (short) or
 # /${ROBOT_NAME}/amcl (full) depending on the version — check both.
 (
-  echo "[nav2-pod/${ROBOT_NAME}] Waiting for slam_toolbox node to load..."
+echo "[nav2-pod/${ROBOT_NAME}] Waiting for AMCL node to load..."
   for i in $(seq 1 180); do
-    if ros2 node list 2>/dev/null | grep -qE "^(/slam_toolbox)$"; then
-      echo "[nav2-pod/${ROBOT_NAME}] slam_toolbox detected (attempt ${i}), waiting for map to build..."
-      sleep 20
+    if ros2 node list 2>/dev/null | grep -qE "^(/amcl|/${ROBOT_NAME}/amcl)$"; then
+      echo "[nav2-pod/${ROBOT_NAME}] AMCL node detected (attempt ${i}), waiting for ACTIVE state..."
+      # Wait for AMCL to be fully ACTIVE (not just present as a node) before
+      # publishing initial pose. Sending the pose while AMCL is INACTIVE causes
+      # it to be dropped silently, preventing localization and blocking
+      # planner_server costmap initialization (which needs map→odom TF from AMCL).
+      for k in $(seq 1 60); do
+        AMCL_STATE=$(timeout 3 ros2 lifecycle get /amcl 2>/dev/null | grep -oE "[a-z]+ \[[0-9]+\]" | head -1)
+        if echo "${AMCL_STATE}" | grep -q "active"; then
+          echo "[nav2-pod/${ROBOT_NAME}] AMCL is active (${AMCL_STATE}), publishing initial pose."
+          break
+        fi
+        echo "[nav2-pod/${ROBOT_NAME}] AMCL not yet active (${AMCL_STATE}), waiting..."
+        sleep 5
+      done
       # Increase transform_tolerance on AMCL and costmaps.
       # Zenoh bridges the sim clock at ~1350 Hz; occasional out-of-order delivery
       # causes tf2 "jump back in time" buffer clears. High transform_tolerance lets
@@ -245,7 +257,7 @@ NAV2_PID=$!
       echo "[nav2-pod/${ROBOT_NAME}] Waiting for AMCL to publish map->odom transform..."
       for j in $(seq 1 60); do
         if timeout 5 ros2 run tf2_ros tf2_echo "map" "odom" 2>&1 | grep -q "Translation"; then
-          echo "[nav2-pod/${ROBOT_NAME}] slam_toolbox localization active (map from /slam_maps/)."
+          echo "[nav2-pod/${ROBOT_NAME}] Localization active — navigation stack ready."
           break
         fi
         sleep 2
@@ -274,10 +286,12 @@ while True:
         conf.insert_json5('scouting/multicast/enabled', 'false')
         z = zenoh.open(conf)
         sub = z.declare_subscriber('${ROBOT_NAME}/cmd_vel', lambda s: None)
-        print('[nav2-pod] keepalive active for ${ROBOT_NAME}', flush=True)
-        time.sleep(55)
-        try: sub.undeclare(); z.close()
-        except: pass
+        print('[nav2-pod] keepalive PERMANENT for ${ROBOT_NAME}', flush=True)
+        # Keep the subscription open permanently — never disconnect.
+        # Reconnecting every 55s creates a gap during which the Zenoh bridge
+        # retires the DDS→Zenoh route for cmd_vel, causing the robot to stop.
+        time.sleep(999999)
+        # (Unreachable: loop restarts only on exception)
     except BaseException as e:
         time.sleep(5)
 " &

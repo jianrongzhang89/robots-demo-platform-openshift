@@ -43,18 +43,13 @@ from rosgraph_msgs.msg import Clock
 from geometry_msgs.msg import PoseStamped, Twist
 from nav2_msgs.action import NavigateToPose
 
-DEST_TOL = 0.15          # m — same-destination transfer radius
-SERVER_TIMEOUT = 15.0    # s — wait for action server at startup
-FAIL_COOLDOWN = 5.0      # s — pause after rapid-abort to let bt_navigator recover
+DEST_TOL = 0.15           # m — same-destination transfer radius
+SERVER_TIMEOUT = 15.0     # s — wait for action server at startup
+FAIL_COOLDOWN = 5.0       # s — pause after rapid-abort to let bt_navigator recover
+RECENT_OK_WINDOW = 10.0   # s — ignore retries of recently-completed destinations
+RECENT_SENT_WINDOW = 25.0  # s — ignore retries of same dest within 25s of sending
 
 NAV_ACTION = "navigate_to_pose"
-
-# In slam_toolbox localization mode, the map was built from odom(0,0)=spawn so
-# map frame origin = spawn position in world. RMF goals are in Gazebo world frame.
-# Transform map_coord = world_coord - spawn_pos = world_coord - INITIAL_XY.
-# NOTE: if map_start_pose correctly sets map→world alignment, set these to 0.
-_MAP_OFFSET_X = float(os.environ.get("INITIAL_X", "0.0"))
-_MAP_OFFSET_Y = float(os.environ.get("INITIAL_Y", "0.0"))
 
 
 class NavRelay(Node):
@@ -83,6 +78,31 @@ class NavRelay(Node):
         self._dest: tuple[float, float] | None = None
         self._handle = None
         self._last_fail_time: float = 0.0  # timestamp of last FAILED result
+        # Thread generation counter: incremented each time a new _run_goal thread
+        # is spawned. Each thread captures its generation at spawn time and exits
+        # if the generation has advanced (a newer thread superseded it).
+        self._thread_gen: int = 0
+        # Recently completed destination: when the fleet adapter's periodic dispatch
+        # tick re-sends a goal to a waypoint the robot just finished navigating to,
+        # the relay would preempt the NEXT leg with a spurious retry. Tracking the
+        # last completed dest and immediately reporting success for retries prevents
+        # this leg-1/leg-2 preemption race that appears at the start of each patrol.
+        self._last_ok_dest: tuple[float, float] | None = None
+        self._last_ok_time: float = 0.0
+        # Recently SENT destination: set when _run_goal calls send_goal_async. Used
+        # in _on_cmd to block fleet-adapter retries of the same destination within
+        # RECENT_SENT_WINDOW seconds. Unlike _last_ok_dest (which requires actual
+        # completion), this fires as soon as the goal is sent — covering the timing
+        # window between goal-send and goal-completion where _last_ok_dest isn't set.
+        # Window must be long enough to cover the fleet adapter's retry interval
+        # (~0.8s) but shorter than the n_out→robot_1_home retry gap (~20s).
+        self._last_sent_dest: tuple[float, float] | None = None
+        self._last_sent_time: float = 0.0
+        # Single-execution guard: prevents two zombie-fix threads from both sending
+        # goals to bt_navigator simultaneously. When a thread is running _run_goal,
+        # _run_active is True. New threads spawned during this window exit immediately.
+        # Cleared when the thread exits (success, failure, or superseded).
+        self._run_active: bool = False
 
         # Clock relay: /clock_bridge → /clock (monotonic filter)
         self._last_clock_ns: int = 0
@@ -129,9 +149,61 @@ class NavRelay(Node):
 
         new_dest = (x, y)
 
+        import time as _time_cmd
         with self._lock:
             if self._rmf_id == rmf_id:
                 return  # exact duplicate retry
+
+            now_cmd = _time_cmd.monotonic()
+            # Skip retries of recently completed destinations (RECENT_OK_WINDOW = 10s):
+            # the free_fleet_adapter's execute loop re-sends the goal after completion,
+            # and _on_result may not have fired yet. Immediately report OK.
+            if self._last_ok_dest is not None:
+                elapsed_ok = now_cmd - self._last_ok_time
+                if elapsed_ok < RECENT_OK_WINDOW:
+                    ox, oy = self._last_ok_dest
+                    if (ox - x) ** 2 + (oy - y) ** 2 < DEST_TOL * DEST_TOL:
+                        self.get_logger().info(
+                            f"[nav_relay] {rmf_id}: retry of recently reached ({x:.2f},{y:.2f})"
+                            f" — reporting OK immediately"
+                        )
+                        import threading as _thr
+                        _dest = new_dest
+                        _thr.Thread(target=lambda: self._finish(rmf_id, True, completed_dest=_dest),
+                                    daemon=True).start()
+                        return
+
+            # Skip retries of recently SENT destinations (RECENT_SENT_WINDOW = 5s):
+            # covers the gap between send_goal_async and _on_result where _last_ok_dest
+            # isn't set. A retry arriving within 5s of sending the same goal is
+            # the fleet adapter's execute loop re-publishing before the result arrives.
+            # 5s is long enough to cover 0.8s retry intervals but short enough that
+            # n_out retries (arriving every 20s) are NOT blocked.
+            if self._last_sent_dest is not None:
+                elapsed_sent = now_cmd - self._last_sent_time
+                if elapsed_sent < RECENT_SENT_WINDOW:
+                    sx, sy = self._last_sent_dest
+                    if (sx - x) ** 2 + (sy - y) ** 2 < DEST_TOL * DEST_TOL:
+                        # Only skip if this dest is NOT the current active goal.
+                        # If the current active goal IS this dest, the same-dest check
+                        # below handles it (no preemption). Reporting "OK immediately"
+                        # for retries of the CURRENT active goal would prematurely
+                        # call execution.finished(), advancing the patrol to the next
+                        # waypoint before the robot reaches the current one.
+                        currently_active = (
+                            self._dest is not None and
+                            (self._dest[0] - x) ** 2 + (self._dest[1] - y) ** 2 < DEST_TOL * DEST_TOL
+                        )
+                        if not currently_active:
+                            self.get_logger().info(
+                                f"[nav_relay] {rmf_id}: retry of recently sent ({x:.2f},{y:.2f})"
+                                f" ({elapsed_sent:.1f}s ago, prev step) — reporting OK immediately"
+                            )
+                            import threading as _thr
+                            _dest = new_dest
+                            _thr.Thread(target=lambda: self._finish(rmf_id, True, completed_dest=_dest),
+                                        daemon=True).start()
+                            return
 
             # Check _dest alone (not _handle): _handle is None between
             # send_goal_async() and _on_accepted() — a window >0.8s over Zenoh.
@@ -148,29 +220,84 @@ class NavRelay(Node):
                     f"transferring from {self._rmf_id}"
                 )
                 self._rmf_id = rmf_id
-                return
+                if self._handle is not None:
+                    # Active Nav2 goal already running — just update rmf_id tracking.
+                    return
+                # No active handle: the previous _run_goal thread may have returned
+                # after its rmf_id was superseded by this same-dest transfer. Without
+                # spawning a new thread, the relay gets stuck — it holds the destination
+                # but never sends navigate_to_pose to bt_navigator.
+                # Spawn a new thread with the updated rmf_id.
+                self._thread_gen += 1
+                my_gen = self._thread_gen
+                # dest and yaw unchanged; x,y are already equal within DEST_TOL
+            else:
+                old_handle = self._handle
+                old_dest = self._dest  # save before overwriting
+                self._rmf_id = rmf_id
+                self._dest = new_dest
+                self._handle = None
+                self._thread_gen += 1
+                my_gen = self._thread_gen
 
-            old_handle = self._handle
-            self._rmf_id = rmf_id
-            self._dest = new_dest
-            self._handle = None
-
-        if old_handle is not None:
+        if not same and old_handle is not None:
             try:
-                old_handle.cancel_goal_async()
+                from action_msgs.msg import GoalStatus as _GS
+                if old_handle.status == _GS.STATUS_SUCCEEDED:
+                    # bt_navigator already completed this goal before the cancel arrived.
+                    # Record the completed destination NOW (synchronously) so that the
+                    # fleet adapter's periodic retry of this rmf_id is skipped. Without
+                    # this check, cancel_goal_async() would cause _on_result to see
+                    # STATUS_CANCELED instead of STATUS_SUCCEEDED, preventing
+                    # _last_ok_dest from being set and allowing the retry to preempt
+                    # the next navigation leg.
+                    if old_dest is not None:
+                        with self._lock:
+                            self._last_ok_dest = old_dest
+                            self._last_ok_time = _time_cmd.monotonic()
+                        self.get_logger().info(
+                            f"[nav_relay] preempted already-succeeded goal "
+                            f"({old_dest[0]:.2f},{old_dest[1]:.2f}) → recorded as last_ok_dest"
+                        )
+                else:
+                    old_handle.cancel_goal_async()
             except Exception:
                 pass
 
         self.get_logger().info(
             f"[nav_relay] {rmf_id}: navigate_to_pose ({x:.2f},{y:.2f}) yaw={yaw:.2f}"
         )
+        # Set _last_sent_dest HERE (before the thread starts) so that subsequent
+        # _on_cmd calls see it immediately. Setting it in _run_goal (a background
+        # thread) is too late — the thread may be in cooldown or waiting for the
+        # server when the next NAVIGATE arrives, causing spurious zombie-fix triggers
+        # that preempt the goal before it's even accepted by bt_navigator.
+        with self._lock:
+            self._last_sent_dest = (x, y)
+            self._last_sent_time = _time_cmd.monotonic()
         threading.Thread(
-            target=self._run_goal, args=(rmf_id, x, y, yaw), daemon=True
+            target=self._run_goal, args=(rmf_id, x, y, yaw, my_gen), daemon=True
         ).start()
 
     # ── Nav2 goal lifecycle ──────────────────────────────────────────────────
 
-    def _run_goal(self, rmf_id: str, x: float, y: float, yaw: float) -> None:
+    def _run_goal(self, rmf_id: str, x: float, y: float, yaw: float,
+                  my_gen: int = 0) -> None:
+        # Single-execution guard: exit immediately if another thread is already
+        # running _run_goal. This prevents zombie-fix threads from racing to
+        # send_goal_async simultaneously, which would preempt a running goal.
+        with self._lock:
+            if self._run_active:
+                return
+            self._run_active = True
+        try:
+            self._run_goal_inner(rmf_id, x, y, yaw, my_gen)
+        finally:
+            with self._lock:
+                self._run_active = False
+
+    def _run_goal_inner(self, rmf_id: str, x: float, y: float, yaw: float,
+                        my_gen: int) -> None:
         # If the previous goal failed very recently (rapid-abort loop from
         # bt_navigator crash/restart), pause to allow the lifecycle to recover.
         import time as _time
@@ -183,7 +310,7 @@ class NavRelay(Node):
             )
             _time.sleep(remaining)
             with self._lock:
-                if self._rmf_id != rmf_id:
+                if self._rmf_id != rmf_id or self._thread_gen != my_gen:
                     return  # superseded during cooldown
 
         if not self._nav_client.wait_for_server(timeout_sec=SERVER_TIMEOUT):
@@ -192,15 +319,15 @@ class NavRelay(Node):
             return
 
         with self._lock:
-            if self._rmf_id != rmf_id:
+            if self._rmf_id != rmf_id or self._thread_gen != my_gen:
                 return  # superseded before we started
 
         goal = NavigateToPose.Goal()
         goal.pose = PoseStamped()
         goal.pose.header.frame_id = "map"
         goal.pose.header.stamp.sec = 0  # use latest available transform
-        goal.pose.pose.position.x = x - _MAP_OFFSET_X
-        goal.pose.pose.position.y = y - _MAP_OFFSET_Y
+        goal.pose.pose.position.x = x
+        goal.pose.pose.position.y = y
         goal.pose.pose.orientation.z = math.sin(yaw / 2.0)
         goal.pose.pose.orientation.w = math.cos(yaw / 2.0)
 
@@ -229,10 +356,10 @@ class NavRelay(Node):
                 return
 
         handle.get_result_async().add_done_callback(
-            lambda f: self._on_result(f, rmf_id, handle)
+            lambda f: self._on_result(f, rmf_id, handle, dest)
         )
 
-    def _on_result(self, future, rmf_id: str, handle) -> None:
+    def _on_result(self, future, rmf_id: str, handle, dest: tuple) -> None:
         from action_msgs.msg import GoalStatus
         status = future.result().status
         success = (status == GoalStatus.STATUS_SUCCEEDED)
@@ -248,21 +375,30 @@ class NavRelay(Node):
                 # for the goal it is currently tracking (after same-dest transfers
                 # A → A′ → A″, _rmf_id is A″ even though the handle belongs to A).
                 report_id = self._rmf_id if self._rmf_id is not None else rmf_id
+                completed_dest = self._dest
                 self._rmf_id = None
                 self._dest = None
                 self._handle = None
             else:
-                # Stale result from a superseded goal (e.g., an old preempted goal
-                # whose cancel/abort arrives after we started a new goal).
-                # Do NOT clear state — the new goal is still running.
+                # Stale result from a superseded goal (e.g., the patrol leg-N goal
+                # completes after leg N+1 has already started). Do NOT clear state.
+                # Still record the completed dest so _on_cmd can skip spurious retries
+                # of this goal's destination within the RECENT_OK_WINDOW.
                 report_id = rmf_id
+                completed_dest = dest  # dest from when this handle was accepted
 
-        self._finish(report_id, success)
+        self._finish(report_id, success, completed_dest=completed_dest if success else None)
 
-    def _finish(self, rmf_id: str, success: bool) -> None:
+    def _finish(self, rmf_id: str, success: bool,
+                completed_dest: "tuple[float,float] | None" = None) -> None:
         import time as _time
+        now = _time.monotonic()
         if not success:
-            self._last_fail_time = _time.monotonic()
+            self._last_fail_time = now
+        elif completed_dest is not None:
+            with self._lock:
+                self._last_ok_dest = completed_dest
+                self._last_ok_time = now
         msg = String()
         msg.data = f"{rmf_id} {'OK' if success else 'FAILED'}"
         self._result_pub.publish(msg)
