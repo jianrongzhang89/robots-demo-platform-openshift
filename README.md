@@ -34,6 +34,68 @@ make dispatch-swap-patrol
 
 ---
 
+## Sequence Diagram
+
+The diagram below shows the full message flow for one navigation leg
+(e.g. `robot_2_home → n_in`). Both robots execute this loop in parallel,
+one for each waypoint in their patrol route.
+
+```mermaid
+sequenceDiagram
+    actor Operator
+    participant RMF as RMF Core<br/>(rmf-core pod)
+    participant FA  as free_fleet_adapter<br/>(rmf-core pod)
+    participant Z   as Zenoh Router
+    participant NR  as nav2_relay.py<br/>(robot-nav pod)
+    participant BT  as bt_navigator<br/>(robot-nav pod)
+    participant PL  as planner_server<br/>(robot-nav pod)
+    participant CT  as controller_server<br/>(robot-nav pod)
+    participant GZ  as Gazebo<br/>(gazebo-sim pod)
+
+    Operator->>RMF: dispatch_patrol task<br/>[robot_2_home→n_in→n_out→robot_1_home]
+
+    RMF->>FA: assign task (lowest-cost bid wins)
+
+    loop For each waypoint in patrol
+        FA->>Z: publish robot_N/rmf_navigate_cmd<br/>"GOAL_ID X Y YAW" (CDR)
+        Z->>NR: deliver via DDS bridge
+        NR->>BT: send_goal NavigateToPose(x,y,yaw)
+
+        BT->>PL: ComputePathToPose(goal)
+        Note over PL: A* on tb3_sandbox.pgm costmap<br/>robot_radius=0, inflation=0.15m
+        PL-->>BT: global path
+
+        BT->>CT: FollowPath(path)
+        Note over CT: Regulated Pure Pursuit<br/>lookahead=0.6m, v=0.22m/s<br/>use_collision_detection=False
+
+        loop Control loop @ 20 Hz
+            CT->>Z: publish /cmd_vel (linear + angular)
+            Z->>GZ: deliver robot_N/cmd_vel via DDS bridge
+            GZ->>GZ: apply velocity to physics
+
+            GZ->>Z: publish robot_N/odom, robot_N/scan
+            Z->>NR: deliver odom/scan
+            NR->>BT: (AMCL updates map→odom TF)
+        end
+
+        CT-->>BT: FollowPath SUCCEEDED (goal reached)
+        BT-->>NR: NavigateToPose SUCCEEDED
+
+        NR->>Z: publish robot_N/rmf_navigate_result<br/>"GOAL_ID OK" (CDR)
+        Z->>FA: deliver result
+        FA->>FA: execution.finished() → advance to next waypoint
+        FA->>RMF: waypoint complete
+    end
+
+    RMF-->>Operator: task COMPLETED<br/>(both robots at swapped positions)
+```
+
+> **Parallel execution**: both robots run the above loop simultaneously.
+> RMF's traffic manager deconflicts lane usage — if both robots would need
+> the same lane at the same time, one waits until the other clears.
+
+---
+
 ## System Architecture
 
 ```
