@@ -218,6 +218,44 @@ ros2 launch nav2_bringup bringup_launch.py \
   ${PARAMS_ARG} &
 NAV2_PID=$!
 
+# odom→base_footprint TF broadcaster
+# The ros_gz_bridge in Gazebo publishes the DiffDrive odom TF to /robot_N/tf,
+# but a QoS mismatch between the ros_gz_bridge DDS publisher and the Zenoh
+# bridge DDS subscriber prevents it from reaching this pod. Without this TF,
+# AMCL cannot publish map→odom and the global_costmap activation times out.
+# This broadcaster derives the same TF from /odom (which flows correctly via
+# Zenoh) and runs in a restart loop to survive any crashes.
+cat > /tmp/odom_tf_broadcaster.py << 'ODOM_TF_EOF'
+import rclpy
+from rclpy.node import Node
+from nav_msgs.msg import Odometry
+from geometry_msgs.msg import TransformStamped
+from tf2_ros import TransformBroadcaster
+
+class OdomTfBroadcaster(Node):
+    def __init__(self):
+        super().__init__('odom_tf_broadcaster')
+        self.tf_broadcaster = TransformBroadcaster(self)
+        self.create_subscription(Odometry, '/odom', self.odom_cb, 10)
+        self.get_logger().info('odom->base_footprint TF broadcaster started')
+
+    def odom_cb(self, msg):
+        t = TransformStamped()
+        t.header.stamp = msg.header.stamp
+        t.header.frame_id = 'odom'
+        t.child_frame_id = 'base_footprint'
+        t.transform.translation.x = msg.pose.pose.position.x
+        t.transform.translation.y = msg.pose.pose.position.y
+        t.transform.translation.z = msg.pose.pose.position.z
+        t.transform.rotation = msg.pose.pose.orientation
+        self.tf_broadcaster.sendTransform(t)
+
+rclpy.init(args=['--ros-args', '-p', 'use_sim_time:=true'])
+rclpy.spin(OdomTfBroadcaster())
+ODOM_TF_EOF
+while true; do python3 /tmp/odom_tf_broadcaster.py 2>/dev/null || true; sleep 2; done &
+echo "[nav2-pod/${ROBOT_NAME}] odom->base_footprint TF broadcaster started"
+
 # Wait for AMCL to load, then set initial pose so localization can start.
 # Nav2 bringup with namespace may register the node as /amcl (short) or
 # /${ROBOT_NAME}/amcl (full) depending on the version — check both.

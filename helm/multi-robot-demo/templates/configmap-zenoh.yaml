@@ -50,12 +50,7 @@ data:
               // clock omitted — handled by the dedicated clock-bridge sidecar
               // which subscribes to bare Zenoh "clock" without namespace prefix
               ".*/robot_description",
-              ".*/rmf_navigate_cmd",
-              // cmd_vel keepalive: subscribing here keeps the Gazebo bridge's
-              // Route Subscriber (Zenoh:robot_N/cmd_vel -> DDS:/robot_N/cmd_vel)
-              // alive during idle periods. DDS same-participant rules prevent the
-              // bridge from re-ingesting its own injected data (no feedback loop).
-              ".*/cmd_vel"
+              ".*/rmf_navigate_cmd"
             ],
             action_servers: [
               ".*/navigate_to_pose"

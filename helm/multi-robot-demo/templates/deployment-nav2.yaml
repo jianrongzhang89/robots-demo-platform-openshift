@@ -101,6 +101,34 @@ spec:
               cpu: 500m
               memory: 256Mi
 
+        # --- Sidecar: cmd_vel Zenoh keepalive (no namespace) ---
+        # Subscribes to exact Zenoh keys robot_1/cmd_vel and robot_2/cmd_vel,
+        # keeping the Gazebo bridge's Route Subscriber alive during idle periods.
+        # Exact keys only — no wildcard — prevents the nav bridge from creating
+        # cascading routes (robot_N/robot_N/cmd_vel, robot_N/robot_M/cmd_vel).
+        # The DDS side publishes to /robot_N/cmd_vel which the nav bridge may
+        # route to robot_N/robot_N/cmd_vel (harmless — nobody subscribes).
+        - name: zenoh-cmdvel-keepalive
+          image: {{ $.Values.zenohBridge.image }}
+          args: ["-c", "/zenoh-config/cmd-vel-keepalive.json5"]
+          env:
+            - name: ROS_DOMAIN_ID
+              value: "0"
+            - name: ROS_DISTRO
+              value: jazzy
+          volumeMounts:
+            - name: zenoh-config
+              mountPath: /zenoh-config/cmd-vel-keepalive.json5
+              subPath: cmd-vel-keepalive.json5
+              readOnly: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+
       volumes:
         - name: zenoh-config
           configMap:
