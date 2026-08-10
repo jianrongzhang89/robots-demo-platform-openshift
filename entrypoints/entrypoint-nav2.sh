@@ -191,6 +191,10 @@ for top_key in ['local_costmap', 'global_costmap']:
     if top_key == 'global_costmap':
         cmap_params['robot_radius'] = 0.0  # point robot for global planning
     cmap_params.setdefault('inflation_layer', {})['cost_scaling_factor'] = 5.0
+    # Allow 30 s for map→odom TF during activation. The default (0.3 s) is too
+    # short: AMCL may not have published map→odom by the time the lifecycle
+    # manager activates planner_server, causing the global_costmap to abort.
+    cmap_params['transform_tolerance'] = 30.0
 
 # ── Lifecycle manager: extend bond_timeout so planner_server can wait ────────
 # planner_server's global_costmap blocks during activation waiting for the /map
@@ -255,6 +259,54 @@ rclpy.spin(OdomTfBroadcaster())
 ODOM_TF_EOF
 while true; do python3 /tmp/odom_tf_broadcaster.py 2>/dev/null || true; sleep 2; done &
 echo "[nav2-pod/${ROBOT_NAME}] odom->base_footprint TF broadcaster started"
+
+# cmd_vel Zenoh publisher — bypasses zenoh-bridge-ros2dds for cmd_vel.
+# The bridge's cmd_vel Publisher route gets garbage-collected at ~82 s
+# (Zenoh broker idle-subscriber timer), stopping velocity commands from
+# reaching Gazebo. This process maintains a persistent Zenoh publisher for
+# robot_N/cmd_vel and forwards every DDS /cmd_vel message directly, so the
+# Gazebo bridge's Route Subscriber (Zenoh:robot_N/cmd_vel→DDS:/robot_N/cmd_vel)
+# stays alive and cmd_vel flows continuously regardless of Zenoh bridge GC.
+cat > /tmp/cmdvel_zenoh_pub.py << 'CMDVEL_EOF'
+import rclpy, zenoh, time, threading, os, signal
+from rclpy.node import Node
+from geometry_msgs.msg import Twist
+from rclpy.serialization import serialize_message
+
+ROBOT = os.environ.get('ROBOT_NAME', 'robot_1')
+KEY = f'{ROBOT}/cmd_vel'
+
+class CmdVelZenohPub(Node):
+    def __init__(self, pub):
+        super().__init__('cmdvel_zenoh_pub')
+        self._pub = pub
+        self.create_subscription(Twist, '/cmd_vel', self._cb, 10)
+        self.get_logger().info(f'cmd_vel Zenoh publisher started → {KEY}')
+
+    def _cb(self, msg):
+        try:
+            self._pub.put(serialize_message(msg))
+        except Exception:
+            pass
+
+signal.signal(signal.SIGTERM, lambda s, f: None)
+signal.signal(signal.SIGINT,  lambda s, f: None)
+while True:
+    try:
+        conf = zenoh.Config()
+        conf.insert_json5('connect/endpoints', '["tcp/zenoh-router:7447"]')
+        conf.insert_json5('mode', '"client"')
+        conf.insert_json5('scouting/multicast/enabled', 'false')
+        z = zenoh.open(conf)
+        pub = z.declare_publisher(KEY)
+        rclpy.init(args=['--ros-args', '-p', 'use_sim_time:=true'])
+        node = CmdVelZenohPub(pub)
+        rclpy.spin(node)
+    except BaseException:
+        time.sleep(3)
+CMDVEL_EOF
+while true; do python3 /tmp/cmdvel_zenoh_pub.py 2>/dev/null || true; sleep 2; done &
+echo "[nav2-pod/${ROBOT_NAME}] cmd_vel Zenoh publisher started"
 
 # Wait for AMCL to load, then set initial pose so localization can start.
 # Nav2 bringup with namespace may register the node as /amcl (short) or
