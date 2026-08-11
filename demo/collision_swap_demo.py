@@ -400,6 +400,16 @@ def main():
         hold_id = str(random.randint(1000000, 9999999))
         r2_pub.put(cdr(f"{hold_id} {hx:.6f} {hy:.6f} 0.000000"))
         print(f"[{ts()}] robot_1 continues — Nav2 local costmap plans around robot_2")
+
+        # Anchor robot_2's AMCL immediately at the hold position.
+        # The south outer corridor is symmetric (walls look the same at
+        # different x-positions), so AMCL particles drift laterally while
+        # the robot is stationary. Publishing initialpose here keeps AMCL
+        # stable during the yield pause so Phase 3 starts from a correct
+        # position estimate.
+        print(f"[{ts()}] Anchoring robot_2 AMCL at hold position to prevent drift...")
+        anchor_poses(z, ROBOT2_HOME, (hx, hy), r1_yaw=math.pi, r2_yaw=APPROACH_YAW_R2, repeats=6)
+
         print(f"[{ts()}] Yield pause: {YIELD_PAUSE:.0f} s ...")
         time.sleep(YIELD_PAUSE)
         print(f"[{ts()}] Yield pause complete")
