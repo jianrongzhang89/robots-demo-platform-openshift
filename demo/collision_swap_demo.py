@@ -321,16 +321,45 @@ def main():
     r1_ready = threading.Event()
     r2_ready = threading.Event()
 
+    def verified_navigate(agent, tx, ty, label, tol=0.6):
+        """
+        Navigate to (tx, ty) and verify arrival via fleet_states.
+
+        The relay's 'recently sent — reporting OK immediately' cache can fake
+        goal completion across demo runs without a pod restart.  After the
+        NavAgent reports success, we check fleet_states to confirm the robot
+        actually arrived within `tol` metres.  If not, we retry until it does
+        or TIMEOUT_S expires.
+        """
+        deadline = time.time() + TIMEOUT_S
+        while time.time() < deadline:
+            agent.navigate(tx, ty)
+            # Verify via fleet_states
+            pos = monitor.positions()
+            p = pos.get(agent.name)
+            if p is not None:
+                d = math.hypot(p[0] - tx, p[1] - ty)
+                if d <= tol:
+                    print(f"[{ts()}]   [{agent.name}] verified at ({p[0]:.2f},{p[1]:.2f}) Δ={d:.2f}m ✓")
+                    return True
+                print(f"[{ts()}]   [{agent.name}] relay faked success "
+                      f"(at ({p[0]:.2f},{p[1]:.2f}), {d:.2f}m from target) — retrying")
+                time.sleep(3.0)
+            else:
+                return True  # no fleet_states yet — trust NavAgent
+        print(f"[{ts()}]   [{agent.name}] TIMEOUT reaching ({tx},{ty})")
+        return False
+
     def r1_enter():
         print(f"[{ts()}] [robot_1] → s_in ({S_IN[0]},{S_IN[1]}) [west entry]")
-        agent_r1.navigate(S_IN[0], S_IN[1])
+        verified_navigate(agent_r1, S_IN[0], S_IN[1], "robot_1")
         print(f"[{ts()}] [robot_1] at s_in — ready for head-on approach")
         r1_ready.set()
 
     def r2_enter():
         time.sleep(4)  # 4-second stagger so robot_1 is already moving
         print(f"[{ts()}] [robot_2] → s_out ({S_OUT[0]},{S_OUT[1]}) [east entry]")
-        agent_r2.navigate(S_OUT[0], S_OUT[1])
+        verified_navigate(agent_r2, S_OUT[0], S_OUT[1], "robot_2")
         print(f"[{ts()}] [robot_2] at s_out — ready for head-on approach")
         r2_ready.set()
 
