@@ -152,8 +152,9 @@ dispatch-collision-swap: ## Collision-avoidance swap: restart pods, wait for rea
 	oc rollout status deployment/robot-nav-robot-2 -n $(NAMESPACE) --timeout=4m
 	oc rollout status deployment/rmf-core           -n $(NAMESPACE) --timeout=4m
 	@echo "Step 3: Polling for bt_navigator ACTIVE + fleet adapter ready..."
+	@echo "        (auto-injects initialpose + RESUME if bt_navigator is stuck at inactive)"
 	@NS=$(NAMESPACE); \
-	for i in $$(seq 1 40); do \
+	for i in $$(seq 1 60); do \
 	  NAV1=$$(oc get pod -n $$NS -l app=robot-nav-robot-1 -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
 	  NAV2=$$(oc get pod -n $$NS -l app=robot-nav-robot-2 -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
 	  RMF=$$(oc get pod -n $$NS -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
@@ -167,7 +168,28 @@ dispatch-collision-swap: ## Collision-avoidance swap: restart pods, wait for rea
 	  r2=$$(echo "$$fleet" | grep -c "name: robot_2" 2>/dev/null || echo 0); \
 	  echo "  [$$i] bt1=$$s1 | bt2=$$s2 | fleet r1=$$r1 r2=$$r2"; \
 	  echo "$$s1" | grep -q "active \[3\]" && echo "$$s2" | grep -q "active \[3\]" && \
-	    [ "$${r1:-0}" -ge 1 ] && [ "$${r2:-0}" -ge 1 ] && echo "ALL READY" && break || sleep 5; \
+	    [ "$${r1:-0}" -ge 1 ] && [ "$${r2:-0}" -ge 1 ] && echo "ALL READY" && break; \
+	  if [ $$i -ge 6 ]; then \
+	    echo "$$s1" | grep -q "inactive \[2\]" && echo "  [fix] robot_1 inactive — injecting initialpose + RESUME" && \
+	      oc exec -n $$NS $$NAV1 -c nav2 -- bash -c \
+	        'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash; \
+	         ros2 topic pub /initialpose geometry_msgs/msg/PoseWithCovarianceStamped \
+	           "{header:{frame_id:map},pose:{pose:{position:{x:-2.0,y:-0.5},orientation:{w:1.0}},covariance:[0.01,0,0,0,0,0,0,0.01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.005]}}" \
+	           --times 3 2>/dev/null; sleep 4; \
+	         timeout 30 ros2 service call /lifecycle_manager_navigation/manage_nodes \
+	           nav2_msgs/srv/ManageLifecycleNodes "{command:2}" 2>/dev/null || true' 2>/dev/null & \
+	    echo "$$s2" | grep -q "inactive \[2\]" && echo "  [fix] robot_2 inactive — injecting initialpose + RESUME" && \
+	      oc exec -n $$NS $$NAV2 -c nav2 -- bash -c \
+	        'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash; \
+	         QZ=$$(python3 -c "import math; print(math.sin(math.pi/2))"); \
+	         QW=$$(python3 -c "import math; print(math.cos(math.pi/2))"); \
+	         ros2 topic pub /initialpose geometry_msgs/msg/PoseWithCovarianceStamped \
+	           "{header:{frame_id:map},pose:{pose:{position:{x:2.0,y:0.5},orientation:{z:$${QZ},w:$${QW}}},covariance:[0.01,0,0,0,0,0,0,0.01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.005]}}" \
+	           --times 3 2>/dev/null; sleep 4; \
+	         timeout 30 ros2 service call /lifecycle_manager_navigation/manage_nodes \
+	           nav2_msgs/srv/ManageLifecycleNodes "{command:2}" 2>/dev/null || true' 2>/dev/null & \
+	  fi; \
+	  sleep 5; \
 	done
 	@echo "Step 4: Running collision-avoidance swap demo..."
 	@RMFPOD=$$(oc get pod -n $(NAMESPACE) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
