@@ -50,7 +50,11 @@ data:
               // clock omitted — handled by the dedicated clock-bridge sidecar
               // which subscribes to bare Zenoh "clock" without namespace prefix
               ".*/robot_description",
-              ".*/rmf_navigate_cmd"
+              ".*/rmf_navigate_cmd",
+              // initialpose: allows the demo script to re-anchor AMCL after
+              // multi-leg navigation causes drift, by publishing the correct
+              // pose from the rmf-core pod directly to each nav2 pod's AMCL.
+              ".*/initialpose"
             ],
             action_servers: [
               ".*/navigate_to_pose"

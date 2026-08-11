@@ -151,6 +151,66 @@ class NavAgent:
 
 
 # ---------------------------------------------------------------------------
+# AMCL initial-pose publisher (CDR-encoded PoseWithCovarianceStamped)
+# ---------------------------------------------------------------------------
+
+def make_initialpose_cdr(x, y, yaw):
+    """
+    Build a CDR-encoded geometry_msgs/PoseWithCovarianceStamped for frame 'map'.
+
+    Layout (LE, frame_id="map" → len=4):
+      [0:4]    encapsulation header
+      [4:8]    stamp.sec = 0
+      [8:12]   stamp.nanosec = 0
+      [12:16]  frame_id length = 4
+      [16:20]  "map\0"
+      [20:24]  padding to 8-byte boundary
+      [24:32]  position.x  (float64)
+      [32:40]  position.y  (float64)
+      [40:48]  position.z = 0
+      [48:56]  orientation.x = 0
+      [56:64]  orientation.y = 0
+      [64:72]  orientation.z = sin(yaw/2)
+      [72:80]  orientation.w = cos(yaw/2)
+      [80:368] covariance (36 float64, small diagonal values)
+    """
+    qz = math.sin(yaw / 2.0)
+    qw = math.cos(yaw / 2.0)
+    cov = [0.0] * 36
+    cov[0]  = 0.01   # x variance
+    cov[7]  = 0.01   # y variance
+    cov[35] = 0.005  # yaw variance
+
+    buf = bytearray()
+    buf += b'\x00\x01\x00\x00'           # CDR header
+    buf += struct.pack('<II', 0, 0)       # stamp sec, nanosec
+    buf += struct.pack('<I', 4)           # frame_id len (4 = "map\0")
+    buf += b'map\x00'                    # frame_id "map" + null
+    buf += b'\x00' * 4                   # padding to byte offset 24
+    buf += struct.pack('<ddd', x, y, 0.0)           # position
+    buf += struct.pack('<dddd', 0.0, 0.0, qz, qw)  # orientation
+    buf += struct.pack('<' + 'd' * 36, *cov)        # covariance
+    return bytes(buf)
+
+
+def anchor_poses(z, r1_pos, r2_pos, r1_yaw=math.pi, r2_yaw=0.0, repeats=5):
+    """
+    Publish initialpose for both robots via Zenoh so AMCL re-converges to
+    the true swap positions after navigation drift.
+    """
+    pub1 = z.declare_publisher('robot_1/initialpose')
+    pub2 = z.declare_publisher('robot_2/initialpose')
+    p1 = make_initialpose_cdr(r1_pos[0], r1_pos[1], r1_yaw)
+    p2 = make_initialpose_cdr(r2_pos[0], r2_pos[1], r2_yaw)
+    for _ in range(repeats):
+        pub1.put(p1)
+        pub2.put(p2)
+        time.sleep(0.5)
+    pub1.undeclare()
+    pub2.undeclare()
+
+
+# ---------------------------------------------------------------------------
 # Position monitor via rclpy + /fleet_states
 # ---------------------------------------------------------------------------
 
@@ -396,6 +456,32 @@ def main():
 
     t1.join()
     t2.join()
+
+    # -----------------------------------------------------------------------
+    # Phase 4: Re-anchor AMCL at true swap positions
+    # -----------------------------------------------------------------------
+    # After a multi-leg navigation, AMCL accumulates drift. The nav2 goal
+    # checker declares success based on the (drifted) AMCL estimate, so the
+    # robot's physical stop point may differ from the true target. Publishing
+    # initialpose at the known target coordinates forces AMCL to re-converge
+    # there, correcting the fleet_states readout.
+    print(f"\n[{ts()}] === Phase 4: Re-anchor AMCL at swap positions ===")
+    print(f"[{ts()}] robot_1 → {ROBOT2_HOME}  robot_2 → {ROBOT1_HOME}")
+    time.sleep(3)  # let robots fully stop before re-anchoring
+    # robot_1 is at robot_2_home facing west (π); robot_2 at robot_1_home facing east (0)
+    anchor_poses(z, ROBOT2_HOME, ROBOT1_HOME, r1_yaw=math.pi, r2_yaw=0.0, repeats=8)
+    time.sleep(3)  # allow AMCL to process and converge
+    print(f"[{ts()}] AMCL re-anchored — checking final positions via fleet_states...")
+    time.sleep(2)
+    pos = monitor.positions()
+    r1 = pos.get('robot_1')
+    r2 = pos.get('robot_2')
+    if r1:
+        d1 = math.hypot(r1[0] - ROBOT2_HOME[0], r1[1] - ROBOT2_HOME[1])
+        print(f"[{ts()}] robot_1 at ({r1[0]:.2f},{r1[1]:.2f})  Δ={d1:.2f}m from robot_2_home")
+    if r2:
+        d2 = math.hypot(r2[0] - ROBOT1_HOME[0], r2[1] - ROBOT1_HOME[1])
+        print(f"[{ts()}] robot_2 at ({r2[0]:.2f},{r2[1]:.2f})  Δ={d2:.2f}m from robot_1_home")
 
     print(f"\n[{ts()}] Collision-avoidance swap demo complete. Both robots have swapped positions.")
     rclpy.shutdown()
