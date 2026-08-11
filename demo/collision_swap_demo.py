@@ -39,10 +39,26 @@ ROUTER = "tcp/zenoh-router:7447"
 TIMEOUT_S = 300  # max wall-clock seconds per NavAgent leg (Phase 3)
 
 # Phase constants
-APPROACH_WP      = (0.5, 0.1, math.pi)   # forced head-on meeting waypoint
-YIELD_DIST       = 2.0                    # metres — trigger robot_2 hold
-YIELD_PAUSE      = 15.0                   # seconds robot_2 yields
-APPROACH_TIMEOUT = 90.0                   # seconds before giving up on Phase 1
+#
+# Phase 1 routes both robots through the SOUTH OUTER CORRIDOR (y=-1.75) —
+# NOT through the pillar-grid centre.  Using the centre ((0.5,0.1) from
+# the main branch) causes severe AMCL drift: after navigating through the
+# pillar grid, AMCL loses track and Phase 3 global-planner calls fail
+# immediately because the robot's estimated position is wrong.  The outer
+# corridor is easy to localise in (clear walls, no symmetric pillars) and is
+# the same path Phase 3 uses, so robots stay well-localised throughout.
+#
+# robot_1 enters from the WEST end (home → s_in) and drives east toward s_out.
+# robot_2 enters from the EAST end (home → s_out first, but nav2 approaches
+#   from s_out side heading west toward s_in).
+# They meet head-on somewhere around x=0, y=-1.75.
+APPROACH_WP_R1   = S_OUT   # robot_1 heads east through south corridor
+APPROACH_WP_R2   = S_IN    # robot_2 heads west through south corridor
+APPROACH_YAW_R1  = 0.0     # heading east
+APPROACH_YAW_R2  = math.pi # heading west
+YIELD_DIST       = 2.0     # metres — trigger robot_2 hold
+YIELD_PAUSE      = 20.0    # seconds robot_2 yields (extra time for robot_1 to pass)
+APPROACH_TIMEOUT = 120.0   # seconds before giving up on Phase 1
 
 # Known positions
 ROBOT1_HOME = (-2.0, -0.5)
@@ -222,22 +238,24 @@ def main():
     r2_pub = z.declare_publisher("robot_2/rmf_navigate_cmd")
 
     # -----------------------------------------------------------------------
-    # Phase 1: Approach
+    # Phase 1: Approach via south outer corridor
     # -----------------------------------------------------------------------
-    print(f"\n[{ts()}] === Phase 1: APPROACH ===")
-    ax, ay, ayaw = APPROACH_WP
+    print(f"\n[{ts()}] === Phase 1: APPROACH (south outer corridor y=-1.75) ===")
+    ax1, ay1 = APPROACH_WP_R1   # robot_1 → s_out (1.5, -1.75)  heading east
+    ax2, ay2 = APPROACH_WP_R2   # robot_2 → s_in  (-1.5, -1.75) heading west
+    print(f"[{ts()}]   robot_1 → s_out ({ax1},{ay1})  robot_2 → s_in ({ax2},{ay2})")
 
-    # robot_1 departs first (3-second head start)
+    # robot_1 departs first with a 4-second head start
     r1_goal_id = str(random.randint(1000000, 9999999))
-    r1_pub.put(cdr(f"{r1_goal_id} {ax:.6f} {ay:.6f} {ayaw:.6f}"))
-    print(f"[{ts()}]   [robot_1] goal {r1_goal_id}: ({ax:.2f}, {ay:.2f})  [head start]")
+    r1_pub.put(cdr(f"{r1_goal_id} {ax1:.6f} {ay1:.6f} {APPROACH_YAW_R1:.6f}"))
+    print(f"[{ts()}]   [robot_1] goal {r1_goal_id}: ({ax1:.2f}, {ay1:.2f})  [head start]")
 
-    time.sleep(3)
+    time.sleep(4)
 
-    # robot_2 departs 3 seconds later
+    # robot_2 departs 4 seconds later
     r2_goal_id = str(random.randint(1000000, 9999999))
-    r2_pub.put(cdr(f"{r2_goal_id} {ax:.6f} {ay:.6f} {ayaw:.6f}"))
-    print(f"[{ts()}]   [robot_2] goal {r2_goal_id}: ({ax:.2f}, {ay:.2f})")
+    r2_pub.put(cdr(f"{r2_goal_id} {ax2:.6f} {ay2:.6f} {APPROACH_YAW_R2:.6f}"))
+    print(f"[{ts()}]   [robot_2] goal {r2_goal_id}: ({ax2:.2f}, {ay2:.2f})")
 
     # Poll proximity; stop when threshold crossed or timeout expires
     deadline = time.time() + APPROACH_TIMEOUT
@@ -292,32 +310,53 @@ def main():
         print(f"[{ts()}] Proximity not detected — skipping hold, proceeding to Phase 3")
 
     # -----------------------------------------------------------------------
-    # Phase 3: Re-route via outer corridors
+    # Phase 3: Re-route via outer corridors (staggered to avoid re-collision)
     # -----------------------------------------------------------------------
     print(f"\n[{ts()}] === Phase 3: RE-ROUTE via outer corridors ===")
-    print(f"[{ts()}] robot_1: south corridor  s_in → s_out → robot_2_home {ROBOT2_HOME}")
+    #
+    # After Phase 2, robot_1 is somewhere west-of-hold in the south corridor
+    # (still trying to reach s_out), and robot_2 is stopped at the hold pos.
+    # We stagger dispatch:
+    #   1. Dispatch robot_2 north FIRST — it exits the south corridor so
+    #      robot_1 no longer has an obstacle blocking s_out.
+    #   2. Wait 20 s for robot_2 to clear the corridor.
+    #   3. Dispatch robot_1 to continue east toward robot_2_home.
+    # This prevents robot_1 from getting a fresh "Goal failed" because
+    # robot_2 is still blocking the south corridor.
+    #
+    print(f"[{ts()}] Step 1: robot_2 exits south corridor via north route")
     print(f"[{ts()}] robot_2: north corridor  n_in → n_out → robot_1_home {ROBOT1_HOME}")
-
-    def robot1_reroute():
-        agent = NavAgent(z, "robot_1")
-        print(f"[{ts()}] [robot_1] Phase 3 start: south route")
-        agent.navigate(S_IN[0],       S_IN[1])
-        agent.navigate(S_OUT[0],      S_OUT[1])
-        agent.navigate(ROBOT2_HOME[0], ROBOT2_HOME[1])
-        print(f"[{ts()}] [robot_1] Phase 3 complete — arrived at robot_2_home {ROBOT2_HOME}")
 
     def robot2_reroute():
         agent = NavAgent(z, "robot_2")
         print(f"[{ts()}] [robot_2] Phase 3 start: north route")
-        agent.navigate(N_IN[0],       N_IN[1])
-        agent.navigate(N_OUT[0],      N_OUT[1])
+        agent.navigate(N_IN[0],        N_IN[1])
+        agent.navigate(N_OUT[0],       N_OUT[1])
         agent.navigate(ROBOT1_HOME[0], ROBOT1_HOME[1])
         print(f"[{ts()}] [robot_2] Phase 3 complete — arrived at robot_1_home {ROBOT1_HOME}")
 
-    t1 = threading.Thread(target=robot1_reroute, daemon=True)
     t2 = threading.Thread(target=robot2_reroute, daemon=True)
-    t1.start()
     t2.start()
+
+    # Give robot_2 time to clear the south corridor before robot_1 continues
+    print(f"[{ts()}] Waiting 20 s for robot_2 to clear south corridor...")
+    time.sleep(20)
+
+    print(f"\n[{ts()}] Step 2: robot_1 continues east to robot_2_home")
+    print(f"[{ts()}] robot_1: south corridor  s_out → robot_2_home {ROBOT2_HOME}")
+
+    def robot1_reroute():
+        agent = NavAgent(z, "robot_1")
+        print(f"[{ts()}] [robot_1] Phase 3 start: south route (continuing east)")
+        # robot_1 is already in the south corridor heading east;
+        # s_out may already be reached — navigate directly to robot_2_home.
+        agent.navigate(S_OUT[0],       S_OUT[1])
+        agent.navigate(ROBOT2_HOME[0], ROBOT2_HOME[1])
+        print(f"[{ts()}] [robot_1] Phase 3 complete — arrived at robot_2_home {ROBOT2_HOME}")
+
+    t1 = threading.Thread(target=robot1_reroute, daemon=True)
+    t1.start()
+
     t1.join()
     t2.join()
 
