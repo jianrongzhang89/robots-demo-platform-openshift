@@ -508,13 +508,12 @@ def main():
         # Reset relay cache first so subsequent goals are planned fresh.
         reset_relay_cache(r1_pub, "robot_1")
 
-        # Use swap_patrol.py's proven waypoints at DETOUR_Y = -1.8 (not -1.75).
-        # The corner wall segment near (1.9, -1.8) blocks paths at y=-1.75;
-        # staying at y=-1.8 (further south, past the corner) avoids it.
-        # Step east in 1 m increments along the south outer wall.
-        DETOUR_Y = -1.8
-        for wx in [0.0, 1.0, 2.0]:
-            verified_navigate(agent, wx, DETOUR_Y, "robot_1")
+        # robot_1 is somewhere in the south outer corridor heading east.
+        # Route: east wall (2.0,-1.8) → robot_2_home (2.0,0.5).
+        # Using y=-1.8 (not -1.75) avoids the corner wall segment at (1.9,-1.8)
+        # that blocks NavFn planning at y=-1.75.  This mirrors swap_patrol.py's
+        # proven final step: navigate to east wall then step north.
+        verified_navigate(agent, 2.0, -1.8, "robot_1")
         # Step north from east wall to robot_2_home
         verified_navigate(agent, ROBOT2_HOME[0], ROBOT2_HOME[1], "robot_1")
 
