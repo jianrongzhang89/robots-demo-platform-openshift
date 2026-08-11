@@ -238,24 +238,61 @@ def main():
     r2_pub = z.declare_publisher("robot_2/rmf_navigate_cmd")
 
     # -----------------------------------------------------------------------
-    # Phase 1: Approach via south outer corridor
+    # Phase 1: Approach via south outer corridor — two sub-phases
+    #
+    # Phase 1a: Get each robot to its corridor ENTRY POINT first using
+    #           NavAgent (with proper completion wait).  This guarantees
+    #           both robots are at y=-1.75 before the head-on approach,
+    #           keeping AMCL reliable (no pillar-grid ambiguity).
+    #           robot_1: home → s_in (-1.5,-1.75)  [enters west end]
+    #           robot_2: home → s_out (1.5,-1.75)  [enters east end]
+    #
+    # Phase 1b: Fire-and-forget goals send robots toward each other.
+    #           robot_1: s_in → s_out (heading east)
+    #           robot_2: s_out → s_in (heading west)
+    #           Proximity monitor then triggers Phase 2 yield.
     # -----------------------------------------------------------------------
-    print(f"\n[{ts()}] === Phase 1: APPROACH (south outer corridor y=-1.75) ===")
-    ax1, ay1 = APPROACH_WP_R1   # robot_1 → s_out (1.5, -1.75)  heading east
-    ax2, ay2 = APPROACH_WP_R2   # robot_2 → s_in  (-1.5, -1.75) heading west
-    print(f"[{ts()}]   robot_1 → s_out ({ax1},{ay1})  robot_2 → s_in ({ax2},{ay2})")
+    print(f"\n[{ts()}] === Phase 1a: Enter south corridor at opposite ends ===")
 
-    # robot_1 departs first with a 4-second head start
+    agent_r1 = NavAgent(z, "robot_1")
+    agent_r2 = NavAgent(z, "robot_2")
+
+    # Run both corridor-entry legs concurrently, robot_1 with a 4-second head start
+    r1_ready = threading.Event()
+    r2_ready = threading.Event()
+
+    def r1_enter():
+        print(f"[{ts()}] [robot_1] → s_in ({S_IN[0]},{S_IN[1]}) [west entry]")
+        agent_r1.navigate(S_IN[0], S_IN[1])
+        print(f"[{ts()}] [robot_1] at s_in — ready for head-on approach")
+        r1_ready.set()
+
+    def r2_enter():
+        time.sleep(4)  # 4-second stagger so robot_1 is already moving
+        print(f"[{ts()}] [robot_2] → s_out ({S_OUT[0]},{S_OUT[1]}) [east entry]")
+        agent_r2.navigate(S_OUT[0], S_OUT[1])
+        print(f"[{ts()}] [robot_2] at s_out — ready for head-on approach")
+        r2_ready.set()
+
+    te1 = threading.Thread(target=r1_enter, daemon=True)
+    te2 = threading.Thread(target=r2_enter, daemon=True)
+    te1.start(); te2.start()
+    te1.join(); te2.join()
+
+    print(f"\n[{ts()}] === Phase 1b: Head-on approach in south corridor ===")
+    ax1, ay1 = APPROACH_WP_R1   # s_out (1.5, -1.75) — robot_1 heads east
+    ax2, ay2 = APPROACH_WP_R2   # s_in  (-1.5, -1.75) — robot_2 heads west
+
+    # Fire-and-forget: both robots now in corridor, send opposing goals
     r1_goal_id = str(random.randint(1000000, 9999999))
     r1_pub.put(cdr(f"{r1_goal_id} {ax1:.6f} {ay1:.6f} {APPROACH_YAW_R1:.6f}"))
-    print(f"[{ts()}]   [robot_1] goal {r1_goal_id}: ({ax1:.2f}, {ay1:.2f})  [head start]")
+    print(f"[{ts()}]   [robot_1] goal {r1_goal_id}: → s_out ({ax1:.2f},{ay1:.2f}) heading east")
 
-    time.sleep(4)
+    time.sleep(1)  # brief stagger so both are moving before proximity check
 
-    # robot_2 departs 4 seconds later
     r2_goal_id = str(random.randint(1000000, 9999999))
     r2_pub.put(cdr(f"{r2_goal_id} {ax2:.6f} {ay2:.6f} {APPROACH_YAW_R2:.6f}"))
-    print(f"[{ts()}]   [robot_2] goal {r2_goal_id}: ({ax2:.2f}, {ay2:.2f})")
+    print(f"[{ts()}]   [robot_2] goal {r2_goal_id}: → s_in ({ax2:.2f},{ay2:.2f}) heading west")
 
     # Poll proximity; stop when threshold crossed or timeout expires
     deadline = time.time() + APPROACH_TIMEOUT
