@@ -478,9 +478,19 @@ def main():
         # Reset relay cache so Phase 3 goals are planned fresh.
         reset_relay_cache(r2_pub, "robot_2")
 
-        # Navigate west along the south outer wall at y=-1.8, then step NW to home.
-        # s_in (-1.5,-1.75) then robot_1_home (-2.0,-0.5) is a short 1.35 m leg.
-        verified_navigate(agent, S_IN[0], S_IN[1], "robot_2")
+        # Navigate west using small 1 m steps (mirroring swap_patrol.py's approach).
+        #
+        # The lidar range is 2.5 m.  From the hold position (~x=1.0), s_in at x=-1.5
+        # is 2.5+ m away — stale obstacle cells near s_in cannot be cleared by
+        # raytrace because they are outside the lidar's reach.  NavFn fails to plan
+        # through uncleared cells and bt_navigator times out on every attempt.
+        #
+        # Small steps let each new position raytrace and clear the next section so
+        # every leg stays within scan range.  y=-1.8 (below y=-1.75) stays clear
+        # of the outer corridor's corner obstacle at (1.9,-1.8).
+        for wx in [0.0, -1.0, -2.0]:
+            verified_navigate(agent, wx, -1.8, "robot_2")
+        # Exit corridor: step north to robot_1_home
         verified_navigate(agent, ROBOT1_HOME[0], ROBOT1_HOME[1], "robot_2")
 
         # Capture AMCL position immediately at arrival (before drift accumulates)
