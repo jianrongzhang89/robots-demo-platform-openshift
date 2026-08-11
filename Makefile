@@ -143,10 +143,32 @@ dispatch-swap-patrol: ## Swap patrol via RMF+Nav2: direct goal to each other's s
 	     -p robot_2_home n_in n_out robot_1_home -n 1 --use_sim_time'
 
 .PHONY: dispatch-collision-swap
-dispatch-collision-swap: ## Collision-avoidance swap: robots approach head-on, detect proximity, yield, then re-route via outer corridors
-	$(eval RMFPOD := $(shell oc get pod -n $(NAMESPACE) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
-	@test -n "$(RMFPOD)" || { echo "ERROR: rmf-core pod not found in namespace '$(NAMESPACE)'"; exit 1; }
-	@echo "Collision-avoidance swap demo: Phase1=approach, Phase2=detect+yield, Phase3=outer-corridor re-route"
+dispatch-collision-swap: ## Collision-avoidance swap: restart pods, wait for ready, then run the 3-phase collision demo
+	@echo "=== Collision-avoidance swap demo ==="
+	@echo "Step 1: Restarting pods (clears nav2_relay cache — required for correct navigation)"
+	$(MAKE) restart ROS_DEMO_NS=$(ROS_DEMO_NS)
+	@echo "Step 2: Waiting for all pods to roll out..."
+	oc rollout status deployment/robot-nav-robot-1 -n $(NAMESPACE) --timeout=4m
+	oc rollout status deployment/robot-nav-robot-2 -n $(NAMESPACE) --timeout=4m
+	oc rollout status deployment/rmf-core           -n $(NAMESPACE) --timeout=4m
+	@echo "Step 3: Polling for bt_navigator ACTIVE + fleet adapter ready..."
+	$(eval NAV1POD := $(shell oc get pod -n $(NAMESPACE) -l app=robot-nav-robot-1 -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
+	$(eval NAV2POD := $(shell oc get pod -n $(NAMESPACE) -l app=robot-nav-robot-2 -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
+	$(eval RMFPOD  := $(shell oc get pod -n $(NAMESPACE) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
+	@for i in $$(seq 1 40); do \
+	  s1=$$(oc exec -n $(NAMESPACE) $(NAV1POD) -c nav2 -- bash -c \
+	    'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash; timeout 4 ros2 lifecycle get /bt_navigator 2>/dev/null' 2>/dev/null); \
+	  s2=$$(oc exec -n $(NAMESPACE) $(NAV2POD) -c nav2 -- bash -c \
+	    'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash; timeout 4 ros2 lifecycle get /bt_navigator 2>/dev/null' 2>/dev/null); \
+	  fleet=$$(oc exec -n $(NAMESPACE) $(RMFPOD) -c rmf-core -- bash -c \
+	    'export HOME=/tmp/ros-home; source /opt/ros/jazzy/setup.bash; timeout 3 ros2 topic echo /fleet_states --once 2>/dev/null' 2>/dev/null); \
+	  r1=$$(echo "$$fleet" | grep -c "name: robot_1" 2>/dev/null || echo 0); \
+	  r2=$$(echo "$$fleet" | grep -c "name: robot_2" 2>/dev/null || echo 0); \
+	  echo "  [$$i] bt1=$$s1 | bt2=$$s2 | fleet r1=$$r1 r2=$$r2"; \
+	  echo "$$s1" | grep -q "active \[3\]" && echo "$$s2" | grep -q "active \[3\]" && \
+	    [ "$${r1:-0}" -ge 1 ] && [ "$${r2:-0}" -ge 1 ] && echo "ALL READY" && break || sleep 5; \
+	done
+	@echo "Step 4: Running collision-avoidance swap demo..."
 	oc cp demo/collision_swap_demo.py $(NAMESPACE)/$(RMFPOD):/tmp/collision_swap_demo.py -c rmf-core
 	oc exec -n $(NAMESPACE) $(RMFPOD) -c rmf-core -- bash -c \
 	  'export HOME=/tmp/ros-home; \
