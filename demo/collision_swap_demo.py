@@ -205,7 +205,7 @@ def ts():
 
 def main():
     print(f"[{ts()}] Collision-avoidance swap demo starting")
-    print(f"  Phase 1 : Both robots approach shared waypoint {APPROACH_WP[:2]}")
+    print(f"  Phase 1 : robot_1 → s_out {APPROACH_WP_R1}, robot_2 → s_in {APPROACH_WP_R2} (south corridor)")
     print(f"  Phase 2 : Detect proximity < {YIELD_DIST} m → robot_2 yields {YIELD_PAUSE} s")
     print(f"  Phase 3 : Re-route via outer corridors → final swap positions")
     print(f"  Router  : {ROUTER}")
