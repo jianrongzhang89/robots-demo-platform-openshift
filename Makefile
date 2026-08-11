@@ -142,6 +142,18 @@ dispatch-swap-patrol: ## Swap patrol via RMF+Nav2: direct goal to each other's s
 	   ros2 run rmf_demos_tasks dispatch_patrol \
 	     -p robot_2_home n_in n_out robot_1_home -n 1 --use_sim_time'
 
+.PHONY: dispatch-collision-swap
+dispatch-collision-swap: ## Collision-avoidance swap: robots approach head-on, detect proximity, yield, then re-route via outer corridors
+	$(eval RMFPOD := $(shell oc get pod -n $(NAMESPACE) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
+	@test -n "$(RMFPOD)" || { echo "ERROR: rmf-core pod not found in namespace '$(NAMESPACE)'"; exit 1; }
+	@echo "Collision-avoidance swap demo: Phase1=approach, Phase2=detect+yield, Phase3=outer-corridor re-route"
+	oc cp demo/collision_swap_demo.py $(NAMESPACE)/$(RMFPOD):/tmp/collision_swap_demo.py -c rmf-core
+	oc exec -n $(NAMESPACE) $(RMFPOD) -c rmf-core -- bash -c \
+	  'export HOME=/tmp/ros-home; \
+	   source /opt/ros/jazzy/setup.bash; \
+	   source /opt/free_fleet/install/setup.bash 2>/dev/null || true; \
+	   python3 /tmp/collision_swap_demo.py'
+
 .PHONY: rmf-status
 rmf-status: ## Show fleet state from RMF (robot positions and task status)
 	$(eval RMFPOD := $(shell oc get pod -n $(NAMESPACE) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
