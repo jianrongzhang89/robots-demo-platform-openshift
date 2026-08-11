@@ -17,12 +17,23 @@ Phase 3 — Re-route: Both robots take the proven outer corridors to their final
            robot_1_home).  NavAgent.navigate() is used here for proper
            FAILED-retry handling.
 
-Architecture: pure Zenoh CDR — no rclpy, no BasicNavigator.
-  Goals  → robot_N/rmf_navigate_cmd   (CDR string: "goal_id x y yaw")
-  Results← robot_N/rmf_navigate_result (CDR string: "goal_id OK|FAILED")
-  Poses  ← robot_N/amcl_pose           (CDR PoseWithCovarianceStamped)
+Architecture:
+  Goals  → robot_N/rmf_navigate_cmd   (Zenoh CDR string: "goal_id x y yaw")
+  Results← robot_N/rmf_navigate_result (Zenoh CDR string: "goal_id OK|FAILED")
+  Poses  ← /fleet_states               (ROS2 topic via rclpy — 60 Hz, reliable)
+
+Position monitoring uses rclpy + /fleet_states rather than raw Zenoh
+amcl_pose subscription.  The zenoh-bridge-ros2dds only forwards amcl_pose
+to Zenoh when a *bridge-protocol* subscriber declares interest (not a raw
+Zenoh Python client), so the Zenoh approach silently receives nothing.
+The fleet adapter already subscribes and republishes positions at 60 Hz
+via /fleet_states, making rclpy the reliable path.
 """
-import zenoh, time, struct, threading, random, math
+import zenoh, time, struct, threading, random, math  # struct kept for CDR helpers
+
+import rclpy
+from rclpy.node import Node
+from rmf_fleet_msgs.msg import FleetState
 
 ROUTER = "tcp/zenoh-router:7447"
 TIMEOUT_S = 300  # max wall-clock seconds per NavAgent leg (Phase 3)
@@ -124,78 +135,38 @@ class NavAgent:
 
 
 # ---------------------------------------------------------------------------
-# AMCL pose decoder
+# Position monitor via rclpy + /fleet_states
 # ---------------------------------------------------------------------------
 
-def decode_amcl_pose(sample):
+class FleetStateMonitor(Node):
     """
-    Decode a CDR-encoded geometry_msgs/PoseWithCovarianceStamped sample.
+    ROS2 node that subscribes to /fleet_states (published by the free_fleet
+    adapter at robot_state_update_frequency Hz) and provides thread-safe
+    position and distance queries.
 
-    CDR layout (little-endian):
-      [0:4]        encapsulation header  0x00 0x01 0x00 0x00
-      [4:8]        stamp.sec             uint32 LE
-      [8:12]       stamp.nanosec         uint32 LE
-      [12:16]      frame_id length       uint32 LE (includes null terminator)
-      [16:16+len]  frame_id bytes + null
-      [pad to 8-byte absolute boundary]
-      [X:X+8]      position.x            float64 LE
-      [X+8:X+16]   position.y            float64 LE
-
-    For frame_id="map" (len=4): X=24.
-
-    Returns (x, y) on success, (None, None) on any error.
-    """
-    try:
-        raw = bytes(sample.payload.to_bytes())
-        if len(raw) < 28:
-            return None, None
-        str_len = struct.unpack_from('<I', raw, 12)[0]
-        # Pad end of string to the next 8-byte absolute-offset boundary
-        x_offset = ((16 + str_len + 7) // 8) * 8
-        if len(raw) < x_offset + 16:
-            return None, None
-        x = struct.unpack_from('<d', raw, x_offset)[0]
-        y = struct.unpack_from('<d', raw, x_offset + 8)[0]
-        return x, y
-    except Exception:
-        return None, None
-
-
-# ---------------------------------------------------------------------------
-# Pose monitor
-# ---------------------------------------------------------------------------
-
-class PoseMonitor:
-    """
-    Subscribes to both robots' amcl_pose topics over Zenoh and provides
-    thread-safe position and distance queries.
+    This is reliable because the fleet adapter already holds bridge-protocol
+    Zenoh subscriptions for amcl_pose — raw Python Zenoh clients cannot
+    receive amcl_pose directly (zenoh-bridge-ros2dds only forwards when a
+    bridge-protocol subscriber announces interest).
     """
 
-    def __init__(self, session):
+    def __init__(self):
+        super().__init__('collision_swap_monitor')
         self._lock = threading.Lock()
         self._pos = {'robot_1': None, 'robot_2': None}
-        self._sub1 = session.declare_subscriber('robot_1/amcl_pose', self._on_r1)
-        self._sub2 = session.declare_subscriber('robot_2/amcl_pose', self._on_r2)
+        self.create_subscription(FleetState, '/fleet_states', self._cb, 10)
 
-    def _on_r1(self, sample):
-        x, y = decode_amcl_pose(sample)
-        if x is not None:
-            with self._lock:
-                self._pos['robot_1'] = (x, y)
-
-    def _on_r2(self, sample):
-        x, y = decode_amcl_pose(sample)
-        if x is not None:
-            with self._lock:
-                self._pos['robot_2'] = (x, y)
+    def _cb(self, msg):
+        with self._lock:
+            for robot in msg.robots:
+                if robot.name in self._pos:
+                    self._pos[robot.name] = (robot.location.x, robot.location.y)
 
     def positions(self):
-        """Return a snapshot dict {'robot_1': (x,y) or None, 'robot_2': ...}."""
         with self._lock:
             return dict(self._pos)
 
     def distance(self):
-        """Return Euclidean distance between robots, or None if either pose is unknown."""
         with self._lock:
             p1 = self._pos['robot_1']
             p2 = self._pos['robot_2']
@@ -223,11 +194,25 @@ def main():
     print(f"  Phase 3 : Re-route via outer corridors → final swap positions")
     print(f"  Router  : {ROUTER}")
 
+    # Start rclpy in a background thread for fleet_states position monitoring.
+    rclpy.init()
+    monitor = FleetStateMonitor()
+    spin_thread = threading.Thread(
+        target=rclpy.spin, args=(monitor,), daemon=True)
+    spin_thread.start()
+
     z = open_session()
     time.sleep(2)  # let the zenoh session settle
 
-    monitor = PoseMonitor(z)
-    time.sleep(3)  # allow initial amcl_pose messages to arrive
+    # Wait for first fleet_states to arrive (confirms fleet adapter is running)
+    print(f"[{ts()}] Waiting for fleet_states positions...")
+    for _ in range(20):
+        if monitor.distance() is not None:
+            break
+        time.sleep(0.5)
+    else:
+        print(f"[{ts()}] WARNING: no fleet_states received — positions may be stale")
+    time.sleep(1)
 
     # Raw publishers for Phase 1 and Phase 2 hold goals.
     # Using raw pub.put() bypasses the NavAgent retry loop, which is essential
@@ -285,6 +270,12 @@ def main():
     # -----------------------------------------------------------------------
     print(f"\n[{ts()}] === Phase 2: DETECT & YIELD ===")
 
+    # Guard: treat (0,0) as invalid — it means no real position was received
+    if r2_hold_pos is not None and math.hypot(*r2_hold_pos) < 0.01:
+        r2_hold_pos = None
+        collision_detected = False
+        print(f"[{ts()}]   WARNING: hold position was (0,0) — fleet_states not yet populated, skipping yield")
+
     if collision_detected and r2_hold_pos is not None:
         hx, hy = r2_hold_pos
         print(f"[{ts()}] robot_2 YIELD: hold at current position ({hx:.2f}, {hy:.2f})")
@@ -331,6 +322,7 @@ def main():
     t2.join()
 
     print(f"\n[{ts()}] Collision-avoidance swap demo complete. Both robots have swapped positions.")
+    rclpy.shutdown()
     z.close()
 
 
