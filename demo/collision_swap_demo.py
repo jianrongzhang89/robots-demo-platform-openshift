@@ -460,17 +460,29 @@ def main():
     # This prevents robot_1 from getting a fresh "Goal failed" because
     # robot_2 is still blocking the south corridor.
     #
-    print(f"[{ts()}] Step 1: robot_2 exits south corridor via north route")
-    print(f"[{ts()}] robot_2: north corridor  n_in → n_out → robot_1_home {ROBOT1_HOME}")
+    # robot_2 re-routes west through the south outer corridor to robot_1_home.
+    # After Phase 1+2, the south corridor is already clear (robot_2 just drove
+    # through it), whereas the path to the north corridor requires crossing
+    # areas covered by stale obstacle cells accumulated during Phase 1
+    # navigation — NavFn fails to find a path through that noise.
+    # Route: hold_pos → s_in (west end of south corridor) → robot_1_home
+    print(f"[{ts()}] Step 1: robot_2 re-routes west via south corridor to robot_1_home")
+    print(f"[{ts()}] robot_2: west in south corridor  → s_in → robot_1_home {ROBOT1_HOME}")
 
     final_pos = {}   # capture positions right at navigation completion
 
     def robot2_reroute():
         agent = NavAgent(z, "robot_2")
-        print(f"[{ts()}] [robot_2] Phase 3 start: north route")
-        agent.navigate(N_IN[0],        N_IN[1])
-        agent.navigate(N_OUT[0],       N_OUT[1])
-        agent.navigate(ROBOT1_HOME[0], ROBOT1_HOME[1])
+        print(f"[{ts()}] [robot_2] Phase 3 start: south corridor (west) route")
+
+        # Reset relay cache so Phase 3 goals are planned fresh.
+        reset_relay_cache(r2_pub, "robot_2")
+
+        # Navigate west along the south outer wall at y=-1.8, then step NW to home.
+        # s_in (-1.5,-1.75) then robot_1_home (-2.0,-0.5) is a short 1.35 m leg.
+        verified_navigate(agent, S_IN[0], S_IN[1], "robot_2")
+        verified_navigate(agent, ROBOT1_HOME[0], ROBOT1_HOME[1], "robot_2")
+
         # Capture AMCL position immediately at arrival (before drift accumulates)
         p = monitor.positions().get('robot_2')
         if p:
@@ -480,9 +492,10 @@ def main():
     t2 = threading.Thread(target=robot2_reroute, daemon=True)
     t2.start()
 
-    # Give robot_2 time to clear the south corridor before robot_1 continues
-    print(f"[{ts()}] Waiting 20 s for robot_2 to clear south corridor...")
-    time.sleep(20)
+    # Give robot_2 a head start so it clears s_in before robot_1 arrives there.
+    # robot_2 heads west; robot_1 heads east — they diverge, no new collision.
+    print(f"[{ts()}] Waiting 10 s for robot_2 to clear s_in before robot_1 continues...")
+    time.sleep(10)
 
     print(f"\n[{ts()}] Step 2: robot_1 continues east to robot_2_home")
     print(f"[{ts()}] robot_1: south outer wall (y=-1.8) → east → robot_2_home {ROBOT2_HOME}")
