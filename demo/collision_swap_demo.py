@@ -350,6 +350,20 @@ def main():
         print(f"[{ts()}]   [{agent.name}] TIMEOUT reaching ({tx},{ty})")
         return False
 
+    def reset_relay_cache(pub, robot_name):
+        """
+        Clear the relay's 'recently sent' cache by sending a goal at the robot's
+        current AMCL position.  The relay sees this as an immediate success
+        (robot is already there) and clears prev_dest — subsequent goals to new
+        positions then go through real bt_navigator navigation.
+        """
+        p = monitor.positions().get(robot_name)
+        if p:
+            gid = str(random.randint(1000000, 9999999))
+            pub.put(cdr(f"{gid} {p[0]:.6f} {p[1]:.6f} 0.000000"))
+            print(f"[{ts()}]   [{robot_name}] relay cache reset at ({p[0]:.2f},{p[1]:.2f})")
+            time.sleep(2.0)   # let relay process the goal
+
     def r1_enter():
         print(f"[{ts()}] [robot_1] → s_in ({S_IN[0]},{S_IN[1]}) [west entry]")
         verified_navigate(agent_r1, S_IN[0], S_IN[1], "robot_1")
@@ -509,20 +523,6 @@ def main():
 
     print(f"\n[{ts()}] Step 2: robot_1 continues east to robot_2_home")
     print(f"[{ts()}] robot_1: south outer wall (y=-1.8) → east → robot_2_home {ROBOT2_HOME}")
-
-    def reset_relay_cache(pub, robot_name):
-        """
-        Clear the relay's 'recently sent' cache by sending a goal at the robot's
-        current AMCL position.  The relay sees this as an immediate success
-        (robot is already there) and clears prev_dest — subsequent goals to new
-        positions then go through real bt_navigator navigation.
-        """
-        p = monitor.positions().get(robot_name)
-        if p:
-            gid = str(random.randint(1000000, 9999999))
-            pub.put(cdr(f"{gid} {p[0]:.6f} {p[1]:.6f} 0.000000"))
-            print(f"[{ts()}]   [{robot_name}] relay cache reset at ({p[0]:.2f},{p[1]:.2f})")
-            time.sleep(2.0)   # let relay process the goal
 
     def robot1_reroute():
         agent = NavAgent(z, "robot_1")
