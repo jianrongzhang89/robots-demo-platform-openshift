@@ -490,8 +490,15 @@ def main():
     def robot1_reroute():
         agent = NavAgent(z, "robot_1")
         print(f"[{ts()}] [robot_1] Phase 3 start: south route (continuing east)")
-        agent.navigate(S_OUT[0],       S_OUT[1])
-        agent.navigate(ROBOT2_HOME[0], ROBOT2_HOME[1])
+        # Step 1: reach s_out (robot may already be close)
+        verified_navigate(agent, S_OUT[0], S_OUT[1], "robot_1")
+        # Step 2: east wall corner — same two-step approach as swap_patrol.py.
+        # Direct diagonal from south corridor to robot_2_home often fails global
+        # planning (map edge / costmap blocking). Going to (2.0,-1.75) first then
+        # stepping north is the proven route.
+        verified_navigate(agent, 2.0, S_OUT[1], "robot_1")
+        # Step 3: step north to robot_2_home
+        verified_navigate(agent, ROBOT2_HOME[0], ROBOT2_HOME[1], "robot_1")
         # Capture AMCL position immediately at arrival
         p = monitor.positions().get('robot_1')
         if p:
