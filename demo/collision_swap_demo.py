@@ -52,10 +52,10 @@ TIMEOUT_S = 300  # max wall-clock seconds per NavAgent leg (Phase 3)
 # robot_2 enters from the EAST end (home → s_out first, but nav2 approaches
 #   from s_out side heading west toward s_in).
 # They meet head-on somewhere around x=0, y=-1.75.
-APPROACH_WP_R1   = S_OUT   # robot_1 heads east through south corridor
-APPROACH_WP_R2   = S_IN    # robot_2 heads west through south corridor
-APPROACH_YAW_R1  = 0.0     # heading east
-APPROACH_YAW_R2  = math.pi # heading west
+APPROACH_WP_R1   = ( 1.5, -1.75)   # s_out — robot_1 heads east
+APPROACH_WP_R2   = (-1.5, -1.75)   # s_in  — robot_2 heads west
+APPROACH_YAW_R1  = 0.0             # heading east
+APPROACH_YAW_R2  = math.pi         # heading west
 YIELD_DIST       = 2.0     # metres — trigger robot_2 hold
 YIELD_PAUSE      = 20.0    # seconds robot_2 yields (extra time for robot_1 to pass)
 APPROACH_TIMEOUT = 120.0   # seconds before giving up on Phase 1
