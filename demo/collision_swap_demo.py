@@ -485,20 +485,39 @@ def main():
     time.sleep(20)
 
     print(f"\n[{ts()}] Step 2: robot_1 continues east to robot_2_home")
-    print(f"[{ts()}] robot_1: south corridor  s_out → robot_2_home {ROBOT2_HOME}")
+    print(f"[{ts()}] robot_1: south outer wall (y=-1.8) → east → robot_2_home {ROBOT2_HOME}")
+
+    def reset_relay_cache(pub, robot_name):
+        """
+        Clear the relay's 'recently sent' cache by sending a goal at the robot's
+        current AMCL position.  The relay sees this as an immediate success
+        (robot is already there) and clears prev_dest — subsequent goals to new
+        positions then go through real bt_navigator navigation.
+        """
+        p = monitor.positions().get(robot_name)
+        if p:
+            gid = str(random.randint(1000000, 9999999))
+            pub.put(cdr(f"{gid} {p[0]:.6f} {p[1]:.6f} 0.000000"))
+            print(f"[{ts()}]   [{robot_name}] relay cache reset at ({p[0]:.2f},{p[1]:.2f})")
+            time.sleep(2.0)   # let relay process the goal
 
     def robot1_reroute():
         agent = NavAgent(z, "robot_1")
-        print(f"[{ts()}] [robot_1] Phase 3 start: south route (continuing east)")
-        # Step 1: reach s_out (robot may already be close)
-        verified_navigate(agent, S_OUT[0], S_OUT[1], "robot_1")
-        # Step 2: east wall corner — same two-step approach as swap_patrol.py.
-        # Direct diagonal from south corridor to robot_2_home often fails global
-        # planning (map edge / costmap blocking). Going to (2.0,-1.75) first then
-        # stepping north is the proven route.
-        verified_navigate(agent, 2.0, S_OUT[1], "robot_1")
-        # Step 3: step north to robot_2_home
+        print(f"[{ts()}] [robot_1] Phase 3 start: south outer wall route")
+
+        # Reset relay cache first so subsequent goals are planned fresh.
+        reset_relay_cache(r1_pub, "robot_1")
+
+        # Use swap_patrol.py's proven waypoints at DETOUR_Y = -1.8 (not -1.75).
+        # The corner wall segment near (1.9, -1.8) blocks paths at y=-1.75;
+        # staying at y=-1.8 (further south, past the corner) avoids it.
+        # Step east in 1 m increments along the south outer wall.
+        DETOUR_Y = -1.8
+        for wx in [0.0, 1.0, 2.0]:
+            verified_navigate(agent, wx, DETOUR_Y, "robot_1")
+        # Step north from east wall to robot_2_home
         verified_navigate(agent, ROBOT2_HOME[0], ROBOT2_HOME[1], "robot_1")
+
         # Capture AMCL position immediately at arrival
         p = monitor.positions().get('robot_1')
         if p:
