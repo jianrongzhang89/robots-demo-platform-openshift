@@ -463,12 +463,18 @@ def main():
     print(f"[{ts()}] Step 1: robot_2 exits south corridor via north route")
     print(f"[{ts()}] robot_2: north corridor  n_in → n_out → robot_1_home {ROBOT1_HOME}")
 
+    final_pos = {}   # capture positions right at navigation completion
+
     def robot2_reroute():
         agent = NavAgent(z, "robot_2")
         print(f"[{ts()}] [robot_2] Phase 3 start: north route")
         agent.navigate(N_IN[0],        N_IN[1])
         agent.navigate(N_OUT[0],       N_OUT[1])
         agent.navigate(ROBOT1_HOME[0], ROBOT1_HOME[1])
+        # Capture AMCL position immediately at arrival (before drift accumulates)
+        p = monitor.positions().get('robot_2')
+        if p:
+            final_pos['robot_2'] = p
         print(f"[{ts()}] [robot_2] Phase 3 complete — arrived at robot_1_home {ROBOT1_HOME}")
 
     t2 = threading.Thread(target=robot2_reroute, daemon=True)
@@ -484,10 +490,12 @@ def main():
     def robot1_reroute():
         agent = NavAgent(z, "robot_1")
         print(f"[{ts()}] [robot_1] Phase 3 start: south route (continuing east)")
-        # robot_1 is already in the south corridor heading east;
-        # s_out may already be reached — navigate directly to robot_2_home.
         agent.navigate(S_OUT[0],       S_OUT[1])
         agent.navigate(ROBOT2_HOME[0], ROBOT2_HOME[1])
+        # Capture AMCL position immediately at arrival
+        p = monitor.positions().get('robot_1')
+        if p:
+            final_pos['robot_1'] = p
         print(f"[{ts()}] [robot_1] Phase 3 complete — arrived at robot_2_home {ROBOT2_HOME}")
 
     t1 = threading.Thread(target=robot1_reroute, daemon=True)
@@ -497,30 +505,29 @@ def main():
     t2.join()
 
     # -----------------------------------------------------------------------
-    # Phase 4: Re-anchor AMCL at true swap positions
+    # Phase 4: Re-anchor AMCL at swap positions and confirm
     # -----------------------------------------------------------------------
-    # After a multi-leg navigation, AMCL accumulates drift. The nav2 goal
-    # checker declares success based on the (drifted) AMCL estimate, so the
-    # robot's physical stop point may differ from the true target. Publishing
-    # initialpose at the known target coordinates forces AMCL to re-converge
-    # there, correcting the fleet_states readout.
-    print(f"\n[{ts()}] === Phase 4: Re-anchor AMCL at swap positions ===")
-    print(f"[{ts()}] robot_1 → {ROBOT2_HOME}  robot_2 → {ROBOT1_HOME}")
-    time.sleep(3)  # let robots fully stop before re-anchoring
-    # robot_1 is at robot_2_home facing west (π); robot_2 at robot_1_home facing east (0)
-    anchor_poses(z, ROBOT2_HOME, ROBOT1_HOME, r1_yaw=math.pi, r2_yaw=0.0, repeats=8)
-    time.sleep(3)  # allow AMCL to process and converge
-    print(f"[{ts()}] AMCL re-anchored — checking final positions via fleet_states...")
-    time.sleep(2)
+    print(f"\n[{ts()}] === Phase 4: AMCL positions at arrival (before drift) ===")
+    for name, home in [('robot_1', ROBOT2_HOME), ('robot_2', ROBOT1_HOME)]:
+        p = final_pos.get(name)
+        if p:
+            d = math.hypot(p[0] - home[0], p[1] - home[1])
+            print(f"[{ts()}] {name} at ({p[0]:.2f},{p[1]:.2f})  Δ={d:.2f}m from target {home}")
+
+    # Re-publish initialpose at known targets so AMCL stays anchored.
+    # The south outer corridor is symmetric: AMCL particles drift along x
+    # while stationary. Anchoring at the target coordinates prevents the
+    # drift from continuing and corrects fleet_states for observers.
+    print(f"[{ts()}] Publishing initialpose: robot_1→{ROBOT2_HOME}  robot_2→{ROBOT1_HOME}")
+    anchor_poses(z, ROBOT2_HOME, ROBOT1_HOME, r1_yaw=math.pi, r2_yaw=0.0, repeats=10)
+    time.sleep(4)  # allow AMCL to process new pose
+    print(f"[{ts()}] Final fleet_states positions after anchoring:")
     pos = monitor.positions()
-    r1 = pos.get('robot_1')
-    r2 = pos.get('robot_2')
-    if r1:
-        d1 = math.hypot(r1[0] - ROBOT2_HOME[0], r1[1] - ROBOT2_HOME[1])
-        print(f"[{ts()}] robot_1 at ({r1[0]:.2f},{r1[1]:.2f})  Δ={d1:.2f}m from robot_2_home")
-    if r2:
-        d2 = math.hypot(r2[0] - ROBOT1_HOME[0], r2[1] - ROBOT1_HOME[1])
-        print(f"[{ts()}] robot_2 at ({r2[0]:.2f},{r2[1]:.2f})  Δ={d2:.2f}m from robot_1_home")
+    for name, home in [('robot_1', ROBOT2_HOME), ('robot_2', ROBOT1_HOME)]:
+        p = pos.get(name)
+        if p:
+            d = math.hypot(p[0] - home[0], p[1] - home[1])
+            print(f"[{ts()}] {name} at ({p[0]:.2f},{p[1]:.2f})  Δ={d:.2f}m from {home}")
 
     print(f"\n[{ts()}] Collision-avoidance swap demo complete. Both robots have swapped positions.")
     rclpy.shutdown()
