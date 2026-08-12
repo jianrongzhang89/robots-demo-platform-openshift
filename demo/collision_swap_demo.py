@@ -703,11 +703,18 @@ def main():
         # Drive to robot_1_home using Gz-truth P-controller (bypasses AMCL).
         gz_drive_to('robot_2', r2_pub, ROBOT1_HOME[0], ROBOT1_HOME[1])
 
-        # Capture Gazebo ground-truth arrival position
+        # Capture Gz arrival position, then hold robot_2 in place while robot_1
+        # finishes its Phase 3.  Without holding, nav2's velocity_smoother resumes
+        # and drifts the robot ~0.7m south back into the corridor.
         p_gz = gz_mon.xy('robot_2')
         if p_gz:
             final_pos['robot_2'] = p_gz
         print(f"[{ts()}] [robot_2] Phase 3 complete — arrived at robot_1_home {ROBOT1_HOME}")
+        # Keep publishing stop while robot_1 finishes (up to 90s)
+        cv_r2 = _cmdvel_pubs['robot_2']
+        for _ in range(int(90 / 0.1)):
+            cv_r2.put(_twist_cdr(0.0, 0.0))
+            time.sleep(0.1)
 
     t2 = threading.Thread(target=robot2_reroute, daemon=True)
     t2.start()
@@ -729,11 +736,15 @@ def main():
         # Drive to robot_2_home using Gz-truth P-controller (bypasses AMCL).
         gz_drive_to('robot_1', r1_pub, ROBOT2_HOME[0], ROBOT2_HOME[1])
 
-        # Capture Gazebo ground-truth arrival position
         p_gz = gz_mon.xy('robot_1')
         if p_gz:
             final_pos['robot_1'] = p_gz
         print(f"[{ts()}] [robot_1] Phase 3 complete — arrived at robot_2_home {ROBOT2_HOME}")
+        # Keep publishing stop to prevent nav2 drift
+        cv_r1 = _cmdvel_pubs['robot_1']
+        for _ in range(int(30 / 0.1)):
+            cv_r1.put(_twist_cdr(0.0, 0.0))
+            time.sleep(0.1)
 
     t1 = threading.Thread(target=robot1_reroute, daemon=True)
     t1.start()
