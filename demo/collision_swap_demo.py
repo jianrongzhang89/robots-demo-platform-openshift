@@ -384,6 +384,12 @@ def main():
     #           robot_2: s_out → s_in (heading west)
     #           Proximity monitor then triggers Phase 2 yield.
     # -----------------------------------------------------------------------
+    # Mutable container for AMCL anchor publishers — populated after z.open()
+    # but accessible by verified_navigate via closure (Python 3.12-safe pattern
+    # for mutable containers; plain variable names cause NameError in 3.12).
+    _amcl_pubs = {}   # 'robot_1' → Zenoh publisher, 'robot_2' → Zenoh publisher
+    _amcl_yaws = {}   # 'robot_1' → float yaw, 'robot_2' → float yaw
+
     print(f"\n[{ts()}] === Phase 1a: Enter south corridor at opposite ends ===")
 
     agent_r1 = NavAgent(z, "robot_1")
@@ -414,13 +420,14 @@ def main():
         while time.time() < deadline:
             if use_gz:
                 # Anchor AMCL once from Gz truth before each navigation attempt.
-                # Inlined to avoid Python 3.12 free-variable scoping error.
+                # Uses _amcl_pubs/_amcl_yaws dicts (mutable, Python 3.12-safe).
                 _v = gz_mon.positions().get(agent.name)
-                if _v:
-                    _pub = _pose_pub_r1 if agent.name == 'robot_1' else _pose_pub_r2
-                    _p = make_initialpose_cdr(_v[0], _v[1], _gz_yaw[agent.name])
+                _apub = _amcl_pubs.get(agent.name)
+                if _v and _apub:
+                    _yaw = _amcl_yaws.get(agent.name, 0.0)
+                    _p = make_initialpose_cdr(_v[0], _v[1], _yaw)
                     for _ in range(5):
-                        _pub.put(_p)
+                        _apub.put(_p)
                         time.sleep(0.3)
                     time.sleep(1.5)
                 agent.navigate(tx, ty)
@@ -610,9 +617,11 @@ def main():
     final_pos = {}   # capture positions right at navigation completion
 
     # Publishers for per-step AMCL anchoring from Gz truth (used inside verified_navigate).
-    _pose_pub_r1 = z.declare_publisher('robot_1/initialpose')
-    _pose_pub_r2 = z.declare_publisher('robot_2/initialpose')
-    _gz_yaw = {'robot_1': APPROACH_YAW_R1, 'robot_2': APPROACH_YAW_R2}
+    # Populate the mutable publisher containers (used by verified_navigate closure)
+    _amcl_pubs['robot_1'] = z.declare_publisher('robot_1/initialpose')
+    _amcl_pubs['robot_2'] = z.declare_publisher('robot_2/initialpose')
+    _amcl_yaws['robot_1'] = APPROACH_YAW_R1
+    _amcl_yaws['robot_2'] = APPROACH_YAW_R2
 
 
     def robot2_reroute():
@@ -667,8 +676,8 @@ def main():
 
     t1.join()
     t2.join()
-    _pose_pub_r1.undeclare()
-    _pose_pub_r2.undeclare()
+    _amcl_pubs['robot_1'].undeclare()
+    _amcl_pubs['robot_2'].undeclare()
 
     # -----------------------------------------------------------------------
     # Phase 4: Report Gazebo ground-truth final positions
