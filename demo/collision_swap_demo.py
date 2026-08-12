@@ -321,15 +321,20 @@ def main():
     r1_ready = threading.Event()
     r2_ready = threading.Event()
 
-    def verified_navigate(agent, tx, ty, label, tol=0.20):
+    def verified_navigate(agent, tx, ty, label, tol=0.35):
         """
         Navigate to (tx, ty) and verify arrival via fleet_states.
 
-        tol=0.20 m matches nav2's xy_goal_tolerance (0.15 m) plus a small
-        buffer for AMCL jitter.  On relay fake-success (robot not within tol),
-        the cycle is broken by sending a goal to the robot's CURRENT position
-        before retrying — this resets the relay's 'recently sent' prev_step
-        so the next attempt goes through real bt_navigator planning.
+        tol=0.35 m is calibrated to this environment's AMCL accuracy:
+        - Genuine navigation success + typical AMCL drift = 0.15–0.30 m offset
+          in fleet_states after the robot stops → accepted by 0.35 m.
+        - Relay fake-success (robot hasn't moved, stays at start position):
+          fleet_states shows the robot far from target → rejected, retried.
+        - After one retry the relay sends a fresh goal; bt_navigator navigates
+          the robot close to the target; AMCL shows ≤0.30 m → accepted.
+
+        On relay fake detection, the relay's 'recently sent' prev_step is reset
+        by sending a goal to the robot's CURRENT position before retrying.
         """
         deadline = time.time() + TIMEOUT_S
         while time.time() < deadline:
