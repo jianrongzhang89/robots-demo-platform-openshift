@@ -260,6 +260,53 @@ ODOM_TF_EOF
 while true; do python3 /tmp/odom_tf_broadcaster.py 2>/dev/null || true; sleep 2; done &
 echo "[nav2-pod/${ROBOT_NAME}] odom->base_footprint TF broadcaster started"
 
+# Costmap clearing service — subscribes to Zenoh robot_N/clear_costmaps and
+# calls /global_costmap/clear_entirely_global_costmap and the local equivalent.
+# Stale obstacle cells accumulate in the costmap during Phase 1+2 navigation of
+# the collision-avoidance demo, blocking Phase 3 planning.  Clearing on demand
+# ensures Nav2 has a fresh costmap for Phase 3.
+cat > /tmp/costmap_clear.py << 'COSTMAP_EOF'
+import rclpy, zenoh, time, os, signal, threading
+from rclpy.node import Node
+from std_srvs.srv import Empty
+
+ROBOT = os.environ.get('ROBOT_NAME', 'robot_1')
+KEY = f'{ROBOT}/clear_costmaps'
+
+class CostmapClearer(Node):
+    def __init__(self):
+        super().__init__('costmap_clearer')
+        self._gcli = self.create_client(Empty, '/global_costmap/clear_entirely_global_costmap')
+        self._lcli = self.create_client(Empty, '/local_costmap/clear_entirely_local_costmap')
+        self.get_logger().info(f'Costmap clearer ready, listening on Zenoh {KEY}')
+
+    def clear(self):
+        for cli, name in [(self._gcli, 'global'), (self._lcli, 'local')]:
+            if cli.wait_for_service(timeout_sec=2.0):
+                cli.call_async(Empty.Request())
+                self.get_logger().info(f'{name} costmap cleared')
+
+signal.signal(signal.SIGTERM, lambda s, f: None)
+signal.signal(signal.SIGINT,  lambda s, f: None)
+while True:
+    try:
+        rclpy.init(args=['--ros-args', '-p', 'use_sim_time:=true'])
+        node = CostmapClearer()
+        conf = zenoh.Config()
+        conf.insert_json5('connect/endpoints', f'[\"tcp/zenoh-router:7447\"]')
+        conf.insert_json5('mode', '"client"')
+        conf.insert_json5('scouting/multicast/enabled', 'false')
+        z = zenoh.open(conf)
+        def on_signal(sample):
+            threading.Thread(target=lambda: (node.clear(), rclpy.spin_once(node, timeout_sec=0.1)), daemon=True).start()
+        sub = z.declare_subscriber(KEY, on_signal)
+        rclpy.spin(node)
+    except BaseException:
+        time.sleep(3)
+COSTMAP_EOF
+while true; do python3 /tmp/costmap_clear.py 2>/dev/null || true; sleep 2; done &
+echo "[nav2-pod/${ROBOT_NAME}] costmap clearing service started"
+
 # cmd_vel Zenoh publisher — bypasses zenoh-bridge-ros2dds for cmd_vel.
 # The bridge's cmd_vel Publisher route gets garbage-collected at ~82 s
 # (Zenoh broker idle-subscriber timer), stopping velocity commands from

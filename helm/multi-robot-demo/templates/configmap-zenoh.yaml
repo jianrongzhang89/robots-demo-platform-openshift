@@ -54,7 +54,10 @@ data:
               // initialpose: allows the demo script to re-anchor AMCL after
               // multi-leg navigation causes drift, by publishing the correct
               // pose from the rmf-core pod directly to each nav2 pod's AMCL.
-              ".*/initialpose"
+              ".*/initialpose",
+              // clear_costmaps: triggers the nav2 pod's costmap clearing service
+              // so the demo script can flush stale obstacle cells before Phase 3.
+              ".*/clear_costmaps"
             ],
             action_servers: [
               ".*/navigate_to_pose"

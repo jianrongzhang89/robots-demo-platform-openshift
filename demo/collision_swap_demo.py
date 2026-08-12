@@ -469,6 +469,24 @@ def main():
         print(f"[{ts()}] Proximity not detected — skipping hold, proceeding to Phase 3")
 
     # -----------------------------------------------------------------------
+    # Costmap clear — flush stale obstacle cells from Phase 1+2 navigation.
+    # Without this, NavFn fails to find paths in Phase 3 because lidar data
+    # from the collision approach/hold still marks cells as obstacles, blocking
+    # the NE path from the south corridor to robot_2_home.
+    # -----------------------------------------------------------------------
+    print(f"[{ts()}] Clearing costmaps on both robots (flush Phase 1+2 stale obstacles)...")
+    r1_clear_pub = z.declare_publisher("robot_1/clear_costmaps")
+    r2_clear_pub = z.declare_publisher("robot_2/clear_costmaps")
+    for _ in range(3):
+        r1_clear_pub.put(b"clear")
+        r2_clear_pub.put(b"clear")
+        time.sleep(1.0)
+    r1_clear_pub.undeclare()
+    r2_clear_pub.undeclare()
+    time.sleep(3)  # allow costmap layers to finish clearing
+    print(f"[{ts()}] Costmaps cleared")
+
+    # -----------------------------------------------------------------------
     # Phase 3: Re-route via outer corridors (staggered to avoid re-collision)
     # -----------------------------------------------------------------------
     print(f"\n[{ts()}] === Phase 3: RE-ROUTE via outer corridors ===")
