@@ -412,22 +412,26 @@ def main():
         gz_tol = 0.25 if use_gz else tol
         deadline = time.time() + TIMEOUT_S
         while time.time() < deadline:
-            agent.navigate(tx, ty)
             if use_gz:
+                # Anchor AMCL once from Gz truth before each navigation attempt.
+                # One-shot anchoring (not continuous) avoids TF jitter that was
+                # breaking bt_navigator planning at 2 Hz correction rate.
+                _anchor_gz(agent.name)
+                agent.navigate(tx, ty)
                 p_gz = gz_mon.xy(agent.name)
-                if p_gz is not None:
-                    d = math.hypot(p_gz[0] - tx, p_gz[1] - ty)
-                    if d <= gz_tol:
-                        print(f"[{ts()}]   [{agent.name}] Gz-verified at ({p_gz[0]:.2f},{p_gz[1]:.2f}) Δ={d:.2f}m ✓")
-                        return True
-                    print(f"[{ts()}]   [{agent.name}] relay faked — Gz truth ({p_gz[0]:.2f},{p_gz[1]:.2f}), "
-                          f"{d:.2f}m from target — cache-reset + retry")
-                    gid = str(random.randint(1000000, 9999999))
-                    agent._pub.put(cdr(f"{gid} {p_gz[0]:.6f} {p_gz[1]:.6f} 0.000000"))
-                    time.sleep(3.0)
-                else:
+                if p_gz is None:
                     return True  # Gz truth not yet available — trust NavAgent
+                d = math.hypot(p_gz[0] - tx, p_gz[1] - ty)
+                if d <= gz_tol:
+                    print(f"[{ts()}]   [{agent.name}] Gz-verified at ({p_gz[0]:.2f},{p_gz[1]:.2f}) Δ={d:.2f}m ✓")
+                    return True
+                print(f"[{ts()}]   [{agent.name}] relay faked — Gz truth ({p_gz[0]:.2f},{p_gz[1]:.2f}), "
+                      f"{d:.2f}m from target — cache-reset + retry")
+                gid = str(random.randint(1000000, 9999999))
+                agent._pub.put(cdr(f"{gid} {p_gz[0]:.6f} {p_gz[1]:.6f} 0.000000"))
+                time.sleep(3.0)
             else:
+                agent.navigate(tx, ty)
                 pos = monitor.positions()
                 p = pos.get(agent.name)
                 if p is not None:
@@ -599,35 +603,22 @@ def main():
 
     final_pos = {}   # capture positions right at navigation completion
 
-    # ── Continuous AMCL correction during Phase 3 ─────────────────────────────
-    # AMCL particle filter loses track in the symmetric south outer corridor.
-    # Publishing Gazebo ground truth as initialpose every 0.5 s keeps nav2's
-    # localization estimate close to the true position so it plans correctly.
-    _p3_running = threading.Event()
-    _p3_running.set()
+    # Publishers for per-step AMCL anchoring from Gz truth (used inside verified_navigate).
+    _pose_pub_r1 = z.declare_publisher('robot_1/initialpose')
+    _pose_pub_r2 = z.declare_publisher('robot_2/initialpose')
+    _gz_yaw = {'robot_1': APPROACH_YAW_R1, 'robot_2': APPROACH_YAW_R2}
 
-    def _gz_amcl_correction():
-        """Background thread: re-anchor AMCL from Gz truth at 2 Hz during Phase 3."""
-        pub_r1 = z.declare_publisher('robot_1/initialpose')
-        pub_r2 = z.declare_publisher('robot_2/initialpose')
-        while _p3_running.is_set():
-            gz = gz_mon.positions()
-            for robot, pub, yaw in [
-                ('robot_1', pub_r1, APPROACH_YAW_R1),
-                ('robot_2', pub_r2, APPROACH_YAW_R2),
-            ]:
-                v = gz.get(robot)
-                if v:
-                    p = make_initialpose_cdr(v[0], v[1], yaw)
-                    pub.put(p)
-            time.sleep(0.5)
-        pub_r1.undeclare()
-        pub_r2.undeclare()
-
-    corr_thread = threading.Thread(target=_gz_amcl_correction, daemon=True)
-    corr_thread.start()
-    print(f"[{ts()}] AMCL continuous correction from Gz ground truth started")
-    time.sleep(2)  # let correction take effect before Phase 3 navigation
+    def _anchor_gz(robot_name, repeats=5):
+        """Anchor AMCL once from Gz truth and wait for TF to stabilize."""
+        v = gz_mon.positions().get(robot_name)
+        if not v:
+            return
+        pub = _pose_pub_r1 if robot_name == 'robot_1' else _pose_pub_r2
+        p = make_initialpose_cdr(v[0], v[1], _gz_yaw[robot_name])
+        for _ in range(repeats):
+            pub.put(p)
+            time.sleep(0.3)
+        time.sleep(1.5)  # let AMCL and costmap TF stabilize before planning
 
     def robot2_reroute():
         agent = NavAgent(z, "robot_2")
@@ -681,7 +672,8 @@ def main():
 
     t1.join()
     t2.join()
-    _p3_running.clear()   # stop the AMCL correction thread
+    _pose_pub_r1.undeclare()
+    _pose_pub_r2.undeclare()
 
     # -----------------------------------------------------------------------
     # Phase 4: Report Gazebo ground-truth final positions
