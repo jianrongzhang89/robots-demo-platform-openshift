@@ -482,8 +482,11 @@ def main():
 
     def r2_enter():
         time.sleep(4)  # 4-second stagger so robot_1 is already moving
-        print(f"[{ts()}] [robot_2] → s_out ({S_OUT[0]},{S_OUT[1]}) [east entry]")
-        verified_navigate(agent_r2, S_OUT[0], S_OUT[1], "robot_2", use_gz=True)
+        # Step 1: go south along east wall (clear path, no pillar-grid crossing)
+        # robot_2 spawn: (2.0, 0.5) → east wall entry (2.0,-1.0) → s_out (1.5,-1.75)
+        print(f"[{ts()}] [robot_2] → east wall (2.0,-1.0) then s_out [east entry via south]")
+        verified_navigate(agent_r2, 2.0, -1.0, "robot_2", use_gz=True)   # south along east wall
+        verified_navigate(agent_r2, S_OUT[0], S_OUT[1], "robot_2", use_gz=True)  # enter corridor
         print(f"[{ts()}] [robot_2] at s_out — ready for head-on approach")
         r2_ready.set()
 
