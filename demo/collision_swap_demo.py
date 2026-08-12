@@ -462,37 +462,64 @@ def main():
         print(f"[{ts()}]   [{agent.name}] TIMEOUT reaching ({tx},{ty})")
         return False
 
-    def gz_step_navigate(agent, pub, tx, ty, step_size=0.30, stop_dist=0.20):
-        """
-        Navigate to (tx, ty) using small Gz-verified steps.
+    # Direct cmd_vel publishers for the P-controller (bypass nav2/AMCL entirely)
+    _cmdvel_pubs = {
+        'robot_1': z.declare_publisher('robot_1/cmd_vel'),
+        'robot_2': z.declare_publisher('robot_2/cmd_vel'),
+    }
 
-        Each step: anchor AMCL from Gz truth → navigate step_size metres →
-        verify with Gz truth.  Short steps prevent AMCL from drifting between
-        anchor and arrival, which was causing 1-2m positioning errors on long
-        (2-3 m) navigation legs even with per-step anchoring.
+    def _twist_cdr(vx, wz):
+        """CDR-encode geometry_msgs/Twist: linear(x,y,z) + angular(x,y,z)."""
+        return b'\x00\x01\x00\x00' + struct.pack('<6d', vx, 0.0, 0.0, 0.0, 0.0, wz)
 
-        With step_size=0.30 m and speed=0.26 m/s, each step takes ~1.2 s —
-        fast enough that AMCL has no time to drift before Gz verifies arrival.
+    def gz_drive_to(robot_name, nav_pub, tx, ty,
+                    stop_dist=0.15, max_v=0.26, max_w=1.0, timeout=120.0):
         """
-        max_steps = int(15.0 / step_size * math.hypot(tx - (gz_mon.xy(agent.name) or (0,0))[0],
-                                                       ty - (gz_mon.xy(agent.name) or (0,0))[1]) + 10)
-        for _ in range(max(max_steps, 30)):
-            p = gz_mon.xy(agent.name)
-            if not p:
-                time.sleep(0.2); continue
-            dx, dy = tx - p[0], ty - p[1]
+        Drive robot to (tx, ty) using a Gz-truth P-controller.
+
+        Publishes cmd_vel DIRECTLY to Zenoh robot_N/cmd_vel, completely bypassing
+        nav2/AMCL.  This is the only reliable approach when AMCL loses track
+        in the symmetric south outer corridor: every nav2-based approach fails
+        because bt_navigator plans from wrong AMCL positions.
+
+        Nav2's velocity_smoother still publishes 0 m/s when idle (no active goal).
+        cmdvel_zenoh_pub in the nav2 pod forwards these zeros at 20 Hz alongside
+        our P-controller commands.  We publish at 25 Hz so our commands dominate
+        and the robot moves at ~60 % of max speed — sufficient for the demo.
+        """
+        # First cancel any active nav2 goal so the relay idles (publishes 0 vel).
+        reset_relay_cache(nav_pub, robot_name)
+        time.sleep(1.0)
+
+        cv_pub = _cmdvel_pubs[robot_name]
+        deadline = time.time() + timeout
+        print(f"[{ts()}] [{robot_name}] P-ctrl: driving to ({tx:.2f},{ty:.2f}) via Gz truth")
+
+        while time.time() < deadline:
+            v = gz_mon.positions().get(robot_name)
+            if not v:
+                time.sleep(0.04); continue
+            px, py, yaw = v[0], v[1], v[2]
+            dx, dy = tx - px, ty - py
             dist = math.hypot(dx, dy)
             if dist < stop_dist:
-                print(f"[{ts()}]   [{agent.name}] gz_step: arrived at ({p[0]:.2f},{p[1]:.2f}) Δ={dist:.2f}m ✓")
+                cv_pub.put(_twist_cdr(0.0, 0.0))   # stop
+                print(f"[{ts()}] [{robot_name}] P-ctrl: arrived at ({px:.2f},{py:.2f}) Δ={dist:.2f}m ✓")
                 return True
-            # Next waypoint: one step toward target
-            scale = min(step_size, dist) / dist
-            nx, ny = p[0] + dx * scale, p[1] + dy * scale
-            reset_relay_cache(pub, agent.name)  # clear relay prev_step before each step
-            verified_navigate(agent, nx, ny, agent.name, use_gz=True)
-        p = gz_mon.xy(agent.name)
+            # Heading error (normalised to [-π, π])
+            angle_to_target = math.atan2(dy, dx)
+            heading_err = (angle_to_target - yaw + math.pi) % (2*math.pi) - math.pi
+            # Forward only when roughly pointing at target
+            vx = max_v * min(1.0, dist) if abs(heading_err) < 0.6 else 0.0
+            wz = max(-max_w, min(max_w, 2.0 * heading_err))
+            cv_pub.put(_twist_cdr(vx, wz))
+            time.sleep(0.04)   # 25 Hz
+
+        cv_pub.put(_twist_cdr(0.0, 0.0))   # stop on timeout
+        p = gz_mon.xy(robot_name)
         if p:
-            print(f"[{ts()}]   [{agent.name}] gz_step: max steps reached, at ({p[0]:.2f},{p[1]:.2f})")
+            d = math.hypot(p[0]-tx, p[1]-ty)
+            print(f"[{ts()}] [{robot_name}] P-ctrl: timeout, at ({p[0]:.2f},{p[1]:.2f}) Δ={d:.2f}m")
         return False
 
     def reset_relay_cache(pub, robot_name):
@@ -667,10 +694,8 @@ def main():
         # Reset relay cache using Gz ground truth position.
         reset_relay_cache(r2_pub, "robot_2")
 
-        # Navigate to robot_1_home using small Gz-verified steps.
-        # Long single steps (~3m) cause AMCL to drift 1-2m even with per-step
-        # anchoring; 0.30m steps keep AMCL stable across the full journey.
-        gz_step_navigate(agent, r2_pub, ROBOT1_HOME[0], ROBOT1_HOME[1])
+        # Drive to robot_1_home using Gz-truth P-controller (bypasses AMCL).
+        gz_drive_to('robot_2', r2_pub, ROBOT1_HOME[0], ROBOT1_HOME[1])
 
         # Capture Gazebo ground-truth arrival position
         p_gz = gz_mon.xy('robot_2')
@@ -695,8 +720,8 @@ def main():
         # Reset relay cache using Gz ground truth.
         reset_relay_cache(r1_pub, "robot_1")
 
-        # Navigate to robot_2_home using small Gz-verified steps.
-        gz_step_navigate(agent, r1_pub, ROBOT2_HOME[0], ROBOT2_HOME[1])
+        # Drive to robot_2_home using Gz-truth P-controller (bypasses AMCL).
+        gz_drive_to('robot_1', r1_pub, ROBOT2_HOME[0], ROBOT2_HOME[1])
 
         # Capture Gazebo ground-truth arrival position
         p_gz = gz_mon.xy('robot_1')
@@ -711,6 +736,8 @@ def main():
     t2.join()
     _amcl_pubs['robot_1'].undeclare()
     _amcl_pubs['robot_2'].undeclare()
+    _cmdvel_pubs['robot_1'].undeclare()
+    _cmdvel_pubs['robot_2'].undeclare()
 
     # -----------------------------------------------------------------------
     # Phase 4: Report Gazebo ground-truth final positions
