@@ -191,6 +191,18 @@ dispatch-collision-swap: ## Collision-avoidance swap: restart pods, wait for rea
 	  fi; \
 	  sleep 5; \
 	done
+	@echo "Step 3.5: Teleporting robots to spawn positions..."
+	@GZPOD=$$(oc get pod -n $(NAMESPACE) -l app=gazebo-sim -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
+	oc exec -n $(NAMESPACE) $$GZPOD -c gazebo -- bash -c '\
+	  export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash; \
+	  for d in /usr/lib64/ros-jazzy/opt/*/lib64; do [ -d "$$d" ] && export LD_LIBRARY_PATH="$${d}:$${LD_LIBRARY_PATH:-}"; done; \
+	  gz service -s /world/tb3_sandbox/set_pose \
+	    --reqtype gz.msgs.Pose --reptype gz.msgs.Boolean \
+	    --req "name: \"robot_1\" position {x: -2.0 y: -0.5 z: 0.01} orientation {w: 1.0}" --timeout 3000; \
+	  gz service -s /world/tb3_sandbox/set_pose \
+	    --reqtype gz.msgs.Pose --reptype gz.msgs.Boolean \
+	    --req "name: \"robot_2\" position {x: 2.0 y: 0.5 z: 0.01} orientation {x: 0.0 y: 0.0 z: 1.0 w: 0.0}" --timeout 3000; \
+	  echo "Robots teleported to spawn"' 2>/dev/null || echo "Teleport skipped"
 	@echo "Step 4: Running collision-avoidance swap demo..."
 	@RMFPOD=$$(oc get pod -n $(NAMESPACE) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
 	oc cp demo/collision_swap_demo.py $(NAMESPACE)/$$RMFPOD:/tmp/collision_swap_demo.py -c rmf-core && \

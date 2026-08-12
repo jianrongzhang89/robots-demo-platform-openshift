@@ -384,11 +384,18 @@ def main():
     #           robot_2: s_out → s_in (heading west)
     #           Proximity monitor then triggers Phase 2 yield.
     # -----------------------------------------------------------------------
-    # Mutable container for AMCL anchor publishers — populated after z.open()
-    # but accessible by verified_navigate via closure (Python 3.12-safe pattern
-    # for mutable containers; plain variable names cause NameError in 3.12).
-    _amcl_pubs = {}   # 'robot_1' → Zenoh publisher, 'robot_2' → Zenoh publisher
-    _amcl_yaws = {}   # 'robot_1' → float yaw, 'robot_2' → float yaw
+    # Mutable containers for AMCL anchor and direct cmd_vel publishers.
+    # Defined here (before verified_navigate/gz_drive_to) so Python 3.12
+    # closures can access them without NameError.
+    _amcl_pubs = {}   # robot_N → initialpose Zenoh publisher
+    _amcl_yaws = {}   # robot_N → float yaw for AMCL anchor
+
+    # Direct cmd_vel publishers — declared here so gz_drive_to can be used
+    # in Phase 1a as well as Phase 3 (bypasses AMCL/nav2 planning entirely).
+    _cmdvel_pubs = {
+        'robot_1': z.declare_publisher('robot_1/cmd_vel'),
+        'robot_2': z.declare_publisher('robot_2/cmd_vel'),
+    }
 
     print(f"\n[{ts()}] === Phase 1a: Enter south corridor at opposite ends ===")
 
@@ -462,12 +469,6 @@ def main():
         print(f"[{ts()}]   [{agent.name}] TIMEOUT reaching ({tx},{ty})")
         return False
 
-    # Direct cmd_vel publishers for the P-controller (bypass nav2/AMCL entirely)
-    _cmdvel_pubs = {
-        'robot_1': z.declare_publisher('robot_1/cmd_vel'),
-        'robot_2': z.declare_publisher('robot_2/cmd_vel'),
-    }
-
     def _twist_cdr(vx, wz):
         """CDR-encode geometry_msgs/Twist: linear(x,y,z) + angular(x,y,z)."""
         return b'\x00\x01\x00\x00' + struct.pack('<6d', vx, 0.0, 0.0, 0.0, 0.0, wz)
@@ -535,18 +536,18 @@ def main():
             time.sleep(2.0)
 
     def r1_enter():
-        print(f"[{ts()}] [robot_1] → s_in ({S_IN[0]},{S_IN[1]}) [west entry]")
-        verified_navigate(agent_r1, S_IN[0], S_IN[1], "robot_1", use_gz=True)
+        # Use P-controller (Gz truth) — nav2/AMCL is unreliable even for Phase 1a
+        print(f"[{ts()}] [robot_1] P-ctrl: spawn → s_in ({S_IN[0]},{S_IN[1]})")
+        gz_drive_to('robot_1', r1_pub, S_IN[0], S_IN[1])
         print(f"[{ts()}] [robot_1] at s_in — ready for head-on approach")
         r1_ready.set()
 
     def r2_enter():
-        time.sleep(4)  # 4-second stagger so robot_1 is already moving
-        # Step 1: go south along east wall (clear path, no pillar-grid crossing)
-        # robot_2 spawn: (2.0, 0.5) → east wall entry (2.0,-1.0) → s_out (1.5,-1.75)
-        print(f"[{ts()}] [robot_2] → east wall (2.0,-1.0) then s_out [east entry via south]")
-        verified_navigate(agent_r2, 2.0, -1.0, "robot_2", use_gz=True)   # south along east wall
-        verified_navigate(agent_r2, S_OUT[0], S_OUT[1], "robot_2", use_gz=True)  # enter corridor
+        time.sleep(4)  # 4-second stagger
+        # P-controller: south along east wall, then into corridor
+        print(f"[{ts()}] [robot_2] P-ctrl: spawn → east wall (2.0,-1.75) → s_out")
+        gz_drive_to('robot_2', r2_pub, 2.0, -1.75)   # south along east wall
+        gz_drive_to('robot_2', r2_pub, S_OUT[0], S_OUT[1])  # enter corridor
         print(f"[{ts()}] [robot_2] at s_out — ready for head-on approach")
         r2_ready.set()
 
@@ -556,19 +557,18 @@ def main():
     te1.join(); te2.join()
 
     print(f"\n[{ts()}] === Phase 1b: Head-on approach in south corridor ===")
-    ax1, ay1 = APPROACH_WP_R1   # s_out (1.5, -1.75) — robot_1 heads east
-    ax2, ay2 = APPROACH_WP_R2   # s_in  (-1.5, -1.75) — robot_2 heads west
+    print(f"[{ts()}]   P-ctrl: robot_1 → s_out (east), robot_2 → s_in (west)")
 
-    # Fire-and-forget: both robots now in corridor, send opposing goals
-    r1_goal_id = str(random.randint(1000000, 9999999))
-    r1_pub.put(cdr(f"{r1_goal_id} {ax1:.6f} {ay1:.6f} {APPROACH_YAW_R1:.6f}"))
-    print(f"[{ts()}]   [robot_1] goal {r1_goal_id}: → s_out ({ax1:.2f},{ay1:.2f}) heading east")
+    # Use P-controller for Phase 1b approach (nav2 relay fakes are unreliable)
+    def _r1_approach():
+        gz_drive_to('robot_1', r1_pub, APPROACH_WP_R1[0], APPROACH_WP_R1[1], timeout=60.0)
+    def _r2_approach():
+        time.sleep(1)
+        gz_drive_to('robot_2', r2_pub, APPROACH_WP_R2[0], APPROACH_WP_R2[1], timeout=60.0)
 
-    time.sleep(1)  # brief stagger so both are moving before proximity check
-
-    r2_goal_id = str(random.randint(1000000, 9999999))
-    r2_pub.put(cdr(f"{r2_goal_id} {ax2:.6f} {ay2:.6f} {APPROACH_YAW_R2:.6f}"))
-    print(f"[{ts()}]   [robot_2] goal {r2_goal_id}: → s_in ({ax2:.2f},{ay2:.2f}) heading west")
+    ta1 = threading.Thread(target=_r1_approach, daemon=True)
+    ta2 = threading.Thread(target=_r2_approach, daemon=True)
+    ta1.start(); ta2.start()
 
     # Poll proximity; stop when threshold crossed or timeout expires
     deadline = time.time() + APPROACH_TIMEOUT
@@ -595,6 +595,12 @@ def main():
     if not collision_detected:
         print(f"[{ts()}]   WARNING: proximity threshold not reached within "
               f"{APPROACH_TIMEOUT:.0f} s — proceeding anyway")
+
+    # Stop Phase 1b approach threads (P-controller runs until collision or timeout)
+    # The threads are daemon threads so they die when Phase 2 takes over.
+    # Send stop commands to both robots so they hold position.
+    _cmdvel_pubs['robot_1'].put(_twist_cdr(0.0, 0.0))
+    _cmdvel_pubs['robot_2'].put(_twist_cdr(0.0, 0.0))
 
     # -----------------------------------------------------------------------
     # Phase 2: Detect & Yield
