@@ -321,15 +321,15 @@ def main():
     r1_ready = threading.Event()
     r2_ready = threading.Event()
 
-    def verified_navigate(agent, tx, ty, label, tol=0.6):
+    def verified_navigate(agent, tx, ty, label, tol=0.20):
         """
         Navigate to (tx, ty) and verify arrival via fleet_states.
 
-        The relay's 'recently sent — reporting OK immediately' cache can fake
-        goal completion across demo runs without a pod restart.  After the
-        NavAgent reports success, we check fleet_states to confirm the robot
-        actually arrived within `tol` metres.  If not, we retry until it does
-        or TIMEOUT_S expires.
+        tol=0.20 m matches nav2's xy_goal_tolerance (0.15 m) plus a small
+        buffer for AMCL jitter.  On relay fake-success (robot not within tol),
+        the cycle is broken by sending a goal to the robot's CURRENT position
+        before retrying — this resets the relay's 'recently sent' prev_step
+        so the next attempt goes through real bt_navigator planning.
         """
         deadline = time.time() + TIMEOUT_S
         while time.time() < deadline:
@@ -343,7 +343,11 @@ def main():
                     print(f"[{ts()}]   [{agent.name}] verified at ({p[0]:.2f},{p[1]:.2f}) Δ={d:.2f}m ✓")
                     return True
                 print(f"[{ts()}]   [{agent.name}] relay faked success "
-                      f"(at ({p[0]:.2f},{p[1]:.2f}), {d:.2f}m from target) — retrying")
+                      f"(at ({p[0]:.2f},{p[1]:.2f}), {d:.2f}m from target) — cache-reset + retry")
+                # Break the relay's 'recently sent' cycle: send goal to CURRENT
+                # position so prev_step changes, forcing real navigation on retry.
+                gid = str(random.randint(1000000, 9999999))
+                agent._pub.put(cdr(f"{gid} {p[0]:.6f} {p[1]:.6f} 0.000000"))
                 time.sleep(3.0)
             else:
                 return True  # no fleet_states yet — trust NavAgent
@@ -532,10 +536,12 @@ def main():
         reset_relay_cache(r1_pub, "robot_1")
 
         # robot_1 is somewhere in the south outer corridor heading east.
-        # Route: east wall (2.0,-1.8) → robot_2_home (2.0,0.5).
-        # Using y=-1.8 (not -1.75) avoids the corner wall segment at (1.9,-1.8)
-        # that blocks NavFn planning at y=-1.75.  This mirrors swap_patrol.py's
-        # proven final step: navigate to east wall then step north.
+        # Exact swap_patrol.py steps from the robot's current position:
+        #   s_out (1.5,-1.75) → outer wall at (1.5,-1.8) → (2.0,-1.8) → home
+        # Using y=-1.8 avoids the corner wall segment at (1.9,-1.8).
+        # The (1.5,-1.8) step first ensures robot_1 is ON the outer wall
+        # before attempting the east wall corner.
+        verified_navigate(agent, 1.5, -1.8, "robot_1")
         verified_navigate(agent, 2.0, -1.8, "robot_1")
         # Step north from east wall to robot_2_home
         verified_navigate(agent, ROBOT2_HOME[0], ROBOT2_HOME[1], "robot_1")
