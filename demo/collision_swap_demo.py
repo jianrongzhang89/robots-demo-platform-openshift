@@ -153,6 +153,72 @@ class NavAgent:
 # ---------------------------------------------------------------------------
 # AMCL initial-pose publisher (CDR-encoded PoseWithCovarianceStamped)
 # ---------------------------------------------------------------------------
+# Gazebo ground-truth position monitor
+# ---------------------------------------------------------------------------
+
+class GzPosMonitor:
+    """
+    Subscribes to robot_N/gz_world_pos published by the Gazebo pod's
+    gz_world_pos_publisher.py process.  Payload: "x y yaw" (space-separated).
+
+    Used for Phase 3 position verification and AMCL continuous correction,
+    bypassing the unreliable AMCL particle filter.
+    """
+
+    def __init__(self, session):
+        self._lock  = threading.Lock()
+        self._gz    = {'robot_1': None, 'robot_2': None}
+        self._sub1  = session.declare_subscriber('robot_1/gz_world_pos', self._on_r1)
+        self._sub2  = session.declare_subscriber('robot_2/gz_world_pos', self._on_r2)
+
+    def _parse(self, sample):
+        try:
+            parts = bytes(sample.payload.to_bytes()).decode().split()
+            return float(parts[0]), float(parts[1]), float(parts[2])
+        except Exception:
+            return None
+
+    def _on_r1(self, sample):
+        v = self._parse(sample)
+        if v:
+            with self._lock:
+                self._gz['robot_1'] = v
+
+    def _on_r2(self, sample):
+        v = self._parse(sample)
+        if v:
+            with self._lock:
+                self._gz['robot_2'] = v
+
+    def positions(self):
+        """Return {'robot_1': (x, y, yaw) or None, 'robot_2': ...}"""
+        with self._lock:
+            return dict(self._gz)
+
+    def xy(self, name):
+        with self._lock:
+            v = self._gz.get(name)
+        return (v[0], v[1]) if v else None
+
+    def distance(self):
+        with self._lock:
+            p1 = self._gz.get('robot_1')
+            p2 = self._gz.get('robot_2')
+        if p1 and p2:
+            return math.sqrt((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)
+        return None
+
+    def ready(self, timeout=10.0):
+        """Block until both robot positions are received."""
+        t0 = time.time()
+        while time.time() - t0 < timeout:
+            with self._lock:
+                if self._gz['robot_1'] and self._gz['robot_2']:
+                    return True
+            time.sleep(0.2)
+        return False
+
+# ---------------------------------------------------------------------------
 
 def make_initialpose_cdr(x, y, yaw):
     """
@@ -278,7 +344,13 @@ def main():
     spin_thread.start()
 
     z = open_session()
-    time.sleep(2)  # let the zenoh session settle
+    time.sleep(2)
+
+    # Start Gazebo ground-truth monitor (used for Phase 3 only).
+    gz_mon = GzPosMonitor(z)
+    print(f"[{ts()}] Waiting for Gazebo ground-truth positions...")
+    if not gz_mon.ready(timeout=15):
+        print(f"[{ts()}] WARNING: Gz ground-truth not received — check gz_world_pos_pub in Gazebo pod")
 
     # Wait for first fleet_states to arrive (confirms fleet adapter is running)
     print(f"[{ts()}] Waiting for fleet_states positions...")
@@ -321,57 +393,69 @@ def main():
     r1_ready = threading.Event()
     r2_ready = threading.Event()
 
-    def verified_navigate(agent, tx, ty, label, tol=0.50):
+    def verified_navigate(agent, tx, ty, label, tol=0.50, use_gz=False):
         """
-        Navigate to (tx, ty) and verify arrival via fleet_states.
+        Navigate to (tx, ty) and verify arrival.
 
-        tol=0.50 m is calibrated to this environment's AMCL accuracy:
-        - Genuine navigation success + AMCL drift = 0.15–0.50 m in fleet_states
-          (larger drift observed in the west outer corridor) → accepted ≤0.50 m.
-        - Relay fake-success (robot at start, hasn't moved):
-          fleet_states shows robot 1–4 m from target → rejected, retried.
-        - 0.50 m safely distinguishes: genuine-nav AMCL-drift ≤0.50 m vs
-          relay-fake offset > 1 m (start-to-target distance for Phase 3 legs).
+        use_gz=False: verify via fleet_states (AMCL).  Used for Phase 1a
+            corridor entry where AMCL is still accurate (just started).
+        use_gz=True: verify via Gazebo ground-truth positions.  Used for
+            Phase 3 where AMCL has catastrophically drifted in the symmetric
+            south outer corridor (AMCL errors up to 3+ m observed).
 
-        On relay fake detection, the relay's 'recently sent' prev_step is reset
-        by sending a goal to the robot's CURRENT position before retrying.
+        tol=0.50 m (fleet_states) / 0.25 m (Gz truth):
+        - fleet_states mode: 0.50 m covers AMCL drift after genuine nav.
+        - Gz truth mode: 0.25 m is tighter — ground truth has no AMCL error.
+        On relay fake-success, the relay's 'recently sent' cache is broken by
+        sending a goal to the robot's CURRENT position before retrying.
         """
+        gz_tol = 0.25 if use_gz else tol
         deadline = time.time() + TIMEOUT_S
         while time.time() < deadline:
             agent.navigate(tx, ty)
-            # Verify via fleet_states
-            pos = monitor.positions()
-            p = pos.get(agent.name)
-            if p is not None:
-                d = math.hypot(p[0] - tx, p[1] - ty)
-                if d <= tol:
-                    print(f"[{ts()}]   [{agent.name}] verified at ({p[0]:.2f},{p[1]:.2f}) Δ={d:.2f}m ✓")
-                    return True
-                print(f"[{ts()}]   [{agent.name}] relay faked success "
-                      f"(at ({p[0]:.2f},{p[1]:.2f}), {d:.2f}m from target) — cache-reset + retry")
-                # Break the relay's 'recently sent' cycle: send goal to CURRENT
-                # position so prev_step changes, forcing real navigation on retry.
-                gid = str(random.randint(1000000, 9999999))
-                agent._pub.put(cdr(f"{gid} {p[0]:.6f} {p[1]:.6f} 0.000000"))
-                time.sleep(3.0)
+            if use_gz:
+                p_gz = gz_mon.xy(agent.name)
+                if p_gz is not None:
+                    d = math.hypot(p_gz[0] - tx, p_gz[1] - ty)
+                    if d <= gz_tol:
+                        print(f"[{ts()}]   [{agent.name}] Gz-verified at ({p_gz[0]:.2f},{p_gz[1]:.2f}) Δ={d:.2f}m ✓")
+                        return True
+                    print(f"[{ts()}]   [{agent.name}] relay faked — Gz truth ({p_gz[0]:.2f},{p_gz[1]:.2f}), "
+                          f"{d:.2f}m from target — cache-reset + retry")
+                    gid = str(random.randint(1000000, 9999999))
+                    agent._pub.put(cdr(f"{gid} {p_gz[0]:.6f} {p_gz[1]:.6f} 0.000000"))
+                    time.sleep(3.0)
+                else:
+                    return True  # Gz truth not yet available — trust NavAgent
             else:
-                return True  # no fleet_states yet — trust NavAgent
+                pos = monitor.positions()
+                p = pos.get(agent.name)
+                if p is not None:
+                    d = math.hypot(p[0] - tx, p[1] - ty)
+                    if d <= tol:
+                        print(f"[{ts()}]   [{agent.name}] verified at ({p[0]:.2f},{p[1]:.2f}) Δ={d:.2f}m ✓")
+                        return True
+                    print(f"[{ts()}]   [{agent.name}] relay faked success "
+                          f"(at ({p[0]:.2f},{p[1]:.2f}), {d:.2f}m from target) — cache-reset + retry")
+                    gid = str(random.randint(1000000, 9999999))
+                    agent._pub.put(cdr(f"{gid} {p[0]:.6f} {p[1]:.6f} 0.000000"))
+                    time.sleep(3.0)
+                else:
+                    return True  # no fleet_states yet — trust NavAgent
         print(f"[{ts()}]   [{agent.name}] TIMEOUT reaching ({tx},{ty})")
         return False
 
     def reset_relay_cache(pub, robot_name):
         """
         Clear the relay's 'recently sent' cache by sending a goal at the robot's
-        current AMCL position.  The relay sees this as an immediate success
-        (robot is already there) and clears prev_dest — subsequent goals to new
-        positions then go through real bt_navigator navigation.
+        current position.  Prefers Gz ground truth; falls back to fleet_states.
         """
-        p = monitor.positions().get(robot_name)
-        if p:
+        p = gz_mon.xy(robot_name) or (monitor.positions().get(robot_name) or (None, None))
+        if p and p[0] is not None:
             gid = str(random.randint(1000000, 9999999))
             pub.put(cdr(f"{gid} {p[0]:.6f} {p[1]:.6f} 0.000000"))
             print(f"[{ts()}]   [{robot_name}] relay cache reset at ({p[0]:.2f},{p[1]:.2f})")
-            time.sleep(2.0)   # let relay process the goal
+            time.sleep(2.0)
 
     def r1_enter():
         print(f"[{ts()}] [robot_1] → s_in ({S_IN[0]},{S_IN[1]}) [west entry]")
@@ -515,88 +599,81 @@ def main():
 
     final_pos = {}   # capture positions right at navigation completion
 
+    # ── Continuous AMCL correction during Phase 3 ─────────────────────────────
+    # AMCL particle filter loses track in the symmetric south outer corridor.
+    # Publishing Gazebo ground truth as initialpose every 0.5 s keeps nav2's
+    # localization estimate close to the true position so it plans correctly.
+    _p3_running = threading.Event()
+    _p3_running.set()
+
+    def _gz_amcl_correction():
+        """Background thread: re-anchor AMCL from Gz truth at 2 Hz during Phase 3."""
+        pub_r1 = z.declare_publisher('robot_1/initialpose')
+        pub_r2 = z.declare_publisher('robot_2/initialpose')
+        while _p3_running.is_set():
+            gz = gz_mon.positions()
+            for robot, pub, yaw in [
+                ('robot_1', pub_r1, APPROACH_YAW_R1),
+                ('robot_2', pub_r2, APPROACH_YAW_R2),
+            ]:
+                v = gz.get(robot)
+                if v:
+                    p = make_initialpose_cdr(v[0], v[1], yaw)
+                    pub.put(p)
+            time.sleep(0.5)
+        pub_r1.undeclare()
+        pub_r2.undeclare()
+
+    corr_thread = threading.Thread(target=_gz_amcl_correction, daemon=True)
+    corr_thread.start()
+    print(f"[{ts()}] AMCL continuous correction from Gz ground truth started")
+    time.sleep(2)  # let correction take effect before Phase 3 navigation
+
     def robot2_reroute():
         agent = NavAgent(z, "robot_2")
         print(f"[{ts()}] [robot_2] Phase 3 start: south corridor (west) route")
 
-        # Reset relay cache so Phase 3 goals are planned fresh.
+        # Reset relay cache using Gz ground truth position.
         reset_relay_cache(r2_pub, "robot_2")
 
-        # Navigate west using small 1 m steps (mirroring swap_patrol.py's approach).
-        #
-        # The lidar range is 2.5 m.  From the hold position (~x=1.0), s_in at x=-1.5
-        # is 2.5+ m away — stale obstacle cells near s_in cannot be cleared by
-        # raytrace because they are outside the lidar's reach.  NavFn fails to plan
-        # through uncleared cells and bt_navigator times out on every attempt.
-        #
-        # Small steps let each new position raytrace and clear the next section so
-        # every leg stays within scan range.  y=-1.8 (below y=-1.75) stays clear
-        # of the outer corridor's corner obstacle at (1.9,-1.8).
+        # Navigate west in 1 m steps (mirroring swap_patrol.py) verified via
+        # Gazebo ground truth — not AMCL, which has drifted catastrophically.
         for wx in [0.0, -1.0, -2.0]:
-            verified_navigate(agent, wx, -1.8, "robot_2")
+            verified_navigate(agent, wx, -1.8, "robot_2", use_gz=True)
         # Exit corridor: step north to robot_1_home
-        verified_navigate(agent, ROBOT1_HOME[0], ROBOT1_HOME[1], "robot_2")
+        verified_navigate(agent, ROBOT1_HOME[0], ROBOT1_HOME[1], "robot_2", use_gz=True)
 
-        # Capture AMCL position immediately at arrival (before drift accumulates)
-        p = monitor.positions().get('robot_2')
-        if p:
-            final_pos['robot_2'] = p
+        # Capture Gazebo ground-truth arrival position
+        p_gz = gz_mon.xy('robot_2')
+        if p_gz:
+            final_pos['robot_2'] = p_gz
         print(f"[{ts()}] [robot_2] Phase 3 complete — arrived at robot_1_home {ROBOT1_HOME}")
 
     t2 = threading.Thread(target=robot2_reroute, daemon=True)
     t2.start()
 
-    # Give robot_2 a 30-second head start: it moves west, clearing the stale
-    # costmap obstacle cells near robot_1's position.  robot_1's lidar then
-    # sees empty space to the NE and NavFn can plan the direct path to home.
-    print(f"[{ts()}] Waiting 30 s for robot_2 to clear the area (allows lidar raytrace)...")
+    # Give robot_2 a 30-second head start to clear the south corridor.
+    print(f"[{ts()}] Waiting 30 s for robot_2 to clear the area...")
     time.sleep(30)
 
-    # Re-anchor robot_1's AMCL at its current position just before Phase 3.
-    # 30+ seconds of Phase 2+stagger can cause further AMCL drift in the
-    # symmetric south corridor.  A fresh anchor ensures Phase 3 starts from
-    # the correct localization estimate.
-    pos_now = monitor.positions()
-    r1_now = pos_now.get('robot_1')
-    if r1_now:
-        print(f"[{ts()}] Re-anchoring robot_1 AMCL at current pos ({r1_now[0]:.2f},{r1_now[1]:.2f})")
-        pub1_re = z.declare_publisher('robot_1/initialpose')
-        p1_re = make_initialpose_cdr(r1_now[0], r1_now[1], APPROACH_YAW_R1)
-        for _ in range(6):
-            pub1_re.put(p1_re)
-            time.sleep(0.5)
-        pub1_re.undeclare()
-        time.sleep(2)
-
     print(f"\n[{ts()}] Step 2: robot_1 continues east to robot_2_home")
-    print(f"[{ts()}] robot_1: south outer wall (y=-1.8) → east → robot_2_home {ROBOT2_HOME}")
+    print(f"[{ts()}] robot_1: direct NE path → robot_2_home {ROBOT2_HOME} [Gz-verified]")
 
     def robot1_reroute():
         agent = NavAgent(z, "robot_1")
         print(f"[{ts()}] [robot_1] Phase 3 start: south outer wall route")
 
-        # Reset relay cache first so subsequent goals are planned fresh.
+        # Reset relay cache using Gz ground truth.
         reset_relay_cache(r1_pub, "robot_1")
 
-        # robot_1 is somewhere in the south outer corridor heading east.
-        # Navigate directly to robot_2_home (2.0,0.5) from current position.
-        #
-        # All east-wall intermediate steps (1.5,-1.8) → (2.0,-1.8) fail because:
-        # (a) stale costmap obstacles from Phase 1/2 block the path east in the
-        #     corridor, and (b) the corner wall segment at (1.9,-1.8) inflates
-        #     0.15m north to y=-1.65, blocking any y<-1.65 approach to x=2.0.
-        #
-        # The DIRECT path from (1.05,-1.64) to (2.0,0.5) goes NE through the
-        # east open area of the map — away from the corner, through unblocked
-        # space (x=1.1-2.0, y=-1.1 to 0.5 is clear of pillars and corner).
-        # NavFn can plan this path as long as the east open area is not blocked
-        # by stale obstacles (robot_2 moved west, costmap should clear via lidar).
-        verified_navigate(agent, ROBOT2_HOME[0], ROBOT2_HOME[1], "robot_1")
+        # Navigate directly to robot_2_home — Gz ground truth verification ensures
+        # the robot is physically at the target, not just AMCL-estimated there.
+        verified_navigate(agent, ROBOT2_HOME[0], ROBOT2_HOME[1], "robot_1", use_gz=True)
 
-        # Capture AMCL position immediately at arrival
-        p = monitor.positions().get('robot_1')
-        if p:
-            final_pos['robot_1'] = p
+        # Capture Gazebo ground-truth arrival position
+        p_gz = gz_mon.xy('robot_1')
+        if p_gz:
+            final_pos['robot_1'] = p_gz
         print(f"[{ts()}] [robot_1] Phase 3 complete — arrived at robot_2_home {ROBOT2_HOME}")
 
     t1 = threading.Thread(target=robot1_reroute, daemon=True)
@@ -604,31 +681,21 @@ def main():
 
     t1.join()
     t2.join()
+    _p3_running.clear()   # stop the AMCL correction thread
 
     # -----------------------------------------------------------------------
-    # Phase 4: Re-anchor AMCL at swap positions and confirm
+    # Phase 4: Report Gazebo ground-truth final positions
     # -----------------------------------------------------------------------
-    print(f"\n[{ts()}] === Phase 4: AMCL positions at arrival (before drift) ===")
+    print(f"\n[{ts()}] === Phase 4: Gazebo ground-truth positions (physical reality) ===")
+    time.sleep(1)
     for name, home in [('robot_1', ROBOT2_HOME), ('robot_2', ROBOT1_HOME)]:
-        p = final_pos.get(name)
-        if p:
-            d = math.hypot(p[0] - home[0], p[1] - home[1])
-            print(f"[{ts()}] {name} at ({p[0]:.2f},{p[1]:.2f})  Δ={d:.2f}m from target {home}")
-
-    # Re-publish initialpose at known targets so AMCL stays anchored.
-    # The south outer corridor is symmetric: AMCL particles drift along x
-    # while stationary. Anchoring at the target coordinates prevents the
-    # drift from continuing and corrects fleet_states for observers.
-    print(f"[{ts()}] Publishing initialpose: robot_1→{ROBOT2_HOME}  robot_2→{ROBOT1_HOME}")
-    anchor_poses(z, ROBOT2_HOME, ROBOT1_HOME, r1_yaw=math.pi, r2_yaw=0.0, repeats=10)
-    time.sleep(4)  # allow AMCL to process new pose
-    print(f"[{ts()}] Final fleet_states positions after anchoring:")
-    pos = monitor.positions()
-    for name, home in [('robot_1', ROBOT2_HOME), ('robot_2', ROBOT1_HOME)]:
-        p = pos.get(name)
-        if p:
-            d = math.hypot(p[0] - home[0], p[1] - home[1])
-            print(f"[{ts()}] {name} at ({p[0]:.2f},{p[1]:.2f})  Δ={d:.2f}m from {home}")
+        gz = gz_mon.xy(name)
+        if gz:
+            d = math.hypot(gz[0] - home[0], gz[1] - home[1])
+            print(f"[{ts()}] {name} Gz  at ({gz[0]:.2f},{gz[1]:.2f})  Δ={d:.2f}m from target {home}")
+        amcl = (monitor.positions().get(name) or [None, None])
+        if amcl and amcl[0] is not None:
+            print(f"[{ts()}] {name} AMCL at ({amcl[0]:.2f},{amcl[1]:.2f})  (localization estimate)")
 
     print(f"\n[{ts()}] Collision-avoidance swap demo complete. Both robots have swapped positions.")
     rclpy.shutdown()

@@ -207,6 +207,67 @@ done
 
 echo "[gazebo-pod] All ${#SPAWN_PIDS[@]} robot(s) spawned. Simulation ready."
 
+# Gazebo ground-truth position publisher.
+# Publishes each robot's TRUE Gazebo world-frame position to Zenoh as
+# "robot_N/gz_world_pos" (payload: "x y yaw" space-separated floats).
+# The collision-avoidance demo subscribes to these instead of AMCL-derived
+# fleet_states, which suffer catastrophic particle-filter drift in the
+# symmetric tb3_sandbox south outer corridor.
+cat > /tmp/gz_world_pos_pub.py << 'GZ_POS_EOF'
+import subprocess, re, zenoh, time, os, signal, math, struct
+
+ROUTER  = "tcp/zenoh-router:7447"
+ROBOTS  = ['robot_1', 'robot_2']
+WORLD   = 'tb3_sandbox'
+TOPIC   = f'/world/{WORLD}/dynamic_pose/info'
+GZ_ENV  = {**os.environ,
+            'GZ_SIM_RESOURCE_PATH': '/usr/lib64/ros-jazzy/share',
+            'HOME': '/tmp'}
+
+signal.signal(signal.SIGTERM, lambda s, f: None)
+signal.signal(signal.SIGINT,  lambda s, f: None)
+
+while True:
+    try:
+        conf = zenoh.Config()
+        conf.insert_json5('connect/endpoints', f'["{ROUTER}"]')
+        conf.insert_json5('mode', '"client"')
+        conf.insert_json5('scouting/multicast/enabled', 'false')
+        z = zenoh.open(conf)
+        pubs = {r: z.declare_publisher(f'{r}/gz_world_pos') for r in ROBOTS}
+        print('[gz-pos] Gazebo world-pos publisher started', flush=True)
+
+        while True:
+            try:
+                res = subprocess.run(
+                    ['gz', 'topic', '-e', '-t', TOPIC, '-n', '1'],
+                    capture_output=True, text=True, timeout=3, env=GZ_ENV)
+                txt = res.stdout
+                for robot in ROBOTS:
+                    # Find the block for this robot and extract position + quaternion
+                    m = re.search(
+                        rf'name: "{robot}".*?'
+                        r'position \{\s*x: ([-\d.e+]+)\s*y: ([-\d.e+]+).*?'
+                        r'orientation \{\s*x: ([-\d.e+]+)\s*y: ([-\d.e+]+)'
+                        r'\s*z: ([-\d.e+]+)\s*w: ([-\d.e+]+)',
+                        txt, re.DOTALL)
+                    if m:
+                        px, py = float(m.group(1)), float(m.group(2))
+                        qz, qw = float(m.group(5)), float(m.group(6))
+                        yaw = 2.0 * math.atan2(qz, qw)
+                        pubs[robot].put(f'{px:.6f} {py:.6f} {yaw:.6f}'.encode())
+            except subprocess.TimeoutExpired:
+                pass
+            except Exception as e:
+                print(f'[gz-pos] query error: {e}', flush=True)
+            time.sleep(0.3)
+    except BaseException as e:
+        print(f'[gz-pos] restarting after: {e}', flush=True)
+        time.sleep(3)
+GZ_POS_EOF
+python3 /tmp/gz_world_pos_pub.py &
+echo "[gazebo-pod] Gazebo world-pos publisher started"
+
 term_handler() {
   echo "[gazebo-pod] Shutting down..."
   kill "${GZ_GUI_PID:-}" "${SPAWN_PIDS[@]:-}" "${GZ_SERVER_PID}" "${XVFB_PID}" 2>/dev/null || true
