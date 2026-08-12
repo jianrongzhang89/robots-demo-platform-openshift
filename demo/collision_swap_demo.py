@@ -520,10 +520,11 @@ def main():
     t2 = threading.Thread(target=robot2_reroute, daemon=True)
     t2.start()
 
-    # Give robot_2 a head start so it clears s_in before robot_1 arrives there.
-    # robot_2 heads west; robot_1 heads east — they diverge, no new collision.
-    print(f"[{ts()}] Waiting 10 s for robot_2 to clear s_in before robot_1 continues...")
-    time.sleep(10)
+    # Give robot_2 a 30-second head start: it moves west, clearing the stale
+    # costmap obstacle cells near robot_1's position.  robot_1's lidar then
+    # sees empty space to the NE and NavFn can plan the direct path to home.
+    print(f"[{ts()}] Waiting 30 s for robot_2 to clear the area (allows lidar raytrace)...")
+    time.sleep(30)
 
     print(f"\n[{ts()}] Step 2: robot_1 continues east to robot_2_home")
     print(f"[{ts()}] robot_1: south outer wall (y=-1.8) → east → robot_2_home {ROBOT2_HOME}")
@@ -536,14 +537,18 @@ def main():
         reset_relay_cache(r1_pub, "robot_1")
 
         # robot_1 is somewhere in the south outer corridor heading east.
-        # Exact swap_patrol.py steps from the robot's current position:
-        #   s_out (1.5,-1.75) → outer wall at (1.5,-1.8) → (2.0,-1.8) → home
-        # Using y=-1.8 avoids the corner wall segment at (1.9,-1.8).
-        # The (1.5,-1.8) step first ensures robot_1 is ON the outer wall
-        # before attempting the east wall corner.
-        verified_navigate(agent, 1.5, -1.8, "robot_1")
-        verified_navigate(agent, 2.0, -1.8, "robot_1")
-        # Step north from east wall to robot_2_home
+        # Navigate directly to robot_2_home (2.0,0.5) from current position.
+        #
+        # All east-wall intermediate steps (1.5,-1.8) → (2.0,-1.8) fail because:
+        # (a) stale costmap obstacles from Phase 1/2 block the path east in the
+        #     corridor, and (b) the corner wall segment at (1.9,-1.8) inflates
+        #     0.15m north to y=-1.65, blocking any y<-1.65 approach to x=2.0.
+        #
+        # The DIRECT path from (1.05,-1.64) to (2.0,0.5) goes NE through the
+        # east open area of the map — away from the corner, through unblocked
+        # space (x=1.1-2.0, y=-1.1 to 0.5 is clear of pillars and corner).
+        # NavFn can plan this path as long as the east open area is not blocked
+        # by stale obstacles (robot_2 moved west, costmap should clear via lidar).
         verified_navigate(agent, ROBOT2_HOME[0], ROBOT2_HOME[1], "robot_1")
 
         # Capture AMCL position immediately at arrival
