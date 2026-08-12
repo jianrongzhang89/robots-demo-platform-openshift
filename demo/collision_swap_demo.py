@@ -453,14 +453,17 @@ def main():
         r2_pub.put(cdr(f"{hold_id} {hx:.6f} {hy:.6f} 0.000000"))
         print(f"[{ts()}] robot_1 continues — Nav2 local costmap plans around robot_2")
 
-        # Anchor robot_2's AMCL immediately at the hold position.
-        # The south outer corridor is symmetric (walls look the same at
-        # different x-positions), so AMCL particles drift laterally while
-        # the robot is stationary. Publishing initialpose here keeps AMCL
-        # stable during the yield pause so Phase 3 starts from a correct
-        # position estimate.
-        print(f"[{ts()}] Anchoring robot_2 AMCL at hold position to prevent drift...")
-        anchor_poses(z, ROBOT2_HOME, (hx, hy), r1_yaw=math.pi, r2_yaw=APPROACH_YAW_R2, repeats=6)
+        # Anchor BOTH robots' AMCL at their current positions.
+        # The south outer corridor is symmetric — AMCL drifts laterally while
+        # stationary.  CRITICAL BUG FIXED: previously robot_1 was anchored at
+        # ROBOT2_HOME (2.0,0.5) instead of its actual south-corridor position,
+        # causing catastrophic ~1.6m AMCL failure that placed the robot at the
+        # completely wrong physical location after Phase 3 navigation.
+        pos = monitor.positions()
+        r1_pos_now = pos.get('robot_1') or (S_IN[0], S_IN[1])  # fallback to s_in
+        print(f"[{ts()}] Anchoring robot_1 AMCL at {r1_pos_now} (actual south-corridor pos)")
+        print(f"[{ts()}] Anchoring robot_2 AMCL at ({hx:.2f},{hy:.2f}) (hold position)")
+        anchor_poses(z, r1_pos_now, (hx, hy), r1_yaw=APPROACH_YAW_R1, r2_yaw=APPROACH_YAW_R2, repeats=8)
 
         print(f"[{ts()}] Yield pause: {YIELD_PAUSE:.0f} s ...")
         time.sleep(YIELD_PAUSE)
@@ -548,6 +551,22 @@ def main():
     # sees empty space to the NE and NavFn can plan the direct path to home.
     print(f"[{ts()}] Waiting 30 s for robot_2 to clear the area (allows lidar raytrace)...")
     time.sleep(30)
+
+    # Re-anchor robot_1's AMCL at its current position just before Phase 3.
+    # 30+ seconds of Phase 2+stagger can cause further AMCL drift in the
+    # symmetric south corridor.  A fresh anchor ensures Phase 3 starts from
+    # the correct localization estimate.
+    pos_now = monitor.positions()
+    r1_now = pos_now.get('robot_1')
+    if r1_now:
+        print(f"[{ts()}] Re-anchoring robot_1 AMCL at current pos ({r1_now[0]:.2f},{r1_now[1]:.2f})")
+        pub1_re = z.declare_publisher('robot_1/initialpose')
+        p1_re = make_initialpose_cdr(r1_now[0], r1_now[1], APPROACH_YAW_R1)
+        for _ in range(6):
+            pub1_re.put(p1_re)
+            time.sleep(0.5)
+        pub1_re.undeclare()
+        time.sleep(2)
 
     print(f"\n[{ts()}] Step 2: robot_1 continues east to robot_2_home")
     print(f"[{ts()}] robot_1: south outer wall (y=-1.8) → east → robot_2_home {ROBOT2_HOME}")
