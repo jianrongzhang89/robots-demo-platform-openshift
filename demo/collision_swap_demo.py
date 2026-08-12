@@ -463,14 +463,14 @@ def main():
 
     def r1_enter():
         print(f"[{ts()}] [robot_1] → s_in ({S_IN[0]},{S_IN[1]}) [west entry]")
-        verified_navigate(agent_r1, S_IN[0], S_IN[1], "robot_1")
+        verified_navigate(agent_r1, S_IN[0], S_IN[1], "robot_1", use_gz=True)
         print(f"[{ts()}] [robot_1] at s_in — ready for head-on approach")
         r1_ready.set()
 
     def r2_enter():
         time.sleep(4)  # 4-second stagger so robot_1 is already moving
         print(f"[{ts()}] [robot_2] → s_out ({S_OUT[0]},{S_OUT[1]}) [east entry]")
-        verified_navigate(agent_r2, S_OUT[0], S_OUT[1], "robot_2")
+        verified_navigate(agent_r2, S_OUT[0], S_OUT[1], "robot_2", use_gz=True)
         print(f"[{ts()}] [robot_2] at s_out — ready for head-on approach")
         r2_ready.set()
 
@@ -501,17 +501,17 @@ def main():
     last_print = 0.0
 
     while time.time() < deadline:
-        dist = monitor.distance()
+        # Use Gz ground truth for proximity — AMCL is unreliable in corridor
+        dist = gz_mon.distance() or monitor.distance()
         now = time.time()
         if dist is not None:
             # Print distance update every 5 seconds to avoid log spam
             if now - last_print >= 5.0:
-                print(f"[{ts()}]   robot distance: {dist:.2f} m")
+                print(f"[{ts()}]   robot distance (Gz): {dist:.2f} m")
                 last_print = now
             if dist < YIELD_DIST:
                 collision_detected = True
-                pos = monitor.positions()
-                r2_hold_pos = pos.get('robot_2')
+                r2_hold_pos = gz_mon.xy('robot_2') or monitor.positions().get('robot_2')
                 print(f"[{ts()}]   COLLISION COURSE DETECTED — distance {dist:.2f} m < {YIELD_DIST} m")
                 break
         time.sleep(0.5)
