@@ -414,9 +414,15 @@ def main():
         while time.time() < deadline:
             if use_gz:
                 # Anchor AMCL once from Gz truth before each navigation attempt.
-                # One-shot anchoring (not continuous) avoids TF jitter that was
-                # breaking bt_navigator planning at 2 Hz correction rate.
-                _anchor_gz(agent.name)
+                # Inlined to avoid Python 3.12 free-variable scoping error.
+                _v = gz_mon.positions().get(agent.name)
+                if _v:
+                    _pub = _pose_pub_r1 if agent.name == 'robot_1' else _pose_pub_r2
+                    _p = make_initialpose_cdr(_v[0], _v[1], _gz_yaw[agent.name])
+                    for _ in range(5):
+                        _pub.put(_p)
+                        time.sleep(0.3)
+                    time.sleep(1.5)
                 agent.navigate(tx, ty)
                 p_gz = gz_mon.xy(agent.name)
                 if p_gz is None:
@@ -608,17 +614,6 @@ def main():
     _pose_pub_r2 = z.declare_publisher('robot_2/initialpose')
     _gz_yaw = {'robot_1': APPROACH_YAW_R1, 'robot_2': APPROACH_YAW_R2}
 
-    def _anchor_gz(robot_name, repeats=5):
-        """Anchor AMCL once from Gz truth and wait for TF to stabilize."""
-        v = gz_mon.positions().get(robot_name)
-        if not v:
-            return
-        pub = _pose_pub_r1 if robot_name == 'robot_1' else _pose_pub_r2
-        p = make_initialpose_cdr(v[0], v[1], _gz_yaw[robot_name])
-        for _ in range(repeats):
-            pub.put(p)
-            time.sleep(0.3)
-        time.sleep(1.5)  # let AMCL and costmap TF stabilize before planning
 
     def robot2_reroute():
         agent = NavAgent(z, "robot_2")
