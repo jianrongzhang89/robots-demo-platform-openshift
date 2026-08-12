@@ -462,6 +462,39 @@ def main():
         print(f"[{ts()}]   [{agent.name}] TIMEOUT reaching ({tx},{ty})")
         return False
 
+    def gz_step_navigate(agent, pub, tx, ty, step_size=0.30, stop_dist=0.20):
+        """
+        Navigate to (tx, ty) using small Gz-verified steps.
+
+        Each step: anchor AMCL from Gz truth → navigate step_size metres →
+        verify with Gz truth.  Short steps prevent AMCL from drifting between
+        anchor and arrival, which was causing 1-2m positioning errors on long
+        (2-3 m) navigation legs even with per-step anchoring.
+
+        With step_size=0.30 m and speed=0.26 m/s, each step takes ~1.2 s —
+        fast enough that AMCL has no time to drift before Gz verifies arrival.
+        """
+        max_steps = int(15.0 / step_size * math.hypot(tx - (gz_mon.xy(agent.name) or (0,0))[0],
+                                                       ty - (gz_mon.xy(agent.name) or (0,0))[1]) + 10)
+        for _ in range(max(max_steps, 30)):
+            p = gz_mon.xy(agent.name)
+            if not p:
+                time.sleep(0.2); continue
+            dx, dy = tx - p[0], ty - p[1]
+            dist = math.hypot(dx, dy)
+            if dist < stop_dist:
+                print(f"[{ts()}]   [{agent.name}] gz_step: arrived at ({p[0]:.2f},{p[1]:.2f}) Δ={dist:.2f}m ✓")
+                return True
+            # Next waypoint: one step toward target
+            scale = min(step_size, dist) / dist
+            nx, ny = p[0] + dx * scale, p[1] + dy * scale
+            reset_relay_cache(pub, agent.name)  # clear relay prev_step before each step
+            verified_navigate(agent, nx, ny, agent.name, use_gz=True)
+        p = gz_mon.xy(agent.name)
+        if p:
+            print(f"[{ts()}]   [{agent.name}] gz_step: max steps reached, at ({p[0]:.2f},{p[1]:.2f})")
+        return False
+
     def reset_relay_cache(pub, robot_name):
         """
         Clear the relay's 'recently sent' cache by sending a goal at the robot's
@@ -634,12 +667,10 @@ def main():
         # Reset relay cache using Gz ground truth position.
         reset_relay_cache(r2_pub, "robot_2")
 
-        # Navigate west in 1 m steps (mirroring swap_patrol.py) verified via
-        # Gazebo ground truth — not AMCL, which has drifted catastrophically.
-        for wx in [0.0, -1.0, -2.0]:
-            verified_navigate(agent, wx, -1.8, "robot_2", use_gz=True)
-        # Exit corridor: step north to robot_1_home
-        verified_navigate(agent, ROBOT1_HOME[0], ROBOT1_HOME[1], "robot_2", use_gz=True)
+        # Navigate to robot_1_home using small Gz-verified steps.
+        # Long single steps (~3m) cause AMCL to drift 1-2m even with per-step
+        # anchoring; 0.30m steps keep AMCL stable across the full journey.
+        gz_step_navigate(agent, r2_pub, ROBOT1_HOME[0], ROBOT1_HOME[1])
 
         # Capture Gazebo ground-truth arrival position
         p_gz = gz_mon.xy('robot_2')
@@ -664,9 +695,8 @@ def main():
         # Reset relay cache using Gz ground truth.
         reset_relay_cache(r1_pub, "robot_1")
 
-        # Navigate directly to robot_2_home — Gz ground truth verification ensures
-        # the robot is physically at the target, not just AMCL-estimated there.
-        verified_navigate(agent, ROBOT2_HOME[0], ROBOT2_HOME[1], "robot_1", use_gz=True)
+        # Navigate to robot_2_home using small Gz-verified steps.
+        gz_step_navigate(agent, r1_pub, ROBOT2_HOME[0], ROBOT2_HOME[1])
 
         # Capture Gazebo ground-truth arrival position
         p_gz = gz_mon.xy('robot_1')
