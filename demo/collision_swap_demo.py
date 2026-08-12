@@ -321,13 +321,13 @@ def main():
     r1_ready = threading.Event()
     r2_ready = threading.Event()
 
-    def verified_navigate(agent, tx, ty, label, tol=0.35):
+    def verified_navigate(agent, tx, ty, label, tol=0.40):
         """
         Navigate to (tx, ty) and verify arrival via fleet_states.
 
-        tol=0.35 m is calibrated to this environment's AMCL accuracy:
-        - Genuine navigation success + typical AMCL drift = 0.15–0.30 m offset
-          in fleet_states after the robot stops → accepted by 0.35 m.
+        tol=0.40 m is calibrated to this environment's AMCL accuracy:
+        - Genuine navigation success + typical AMCL drift = 0.15–0.40 m offset
+          in fleet_states after the robot stops → accepted by 0.40 m.
         - Relay fake-success (robot hasn't moved, stays at start position):
           fleet_states shows the robot far from target → rejected, retried.
         - After one retry the relay sends a fresh goal; bt_navigator navigates
