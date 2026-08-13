@@ -170,6 +170,10 @@ else:
     slam['map_file_name']     = '/slam_maps/${ROBOT_NAME}_slam'
     slam['map_start_at_dock'] = True
     slam['do_loop_closing']   = False
+    # NOTE: sync_slam_toolbox_node's lifecycle activate response times out
+    # during posegraph deserialization in this environment, leaving it in a
+    # limbo state. The entrypoint re-triggers configure/activate manually.
+    # TODO: switch to standalone (non-lifecycle) slam_toolbox launch.
     print('[nav2-pod] SLAM LOCALIZATION MODE: using full-coverage posegraph')
 
 # ── BT XML: use single-plan-then-follow (no 1 Hz replanning).
