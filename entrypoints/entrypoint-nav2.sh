@@ -59,17 +59,14 @@ echo "[nav2-pod/${ROBOT_NAME}] Launching Nav2 bringup (no ROS namespace — isol
 # settings) rather than the stock nav2_bringup params (whose structure varies
 # across Nav2 versions). Use Python to substitute ${ROBOT_NAME} and apply
 # runtime overrides (RPP plugin, costmap tuning, bond_timeout, etc.).
-NAV2_PARAMS="/opt/ros2-demo/nav2/nav2_params.yaml"  # our custom base config
+NAV2_PARAMS="${BRINGUP_DIR}/params/nav2_params.yaml"  # stock nav2_bringup params (un-namespaced frames)
 CUSTOM_PARAMS="/tmp/nav2_params_${ROBOT_NAME}.yaml"
 if [ -f "${NAV2_PARAMS}" ]; then
   echo "[nav2-pod/${ROBOT_NAME}] Patching nav2 params from ${NAV2_PARAMS}..."
   python3 2>/tmp/py_err_${ROBOT_NAME}.log -c "
 import yaml, sys, os
-robot_name = os.environ.get('ROBOT_NAME', 'robot_1')
-# Substitute \${ROBOT_NAME} in our template file before YAML parsing
 with open('${NAV2_PARAMS}') as f:
-    content = f.read().replace('\${ROBOT_NAME}', robot_name)
-p = yaml.safe_load(content) or {}
+    p = yaml.safe_load(f) or {}
 cs = p.setdefault('controller_server', {}).setdefault('ros__parameters', {})
 
 # ── Switch to Regulated Pure Pursuit (RPP) controller.
@@ -421,7 +418,7 @@ echo "[nav2-pod/${ROBOT_NAME}] Waiting for AMCL node to load..."
       echo "[nav2-pod/${ROBOT_NAME}] Publishing initial pose at (${INITIAL_X}, ${INITIAL_Y})..."
       ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
         "{header: {frame_id: 'map'}, pose: {pose: {position: {x: ${INITIAL_X}, y: ${INITIAL_Y}, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: ${INITIAL_QZ}, w: ${INITIAL_QW}}}, covariance: [0.01, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01]}}" \
-        --times 5 2>/dev/null || true
+        --times 5 --qos-reliability best_effort 2>/dev/null || true
 
       echo "[nav2-pod/${ROBOT_NAME}] Waiting for AMCL to publish map->odom transform..."
       for j in $(seq 1 60); do

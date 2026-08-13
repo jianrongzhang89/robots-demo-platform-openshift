@@ -169,13 +169,24 @@ dispatch-rmf-swap: ## RMF + Nav2 LiDAR swap: restart pods, wait for ready, then 
 	  echo "$$s1" | grep -q "active \[3\]" && echo "$$s2" | grep -q "active \[3\]" && \
 	    [ "$${r1:-0}" -ge 1 ] && [ "$${r2:-0}" -ge 1 ] && echo "ALL READY" && break; \
 	  if [ $$i -ge 6 ]; then \
-	    if echo "$$s2" | grep -q "inactive \[2\]"; then \
-	      echo "  [fix] robot_2 inactive — triggering RESUME"; \
+	    echo "$$s1" | grep -q "inactive \[2\]" && echo "  [fix] robot_1 inactive — injecting initialpose + RESUME" && \
+	      oc exec -n $$NS $$NAV1 -c nav2 -- bash -c \
+	        'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash; \
+	         timeout 20 ros2 topic pub /initialpose geometry_msgs/msg/PoseWithCovarianceStamped \
+	           "{header:{frame_id:map},pose:{pose:{position:{x:-2.0,y:-0.5},orientation:{w:1.0}},covariance:[0.01,0,0,0,0,0,0,0.01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.005]}}" \
+	           --times 3 --qos-reliability best_effort 2>/dev/null || true; sleep 4; \
+	         timeout 30 ros2 service call /lifecycle_manager_navigation/manage_nodes \
+	           nav2_msgs/srv/ManageLifecycleNodes "{command:2}" 2>/dev/null || true' 2>/dev/null & \
+	    echo "$$s2" | grep -q "inactive \[2\]" && echo "  [fix] robot_2 inactive — injecting initialpose + RESUME" && \
 	      oc exec -n $$NS $$NAV2 -c nav2 -- bash -c \
 	        'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash; \
-	         timeout 20 ros2 service call /lifecycle_manager_navigation/manage_nodes \
+	         QZ=$$(python3 -c "import math; print(math.sin(math.pi/2))"); \
+	         QW=$$(python3 -c "import math; print(math.cos(math.pi/2))"); \
+	         timeout 20 ros2 topic pub /initialpose geometry_msgs/msg/PoseWithCovarianceStamped \
+	           "{header:{frame_id:map},pose:{pose:{position:{x:2.0,y:0.5},orientation:{z:$${QZ},w:$${QW}}},covariance:[0.01,0,0,0,0,0,0,0.01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.005]}}" \
+	           --times 3 --qos-reliability best_effort 2>/dev/null || true; sleep 4; \
+	         timeout 30 ros2 service call /lifecycle_manager_navigation/manage_nodes \
 	           nav2_msgs/srv/ManageLifecycleNodes "{command:2}" 2>/dev/null || true' 2>/dev/null & \
-	    fi; \
 	  fi; \
 	  sleep 5; \
 	done
@@ -231,9 +242,9 @@ dispatch-collision-swap: ## Collision-avoidance swap: restart pods, wait for rea
 	    echo "$$s1" | grep -q "inactive \[2\]" && echo "  [fix] robot_1 inactive — injecting initialpose + RESUME" && \
 	      oc exec -n $$NS $$NAV1 -c nav2 -- bash -c \
 	        'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash; \
-	         ros2 topic pub /initialpose geometry_msgs/msg/PoseWithCovarianceStamped \
+	         timeout 20 ros2 topic pub /initialpose geometry_msgs/msg/PoseWithCovarianceStamped \
 	           "{header:{frame_id:map},pose:{pose:{position:{x:-2.0,y:-0.5},orientation:{w:1.0}},covariance:[0.01,0,0,0,0,0,0,0.01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.005]}}" \
-	           --times 3 2>/dev/null; sleep 4; \
+	           --times 3 --qos-reliability best_effort 2>/dev/null || true; sleep 4; \
 	         timeout 30 ros2 service call /lifecycle_manager_navigation/manage_nodes \
 	           nav2_msgs/srv/ManageLifecycleNodes "{command:2}" 2>/dev/null || true' 2>/dev/null & \
 	    echo "$$s2" | grep -q "inactive \[2\]" && echo "  [fix] robot_2 inactive — injecting initialpose + RESUME" && \
@@ -241,9 +252,9 @@ dispatch-collision-swap: ## Collision-avoidance swap: restart pods, wait for rea
 	        'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash; \
 	         QZ=$$(python3 -c "import math; print(math.sin(math.pi/2))"); \
 	         QW=$$(python3 -c "import math; print(math.cos(math.pi/2))"); \
-	         ros2 topic pub /initialpose geometry_msgs/msg/PoseWithCovarianceStamped \
+	         timeout 20 ros2 topic pub /initialpose geometry_msgs/msg/PoseWithCovarianceStamped \
 	           "{header:{frame_id:map},pose:{pose:{position:{x:2.0,y:0.5},orientation:{z:$${QZ},w:$${QW}}},covariance:[0.01,0,0,0,0,0,0,0.01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.005]}}" \
-	           --times 3 2>/dev/null; sleep 4; \
+	           --times 3 --qos-reliability best_effort 2>/dev/null || true; sleep 4; \
 	         timeout 30 ros2 service call /lifecycle_manager_navigation/manage_nodes \
 	           nav2_msgs/srv/ManageLifecycleNodes "{command:2}" 2>/dev/null || true' 2>/dev/null & \
 	  fi; \
