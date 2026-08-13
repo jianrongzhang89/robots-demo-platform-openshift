@@ -255,10 +255,23 @@ def main():
     print(  f"  robot_2 enters from EAST  (spawn → s_out {S_OUT})")
     print(  f"  [Layer 1] Goals dispatched via rmf_navigate_cmd → nav2_relay → Nav2")
 
-    t1 = threading.Thread(target=r1.navigate,
-                          args=(*S_IN, YAW_EAST), daemon=True)
-    t2 = threading.Thread(target=r2.navigate,
-                          args=(*S_OUT, YAW_WEST), daemon=True)
+    # Route via outer walls to avoid pillar grid (use_collision_detection=True
+    # stops RPP near pillars; the outer wall route is clear of them).
+    # robot_1: spawn (-2.0,-0.5) → SW corner (-2.0,-1.75) → s_in (-1.5,-1.75)
+    # robot_2: spawn (2.0,0.5) → SE corner (2.0,-1.75) → s_out (1.5,-1.75)
+    SW_CORNER = (-2.0, -1.75)  # along west wall, no pillars
+    SE_CORNER  = ( 2.0, -1.75)  # along east wall, no pillars
+
+    def phase1a_robot1():
+        r1.navigate(*SW_CORNER, YAW_EAST, timeout=60.0)
+        r1.navigate(*S_IN,      YAW_EAST, timeout=60.0)
+
+    def phase1a_robot2():
+        r2.navigate(*SE_CORNER, YAW_WEST, timeout=60.0)
+        r2.navigate(*S_OUT,     YAW_WEST, timeout=60.0)
+
+    t1 = threading.Thread(target=phase1a_robot1, daemon=True)
+    t2 = threading.Thread(target=phase1a_robot2, daemon=True)
     t1.start(); t2.start()
     t1.join(); t2.join()
 

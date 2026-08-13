@@ -210,7 +210,10 @@ for top_key in ['local_costmap', 'global_costmap']:
     inflation = 0.15 if top_key == 'global_costmap' else 0.10
     cmap_params.setdefault('inflation_layer', {})['inflation_radius'] = inflation
     if top_key == 'global_costmap':
-        cmap_params['robot_radius'] = 0.0  # point robot for global planning
+        # Use actual robot radius (0.22m) so NavFn routes around pillar grid.
+        # Pillar gap 0.8m - 2x(0.15m pillar inflation + 0.22m robot) = -0.14m:
+        # negative effective gap means NavFn correctly finds outer corridor routes.
+        cmap_params['robot_radius'] = 0.22
     cmap_params.setdefault('inflation_layer', {})['cost_scaling_factor'] = 5.0
     # Allow 30 s for map→odom TF during activation. The default (0.3 s) is too
     # short: AMCL may not have published map→odom by the time the lifecycle
