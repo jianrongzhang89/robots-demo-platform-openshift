@@ -60,14 +60,9 @@ YIELD_DIST       = 2.0     # metres — trigger robot_2 hold
 YIELD_PAUSE      = 20.0    # seconds robot_2 yields (extra time for robot_1 to pass)
 APPROACH_TIMEOUT = 120.0   # seconds before giving up on Phase 1
 
-# Known positions (world frame)
+# Known positions
 ROBOT1_HOME = (-2.0, -0.5)
 ROBOT2_HOME = ( 2.0,  0.5)
-
-# slam_toolbox map frame offset: each robot's map origin is its spawn position.
-# /initialpose must be in MAP frame = world - spawn.
-ROBOT1_MAP_OFFSET = ROBOT1_HOME   # (-2.0, -0.5)
-ROBOT2_MAP_OFFSET = ROBOT2_HOME   # ( 2.0,  0.5)
 
 # Outer-corridor waypoints (match nav_graph.yaml)
 S_IN  = (-1.5, -1.75)
@@ -266,22 +261,13 @@ def make_initialpose_cdr(x, y, yaw):
 
 def anchor_poses(z, r1_pos, r2_pos, r1_yaw=math.pi, r2_yaw=0.0, repeats=5):
     """
-    Publish initialpose for both robots via Zenoh so slam_toolbox re-localises
-    to the actual positions after the Gz P-controller navigation.
-
-    r1_pos / r2_pos are in WORLD frame (from GzPosMonitor).
-    /initialpose must be in MAP frame (slam_toolbox map origin = robot spawn).
-    Convert: map = world - spawn_offset.
+    Publish initialpose for both robots via Zenoh so AMCL re-converges to
+    the true positions. Positions are in world frame = AMCL map frame.
     """
     pub1 = z.declare_publisher('robot_1/initialpose')
     pub2 = z.declare_publisher('robot_2/initialpose')
-    # World → map frame conversion
-    r1_map_x = r1_pos[0] - ROBOT1_MAP_OFFSET[0]
-    r1_map_y = r1_pos[1] - ROBOT1_MAP_OFFSET[1]
-    r2_map_x = r2_pos[0] - ROBOT2_MAP_OFFSET[0]
-    r2_map_y = r2_pos[1] - ROBOT2_MAP_OFFSET[1]
-    p1 = make_initialpose_cdr(r1_map_x, r1_map_y, r1_yaw)
-    p2 = make_initialpose_cdr(r2_map_x, r2_map_y, r2_yaw)
+    p1 = make_initialpose_cdr(r1_pos[0], r1_pos[1], r1_yaw)
+    p2 = make_initialpose_cdr(r2_pos[0], r2_pos[1], r2_yaw)
     for _ in range(repeats):
         pub1.put(p1)
         pub2.put(p2)

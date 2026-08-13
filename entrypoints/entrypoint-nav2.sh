@@ -126,42 +126,18 @@ pserver.setdefault('GridBased', {})['use_astar'] = True
 pserver.setdefault('GridBased', {})['allow_unknown'] = True
 pserver.setdefault('GridBased', {})['tolerance'] = 0.5  # accept path ending within 0.5m of goal
 
-# ── slam_toolbox in localization mode (replaces AMCL particle filter).
-# AMCL fails in the symmetric south outer corridor: the corridor walls look
-# identical from different x-positions, causing particle bifurcation and
-# 1–3 m pose drift. slam_toolbox uses scan-matching against a saved posegraph,
-# which produces a unique pose estimate even in symmetric corridors.
-#
-# Coordinate convention: the posegraph was built with the robot at its spawn
-# position where odom=(0,0). The slam_toolbox map frame therefore has its
-# origin at the robot's spawn (world INITIAL_X, INITIAL_Y). The map_start_at_dock
-# parameter tells slam_toolbox to initialise the robot at this map origin.
-# Consequence: Nav2 goals (sent by nav2_relay.py) must subtract the spawn offset
-# to convert from world frame to map frame before calling navigate_to_pose.
-#
-# slam:=True in the launch switches AMCL+map_server out and slam_toolbox in.
-# slam_toolbox publishes map→odom TF and the /map topic used by costmap layers.
-slam = p.setdefault('slam_toolbox', {}).setdefault('ros__parameters', {})
-slam['use_sim_time']             = True
-slam['odom_frame']               = 'odom'
-slam['map_frame']                = 'map'
-slam['base_frame']               = 'base_footprint'
-slam['scan_topic']               = '/scan'
-slam['mode']                     = 'localization'
-slam['map_file_name']            = '/slam_maps/${ROBOT_NAME}_slam'
-slam['map_start_at_dock']        = True   # robot starts at posegraph origin (spawn)
-slam['debug_logging']            = False
-slam['throttle_scans']           = 1
-slam['transform_publish_period'] = 0.02
-slam['map_update_interval']      = 5.0
-slam['resolution']               = 0.05
-slam['max_laser_range']          = 3.5
-slam['minimum_time_interval']    = 0.5
-slam['transform_timeout']        = 0.2
-slam['tf_buffer_duration']       = 30.0
-slam['stack_size_to_use']        = 40000000
-slam['enable_interactive_mode']  = False
-slam['do_loop_closing']          = False  # pure localization, no map updates
+# ── AMCL for localization using the pre-built pgm map (full sandbox coverage).
+# AMCL with the pgm map covers the entire tb3_sandbox from the start, allowing
+# Nav2 to plan paths to any waypoint without "goal outside bounds" errors.
+# slam_toolbox posegraph coverage is limited to areas near each robot's spawn,
+# causing "Goal Coordinates outside bounds" for south-corridor goals when robots
+# spawn far from the corridor. AMCL's localization drift in the south outer
+# corridor does not affect LiDAR-based collision detection (which operates in the
+# odom/sensor frame) — it only affects pose estimate precision.
+amcl_ros2 = p.setdefault('amcl', {}).setdefault('ros__parameters', {})
+amcl_ros2['base_frame_id']   = 'base_footprint'
+amcl_ros2['odom_frame_id']   = 'odom'
+amcl_ros2['global_frame_id'] = 'map'
 
 # ── BT XML: use single-plan-then-follow (no 1 Hz replanning).
 # navigate_to_pose_w_replanning_and_recovery replans every sim-second;
@@ -220,19 +196,17 @@ for lm_name in ['lifecycle_manager_navigation', 'lifecycle_manager_localization'
 
 with open('${CUSTOM_PARAMS}', 'w') as f:
     yaml.dump(p, f, default_flow_style=False)
-print('[nav2-pod] Patched nav2 params: slam_toolbox localization + A* + RPP + 300s bond_timeout')
+print('[nav2-pod] Patched nav2 params: AMCL + A* + RPP + collision_monitor(min_pts=12) + 300s bond_timeout')
 " 2>/dev/null && PARAMS_ARG="params_file:=${CUSTOM_PARAMS}" || PARAMS_ARG=""
 else
   PARAMS_ARG=""
 fi
 
-# slam:=True replaces AMCL + map_server with slam_toolbox (no map:= arg needed —
-# slam_toolbox loads the map from map_file_name in the params file).
 ros2 launch nav2_bringup bringup_launch.py \
   use_sim_time:=True \
   autostart:=True \
   use_composition:=False \
-  slam:=True \
+  map:="${BRINGUP_DIR}/maps/tb3_sandbox.yaml" \
   ${PARAMS_ARG} &
 NAV2_PID=$!
 
@@ -414,35 +388,34 @@ CMDVEL_EOF
 while true; do python3 /tmp/cmdvel_zenoh_pub.py 2>/dev/null || true; sleep 2; done &
 echo "[nav2-pod/${ROBOT_NAME}] cmd_vel Zenoh publisher started"
 
-# Wait for slam_toolbox to load, then publish initial pose hint.
-# slam_toolbox in localization mode is not a lifecycle node — we wait for the
-# node to appear and then for the map→odom TF to be published.
-# The map frame has its origin at the robot's spawn position (posegraph origin
-# = where SLAM was started). The initial pose hint is therefore (0, 0, yaw)
-# in map frame — the robot starts at the posegraph's map origin.
+# Wait for AMCL to load, then set initial pose so localization can start.
 (
-echo "[nav2-pod/${ROBOT_NAME}] Waiting for slam_toolbox node to load..."
+echo "[nav2-pod/${ROBOT_NAME}] Waiting for AMCL node to load..."
   for i in $(seq 1 180); do
-    if ros2 node list 2>/dev/null | grep -qE "^(/slam_toolbox|/${ROBOT_NAME}/slam_toolbox)$"; then
-      echo "[nav2-pod/${ROBOT_NAME}] slam_toolbox detected (attempt ${i}), waiting 5s for initialization..."
-      sleep 5
+    if ros2 node list 2>/dev/null | grep -qE "^(/amcl|/${ROBOT_NAME}/amcl)$"; then
+      echo "[nav2-pod/${ROBOT_NAME}] AMCL detected (attempt ${i}), waiting for ACTIVE state..."
+      for k in $(seq 1 60); do
+        AMCL_STATE=$(timeout 3 ros2 lifecycle get /amcl 2>/dev/null | grep -oE "[a-z]+ \[[0-9]+\]" | head -1)
+        if echo "${AMCL_STATE}" | grep -q "active"; then
+          echo "[nav2-pod/${ROBOT_NAME}] AMCL is active, publishing initial pose."
+          break
+        fi
+        echo "[nav2-pod/${ROBOT_NAME}] AMCL not yet active (${AMCL_STATE}), waiting..."
+        sleep 5
+      done
 
       timeout 8 ros2 param set /local_costmap/local_costmap transform_tolerance 10.0 2>/dev/null || true
       timeout 8 ros2 param set /global_costmap/global_costmap transform_tolerance 10.0 2>/dev/null || true
       timeout 8 ros2 param set /controller_server general_goal_checker.yaw_goal_tolerance 3.14159 2>/dev/null || true
 
-      # Publish initial pose hint at map frame origin (0, 0) — the robot is at
-      # its spawn position which equals the posegraph's map origin.
-      # Use timeout so we don't block if slam_toolbox isn't yet subscribed
-      # (map_start_at_dock: true handles initialization without /initialpose).
       read -r INITIAL_QZ INITIAL_QW < <(python3 -c \
         "import math; y=${INITIAL_YAW}; print(math.sin(y/2), math.cos(y/2))")
-      echo "[nav2-pod/${ROBOT_NAME}] Publishing slam_toolbox initial pose hint at map (0, 0, yaw=${INITIAL_YAW})..."
-      timeout 20 ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
-        "{header: {frame_id: 'map'}, pose: {pose: {position: {x: 0.0, y: 0.0, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: ${INITIAL_QZ}, w: ${INITIAL_QW}}}, covariance: [0.01, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01]}}" \
+      echo "[nav2-pod/${ROBOT_NAME}] Publishing initial pose at (${INITIAL_X}, ${INITIAL_Y})..."
+      ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
+        "{header: {frame_id: 'map'}, pose: {pose: {position: {x: ${INITIAL_X}, y: ${INITIAL_Y}, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: ${INITIAL_QZ}, w: ${INITIAL_QW}}}, covariance: [0.01, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01]}}" \
         --times 5 2>/dev/null || true
 
-      echo "[nav2-pod/${ROBOT_NAME}] Waiting for slam_toolbox to publish map->odom transform..."
+      echo "[nav2-pod/${ROBOT_NAME}] Waiting for AMCL to publish map->odom transform..."
       for j in $(seq 1 60); do
         if timeout 5 ros2 run tf2_ros tf2_echo "map" "odom" 2>&1 | grep -q "Translation"; then
           echo "[nav2-pod/${ROBOT_NAME}] Localization active — navigation stack ready."

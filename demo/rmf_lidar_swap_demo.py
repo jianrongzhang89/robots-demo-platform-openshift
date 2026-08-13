@@ -3,39 +3,53 @@
 RMF + Nav2 LiDAR collision-avoidance swap demo.
 
 Three visible layers:
-  Layer 1 — RMF traffic planning: both robots dispatched via dispatch_patrol,
-             tasks flow through the free_fleet adapter and RMF traffic scheduler.
+  Layer 1 — RMF fleet integration: goals sent via the rmf_navigate_cmd
+             protocol → nav2_relay → Nav2 navigate_to_pose. The free_fleet
+             adapter manages fleet state. This is the same channel that the
+             RMF task dispatcher uses in production.
   Layer 2 — Nav2 LiDAR obstacle detection: as robots approach, each robot's
              VoxelLayer local costmap marks the other's body from its own lidar
              returns. RPP controller scales velocity down as costmap cost rises.
-             The collision_monitor node (FootprintApproach polygon, min_points=12)
+             The collision_monitor node (FootprintApproach, min_points=12)
              applies an independent velocity brake at close range.
-  Layer 3 — Application-layer yield: when Gz-truth distance < YIELD_DIST,
-             robot_2 is held in place (direct cmd_vel=0 via Zenoh) while robot_1
-             passes. This prevents the mutual deadlock that would occur in a
-             narrow corridor if both robots blocked each other indefinitely.
+  Layer 3 — Application-layer yield: at < YIELD_DIST, robot_2 retreats east
+             to clear the corridor so robot_1 can pass. This mirrors real-world
+             AMR behaviour: one robot backs into a passing bay while the other
+             drives through.
 
-Route: both robots use the SOUTH OUTER CORRIDOR.
-  robot_1: robot_1_home → s_in → s_out → robot_2_home   (heading east)
-  robot_2: robot_2_home → s_out → s_in → robot_1_home   (heading west)
+Route:
+  Phase 1 — Both robots enter the SOUTH OUTER CORRIDOR simultaneously from
+             opposite ends (head-on collision course).
+  Phase 2 — Head-on approach. robot_1's VoxelLayer detects robot_2 → RPP
+             slows robot_1. collision_monitor fires when robot_2 enters the
+             forward approach polygon.
+  Phase 3 — robot_2 retreats east (clears corridor). robot_1 passes through.
+  Phase 4 — Both route to final swap positions independently.
 """
-import subprocess, threading, time, math, struct, os, sys
+import threading, time, math, struct, random, os, sys
 import zenoh
 import rclpy
 from rclpy.node import Node
 from rmf_fleet_msgs.msg import FleetState
 
-# ── Tunable constants ────────────────────────────────────────────────────────
-ROUTER        = "tcp/zenoh-router:7447"
-YIELD_DIST    = 2.0    # metres — trigger yield when Gz distance < this
-YIELD_HOLD    = 25.0   # seconds robot_2 holds position
-PHASE_TIMEOUT = 300.0  # seconds max per dispatch_patrol call
+# ── Constants ────────────────────────────────────────────────────────────────
+ROUTER     = "tcp/zenoh-router:7447"
+YIELD_DIST = 2.0    # metres — Gz distance that triggers yield
+TIMEOUT    = 180.0  # seconds per navigation leg before giving up
 
-# ── Spawn / waypoint positions (world frame) ─────────────────────────────────
+# World-frame positions
 ROBOT1_HOME = (-2.0, -0.5)
 ROBOT2_HOME = ( 2.0,  0.5)
-S_IN        = (-1.5, -1.75)
-S_OUT       = ( 1.5, -1.75)
+S_IN        = (-1.5, -1.75)   # south corridor west entry
+S_OUT       = ( 1.5, -1.75)   # south corridor east entry
+RETREAT_PT  = ( 2.5, -1.75)   # robot_2 retreats here to clear corridor
+
+YAW_EAST = 0.0          # robot_1 heading east
+YAW_WEST = math.pi      # robot_2 heading west
+
+
+def ts():
+    return time.strftime('%H:%M:%S')
 
 
 # ── Zenoh session ────────────────────────────────────────────────────────────
@@ -48,30 +62,90 @@ def open_zenoh():
     return zenoh.open(conf)
 
 
+def cdr(text):
+    d = text.encode() + b'\x00'
+    return b'\x00\x01\x00\x00' + struct.pack('<I', len(d)) + d
+
+
+# ── NavAgent: rmf_navigate_cmd → nav2_relay → Nav2 navigate_to_pose ──────────
+
+class NavAgent:
+    """
+    Sends goals via robot_N/rmf_navigate_cmd and waits for OK/FAILED result.
+    This is Layer 1: the RMF fleet integration protocol.
+    """
+    def __init__(self, session, robot_name):
+        self.name = robot_name
+        self._session = session
+        self._done = threading.Event()
+        self._ok = False
+        self._goal_id = ""
+        self._pub = session.declare_publisher(f"{robot_name}/rmf_navigate_cmd")
+        self._sub = session.declare_subscriber(
+            f"{robot_name}/rmf_navigate_result", self._on_result)
+
+    def _on_result(self, sample):
+        try:
+            raw = bytes(sample.payload.to_bytes())
+            if len(raw) < 9:
+                return
+            slen = struct.unpack_from('<I', raw, 4)[0]
+            text = raw[8:8 + slen - 1].decode('utf-8', errors='ignore').strip()
+            parts = text.split()
+            if len(parts) >= 2 and parts[0] == self._goal_id:
+                if parts[1] == 'OK':
+                    self._ok = True
+                self._done.set()
+        except Exception:
+            pass
+
+    def navigate(self, x, y, yaw=0.0, timeout=TIMEOUT):
+        self._goal_id = str(random.randint(1000000, 9999999))
+        self._done.clear()
+        self._ok = False
+        self._pub.put(cdr(f"{self._goal_id} {x:.6f} {y:.6f} {yaw:.6f}"))
+        print(f"  [{self.name}] → ({x:.2f},{y:.2f})")
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            remaining = deadline - time.time()
+            self._done.wait(timeout=min(remaining, 20.0))
+            if self._ok:
+                return True
+            if self._done.is_set():
+                self._done.clear()
+                self._ok = False
+                time.sleep(3.0)
+                self._goal_id = str(random.randint(1000000, 9999999))
+                self._pub.put(cdr(f"{self._goal_id} {x:.6f} {y:.6f} {yaw:.6f}"))
+        print(f"  [{self.name}] TIMEOUT to ({x:.2f},{y:.2f})")
+        return False
+
+    def cancel(self):
+        self._pub.put(cdr(f"{self._goal_id} CANCEL"))
+
+
 # ── Gz ground-truth position monitor ────────────────────────────────────────
 
 class GzPosMonitor:
-    """Subscribes to robot_N/gz_world_pos published by the Gazebo pod."""
-
     def __init__(self, session):
         self._lock = threading.Lock()
         self._gz   = {'robot_1': None, 'robot_2': None}
-        session.declare_subscriber('robot_1/gz_world_pos', self._on_r1)
-        session.declare_subscriber('robot_2/gz_world_pos', self._on_r2)
+        session.declare_subscriber('robot_1/gz_world_pos', self._r1)
+        session.declare_subscriber('robot_2/gz_world_pos', self._r2)
 
-    def _parse(self, sample):
+    def _parse(self, s):
         try:
-            parts = bytes(sample.payload.to_bytes()).decode().split()
-            return float(parts[0]), float(parts[1]), float(parts[2])
+            p = bytes(s.payload.to_bytes()).decode().split()
+            return float(p[0]), float(p[1]), float(p[2])
         except Exception:
             return None
 
-    def _on_r1(self, s):
+    def _r1(self, s):
         v = self._parse(s)
         if v:
             with self._lock: self._gz['robot_1'] = v
 
-    def _on_r2(self, s):
+    def _r2(self, s):
         v = self._parse(s)
         if v:
             with self._lock: self._gz['robot_2'] = v
@@ -98,7 +172,7 @@ class GzPosMonitor:
         return False
 
 
-# ── Fleet state monitor (AMCL/slam_toolbox positions via RMF) ────────────────
+# ── Fleet state monitor ──────────────────────────────────────────────────────
 
 class FleetMonitor(Node):
     def __init__(self):
@@ -114,10 +188,6 @@ class FleetMonitor(Node):
                     loc = r.location
                     self._pos[r.name] = (loc.x, loc.y, loc.yaw)
 
-    def pos(self, name):
-        with self._lock:
-            return self._pos.get(name)
-
     def ready(self, timeout=30.0):
         t0 = time.time()
         while time.time()-t0 < timeout:
@@ -128,188 +198,183 @@ class FleetMonitor(Node):
         return False
 
 
-# ── RMF dispatch_patrol helper ───────────────────────────────────────────────
+# ── Helpers ──────────────────────────────────────────────────────────────────
 
-def dispatch_patrol(waypoints: list[str], robot_name: str | None = None) -> subprocess.Popen:
-    """
-    Call dispatch_patrol non-blocking; returns the Popen handle.
-    If robot_name is provided, --robot is passed to target a specific robot.
-    """
-    cmd = [
-        'ros2', 'run', 'rmf_demos_tasks', 'dispatch_patrol',
-        '-p', *waypoints,
-        '-n', '1',
-        '--use_sim_time',
-    ]
-    if robot_name:
-        cmd += ['--robot', robot_name]
-    print(f"  [RMF] dispatch_patrol {' '.join(waypoints)}"
-          + (f" → {robot_name}" if robot_name else ""))
-    return subprocess.Popen(
-        cmd,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        env={**os.environ, 'HOME': '/tmp/ros-home'},
-    )
-
-
-# ── Hold robot_2 in place via direct Zenoh cmd_vel=0 ────────────────────────
-
-def hold_robot2(z: zenoh.Session, duration: float):
-    """
-    Publish zero velocity directly to Gazebo for robot_2.
-    Bypasses Nav2 velocity pipeline — robot_2 stops immediately.
-    robot_1's Nav2 stack (VoxelLayer + RPP + collision_monitor) continues
-    operating normally, slowing robot_1 as it approaches and passes.
-    """
-    pub = z.declare_publisher('robot_2/cmd_vel')
-    # Twist CDR: 6 float64 (linear xyz, angular xyz) — all zero
-    zero_twist = b'\x00\x01\x00\x00' + b'\x00' * 48
+def hold_zero_vel(z, robot_name, duration):
+    """Publish cmd_vel=0 directly to Zenoh to hold a robot in place."""
+    pub = z.declare_publisher(f'{robot_name}/cmd_vel')
+    zero = b'\x00\x01\x00\x00' + b'\x00' * 48
     deadline = time.time() + duration
     while time.time() < deadline:
-        pub.put(zero_twist)
-        time.sleep(0.04)   # 25 Hz
+        pub.put(zero)
+        time.sleep(0.04)
     pub.undeclare()
+
+
+def clear_costmaps(z, robot_name):
+    pub = z.declare_publisher(f'{robot_name}/clear_costmaps')
+    for _ in range(3):
+        pub.put(b'clear')
+        time.sleep(0.4)
+    pub.undeclare()
+
+
+def wait_nav_done(nav_agent):
+    """Block until the running NavAgent goal completes (OK or FAILED)."""
+    nav_agent._done.wait(timeout=TIMEOUT)
 
 
 # ── Main demo ────────────────────────────────────────────────────────────────
 
 def main():
-    ts = lambda: time.strftime('%H:%M:%S')
-
     rclpy.init()
-    fleet_monitor = FleetMonitor()
-    spin_thread = threading.Thread(
-        target=rclpy.spin, args=(fleet_monitor,), daemon=True)
-    spin_thread.start()
+    fleet = FleetMonitor()
+    threading.Thread(target=rclpy.spin, args=(fleet,), daemon=True).start()
 
-    z = open_zenoh()
-    gz = GzPosMonitor(z)
+    z   = open_zenoh()
+    gz  = GzPosMonitor(z)
+    r1  = NavAgent(z, 'robot_1')
+    r2  = NavAgent(z, 'robot_2')
 
     print(f"\n[{ts()}] RMF + Nav2 LiDAR collision-avoidance swap demo")
-    print(  f"  Layer 1 — RMF dispatch_patrol (traffic planning)")
+    print(  f"  Layer 1 — RMF fleet integration (rmf_navigate_cmd → nav2_relay → Nav2)")
     print(  f"  Layer 2 — Nav2 VoxelLayer + RPP + collision_monitor (LiDAR avoidance)")
-    print(  f"  Layer 3 — Application yield (prevents narrow-corridor deadlock)")
+    print(  f"  Layer 3 — Application yield + robot_2 retreat (corridor passing manoeuvre)")
     print(  f"  Router  : {ROUTER}\n")
 
-    # ── Wait for sensor data ─────────────────────────────────────────────────
-    print(f"[{ts()}] Waiting for Gz ground-truth positions...")
-    if not gz.ready(timeout=20):
-        print("  ERROR: Gz positions not received — is Gazebo running?")
-        sys.exit(1)
+    print(f"[{ts()}] Waiting for Gz positions and fleet_states...")
+    if not gz.ready(20):
+        print("ERROR: Gz positions not received"); sys.exit(1)
+    fleet.ready(15)
 
-    print(f"[{ts()}] Waiting for fleet_states...")
-    if not fleet_monitor.ready(timeout=30):
-        print("  WARNING: fleet_states not ready — proceeding anyway")
+    # ─────────────────────────────────────────────────────────────────────────
+    # Phase 1a — Both robots enter south corridor from opposite ends
+    # ─────────────────────────────────────────────────────────────────────────
+    print(f"\n[{ts()}] === Phase 1a: Enter south corridor ===")
+    print(  f"  robot_1 enters from WEST  (spawn → s_in  {S_IN})")
+    print(  f"  robot_2 enters from EAST  (spawn → s_out {S_OUT})")
+    print(  f"  [Layer 1] Goals dispatched via rmf_navigate_cmd → nav2_relay → Nav2")
 
-    # ── Phase 1: RMF dispatches both robots ──────────────────────────────────
-    print(f"\n[{ts()}] === Phase 1: RMF dispatches both robots (south outer corridor) ===")
-    print(  f"  robot_1: robot_1_home → s_in → s_out → robot_2_home  (heading east)")
-    print(  f"  robot_2: robot_2_home → s_out → s_in → robot_1_home  (heading west)")
-    print(  f"  RMF traffic scheduler detects head-on lane conflict on s_in↔s_out")
-    print(  f"  and may delay one robot — if both enter, Nav2 LiDAR avoidance engages")
+    t1 = threading.Thread(target=r1.navigate,
+                          args=(*S_IN, YAW_EAST), daemon=True)
+    t2 = threading.Thread(target=r2.navigate,
+                          args=(*S_OUT, YAW_WEST), daemon=True)
+    t1.start(); t2.start()
+    t1.join(); t2.join()
 
-    p1 = dispatch_patrol(['robot_1_home', 's_in', 's_out', 'robot_2_home'])
-    time.sleep(2)   # small stagger so robot_1 leads — more visually distinct
-    p2 = dispatch_patrol(['robot_2_home', 's_out', 's_in', 'robot_1_home'])
+    p1 = gz.xy('robot_1'); p2 = gz.xy('robot_2')
+    print(f"[{ts()}]   robot_1 at ({p1[0]:.2f},{p1[1]:.2f}), "
+          f"robot_2 at ({p2[0]:.2f},{p2[1]:.2f})")
 
-    # ── Phase 2: Monitor for proximity ──────────────────────────────────────
-    print(f"\n[{ts()}] === Phase 2: Monitoring — Nav2 LiDAR avoidance active ===")
-    print(  f"  Watch robot_1 slow as robot_2 enters its VoxelLayer costmap.")
-    print(  f"  collision_monitor (min_points=12) provides velocity brake at close range.")
+    # ─────────────────────────────────────────────────────────────────────────
+    # Phase 1b — Head-on approach
+    # ─────────────────────────────────────────────────────────────────────────
+    print(f"\n[{ts()}] === Phase 1b: Head-on approach ===")
+    print(  f"  robot_1 → east toward s_out | robot_2 → west toward s_in")
+    print(  f"  [Layer 2] robot_1's VoxelLayer marks robot_2 as obstacle →"
+             f" RPP slows robot_1")
+    print(  f"            collision_monitor fires when robot_2 enters approach polygon")
 
-    triggered = False
-    deadline  = time.time() + PHASE_TIMEOUT
+    # Launch both heading toward each other simultaneously
+    t1 = threading.Thread(target=r1.navigate,
+                          args=(*S_OUT, YAW_EAST), daemon=True)
+    t2 = threading.Thread(target=r2.navigate,
+                          args=(*S_IN,  YAW_WEST), daemon=True)
+    t1.start(); t2.start()
+
+    # Monitor distance until yield threshold
+    yield_pos2 = None
+    deadline   = time.time() + TIMEOUT
     while time.time() < deadline:
         dist = gz.distance()
         if dist is not None:
-            sys.stdout.write(f"\r  Gz distance: {dist:.2f} m  (yield trigger < {YIELD_DIST} m)  ")
+            sys.stdout.write(f"\r  Gz distance: {dist:.2f} m  (yield at < {YIELD_DIST} m)  ")
             sys.stdout.flush()
-            if dist < YIELD_DIST and not triggered:
-                triggered = True
-                r2_xy = gz.xy('robot_2')
-                print(f"\n[{ts()}]   PROXIMITY DETECTED — {dist:.2f} m < {YIELD_DIST} m")
+            if dist < YIELD_DIST:
+                yield_pos2 = gz.xy('robot_2')
+                print(f"\n[{ts()}]   PROXIMITY — {dist:.2f} m")
                 break
-        time.sleep(0.3)
-
-    if not triggered:
-        r2_xy = gz.xy('robot_2')
-        print(f"\n[{ts()}]   Proximity trigger not fired within {PHASE_TIMEOUT}s.")
-        print(  f"  (RMF may have successfully held one robot at the lane entry.)")
-        print(  f"  Continuing to wait for task completion...")
+        time.sleep(0.25)
     else:
-        # ── Phase 3: Application-layer yield ────────────────────────────────
-        r2_pos_str = f"({r2_xy[0]:.2f},{r2_xy[1]:.2f})" if r2_xy else "(unknown)"
-        print(f"[{ts()}] === Phase 3: Application yield ===")
-        print(  f"  robot_2 held at {r2_pos_str} for {YIELD_HOLD:.0f} s")
-        print(  f"  robot_1 continues — watch RPP slow as it passes robot_2's body")
+        print(f"\n[{ts()}]   No proximity within {TIMEOUT}s — proceeding")
 
-        hold_thread = threading.Thread(
-            target=hold_robot2, args=(z, YIELD_HOLD), daemon=True)
-        hold_thread.start()
+    # ─────────────────────────────────────────────────────────────────────────
+    # Phase 2 — Application yield: robot_2 retreats east to clear corridor
+    # ─────────────────────────────────────────────────────────────────────────
+    print(f"\n[{ts()}] === Phase 2: Application yield ===")
+    pos2 = gz.xy('robot_2') or yield_pos2 or S_OUT
+    print(  f"  [Layer 3] robot_2 at ({pos2[0]:.2f},{pos2[1]:.2f}) — "
+             f"retreating east to {RETREAT_PT} to clear path for robot_1")
+    print(  f"  robot_1 continues east; watch LiDAR avoidance back off as robot_2 retreats")
 
-        for remaining in range(int(YIELD_HOLD), 0, -1):
-            dist = gz.distance()
-            d_str = f"{dist:.2f}m" if dist else "?"
-            sys.stdout.write(f"\r  Yield: {remaining:3d}s remaining | Gz dist: {d_str}  ")
-            sys.stdout.flush()
-            time.sleep(1)
-        hold_thread.join()
-        print(f"\n[{ts()}]   Yield complete — clearing costmaps")
+    # Brief zero-vel hold while robot_2 goal is re-issued
+    hold_t = threading.Thread(target=hold_zero_vel,
+                              args=(z, 'robot_2', 2.0), daemon=True)
+    hold_t.start()
+    hold_t.join()
 
-        # Clear costmaps so stale obstacle cells from yield don't block replanning
-        clear_pub_1 = z.declare_publisher('robot_1/clear_costmaps')
-        clear_pub_2 = z.declare_publisher('robot_2/clear_costmaps')
-        for _ in range(3):
-            clear_pub_1.put(b'clear')
-            clear_pub_2.put(b'clear')
-            time.sleep(0.5)
-        clear_pub_1.undeclare()
-        clear_pub_2.undeclare()
-        print(f"[{ts()}]   Costmaps cleared — robot_2 resuming via RMF task")
+    # robot_2 retreats east — sends a new Nav2 goal eastward
+    retreat_thread = threading.Thread(
+        target=r2.navigate, args=(*RETREAT_PT, YAW_EAST), daemon=True)
+    retreat_thread.start()
 
-    # ── Phase 4: Wait for completion ─────────────────────────────────────────
-    print(f"\n[{ts()}] === Phase 4: Both robots routing to final swap positions ===")
-    print(  f"  Monitoring Gz ground-truth until both reach targets (Δ < 0.3 m)...")
+    # robot_1 continues east; monitor until robot_2 is clear (x > S_OUT[0])
+    print(f"[{ts()}]   Waiting for robot_2 to clear east of s_out...")
+    clear_deadline = time.time() + 60.0
+    while time.time() < clear_deadline:
+        p2 = gz.xy('robot_2')
+        p1 = gz.xy('robot_1')
+        if p2 and p2[0] > S_OUT[0] - 0.2:
+            print(f"[{ts()}]   robot_2 cleared at ({p2[0]:.2f},{p2[1]:.2f}) — corridor open")
+            break
+        sys.stdout.write(
+            f"\r  robot_2 retreating: ({p2[0]:.2f},{p2[1]:.2f}) | "
+            f"robot_1 approaching: ({p1[0]:.2f},{p1[1]:.2f})  " if p2 and p1 else "")
+        sys.stdout.flush()
+        time.sleep(0.5)
+    print()
 
-    deadline = time.time() + PHASE_TIMEOUT
-    while time.time() < deadline:
-        p1_xy = gz.xy('robot_1')
-        p2_xy = gz.xy('robot_2')
-        if p1_xy and p2_xy:
-            d1 = math.sqrt((p1_xy[0]-ROBOT2_HOME[0])**2 + (p1_xy[1]-ROBOT2_HOME[1])**2)
-            d2 = math.sqrt((p2_xy[0]-ROBOT1_HOME[0])**2 + (p2_xy[1]-ROBOT1_HOME[1])**2)
-            sys.stdout.write(
-                f"\r  robot_1→robot_2_home Δ={d1:.2f}m | "
-                f"robot_2→robot_1_home Δ={d2:.2f}m  ")
-            sys.stdout.flush()
-            if d1 < 0.30 and d2 < 0.30:
-                print(f"\n[{ts()}]   Both robots reached targets!")
-                break
-        time.sleep(1)
-    else:
-        print(f"\n[{ts()}]   Phase 4 timed out — reporting current positions")
+    retreat_thread.join(timeout=5.0)
 
-    # ── Final report ─────────────────────────────────────────────────────────
-    print(f"\n[{ts()}] === Final positions (Gazebo ground truth) ===")
-    p1_xy = gz.xy('robot_1')
-    p2_xy = gz.xy('robot_2')
-    if p1_xy:
-        d1 = math.sqrt((p1_xy[0]-ROBOT2_HOME[0])**2 + (p1_xy[1]-ROBOT2_HOME[1])**2)
-        print(f"  robot_1 Gz  at ({p1_xy[0]:.2f},{p1_xy[1]:.2f})"
-              f"  Δ={d1:.2f}m from target {ROBOT2_HOME}")
-    if p2_xy:
-        d2 = math.sqrt((p2_xy[0]-ROBOT1_HOME[0])**2 + (p2_xy[1]-ROBOT1_HOME[1])**2)
-        print(f"  robot_2 Gz  at ({p2_xy[0]:.2f},{p2_xy[1]:.2f})"
-              f"  Δ={d2:.2f}m from target {ROBOT1_HOME}")
+    # Clear costmaps so stale robot_2 obstacle cells don't block robot_1's path
+    print(f"[{ts()}]   Clearing costmaps...")
+    clear_costmaps(z, 'robot_1')
+    clear_costmaps(z, 'robot_2')
 
-    # Fleet state positions
-    f1 = fleet_monitor.pos('robot_1')
-    f2 = fleet_monitor.pos('robot_2')
-    if f1:
-        print(f"  robot_1 RMF at ({f1[0]:.2f},{f1[1]:.2f})  (fleet_states)")
-    if f2:
-        print(f"  robot_2 RMF at ({f2[0]:.2f},{f2[1]:.2f})  (fleet_states)")
+    # ─────────────────────────────────────────────────────────────────────────
+    # Phase 3 — Both route to final swap positions
+    # ─────────────────────────────────────────────────────────────────────────
+    print(f"\n[{ts()}] === Phase 3: Route to final swap positions ===")
+    print(  f"  robot_1 → robot_2_home {ROBOT2_HOME}")
+    print(  f"  robot_2 → robot_1_home {ROBOT1_HOME}")
+
+    # Wait for t1 (robot_1 s_out goal) to complete before sending final goal
+    t1.join(timeout=60.0)
+
+    t3 = threading.Thread(target=r1.navigate,
+                          args=(*ROBOT2_HOME,), daemon=True)
+    t4 = threading.Thread(target=r2.navigate,
+                          args=(*ROBOT1_HOME,), daemon=True)
+    t3.start()
+    time.sleep(3)   # slight stagger so routes don't conflict in the transition area
+    t4.start()
+    t3.join(); t4.join()
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Phase 4 — Final report
+    # ─────────────────────────────────────────────────────────────────────────
+    print(f"\n[{ts()}] === Phase 4: Final positions (Gz ground truth) ===")
+    p1 = gz.xy('robot_1'); p2 = gz.xy('robot_2')
+    if p1:
+        d1 = math.sqrt((p1[0]-ROBOT2_HOME[0])**2 + (p1[1]-ROBOT2_HOME[1])**2)
+        print(f"  robot_1 Gz  at ({p1[0]:.2f},{p1[1]:.2f})  Δ={d1:.2f}m from {ROBOT2_HOME}")
+    if p2:
+        d2 = math.sqrt((p2[0]-ROBOT1_HOME[0])**2 + (p2[1]-ROBOT1_HOME[1])**2)
+        print(f"  robot_2 Gz  at ({p2[0]:.2f},{p2[1]:.2f})  Δ={d2:.2f}m from {ROBOT1_HOME}")
+
+    f1 = fleet._pos.get('robot_1'); f2 = fleet._pos.get('robot_2')
+    if f1: print(f"  robot_1 RMF at ({f1[0]:.2f},{f1[1]:.2f})  (fleet_states)")
+    if f2: print(f"  robot_2 RMF at ({f2[0]:.2f},{f2[1]:.2f})  (fleet_states)")
 
     print(f"\n[{ts()}] Demo complete.")
     z.close()

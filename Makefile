@@ -232,7 +232,7 @@ dispatch-collision-swap: ## Collision-avoidance swap: restart pods, wait for rea
 	      oc exec -n $$NS $$NAV1 -c nav2 -- bash -c \
 	        'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash; \
 	         ros2 topic pub /initialpose geometry_msgs/msg/PoseWithCovarianceStamped \
-	           "{header:{frame_id:map},pose:{pose:{position:{x:0.0,y:0.0},orientation:{w:1.0}},covariance:[0.01,0,0,0,0,0,0,0.01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.005]}}" \
+	           "{header:{frame_id:map},pose:{pose:{position:{x:-2.0,y:-0.5},orientation:{w:1.0}},covariance:[0.01,0,0,0,0,0,0,0.01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.005]}}" \
 	           --times 3 2>/dev/null; sleep 4; \
 	         timeout 30 ros2 service call /lifecycle_manager_navigation/manage_nodes \
 	           nav2_msgs/srv/ManageLifecycleNodes "{command:2}" 2>/dev/null || true' 2>/dev/null & \
@@ -242,7 +242,7 @@ dispatch-collision-swap: ## Collision-avoidance swap: restart pods, wait for rea
 	         QZ=$$(python3 -c "import math; print(math.sin(math.pi/2))"); \
 	         QW=$$(python3 -c "import math; print(math.cos(math.pi/2))"); \
 	         ros2 topic pub /initialpose geometry_msgs/msg/PoseWithCovarianceStamped \
-	           "{header:{frame_id:map},pose:{pose:{position:{x:0.0,y:0.0},orientation:{z:$${QZ},w:$${QW}}},covariance:[0.01,0,0,0,0,0,0,0.01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.005]}}" \
+	           "{header:{frame_id:map},pose:{pose:{position:{x:2.0,y:0.5},orientation:{z:$${QZ},w:$${QW}}},covariance:[0.01,0,0,0,0,0,0,0.01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.005]}}" \
 	           --times 3 2>/dev/null; sleep 4; \
 	         timeout 30 ros2 service call /lifecycle_manager_navigation/manage_nodes \
 	           nav2_msgs/srv/ManageLifecycleNodes "{command:2}" 2>/dev/null || true' 2>/dev/null & \
@@ -342,7 +342,7 @@ rerun-patrol: ## Reset and re-dispatch patrol without a full pod restart
 	-oc exec -n $(NAMESPACE) $(NAV1POD) -c nav2 -- bash -c \
 	  'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash; \
 	   ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
-	     "{header: {frame_id: map}, pose: {pose: {position: {x: 0.0, y: 0.0}, orientation: {w: 1.0}}, \
+	     "{header: {frame_id: map}, pose: {pose: {position: {x: -2.0, y: -0.5}, orientation: {w: 1.0}}, \
 	       covariance: [0.02,0,0,0,0,0, 0,0.02,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0.005]}}" \
 	     --once 2>/dev/null' &
 	-oc exec -n $(NAMESPACE) $(NAV2POD) -c nav2 -- bash -c \
@@ -350,7 +350,7 @@ rerun-patrol: ## Reset and re-dispatch patrol without a full pod restart
 	   QZ=$$(python3 -c "import math; print(math.sin(math.pi/2))"); \
 	   QW=$$(python3 -c "import math; print(math.cos(math.pi/2))"); \
 	   ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
-	     "{header: {frame_id: map}, pose: {pose: {position: {x: 0.0, y: 0.0}, orientation: {z: $${QZ}, w: $${QW}}}, \
+	     "{header: {frame_id: map}, pose: {pose: {position: {x: 2.0, y: 0.5}, orientation: {z: $${QZ}, w: $${QW}}}, \
 	       covariance: [0.02,0,0,0,0,0, 0,0.02,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0.005]}}" \
 	     --once 2>/dev/null' &
 	sleep 5
