@@ -446,17 +446,31 @@ if [ "${SLAM_BUILD_MODE:-0}" = "1" ]; then
 else
   # ── LOCALIZATION mode ─────────────────────────────────────────────────────
   # slam_toolbox loads saved posegraph; map_start_at_dock places robot at origin.
+  # The posegraph deserialization can exceed the DDS service response timeout,
+  # causing the change_state response to be dropped even though the node loaded
+  # the posegraph. We re-trigger configure/activate manually if TF is missing.
   echo "[nav2-pod/${ROBOT_NAME}] Localization mode: waiting for slam_toolbox + map→odom TF..."
   for i in $(seq 1 180); do
     if ros2 node list 2>/dev/null | grep -qE "^(/slam_toolbox|/${ROBOT_NAME}/slam_toolbox)$"; then
-      echo "[nav2-pod/${ROBOT_NAME}] slam_toolbox detected (attempt ${i}), waiting for TF..."
+      echo "[nav2-pod/${ROBOT_NAME}] slam_toolbox detected (attempt ${i}), waiting for posegraph..."
+      sleep 8   # give posegraph time to deserialize before checking TF
+      if timeout 8 ros2 run tf2_ros tf2_echo "map" "odom" 2>&1 | grep -q "Translation"; then
+        echo "[nav2-pod/${ROBOT_NAME}] Localization active — navigation stack ready."
+        break 2
+      fi
+      # TF not yet — the lifecycle change_state response may have timed out during
+      # posegraph deserialization. Re-trigger configure/activate manually.
+      echo "[nav2-pod/${ROBOT_NAME}] Re-triggering slam_toolbox lifecycle transitions..."
+      timeout 30 ros2 lifecycle set /slam_toolbox configure 2>/dev/null || true
       sleep 5
-      for k in $(seq 1 30); do
+      timeout 30 ros2 lifecycle set /slam_toolbox activate 2>/dev/null || true
+      sleep 5
+      for k in $(seq 1 20); do
         if timeout 8 ros2 run tf2_ros tf2_echo "map" "odom" 2>&1 | grep -q "Translation"; then
-          echo "[nav2-pod/${ROBOT_NAME}] Localization active — navigation stack ready."
-          break 2
+          echo "[nav2-pod/${ROBOT_NAME}] Localization active after re-trigger (${k}) — ready."
+          break 3
         fi
-        echo "[nav2-pod/${ROBOT_NAME}] Waiting for map→odom TF (attempt ${k}/30)..."
+        echo "[nav2-pod/${ROBOT_NAME}] Waiting for map->odom TF after re-trigger (${k}/20)..."
         sleep 5
       done
       break
