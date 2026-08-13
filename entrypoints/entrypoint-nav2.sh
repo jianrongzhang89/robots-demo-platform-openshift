@@ -319,6 +319,51 @@ COSTMAP_EOF
 while true; do python3 /tmp/costmap_clear.py 2>/dev/null || true; sleep 2; done &
 echo "[nav2-pod/${ROBOT_NAME}] costmap clearing service started"
 
+# slam_toolbox → amcl_pose relay.
+# slam_toolbox publishes /pose (PoseWithCovarianceStamped) in its own MAP frame
+# (origin = robot spawn = world INITIAL_X, INITIAL_Y).  The free_fleet adapter
+# subscribes to robot_N/amcl_pose via Zenoh and expects world-frame coordinates.
+# This relay converts map frame to world frame by adding the spawn offset.
+cat > /tmp/slam_amcl_relay.py << 'SLAM_RELAY_EOF'
+import rclpy, os, time
+from rclpy.node import Node
+from geometry_msgs.msg import PoseWithCovarianceStamped
+
+SPAWN_X = float(os.environ.get('INITIAL_X', '0.0'))
+SPAWN_Y = float(os.environ.get('INITIAL_Y', '0.0'))
+
+class SlamAmclRelay(Node):
+    def __init__(self):
+        super().__init__('slam_amcl_relay')
+        self._pub = self.create_publisher(
+            PoseWithCovarianceStamped, '/amcl_pose', 10)
+        self.create_subscription(
+            PoseWithCovarianceStamped, '/pose', self._cb, 10)
+        self.get_logger().info(
+            f'slam→amcl relay: adding spawn offset ({SPAWN_X},{SPAWN_Y})')
+
+    def _cb(self, msg):
+        out = PoseWithCovarianceStamped()
+        out.header = msg.header
+        out.header.frame_id = 'map'
+        out.pose = msg.pose
+        # Convert slam_toolbox map frame → world frame:
+        # world = map_pos + spawn_offset
+        # (slam_toolbox map origin = spawn = world INITIAL_X/Y)
+        out.pose.pose.position.x = msg.pose.pose.position.x + SPAWN_X
+        out.pose.pose.position.y = msg.pose.pose.position.y + SPAWN_Y
+        self._pub.publish(out)
+
+while True:
+    try:
+        rclpy.init(args=['--ros-args', '-p', 'use_sim_time:=true'])
+        rclpy.spin(SlamAmclRelay())
+    except BaseException:
+        time.sleep(2)
+SLAM_RELAY_EOF
+while true; do python3 /tmp/slam_amcl_relay.py 2>/dev/null || true; sleep 2; done &
+echo "[nav2-pod/${ROBOT_NAME}] slam→amcl_pose relay started (adds spawn offset to map-frame pose)"
+
 # cmd_vel Zenoh publisher — bypasses zenoh-bridge-ros2dds for cmd_vel.
 # The bridge's cmd_vel Publisher route gets garbage-collected at ~82 s
 # (Zenoh broker idle-subscriber timer), stopping velocity commands from
