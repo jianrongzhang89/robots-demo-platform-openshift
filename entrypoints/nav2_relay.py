@@ -380,15 +380,15 @@ class NavRelay(Node):
 
         with self._lock:
             if self._handle is handle:
-                # This result is for our CURRENT active Nav2 goal — clear state.
-                # Use the most-recently-transferred rmf_id so RMF gets the result
-                # for the goal it is currently tracking (after same-dest transfers
-                # A → A′ → A″, _rmf_id is A″ even though the handle belongs to A).
                 report_id = self._rmf_id if self._rmf_id is not None else rmf_id
                 completed_dest = self._dest
+                # On FAILED: keep _dest so retries are seen as currently_active
+                # and RECENT_SENT_WINDOW does not fire fake-OK for the same dest.
+                # On SUCCESS: clear state so the next goal can be tracked.
                 self._rmf_id = None
-                self._dest = None
                 self._handle = None
+                if success:
+                    self._dest = None
             else:
                 # Stale result from a superseded goal (e.g., the patrol leg-N goal
                 # completes after leg N+1 has already started). Do NOT clear state.
