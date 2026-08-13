@@ -408,13 +408,17 @@ echo "[nav2-pod/${ROBOT_NAME}] Waiting for AMCL node to load..."
       for k in $(seq 1 60); do
         ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
           "{header: {frame_id: 'map'}, pose: {pose: {position: {x: ${INITIAL_X}, y: ${INITIAL_Y}, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: ${INITIAL_QZ}, w: ${INITIAL_QW}}}, covariance: [0.01, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01]}}" \
-          --times 1 --qos-reliability best_effort 2>/dev/null || true
-        if timeout 3 ros2 run tf2_ros tf2_echo "map" "odom" 2>&1 | grep -q "Translation"; then
+          --times 3 --qos-reliability best_effort 2>/dev/null || true
+        # Wait 3s after publish — AMCL publishes map→odom on the next scan.
+        # tf2_echo needs DDS discovery time (~2-3s) before receiving TF.
+        # 8s total check window handles both delays reliably.
+        sleep 3
+        if timeout 8 ros2 run tf2_ros tf2_echo "map" "odom" 2>&1 | grep -q "Translation"; then
           echo "[nav2-pod/${ROBOT_NAME}] Localization active — navigation stack ready."
           break
         fi
         echo "[nav2-pod/${ROBOT_NAME}] Waiting for map->odom TF (attempt ${k}/60)..."
-        sleep 5
+        sleep 2
       done
 
       timeout 8 ros2 param set /local_costmap/local_costmap transform_tolerance 10.0 2>/dev/null || true

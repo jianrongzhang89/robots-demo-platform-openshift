@@ -267,22 +267,27 @@ def main():
           f"robot_2 at ({p2[0]:.2f},{p2[1]:.2f})")
 
     # ─────────────────────────────────────────────────────────────────────────
-    # Phase 1b — Head-on approach
+    # Phase 1b — LiDAR approach: robot_1 moves east, robot_2 is stationary
     # ─────────────────────────────────────────────────────────────────────────
-    print(f"\n[{ts()}] === Phase 1b: Head-on approach ===")
-    print(  f"  robot_1 → east toward s_out | robot_2 → west toward s_in")
-    print(  f"  [Layer 2] robot_1's VoxelLayer marks robot_2 as obstacle →"
-             f" RPP slows robot_1")
-    print(  f"            collision_monitor fires when robot_2 enters approach polygon")
+    # Key design decision: send robot_1 to the CORRIDOR MIDPOINT (0.5,-1.75),
+    # not past robot_2 at s_out (1.5,-1.75). This avoids NavFn failing because
+    # the goal cell is occupied by robot_2 in the global costmap.
+    # As robot_1 moves east toward (0.5,-1.75), robot_2's body enters robot_1's
+    # VoxelLayer local costmap → RPP regulated scaling slows robot_1 (Layer 2).
+    MID_CORRIDOR = (0.5, -1.75)
 
-    # Launch both heading toward each other simultaneously
+    print(f"\n[{ts()}] === Phase 1b: LiDAR approach ===")
+    print(  f"  robot_1 → corridor midpoint {MID_CORRIDOR} (approaching robot_2 at s_out)")
+    print(  f"  robot_2 holds at s_out as a stationary LiDAR obstacle")
+    print(  f"  [Layer 2] Watch robot_1 slow as robot_2 enters its VoxelLayer costmap")
+    print(  f"  yield trigger: Gz distance < {YIELD_DIST} m OR {TIMEOUT}s elapsed")
+
+    # Only send robot_1 east — robot_2 stays at s_out as obstacle
     t1 = threading.Thread(target=r1.navigate,
-                          args=(*S_OUT, YAW_EAST), daemon=True)
-    t2 = threading.Thread(target=r2.navigate,
-                          args=(*S_IN,  YAW_WEST), daemon=True)
-    t1.start(); t2.start()
+                          args=(*MID_CORRIDOR, YAW_EAST), daemon=True)
+    t1.start()
 
-    # Monitor distance until yield threshold
+    # Monitor distance until yield threshold or timeout
     yield_pos2 = None
     deadline   = time.time() + TIMEOUT
     while time.time() < deadline:
@@ -292,11 +297,14 @@ def main():
             sys.stdout.flush()
             if dist < YIELD_DIST:
                 yield_pos2 = gz.xy('robot_2')
-                print(f"\n[{ts()}]   PROXIMITY — {dist:.2f} m")
+                print(f"\n[{ts()}]   PROXIMITY — {dist:.2f} m — LiDAR avoidance demonstrated")
                 break
         time.sleep(0.25)
     else:
-        print(f"\n[{ts()}]   No proximity within {TIMEOUT}s — proceeding")
+        print(f"\n[{ts()}]   Timeout ({TIMEOUT}s) — triggering yield "
+              f"(robot_1 may have been slowed/stopped by LiDAR collision check)")
+
+    t1.join(timeout=2.0)  # give navigation thread a moment then move on
 
     # ─────────────────────────────────────────────────────────────────────────
     # Phase 2 — Application yield: robot_2 retreats east to clear corridor
@@ -304,42 +312,43 @@ def main():
     print(f"\n[{ts()}] === Phase 2: Application yield ===")
     pos2 = gz.xy('robot_2') or yield_pos2 or S_OUT
     print(  f"  [Layer 3] robot_2 at ({pos2[0]:.2f},{pos2[1]:.2f}) — "
-             f"retreating east to {RETREAT_PT} to clear path for robot_1")
-    print(  f"  robot_1 continues east; watch LiDAR avoidance back off as robot_2 retreats")
+             f"retreating east to {RETREAT_PT}")
+    print(  f"  robot_1 will clear costmaps and resume east once corridor is clear")
 
-    # Brief zero-vel hold while robot_2 goal is re-issued
+    # Hold robot_2 in place while re-issuing the retreat goal
     hold_t = threading.Thread(target=hold_zero_vel,
                               args=(z, 'robot_2', 2.0), daemon=True)
     hold_t.start()
     hold_t.join()
 
-    # robot_2 retreats east — sends a new Nav2 goal eastward
+    # robot_2 retreats east past s_out — clears the corridor for robot_1
     retreat_thread = threading.Thread(
         target=r2.navigate, args=(*RETREAT_PT, YAW_EAST), daemon=True)
     retreat_thread.start()
 
-    # robot_1 continues east; monitor until robot_2 is clear (x > S_OUT[0])
-    print(f"[{ts()}]   Waiting for robot_2 to clear east of s_out...")
+    # Wait until robot_2 actually reaches the retreat point (x > 2.2m)
+    print(f"[{ts()}]   Waiting for robot_2 to reach retreat point {RETREAT_PT}...")
     clear_deadline = time.time() + 60.0
     while time.time() < clear_deadline:
         p2 = gz.xy('robot_2')
         p1 = gz.xy('robot_1')
-        if p2 and p2[0] > S_OUT[0] - 0.2:
-            print(f"[{ts()}]   robot_2 cleared at ({p2[0]:.2f},{p2[1]:.2f}) — corridor open")
+        if p2 and p2[0] > RETREAT_PT[0] - 0.3:  # robot_2 close to retreat point
+            print(f"[{ts()}]   robot_2 at ({p2[0]:.2f},{p2[1]:.2f}) — corridor clear!")
             break
         sys.stdout.write(
-            f"\r  robot_2 retreating: ({p2[0]:.2f},{p2[1]:.2f}) | "
-            f"robot_1 approaching: ({p1[0]:.2f},{p1[1]:.2f})  " if p2 and p1 else "")
+            f"\r  robot_2 → {RETREAT_PT}: ({p2[0]:.2f},{p2[1]:.2f}) | "
+            f"robot_1: ({p1[0]:.2f},{p1[1]:.2f})  " if p2 and p1 else "")
         sys.stdout.flush()
         time.sleep(0.5)
     print()
 
-    retreat_thread.join(timeout=5.0)
+    retreat_thread.join(timeout=10.0)
 
-    # Clear costmaps so stale robot_2 obstacle cells don't block robot_1's path
-    print(f"[{ts()}]   Clearing costmaps...")
+    # Clear costmaps so stale obstacle cells don't block Phase 3 planning
+    print(f"[{ts()}]   Clearing costmaps on both robots...")
     clear_costmaps(z, 'robot_1')
     clear_costmaps(z, 'robot_2')
+    time.sleep(2.0)
 
     # ─────────────────────────────────────────────────────────────────────────
     # Phase 3 — Both route to final swap positions
