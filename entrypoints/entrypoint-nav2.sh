@@ -129,18 +129,44 @@ pserver.setdefault('GridBased', {})['use_astar'] = True
 pserver.setdefault('GridBased', {})['allow_unknown'] = True
 pserver.setdefault('GridBased', {})['tolerance'] = 0.5  # accept path ending within 0.5m of goal
 
-# ── AMCL for localization using the pre-built pgm map (full sandbox coverage).
-# AMCL with the pgm map covers the entire tb3_sandbox from the start, allowing
-# Nav2 to plan paths to any waypoint without goal-outside-bounds errors.
-# slam_toolbox posegraph coverage is limited to areas near each robot's spawn,
-# causing goal-coordinates-outside-bounds for south-corridor goals when robots
-# spawn far from the corridor. AMCL's localization drift in the south outer
-# corridor does not affect LiDAR-based collision detection (which operates in the
-# odom/sensor frame) — it only affects pose estimate precision.
-amcl_ros2 = p.setdefault('amcl', {}).setdefault('ros__parameters', {})
-amcl_ros2['base_frame_id']   = 'base_footprint'
-amcl_ros2['odom_frame_id']   = 'odom'
-amcl_ros2['global_frame_id'] = 'map'
+# ── Localization: AMCL (default) or slam_toolbox mapping (SLAM_BUILD_MODE=1).
+# SLAM_BUILD_MODE=1 is used when rebuilding posegraphs: robots explore the
+# sandbox in mapping mode so slam_toolbox records the full layout. Once the
+# exploration is complete and posegraphs are serialized, the image is rebuilt
+# with localization mode using the new full-coverage posegraphs.
+import os as _os
+if _os.environ.get('SLAM_BUILD_MODE') == '1':
+    # slam_toolbox MAPPING mode: build a new posegraph from scratch.
+    # Robots must be driven through the full sandbox before serializing.
+    slam = p.setdefault('slam_toolbox', {}).setdefault('ros__parameters', {})
+    slam['use_sim_time']             = True
+    slam['odom_frame']               = 'odom'
+    slam['map_frame']                = 'map'
+    slam['base_frame']               = 'base_footprint'
+    slam['scan_topic']               = '/scan'
+    slam['mode']                     = 'mapping'
+    slam['debug_logging']            = False
+    slam['throttle_scans']           = 1
+    slam['transform_publish_period'] = 0.02
+    slam['map_update_interval']      = 5.0
+    slam['resolution']               = 0.05
+    slam['max_laser_range']          = 3.5
+    slam['minimum_time_interval']    = 0.5
+    slam['transform_timeout']        = 0.2
+    slam['tf_buffer_duration']       = 30.0
+    slam['stack_size_to_use']        = 40000000
+    slam['enable_interactive_mode']  = False
+    slam['do_loop_closing']          = True
+    slam['loop_search_maximum_distance'] = 4.0
+    slam['loop_match_minimum_chain_size'] = 10
+    slam['link_scan_maximum_distance'] = 1.5
+    print('[nav2-pod] SLAM BUILD MODE: slam_toolbox mapping (will build posegraph from exploration)')
+else:
+    # AMCL for localization using the pre-built pgm map (full sandbox coverage).
+    amcl_ros2 = p.setdefault('amcl', {}).setdefault('ros__parameters', {})
+    amcl_ros2['base_frame_id']   = 'base_footprint'
+    amcl_ros2['odom_frame_id']   = 'odom'
+    amcl_ros2['global_frame_id'] = 'map'
 
 # ── BT XML: use single-plan-then-follow (no 1 Hz replanning).
 # navigate_to_pose_w_replanning_and_recovery replans every sim-second;
@@ -199,7 +225,8 @@ for lm_name in ['lifecycle_manager_navigation', 'lifecycle_manager_localization'
 
 with open('${CUSTOM_PARAMS}', 'w') as f:
     yaml.dump(p, f, default_flow_style=False)
-print('[nav2-pod] Patched nav2 params: AMCL + A* + RPP + collision_monitor(min_pts=12) + 300s bond_timeout')
+mode_label = 'SLAM-MAPPING' if _os.environ.get('SLAM_BUILD_MODE') == '1' else 'AMCL'
+print(f'[nav2-pod] Patched nav2 params: {mode_label} + A* + RPP + 300s bond_timeout')
 " && PARAMS_ARG="params_file:=${CUSTOM_PARAMS}" || { echo "[nav2-pod/${ROBOT_NAME}] Python patch FAILED:"; cat /tmp/py_err_${ROBOT_NAME}.log >&1; PARAMS_ARG=""; }
 # Verify the file was actually created before using it
 [ -f "${CUSTOM_PARAMS}" ] || { echo "[nav2-pod/${ROBOT_NAME}] WARNING: custom params file not created, using stock params"; PARAMS_ARG=""; }
@@ -207,12 +234,22 @@ else
   PARAMS_ARG=""
 fi
 
-ros2 launch nav2_bringup bringup_launch.py \
-  use_sim_time:=True \
-  autostart:=True \
-  use_composition:=False \
-  map:="${BRINGUP_DIR}/maps/tb3_sandbox.yaml" \
-  ${PARAMS_ARG} &
+if [ "${SLAM_BUILD_MODE:-0}" = "1" ]; then
+  # slam_toolbox mapping mode: no pre-built map needed
+  ros2 launch nav2_bringup bringup_launch.py \
+    use_sim_time:=True \
+    autostart:=True \
+    use_composition:=False \
+    slam:=True \
+    ${PARAMS_ARG} &
+else
+  ros2 launch nav2_bringup bringup_launch.py \
+    use_sim_time:=True \
+    autostart:=True \
+    use_composition:=False \
+    map:="${BRINGUP_DIR}/maps/tb3_sandbox.yaml" \
+    ${PARAMS_ARG} &
+fi
 NAV2_PID=$!
 
 # odom→base_footprint TF broadcaster
@@ -393,8 +430,20 @@ CMDVEL_EOF
 while true; do python3 /tmp/cmdvel_zenoh_pub.py 2>/dev/null || true; sleep 2; done &
 echo "[nav2-pod/${ROBOT_NAME}] cmd_vel Zenoh publisher started"
 
-# Wait for AMCL to load, then set initial pose so localization can start.
+# Wait for localization node (AMCL or slam_toolbox) to publish map→odom TF.
 (
+if [ "${SLAM_BUILD_MODE:-0}" = "1" ]; then
+  # In slam mapping mode, slam_toolbox publishes TF automatically — just wait.
+  echo "[nav2-pod/${ROBOT_NAME}] SLAM mapping mode: waiting for slam_toolbox to start..."
+  for i in $(seq 1 180); do
+    if ros2 node list 2>/dev/null | grep -qE "^(/slam_toolbox|/${ROBOT_NAME}/slam_toolbox)$"; then
+      echo "[nav2-pod/${ROBOT_NAME}] slam_toolbox started (attempt ${i}). Ready for exploration."
+      break
+    fi
+    sleep 5
+  done
+  echo "[nav2-pod/${ROBOT_NAME}] slam_toolbox ready — robot can now be driven for mapping."
+else
 echo "[nav2-pod/${ROBOT_NAME}] Waiting for AMCL node to load..."
   for i in $(seq 1 180); do
     if ros2 node list 2>/dev/null | grep -qE "^(/amcl|/${ROBOT_NAME}/amcl)$"; then
@@ -478,6 +527,7 @@ while True:
     fi
     sleep 5
   done
+fi  # end of SLAM_BUILD_MODE branch
 ) &
 
 echo "[nav2-pod/${ROBOT_NAME}] Nav2 pod started."

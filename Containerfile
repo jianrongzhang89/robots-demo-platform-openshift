@@ -1,7 +1,12 @@
 FROM registry.fedoraproject.org/fedora:43
 
+# SLAM_BUILD_MODE=1 switches nav2 pods to slam_toolbox mapping mode.
+# Set at build time: podman build --build-arg SLAM_BUILD_MODE=1 ...
+# Default empty = production mode (AMCL or slam_toolbox localization).
+ARG SLAM_BUILD_MODE=
 ENV TURTLEBOT3_MODEL=waffle \
-    ROS_DISTRO=jazzy
+    ROS_DISTRO=jazzy \
+    SLAM_BUILD_MODE=${SLAM_BUILD_MODE}
 
 RUN dnf install -y dnf-plugins-core && \
     dnf copr enable -y tavie/ros2

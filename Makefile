@@ -91,6 +91,54 @@ lint: ## Lint the Helm chart
 package: ## Package the Helm chart into a .tgz
 	helm package $(CHART) --destination dist/
 
+##@ SLAM Map Building
+
+.PHONY: build-slam-maps
+build-slam-maps: ## One-time: rebuild slam_toolbox posegraphs with full sandbox coverage
+	@echo "=== SLAM posegraph rebuild (one-time setup) ==="
+	@echo "Step 1: Building mapping image (swap-nav2-slam-mapping) with SLAM_BUILD_MODE=1 baked in..."
+	$(PODMAN) build --platform linux/amd64 --build-arg SLAM_BUILD_MODE=1 \
+	  -t $(REGISTRY)/$(IMAGE):swap-nav2-slam-mapping -f Containerfile .
+	$(PODMAN) push $(REGISTRY)/$(IMAGE):swap-nav2-slam-mapping
+	@echo "Step 2: Deploying mapping image..."
+	helm upgrade $(RELEASE) $(CHART) \
+	  --namespace $(NAMESPACE) \
+	  --reuse-values \
+	  --set image.repository=$(REGISTRY)/$(IMAGE) \
+	  --set image.tag=swap-nav2-slam-mapping
+	@echo "Step 3: Waiting for pods to restart..."
+	$(MAKE) restart ROS_DEMO_NS=$(ROS_DEMO_NS)
+	oc rollout status deployment/robot-nav-robot-1 -n $(NAMESPACE) --timeout=4m
+	oc rollout status deployment/robot-nav-robot-2 -n $(NAMESPACE) --timeout=4m
+	@echo "Step 4: Running exploration (drives both robots through full sandbox ~10 min)..."
+	@RMFPOD=$$(oc get pod -n $(NAMESPACE) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
+	oc cp demo/build_slam_maps.py $(NAMESPACE)/$$RMFPOD:/tmp/build_slam_maps.py -c rmf-core && \
+	oc exec -n $(NAMESPACE) $$RMFPOD -c rmf-core -- bash -c \
+	  'export HOME=/tmp/ros-home ROS_DEMO_NS=$(NAMESPACE); \
+	   source /opt/ros/jazzy/setup.bash; \
+	   python3 /tmp/build_slam_maps.py'
+	@echo "Step 5: Copying posegraph files from pods..."
+	@NS=$(NAMESPACE); \
+	for robot in robot-1 robot-2; do \
+	  name=$$(echo $$robot | tr '-' '_'); \
+	  POD=$$(oc get pod -n $$NS -l app=robot-nav-$$robot -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
+	  echo "  Copying $${name} posegraph from $$POD..."; \
+	  oc cp $$NS/$$POD:/tmp/$${name}_slam.data slam_maps/$${name}_slam.data -c nav2 2>/dev/null || echo "  WARN: .data not found"; \
+	  oc cp $$NS/$$POD:/tmp/$${name}_slam.posegraph slam_maps/$${name}_slam.posegraph -c nav2 2>/dev/null || echo "  WARN: .posegraph not found"; \
+	done
+	@echo "Step 6: Building production image (swap-nav2-rmf) with new full-coverage posegraphs..."
+	$(PODMAN) build --platform linux/amd64 \
+	  -t $(REGISTRY)/$(IMAGE):swap-nav2-rmf -f Containerfile .
+	$(PODMAN) push $(REGISTRY)/$(IMAGE):swap-nav2-rmf
+	helm upgrade $(RELEASE) $(CHART) \
+	  --namespace $(NAMESPACE) \
+	  --reuse-values \
+	  --set image.repository=$(REGISTRY)/$(IMAGE) \
+	  --set image.tag=swap-nav2-rmf
+	$(MAKE) restart ROS_DEMO_NS=$(ROS_DEMO_NS)
+	@echo "=== Done. New posegraphs in slam_maps/ and baked into swap-nav2-rmf. ==="
+	@echo "    Run 'make dispatch-rmf-swap' to test the LiDAR collision avoidance demo."
+
 ##@ Open-RMF
 
 .PHONY: dispatch-patrol
