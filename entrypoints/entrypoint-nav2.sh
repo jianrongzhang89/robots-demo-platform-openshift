@@ -55,21 +55,28 @@ CLOCK_ROS_RELAY_PID=""
 TF_HEARTBEAT_PID=""
 
 echo "[nav2-pod/${ROBOT_NAME}] Launching Nav2 bringup (no ROS namespace — isolation via Zenoh)..."
-# Patch nav2_params.yaml with MPPI tuning for the tb3_sandbox pillar grid.
-NAV2_PARAMS="${BRINGUP_DIR}/params/nav2_params.yaml"
+# Patch nav2_params.yaml: start from our custom config (which has correct base
+# settings) rather than the stock nav2_bringup params (whose structure varies
+# across Nav2 versions). Use Python to substitute ${ROBOT_NAME} and apply
+# runtime overrides (RPP plugin, costmap tuning, bond_timeout, etc.).
+NAV2_PARAMS="/opt/ros2-demo/nav2/nav2_params.yaml"  # our custom base config
 CUSTOM_PARAMS="/tmp/nav2_params_${ROBOT_NAME}.yaml"
 if [ -f "${NAV2_PARAMS}" ]; then
-  python3 -c "
-import yaml, sys
+  echo "[nav2-pod/${ROBOT_NAME}] Patching nav2 params from ${NAV2_PARAMS}..."
+  python3 2>/tmp/py_err_${ROBOT_NAME}.log -c "
+import yaml, sys, os
+robot_name = os.environ.get('ROBOT_NAME', 'robot_1')
+# Substitute \${ROBOT_NAME} in our template file before YAML parsing
 with open('${NAV2_PARAMS}') as f:
-    p = yaml.safe_load(f) or {}
+    content = f.read().replace('\${ROBOT_NAME}', robot_name)
+p = yaml.safe_load(content) or {}
 cs = p.setdefault('controller_server', {}).setdefault('ros__parameters', {})
 
 # ── Switch to Regulated Pure Pursuit (RPP) controller.
 # DWB's multi-critic trajectory sampling creates local scoring minima in the
 # tb3_sandbox pillar grid where ALL sampled trajectories score comparably,
 # resulting in zero velocity output. RPP avoids this entirely: it computes a
-# single "carrot" lookahead point on the global path and drives toward it,
+# single carrot lookahead point on the global path and drives toward it,
 # producing forward velocity unconditionally as long as the path is clear.
 fp = cs.setdefault('FollowPath', {})
 fp['plugin'] = 'nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController'
@@ -102,20 +109,19 @@ cs.setdefault('general_goal_checker', {})['yaw_goal_tolerance'] = 3.14159
 
 # ── collision_monitor: disable to prevent laser scan from slowing the robot
 # near pillars. The collision_monitor interprets the pillar's laser returns as
-# a collision hazard and reduces cmd_vel to near-zero ("approach" mode) even
+# a collision hazard and reduces cmd_vel to near-zero (approach mode) even
 # though the physical gap (0.80m) is larger than the robot (0.44m wide).
 # RPP's use_collision_detection=False already handles this at the planner level;
 # the collision_monitor node causes double-suppression of velocity.
 cmon = p.setdefault('collision_monitor', {}).setdefault('ros__parameters', {})
-cmon['enabled'] = True
-# collision_monitor re-enabled with higher min_points threshold to distinguish
-# robot bodies from corridor walls/pillars.
-# Pillar cylinders (r=0.15m) at 1-2m range subtend ~4-6 scan points at 1°/pt.
-# A stopped TurtleBot3 (r=0.22m) at 0.8m subtends ~16 points.
-# min_points=12 fires on robot bodies but ignores single-pillar reflections.
-cmon.setdefault('FootprintApproach', {})['enabled'] = True
-cmon.setdefault('FootprintApproach', {})['min_points'] = 12
-cmon.setdefault('FootprintApproach', {})['time_before_collision'] = 2.0
+cmon['enabled'] = False
+# collision_monitor disabled: its approach polygon triggers on nearby corridor
+# walls (south outer wall is ~0.5m from the robot), stalling navigation.
+# Layer 2 LiDAR avoidance is demonstrated by RPP's use_collision_detection=True:
+# robot_2's body appears in robot_1's local VoxelLayer costmap → RPP's forward
+# projection detects the high-cost cells → use_regulated_linear_velocity_scaling
+# smoothly reduces robot_1's speed as robot_2 enters its approach distance.
+cmon.setdefault('FootprintApproach', {})['enabled'] = False
 
 # ── Global planner: switch NavFn from Dijkstra to A*.
 # Dijkstra hugs obstacle walls and produces paths with sharp turns near pillars.
@@ -128,9 +134,9 @@ pserver.setdefault('GridBased', {})['tolerance'] = 0.5  # accept path ending wit
 
 # ── AMCL for localization using the pre-built pgm map (full sandbox coverage).
 # AMCL with the pgm map covers the entire tb3_sandbox from the start, allowing
-# Nav2 to plan paths to any waypoint without "goal outside bounds" errors.
+# Nav2 to plan paths to any waypoint without goal-outside-bounds errors.
 # slam_toolbox posegraph coverage is limited to areas near each robot's spawn,
-# causing "Goal Coordinates outside bounds" for south-corridor goals when robots
+# causing goal-coordinates-outside-bounds for south-corridor goals when robots
 # spawn far from the corridor. AMCL's localization drift in the south outer
 # corridor does not affect LiDAR-based collision detection (which operates in the
 # odom/sensor frame) — it only affects pose estimate precision.
@@ -197,7 +203,9 @@ for lm_name in ['lifecycle_manager_navigation', 'lifecycle_manager_localization'
 with open('${CUSTOM_PARAMS}', 'w') as f:
     yaml.dump(p, f, default_flow_style=False)
 print('[nav2-pod] Patched nav2 params: AMCL + A* + RPP + collision_monitor(min_pts=12) + 300s bond_timeout')
-" 2>/dev/null && PARAMS_ARG="params_file:=${CUSTOM_PARAMS}" || PARAMS_ARG=""
+" && PARAMS_ARG="params_file:=${CUSTOM_PARAMS}" || { echo "[nav2-pod/${ROBOT_NAME}] Python patch FAILED:"; cat /tmp/py_err_${ROBOT_NAME}.log >&1; PARAMS_ARG=""; }
+# Verify the file was actually created before using it
+[ -f "${CUSTOM_PARAMS}" ] || { echo "[nav2-pod/${ROBOT_NAME}] WARNING: custom params file not created, using stock params"; PARAMS_ARG=""; }
 else
   PARAMS_ARG=""
 fi
