@@ -270,8 +270,11 @@ def main():
         r1.navigate(*S_IN,      YAW_EAST, timeout=60.0)
 
     def phase1a_robot2():
-        # Navigate directly to S_OUT — the explored path covers this route
-        r2.navigate(*S_OUT, YAW_WEST, timeout=120.0)
+        # Navigate to the north edge of the south corridor — within posegraph map bounds.
+        # S_OUT (1.5,-1.75) = map(-0.5,-2.25) which is just outside the map's southern
+        # bound (y_min=-2.06). Use (1.5,-1.50) = map(-0.5,-2.00) which is safely inside.
+        R2_ENTRY = (1.5, -1.50)  # world — within robot_2's posegraph map bounds
+        r2.navigate(*R2_ENTRY, YAW_WEST, timeout=120.0)
 
     t1 = threading.Thread(target=phase1a_robot1, daemon=True)
     t2 = threading.Thread(target=phase1a_robot2, daemon=True)
