@@ -464,17 +464,22 @@ else
       fi
       # TF not yet — the lifecycle change_state response may have timed out during
       # posegraph deserialization. Re-trigger configure/activate manually.
-      echo "[nav2-pod/${ROBOT_NAME}] Re-triggering slam_toolbox lifecycle transitions..."
-      timeout 30 ros2 lifecycle set /slam_toolbox configure 2>/dev/null || true
-      sleep 5
-      timeout 30 ros2 lifecycle set /slam_toolbox activate 2>/dev/null || true
-      sleep 5
+      # Publish /initialpose at map (0,0) — the posegraph dock = spawn position.
+      # slam_toolbox in localization mode needs this hint to start scan-matching.
+      # Without it the node is active but waits for a starting pose estimate.
+      echo "[nav2-pod/${ROBOT_NAME}] Publishing initialpose hint to start slam_toolbox scan-matching..."
+      read -r QZ QW < <(python3 -c \
+        "import math; y=${INITIAL_YAW}; print(math.sin(y/2), math.cos(y/2))")
       for k in $(seq 1 20); do
+        ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
+          "{header: {frame_id: map}, pose: {pose: {position: {x: 0.0, y: 0.0, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: ${QZ}, w: ${QW}}}, covariance: [0.25,0,0,0,0,0,0,0.25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.05]}}" \
+          --times 3 2>/dev/null || true
+        sleep 3
         if timeout 8 ros2 run tf2_ros tf2_echo "map" "odom" 2>&1 | grep -q "Translation"; then
-          echo "[nav2-pod/${ROBOT_NAME}] Localization active after re-trigger (${k}) — ready."
+          echo "[nav2-pod/${ROBOT_NAME}] Localization active (attempt ${k}) — slam_toolbox publishing TF."
           break 3
         fi
-        echo "[nav2-pod/${ROBOT_NAME}] Waiting for map->odom TF after re-trigger (${k}/20)..."
+        echo "[nav2-pod/${ROBOT_NAME}] Waiting for map->odom TF (${k}/20)..."
         sleep 5
       done
       break
