@@ -255,20 +255,23 @@ def main():
     print(  f"  robot_2 enters from EAST  (spawn → s_out {S_OUT})")
     print(  f"  [Layer 1] Goals dispatched via rmf_navigate_cmd → nav2_relay → Nav2")
 
-    # Route via outer walls to avoid pillar grid (use_collision_detection=True
-    # stops RPP near pillars; the outer wall route is clear of them).
+    # Route both robots to corridor entry points.
+    # use_collision_detection=True + robot_radius=0.22m forces NavFn to use
+    # outer corridors (pillar gaps are too narrow for the inflated robot footprint).
     # robot_1: spawn (-2.0,-0.5) → SW corner (-2.0,-1.75) → s_in (-1.5,-1.75)
-    # robot_2: spawn (2.0,0.5) → SE corner (2.0,-1.75) → s_out (1.5,-1.75)
-    SW_CORNER = (-2.0, -1.75)  # along west wall, no pillars
-    SE_CORNER  = ( 2.0, -1.75)  # along east wall, no pillars
+    #   SW corner is along the west outer wall and was explored — in posegraph.
+    # robot_2: spawn (2.0,0.5) → S_OUT (1.5,-1.75) directly
+    #   The west-then-south path through the explored corridor is in the posegraph.
+    #   SE corner (2.0,-1.75) = map(0,-2.25) is outside posegraph bounds.
+    SW_CORNER = (-2.0, -1.75)  # west outer wall — explored by robot_1
 
     def phase1a_robot1():
         r1.navigate(*SW_CORNER, YAW_EAST, timeout=60.0)
         r1.navigate(*S_IN,      YAW_EAST, timeout=60.0)
 
     def phase1a_robot2():
-        r2.navigate(*SE_CORNER, YAW_WEST, timeout=60.0)
-        r2.navigate(*S_OUT,     YAW_WEST, timeout=60.0)
+        # Navigate directly to S_OUT — the explored path covers this route
+        r2.navigate(*S_OUT, YAW_WEST, timeout=120.0)
 
     t1 = threading.Thread(target=phase1a_robot1, daemon=True)
     t2 = threading.Thread(target=phase1a_robot2, daemon=True)

@@ -241,6 +241,8 @@ dispatch-rmf-swap: ## RMF + Nav2 LiDAR swap: restart pods, wait for ready, then 
 	@echo "Step 3.5: Verifying robots at spawn (Gazebo SDF positions — no teleport needed)..."
 	@echo "  Robots spawn at their SDF-defined positions on Gazebo restart."
 	@echo "  Teleporting after AMCL initialization breaks odom consistency."
+	@echo "Step 3.6: Waiting 30s for slam_toolbox TF to stabilize on both robots..."
+	@sleep 30
 	@echo "Step 4: Running RMF + Nav2 LiDAR swap demo..."
 	@RMFPOD=$$(oc get pod -n $(NAMESPACE) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
 	oc cp demo/rmf_lidar_swap_demo.py $(NAMESPACE)/$$RMFPOD:/tmp/rmf_lidar_swap_demo.py -c rmf-core && \
