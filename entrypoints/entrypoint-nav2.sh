@@ -398,36 +398,28 @@ echo "[nav2-pod/${ROBOT_NAME}] cmd_vel Zenoh publisher started"
 echo "[nav2-pod/${ROBOT_NAME}] Waiting for AMCL node to load..."
   for i in $(seq 1 180); do
     if ros2 node list 2>/dev/null | grep -qE "^(/amcl|/${ROBOT_NAME}/amcl)$"; then
-      echo "[nav2-pod/${ROBOT_NAME}] AMCL detected (attempt ${i}), waiting for ACTIVE state..."
+      echo "[nav2-pod/${ROBOT_NAME}] AMCL detected (attempt ${i}), publishing initialpose until map->odom TF appears..."
+      # Publish /initialpose repeatedly with best_effort QoS until AMCL
+      # publishes the map->odom TF. Relying on lifecycle get /amcl is
+      # unreliable (query times out). Publishing every 5s is safe — AMCL
+      # drops the message while inactive and processes it when active.
+      read -r INITIAL_QZ INITIAL_QW < <(python3 -c \
+        "import math; y=${INITIAL_YAW}; print(math.sin(y/2), math.cos(y/2))")
       for k in $(seq 1 60); do
-        AMCL_STATE=$(timeout 3 ros2 lifecycle get /amcl 2>/dev/null | grep -oE "[a-z]+ \[[0-9]+\]" | head -1)
-        if echo "${AMCL_STATE}" | grep -q "active"; then
-          echo "[nav2-pod/${ROBOT_NAME}] AMCL is active, publishing initial pose."
+        ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
+          "{header: {frame_id: 'map'}, pose: {pose: {position: {x: ${INITIAL_X}, y: ${INITIAL_Y}, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: ${INITIAL_QZ}, w: ${INITIAL_QW}}}, covariance: [0.01, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01]}}" \
+          --times 1 --qos-reliability best_effort 2>/dev/null || true
+        if timeout 3 ros2 run tf2_ros tf2_echo "map" "odom" 2>&1 | grep -q "Translation"; then
+          echo "[nav2-pod/${ROBOT_NAME}] Localization active — navigation stack ready."
           break
         fi
-        echo "[nav2-pod/${ROBOT_NAME}] AMCL not yet active (${AMCL_STATE}), waiting..."
+        echo "[nav2-pod/${ROBOT_NAME}] Waiting for map->odom TF (attempt ${k}/60)..."
         sleep 5
       done
 
       timeout 8 ros2 param set /local_costmap/local_costmap transform_tolerance 10.0 2>/dev/null || true
       timeout 8 ros2 param set /global_costmap/global_costmap transform_tolerance 10.0 2>/dev/null || true
       timeout 8 ros2 param set /controller_server general_goal_checker.yaw_goal_tolerance 3.14159 2>/dev/null || true
-
-      read -r INITIAL_QZ INITIAL_QW < <(python3 -c \
-        "import math; y=${INITIAL_YAW}; print(math.sin(y/2), math.cos(y/2))")
-      echo "[nav2-pod/${ROBOT_NAME}] Publishing initial pose at (${INITIAL_X}, ${INITIAL_Y})..."
-      ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
-        "{header: {frame_id: 'map'}, pose: {pose: {position: {x: ${INITIAL_X}, y: ${INITIAL_Y}, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: ${INITIAL_QZ}, w: ${INITIAL_QW}}}, covariance: [0.01, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01]}}" \
-        --times 5 --qos-reliability best_effort 2>/dev/null || true
-
-      echo "[nav2-pod/${ROBOT_NAME}] Waiting for AMCL to publish map->odom transform..."
-      for j in $(seq 1 60); do
-        if timeout 5 ros2 run tf2_ros tf2_echo "map" "odom" 2>&1 | grep -q "Translation"; then
-          echo "[nav2-pod/${ROBOT_NAME}] Localization active — navigation stack ready."
-          break
-        fi
-        sleep 2
-      done
 
       # Monitor navigation lifecycle and retry if activation failed.
       # Uses action server availability (more reliable than lifecycle get which times out).
