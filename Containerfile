@@ -15,6 +15,7 @@ RUN dnf install -y \
       ros-jazzy-ros-gz-bridge \
       ros-jazzy-ros-gz-sim \
       ros-jazzy-gz-sim-vendor \
+      ros-jazzy-slam-toolbox \
     && dnf clean all
 
 RUN dnf install -y \

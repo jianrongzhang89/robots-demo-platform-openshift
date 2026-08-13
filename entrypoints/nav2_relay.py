@@ -49,6 +49,14 @@ FAIL_COOLDOWN = 5.0       # s — pause after rapid-abort to let bt_navigator re
 RECENT_OK_WINDOW = 10.0   # s — ignore retries of recently-completed destinations
 RECENT_SENT_WINDOW = 25.0  # s — ignore retries of same dest within 25s of sending
 
+# slam_toolbox localization mode: the map frame origin is the robot's spawn
+# position (where SLAM was built from, i.e. odom origin at startup).
+# RMF goals arrive in world frame; Nav2 expects goals in map frame.
+# Subtract the spawn offset to convert: map = world - spawn.
+import os as _os
+_MAP_OFFSET_X = float(_os.environ.get("INITIAL_X", "0.0"))
+_MAP_OFFSET_Y = float(_os.environ.get("INITIAL_Y", "0.0"))
+
 NAV_ACTION = "navigate_to_pose"
 
 
@@ -322,12 +330,17 @@ class NavRelay(Node):
             if self._rmf_id != rmf_id or self._thread_gen != my_gen:
                 return  # superseded before we started
 
+        # Convert world frame goal to slam_toolbox map frame.
+        # slam_toolbox map origin = robot spawn (world INITIAL_X, INITIAL_Y).
+        map_x = x - _MAP_OFFSET_X
+        map_y = y - _MAP_OFFSET_Y
+
         goal = NavigateToPose.Goal()
         goal.pose = PoseStamped()
         goal.pose.header.frame_id = "map"
         goal.pose.header.stamp.sec = 0  # use latest available transform
-        goal.pose.pose.position.x = x
-        goal.pose.pose.position.y = y
+        goal.pose.pose.position.x = map_x
+        goal.pose.pose.position.y = map_y
         goal.pose.pose.orientation.z = math.sin(yaw / 2.0)
         goal.pose.pose.orientation.w = math.cos(yaw / 2.0)
 
