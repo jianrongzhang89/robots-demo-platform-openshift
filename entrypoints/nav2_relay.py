@@ -49,8 +49,11 @@ FAIL_COOLDOWN = 5.0       # s — pause after rapid-abort to let bt_navigator re
 RECENT_OK_WINDOW = 10.0   # s — ignore retries of recently-completed destinations
 RECENT_SENT_WINDOW = 25.0  # s — ignore retries of same dest within 25s of sending
 
-# AMCL localization: map frame = world frame (pgm map covers full sandbox).
-# Goals from RMF are already in world frame = map frame — no offset needed.
+# slam_toolbox localization: map frame origin = robot spawn (odom origin).
+# RMF goals are in world frame; Nav2 needs map frame = world - spawn offset.
+import os as _os
+_MAP_OFFSET_X = float(_os.environ.get("INITIAL_X", "0.0"))
+_MAP_OFFSET_Y = float(_os.environ.get("INITIAL_Y", "0.0"))
 
 NAV_ACTION = "navigate_to_pose"
 
@@ -325,12 +328,16 @@ class NavRelay(Node):
             if self._rmf_id != rmf_id or self._thread_gen != my_gen:
                 return  # superseded before we started
 
+        # Convert world frame goal → slam_toolbox map frame (map = world - spawn).
+        map_x = x - _MAP_OFFSET_X
+        map_y = y - _MAP_OFFSET_Y
+
         goal = NavigateToPose.Goal()
         goal.pose = PoseStamped()
         goal.pose.header.frame_id = "map"
         goal.pose.header.stamp.sec = 0  # use latest available transform
-        goal.pose.pose.position.x = x
-        goal.pose.pose.position.y = y
+        goal.pose.pose.position.x = map_x
+        goal.pose.pose.position.y = map_y
         goal.pose.pose.orientation.z = math.sin(yaw / 2.0)
         goal.pose.pose.orientation.w = math.cos(yaw / 2.0)
 

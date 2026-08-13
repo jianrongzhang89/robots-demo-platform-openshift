@@ -135,38 +135,42 @@ pserver.setdefault('GridBased', {})['tolerance'] = 0.5  # accept path ending wit
 # exploration is complete and posegraphs are serialized, the image is rebuilt
 # with localization mode using the new full-coverage posegraphs.
 import os as _os
-if _os.environ.get('SLAM_BUILD_MODE') == '1':
-    # slam_toolbox MAPPING mode: build a new posegraph from scratch.
-    # Robots must be driven through the full sandbox before serializing.
-    slam = p.setdefault('slam_toolbox', {}).setdefault('ros__parameters', {})
-    slam['use_sim_time']             = True
-    slam['odom_frame']               = 'odom'
-    slam['map_frame']                = 'map'
-    slam['base_frame']               = 'base_footprint'
-    slam['scan_topic']               = '/scan'
+_slam_mode = _os.environ.get('SLAM_BUILD_MODE', '0')
+slam = p.setdefault('slam_toolbox', {}).setdefault('ros__parameters', {})
+slam['use_sim_time']             = True
+slam['odom_frame']               = 'odom'
+slam['map_frame']                = 'map'
+slam['base_frame']               = 'base_footprint'
+slam['scan_topic']               = '/scan'
+slam['debug_logging']            = False
+slam['throttle_scans']           = 1
+slam['transform_publish_period'] = 0.02
+slam['map_update_interval']      = 5.0
+slam['resolution']               = 0.05
+slam['max_laser_range']          = 3.5
+slam['minimum_time_interval']    = 0.5
+slam['transform_timeout']        = 0.2
+slam['tf_buffer_duration']       = 30.0
+slam['stack_size_to_use']        = 40000000
+slam['enable_interactive_mode']  = False
+if _slam_mode == '1':
+    # MAPPING mode: build new posegraph from scratch (exploration run).
     slam['mode']                     = 'mapping'
-    slam['debug_logging']            = False
-    slam['throttle_scans']           = 1
-    slam['transform_publish_period'] = 0.02
-    slam['map_update_interval']      = 5.0
-    slam['resolution']               = 0.05
-    slam['max_laser_range']          = 3.5
-    slam['minimum_time_interval']    = 0.5
-    slam['transform_timeout']        = 0.2
-    slam['tf_buffer_duration']       = 30.0
-    slam['stack_size_to_use']        = 40000000
-    slam['enable_interactive_mode']  = False
     slam['do_loop_closing']          = True
     slam['loop_search_maximum_distance'] = 4.0
     slam['loop_match_minimum_chain_size'] = 10
     slam['link_scan_maximum_distance'] = 1.5
-    print('[nav2-pod] SLAM BUILD MODE: slam_toolbox mapping (will build posegraph from exploration)')
+    print('[nav2-pod] SLAM BUILD MODE: mapping (building new posegraph)')
 else:
-    # AMCL for localization using the pre-built pgm map (full sandbox coverage).
-    amcl_ros2 = p.setdefault('amcl', {}).setdefault('ros__parameters', {})
-    amcl_ros2['base_frame_id']   = 'base_footprint'
-    amcl_ros2['odom_frame_id']   = 'odom'
-    amcl_ros2['global_frame_id'] = 'map'
+    # LOCALIZATION mode: scan-match against pre-built full-coverage posegraph.
+    # Coordinate convention: posegraph origin = robot spawn = odom(0,0).
+    # map_start_at_dock places robot at posegraph origin on startup.
+    # Nav2 goals must subtract spawn offset: map = world - (INITIAL_X, INITIAL_Y).
+    slam['mode']              = 'localization'
+    slam['map_file_name']     = '/slam_maps/${ROBOT_NAME}_slam'
+    slam['map_start_at_dock'] = True
+    slam['do_loop_closing']   = False
+    print('[nav2-pod] SLAM LOCALIZATION MODE: using full-coverage posegraph')
 
 # ── BT XML: use single-plan-then-follow (no 1 Hz replanning).
 # navigate_to_pose_w_replanning_and_recovery replans every sim-second;
@@ -225,7 +229,8 @@ for lm_name in ['lifecycle_manager_navigation', 'lifecycle_manager_localization'
 
 with open('${CUSTOM_PARAMS}', 'w') as f:
     yaml.dump(p, f, default_flow_style=False)
-mode_label = 'SLAM-MAPPING' if _os.environ.get('SLAM_BUILD_MODE') == '1' else 'AMCL'
+_build = _os.environ.get('SLAM_BUILD_MODE', '0')
+mode_label = 'SLAM-MAPPING' if _build == '1' else 'SLAM-LOCALIZATION'
 print(f'[nav2-pod] Patched nav2 params: {mode_label} + A* + RPP + 300s bond_timeout')
 " && PARAMS_ARG="params_file:=${CUSTOM_PARAMS}" || { echo "[nav2-pod/${ROBOT_NAME}] Python patch FAILED:"; cat /tmp/py_err_${ROBOT_NAME}.log >&1; PARAMS_ARG=""; }
 # Verify the file was actually created before using it
@@ -234,22 +239,14 @@ else
   PARAMS_ARG=""
 fi
 
-if [ "${SLAM_BUILD_MODE:-0}" = "1" ]; then
-  # slam_toolbox mapping mode: no pre-built map needed
-  ros2 launch nav2_bringup bringup_launch.py \
-    use_sim_time:=True \
-    autostart:=True \
-    use_composition:=False \
-    slam:=True \
-    ${PARAMS_ARG} &
-else
-  ros2 launch nav2_bringup bringup_launch.py \
-    use_sim_time:=True \
-    autostart:=True \
-    use_composition:=False \
-    map:="${BRINGUP_DIR}/maps/tb3_sandbox.yaml" \
-    ${PARAMS_ARG} &
-fi
+# slam_toolbox (mapping or localization) uses slam:=True; AMCL uses map:=
+# Both mapping and localization modes are covered by the slam_toolbox params.
+ros2 launch nav2_bringup bringup_launch.py \
+  use_sim_time:=True \
+  autostart:=True \
+  use_composition:=False \
+  slam:=True \
+  ${PARAMS_ARG} &
 NAV2_PID=$!
 
 # odom→base_footprint TF broadcaster
@@ -433,59 +430,43 @@ echo "[nav2-pod/${ROBOT_NAME}] cmd_vel Zenoh publisher started"
 # Wait for localization node (AMCL or slam_toolbox) to publish map→odom TF.
 (
 if [ "${SLAM_BUILD_MODE:-0}" = "1" ]; then
-  # In slam mapping mode, slam_toolbox publishes TF automatically — just wait.
-  echo "[nav2-pod/${ROBOT_NAME}] SLAM mapping mode: waiting for slam_toolbox to start..."
+  # ── MAPPING mode ──────────────────────────────────────────────────────────
+  # slam_toolbox builds map from scan as robot explores. TF published automatically.
+  echo "[nav2-pod/${ROBOT_NAME}] SLAM mapping mode: waiting for slam_toolbox..."
   for i in $(seq 1 180); do
     if ros2 node list 2>/dev/null | grep -qE "^(/slam_toolbox|/${ROBOT_NAME}/slam_toolbox)$"; then
-      echo "[nav2-pod/${ROBOT_NAME}] slam_toolbox started (attempt ${i}). Ready for exploration."
+      echo "[nav2-pod/${ROBOT_NAME}] slam_toolbox ready (attempt ${i}) — drive robot to explore."
       break
     fi
     sleep 5
   done
-  echo "[nav2-pod/${ROBOT_NAME}] slam_toolbox ready — robot can now be driven for mapping."
 else
-echo "[nav2-pod/${ROBOT_NAME}] Waiting for AMCL node to load..."
+  # ── LOCALIZATION mode ─────────────────────────────────────────────────────
+  # slam_toolbox loads saved posegraph; map_start_at_dock places robot at origin.
+  echo "[nav2-pod/${ROBOT_NAME}] Localization mode: waiting for slam_toolbox + map→odom TF..."
   for i in $(seq 1 180); do
-    if ros2 node list 2>/dev/null | grep -qE "^(/amcl|/${ROBOT_NAME}/amcl)$"; then
-      echo "[nav2-pod/${ROBOT_NAME}] AMCL detected (attempt ${i}), publishing initialpose until map->odom TF appears..."
-      # Publish /initialpose repeatedly with best_effort QoS until AMCL
-      # publishes the map->odom TF. Relying on lifecycle get /amcl is
-      # unreliable (query times out). Publishing every 5s is safe — AMCL
-      # drops the message while inactive and processes it when active.
-      read -r INITIAL_QZ INITIAL_QW < <(python3 -c \
-        "import math; y=${INITIAL_YAW}; print(math.sin(y/2), math.cos(y/2))")
-      for k in $(seq 1 60); do
-        ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
-          "{header: {frame_id: 'map'}, pose: {pose: {position: {x: ${INITIAL_X}, y: ${INITIAL_Y}, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: ${INITIAL_QZ}, w: ${INITIAL_QW}}}, covariance: [0.01, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01]}}" \
-          --times 3 --qos-reliability best_effort 2>/dev/null || true
-        # Wait 3s after publish — AMCL publishes map→odom on the next scan.
-        # tf2_echo needs DDS discovery time (~2-3s) before receiving TF.
-        # 8s total check window handles both delays reliably.
-        sleep 3
+    if ros2 node list 2>/dev/null | grep -qE "^(/slam_toolbox|/${ROBOT_NAME}/slam_toolbox)$"; then
+      echo "[nav2-pod/${ROBOT_NAME}] slam_toolbox detected (attempt ${i}), waiting for TF..."
+      sleep 5
+      for k in $(seq 1 30); do
         if timeout 8 ros2 run tf2_ros tf2_echo "map" "odom" 2>&1 | grep -q "Translation"; then
           echo "[nav2-pod/${ROBOT_NAME}] Localization active — navigation stack ready."
-          break
+          break 2
         fi
-        echo "[nav2-pod/${ROBOT_NAME}] Waiting for map->odom TF (attempt ${k}/60)..."
-        sleep 2
+        echo "[nav2-pod/${ROBOT_NAME}] Waiting for map→odom TF (attempt ${k}/30)..."
+        sleep 5
       done
+      break
+    fi
+    sleep 5
+  done
 
-      timeout 8 ros2 param set /local_costmap/local_costmap transform_tolerance 10.0 2>/dev/null || true
-      timeout 8 ros2 param set /global_costmap/global_costmap transform_tolerance 10.0 2>/dev/null || true
-      timeout 8 ros2 param set /controller_server general_goal_checker.yaw_goal_tolerance 3.14159 2>/dev/null || true
+  timeout 8 ros2 param set /local_costmap/local_costmap transform_tolerance 10.0 2>/dev/null || true
+  timeout 8 ros2 param set /global_costmap/global_costmap transform_tolerance 10.0 2>/dev/null || true
+  timeout 8 ros2 param set /controller_server general_goal_checker.yaw_goal_tolerance 3.14159 2>/dev/null || true
 
-      # Monitor navigation lifecycle and retry if activation failed.
-      # Uses action server availability (more reliable than lifecycle get which times out).
-      # Continuous watchdog: re-activates navigation whenever bt_navigator goes inactive.
-      # Uses navigate_to_pose action server availability — more reliable than lifecycle get
-      # which times out and incorrectly shows nodes as inactive even when they're active.
-      # TF instability from clock jumps can cause controller_server to fail internally,
-      # which the lifecycle manager then propagates to deactivate bt_navigator.
-      # External Zenoh keepalive process (MUST be separate — zenoh+rclpy share
-      # the same Python process causes segfaults in CycloneDDS).
-      # Reconnects every 55 s to create fresh Zenoh subscriber events, which
-      # forces the nav bridge to recreate the DDS→Zenoh route after retirements.
-      python3 -c "
+  # Zenoh keepalive — prevents cmd_vel route from being garbage-collected (~82s idle).
+  python3 -c "
 import zenoh, time, sys, signal
 signal.signal(signal.SIGTERM, lambda s, f: None)
 signal.signal(signal.SIGINT, lambda s, f: None)
@@ -498,36 +479,24 @@ while True:
         z = zenoh.open(conf)
         sub = z.declare_subscriber('${ROBOT_NAME}/cmd_vel', lambda s: None)
         print('[nav2-pod] keepalive PERMANENT for ${ROBOT_NAME}', flush=True)
-        # Keep the subscription open permanently — never disconnect.
-        # Reconnecting every 55s creates a gap during which the Zenoh bridge
-        # retires the DDS→Zenoh route for cmd_vel, causing the robot to stop.
         time.sleep(999999)
-        # (Unreachable: loop restarts only on exception)
-    except BaseException as e:
+    except BaseException:
         time.sleep(5)
 " &
-      KEEPALIVE_PID=$!
+  KEEPALIVE_PID=$!
 
-      echo "[nav2-pod/${ROBOT_NAME}] Starting navigation watchdog (continuous monitoring)..."
-      while true; do
-        sleep 10
-
-        # Keepalive is embedded in nav2_relay.py (daemon thread) — no restart needed.
-        # Check bt_navigator lifecycle — call RESUME if INACTIVE
-        BT_STATE=$(timeout 3 ros2 lifecycle get /bt_navigator 2>/dev/null | grep -oE "[a-z]+ \[[0-9]+\]" | head -1)
-        if echo "${BT_STATE}" | grep -q "active"; then
-          : # Nav2 active — no action needed
-        else
-          echo "[nav2-pod/${ROBOT_NAME}] bt_navigator not active (${BT_STATE}), calling RESUME..."
-          timeout 90 ros2 service call /lifecycle_manager_navigation/manage_nodes \
-            nav2_msgs/srv/ManageLifecycleNodes "{command: 2}" 2>/dev/null || true
-        fi
-      done
-      break
+  # Navigation watchdog — calls RESUME when bt_navigator goes inactive.
+  echo "[nav2-pod/${ROBOT_NAME}] Starting navigation watchdog..."
+  while true; do
+    sleep 10
+    BT_STATE=$(timeout 3 ros2 lifecycle get /bt_navigator 2>/dev/null | grep -oE "[a-z]+ \[[0-9]+\]" | head -1)
+    if ! echo "${BT_STATE}" | grep -q "active"; then
+      echo "[nav2-pod/${ROBOT_NAME}] bt_navigator not active (${BT_STATE}), calling RESUME..."
+      timeout 90 ros2 service call /lifecycle_manager_navigation/manage_nodes \
+        nav2_msgs/srv/ManageLifecycleNodes "{command: 2}" 2>/dev/null || true
     fi
-    sleep 5
   done
-fi  # end of SLAM_BUILD_MODE branch
+fi
 ) &
 
 echo "[nav2-pod/${ROBOT_NAME}] Nav2 pod started."
