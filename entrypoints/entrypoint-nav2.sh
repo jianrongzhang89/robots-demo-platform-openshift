@@ -467,11 +467,15 @@ else
       # Publish /initialpose at map (0,0) — the posegraph dock = spawn position.
       # slam_toolbox in localization mode needs this hint to start scan-matching.
       # Without it the node is active but waits for a starting pose estimate.
+      # Publish /initialpose at map(0,0) to kick-start slam_toolbox scan-matching.
+      # slam_toolbox localization mode is active but needs a pose hint to begin
+      # matching scans against the posegraph and publish map→odom TF.
+      # Use timeout + best_effort QoS to avoid blocking if subscriber not ready.
       echo "[nav2-pod/${ROBOT_NAME}] Publishing initialpose hint to start slam_toolbox scan-matching..."
       read -r QZ QW < <(python3 -c \
         "import math; y=${INITIAL_YAW}; print(math.sin(y/2), math.cos(y/2))")
       for k in $(seq 1 20); do
-        ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
+        timeout 20 ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
           "{header: {frame_id: map}, pose: {pose: {position: {x: 0.0, y: 0.0, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: ${QZ}, w: ${QW}}}, covariance: [0.25,0,0,0,0,0,0,0.25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.05]}}" \
           --times 3 2>/dev/null || true
         sleep 3
