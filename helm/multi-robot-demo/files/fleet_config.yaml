@@ -72,9 +72,9 @@ rmf_fleet:
           map_url: "/opt/ros/jazzy/share/nav2_bringup/maps/tb3_sandbox.yaml"
 
   # At real_time_factor=0.5, navigation takes 2x longer in wall time.
-  # Increase from 10.0 to 60.0 to give each nav segment time to complete
-  # before the adapter re-evaluates the plan (which would cancel the goal).
-  robot_state_update_frequency: 60.0
+  # 10.0 Hz gives the RMF traffic planner timely position data for conflict
+  # detection. The nav segment timeout is handled by service_call_timeout_sec.
+  robot_state_update_frequency: 10.0
 
 # Identity transform: RMF frame == Nav2 world frame (both in meters)
 reference_coordinates:

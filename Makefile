@@ -142,6 +142,64 @@ dispatch-swap-patrol: ## Swap patrol via RMF+Nav2: direct goal to each other's s
 	   ros2 run rmf_demos_tasks dispatch_patrol \
 	     -p robot_2_home n_in n_out robot_1_home -n 1 --use_sim_time'
 
+.PHONY: dispatch-rmf-swap
+dispatch-rmf-swap: ## RMF + Nav2 LiDAR swap: restart pods, wait for ready, then run the combined RMF+LiDAR demo
+	@echo "=== RMF + Nav2 LiDAR collision-avoidance swap demo ==="
+	@echo "Step 1: Restarting pods..."
+	$(MAKE) restart ROS_DEMO_NS=$(ROS_DEMO_NS)
+	@echo "Step 2: Waiting for rollout..."
+	oc rollout status deployment/robot-nav-robot-1 -n $(NAMESPACE) --timeout=4m
+	oc rollout status deployment/robot-nav-robot-2 -n $(NAMESPACE) --timeout=4m
+	oc rollout status deployment/rmf-core           -n $(NAMESPACE) --timeout=4m
+	@echo "Step 3: Polling for bt_navigator ACTIVE + fleet adapter ready..."
+	@NS=$(NAMESPACE); \
+	for i in $$(seq 1 60); do \
+	  NAV1=$$(oc get pod -n $$NS -l app=robot-nav-robot-1 -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
+	  NAV2=$$(oc get pod -n $$NS -l app=robot-nav-robot-2 -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
+	  RMF=$$(oc get pod -n $$NS -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
+	  s1=$$(oc exec -n $$NS $$NAV1 -c nav2 -- bash -c \
+	    'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash; timeout 4 ros2 lifecycle get /bt_navigator 2>/dev/null' 2>/dev/null); \
+	  s2=$$(oc exec -n $$NS $$NAV2 -c nav2 -- bash -c \
+	    'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash; timeout 4 ros2 lifecycle get /bt_navigator 2>/dev/null' 2>/dev/null); \
+	  fleet=$$(oc exec -n $$NS $$RMF -c rmf-core -- bash -c \
+	    'export HOME=/tmp/ros-home; source /opt/ros/jazzy/setup.bash; timeout 3 ros2 topic echo /fleet_states --once 2>/dev/null' 2>/dev/null); \
+	  r1=$$(echo "$$fleet" | grep -c "name: robot_1" 2>/dev/null || echo 0); \
+	  r2=$$(echo "$$fleet" | grep -c "name: robot_2" 2>/dev/null || echo 0); \
+	  echo "  [$$i] bt1=$$s1 | bt2=$$s2 | fleet r1=$$r1 r2=$$r2"; \
+	  echo "$$s1" | grep -q "active \[3\]" && echo "$$s2" | grep -q "active \[3\]" && \
+	    [ "$${r1:-0}" -ge 1 ] && [ "$${r2:-0}" -ge 1 ] && echo "ALL READY" && break; \
+	  if [ $$i -ge 6 ]; then \
+	    if echo "$$s2" | grep -q "inactive \[2\]"; then \
+	      echo "  [fix] robot_2 inactive — triggering RESUME"; \
+	      oc exec -n $$NS $$NAV2 -c nav2 -- bash -c \
+	        'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash; \
+	         timeout 20 ros2 service call /lifecycle_manager_navigation/manage_nodes \
+	           nav2_msgs/srv/ManageLifecycleNodes "{command:2}" 2>/dev/null || true' 2>/dev/null & \
+	    fi; \
+	  fi; \
+	  sleep 5; \
+	done
+	@echo "Step 3.5: Teleporting robots to spawn positions..."
+	@GZPOD=$$(oc get pod -n $(NAMESPACE) -l app=gazebo-sim -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
+	oc exec -n $(NAMESPACE) $$GZPOD -c gazebo -- bash -c '\
+	  export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash; \
+	  for d in /usr/lib64/ros-jazzy/opt/*/lib64; do [ -d "$$d" ] && export LD_LIBRARY_PATH="$${d}:$${LD_LIBRARY_PATH:-}"; done; \
+	  gz service -s /world/tb3_sandbox/set_pose \
+	    --reqtype gz.msgs.Pose --reptype gz.msgs.Boolean \
+	    --req "name: \"robot_1\" position {x: -2.0 y: -0.5 z: 0.01} orientation {w: 1.0}" --timeout 3000; \
+	  gz service -s /world/tb3_sandbox/set_pose \
+	    --reqtype gz.msgs.Pose --reptype gz.msgs.Boolean \
+	    --req "name: \"robot_2\" position {x: 2.0 y: 0.5 z: 0.01} orientation {x: 0.0 y: 0.0 z: 1.0 w: 0.0}" --timeout 3000; \
+	  echo "Robots teleported to spawn"' 2>/dev/null || echo "Teleport skipped"
+	@echo "Step 4: Running RMF + Nav2 LiDAR swap demo..."
+	@RMFPOD=$$(oc get pod -n $(NAMESPACE) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
+	oc cp demo/rmf_lidar_swap_demo.py $(NAMESPACE)/$$RMFPOD:/tmp/rmf_lidar_swap_demo.py -c rmf-core && \
+	oc exec -n $(NAMESPACE) $$RMFPOD -c rmf-core -- bash -c \
+	  'export HOME=/tmp/ros-home; \
+	   source /opt/ros/jazzy/setup.bash; \
+	   source /opt/free_fleet/install/setup.bash 2>/dev/null || true; \
+	   python3 /tmp/rmf_lidar_swap_demo.py'
+
 .PHONY: dispatch-collision-swap
 dispatch-collision-swap: ## Collision-avoidance swap: restart pods, wait for ready, then run the 3-phase collision demo
 	@echo "=== Collision-avoidance swap demo ==="

@@ -83,12 +83,11 @@ fp['transform_tolerance'] = 0.2
 fp['use_velocity_scaled_lookahead_dist'] = False  # fixed lookahead in tight gaps
 fp['min_approach_linear_velocity'] = 0.05   # m/s — don't slow to zero near goal
 fp['approach_velocity_scaling_dist'] = 1.0  # m — start slowing 1m from goal
-fp['use_collision_detection'] = False
-# Collision detection disabled: RPP's forward-check uses local costmap (0.10m
-# inflation), flagging the robot footprint (r=0.22m) as colliding with pillar
-# inflation zones even though the global path is physically navigable (pillar
-# gaps are 0.80m, robot width is 0.44m). The global planner with 0.15m
-# inflation already ensures paths avoid physical pillars — RPP just follows.
+fp['use_collision_detection'] = True
+# Collision detection re-enabled for the outer corridor demo: robots navigate
+# via the south/north outer corridors (no pillars), so RPP's forward-check
+# safely detects the other robot as a VoxelLayer obstacle and slows down.
+# The pillar-grid path is not used in the RMF swap demo.
 fp['use_regulated_linear_velocity_scaling'] = True   # slow near obstacles
 fp['use_fixed_curvature_lookahead'] = False
 fp['regulated_linear_scaling_min_radius'] = 0.9  # m
@@ -108,12 +107,15 @@ cs.setdefault('general_goal_checker', {})['yaw_goal_tolerance'] = 3.14159
 # RPP's use_collision_detection=False already handles this at the planner level;
 # the collision_monitor node causes double-suppression of velocity.
 cmon = p.setdefault('collision_monitor', {}).setdefault('ros__parameters', {})
-cmon['enabled'] = False
-# Disable the FootprintApproach polygon — even with enabled=False the node
-# still runs its polygon checks and zero-suppresses cmd_vel when the footprint
-# is inside the approach zone. Explicitly disabling the polygon ensures
-# cmd_vel_smoothed is passed through to cmd_vel without any velocity reduction.
-cmon.setdefault('FootprintApproach', {})['enabled'] = False
+cmon['enabled'] = True
+# collision_monitor re-enabled with higher min_points threshold to distinguish
+# robot bodies from corridor walls/pillars.
+# Pillar cylinders (r=0.15m) at 1-2m range subtend ~4-6 scan points at 1°/pt.
+# A stopped TurtleBot3 (r=0.22m) at 0.8m subtends ~16 points.
+# min_points=12 fires on robot bodies but ignores single-pillar reflections.
+cmon.setdefault('FootprintApproach', {})['enabled'] = True
+cmon.setdefault('FootprintApproach', {})['min_points'] = 12
+cmon.setdefault('FootprintApproach', {})['time_before_collision'] = 2.0
 
 # ── Global planner: switch NavFn from Dijkstra to A*.
 # Dijkstra hugs obstacle walls and produces paths with sharp turns near pillars.
