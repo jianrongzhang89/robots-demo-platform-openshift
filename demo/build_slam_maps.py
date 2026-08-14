@@ -112,7 +112,9 @@ class GzPosMonitor:
 # ── Gz P-controller ──────────────────────────────────────────────────────────
 
 def gz_drive_to(robot_name, nav_pub, monitor, tx, ty,
-                stop_dist=0.25, max_v=0.22, max_w=1.0, timeout=120.0):
+                stop_dist=0.25, max_v=0.12, max_w=0.8, timeout=180.0):
+    # Slow movement (0.12 m/s) gives slam_toolbox more time to add scan nodes
+    # at each explored position, improving occupancy grid coverage.
     """Drive robot_name to (tx, ty) using Gz ground-truth, publish cmd_vel."""
     zero = b'\x00\x01\x00\x00' + b'\x00' * 48
 
@@ -219,8 +221,8 @@ def main():
     t1.start(); t2.start()
     t1.join(); t2.join()
 
-    print("\nExploration done. Waiting 30s for slam_toolbox to process final scans...")
-    time.sleep(30)
+    print("\nExploration done. Waiting 120s for slam_toolbox to complete all map updates...")
+    time.sleep(120)
 
     print("\nSerializing posegraphs...")
     for name in ['robot_1', 'robot_2']:
