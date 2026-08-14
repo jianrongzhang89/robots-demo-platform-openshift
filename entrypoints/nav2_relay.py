@@ -13,10 +13,10 @@ Nav2 RMF relay — Architecture A (RMF as orchestrator, Nav2 map-aware planning)
 
 Three improvements retained from the debugging session:
 
-  a) CANCEL-ignore: RMF always follows CANCEL with NAVIGATE for the same
-     destination. Ignoring CANCEL keeps the running Nav2 goal alive so the
-     DWB controller is not restarted (restarting resets its state and may
-     trigger the RotateToGoal spin-up again).
+  a) Timed CANCEL (2s): RMF responsive_wait sends CANCEL to stop a robot
+     during negotiation. A 2s window separates this from same-dest CANCEL+
+     NAVIGATE transfers. If NAVIGATE arrives within 2s, suppress cancel;
+     otherwise execute it so the robot actually stops (enables negotiation).
 
   b) _finish race fix: when same-destination transfers update self._rmf_id
      (A → A′), the old _on_result(A) check "self._rmf_id == A" fails and the
@@ -49,8 +49,11 @@ FAIL_COOLDOWN = 5.0       # s — pause after rapid-abort to let bt_navigator re
 RECENT_OK_WINDOW = 10.0   # s — ignore retries of recently-completed destinations
 RECENT_SENT_WINDOW = 25.0  # s — ignore retries of same dest within 25s of sending
 
-# AMCL: map frame = world frame (pgm map built from world coordinates).
-# Goals from RMF are already in world frame = map frame. No offset needed.
+# slam_toolbox localization: map frame = posegraph frame (origin = robot spawn).
+# Goals from RMF are in world frame; Nav2 needs map frame = world - spawn offset.
+import os as _os
+_MAP_OFFSET_X = float(_os.environ.get("INITIAL_X", "0.0"))
+_MAP_OFFSET_Y = float(_os.environ.get("INITIAL_Y", "0.0"))
 
 NAV_ACTION = "navigate_to_pose"
 
@@ -135,12 +138,36 @@ class NavRelay(Node):
             return
         rmf_id = parts[0]
 
-        # CANCEL-ignore: RMF always follows CANCEL with NAVIGATE for the same
-        # destination. Ignoring keeps the running DWB controller alive so it
-        # is not forced to restart (which would re-trigger RotateToGoal).
+        # Timed CANCEL: wait 2s before cancelling the active Nav2 goal.
+        # RMF responsive_wait (negotiation yield) sends CANCEL without a
+        # follow-up NAVIGATE — robot must actually stop for negotiation to work.
+        # Same-dest transfers also send CANCEL then immediately send NAVIGATE.
+        # A 2s window distinguishes: if NAVIGATE arrives in 2s, suppress cancel
+        # (same-dest transfer); otherwise execute cancel (negotiation yield).
         if parts[1] == "CANCEL":
-            self.get_logger().info(
-                f"[nav_relay] goal {rmf_id} CANCEL ignored (await NAVIGATE)")
+            cancel_rmf_id = rmf_id
+            def _deferred_cancel():
+                import time as _tc
+                _tc.sleep(2.0)
+                with self._lock:
+                    if self._rmf_id != cancel_rmf_id:
+                        self.get_logger().info(
+                            f"[nav_relay] {cancel_rmf_id}: CANCEL suppressed "
+                            f"(new goal arrived within 2s)")
+                        return
+                    old_handle = self._handle
+                    self._rmf_id = None
+                    self._dest = None
+                    self._handle = None
+                if old_handle is not None:
+                    try:
+                        old_handle.cancel_goal_async()
+                    except Exception:
+                        pass
+                self.get_logger().info(
+                    f"[nav_relay] {cancel_rmf_id}: CANCEL executed "
+                    f"(RMF negotiation yield — no NAVIGATE in 2s)")
+            threading.Thread(target=_deferred_cancel, daemon=True).start()
             return
 
         if len(parts) != 4:
@@ -325,12 +352,16 @@ class NavRelay(Node):
             if self._rmf_id != rmf_id or self._thread_gen != my_gen:
                 return  # superseded before we started
 
+        # Convert world-frame goal to slam_toolbox map frame.
+        map_x = x - _MAP_OFFSET_X
+        map_y = y - _MAP_OFFSET_Y
+
         goal = NavigateToPose.Goal()
         goal.pose = PoseStamped()
         goal.pose.header.frame_id = "map"
         goal.pose.header.stamp.sec = 0  # use latest available transform
-        goal.pose.pose.position.x = x
-        goal.pose.pose.position.y = y
+        goal.pose.pose.position.x = map_x
+        goal.pose.pose.position.y = map_y
         goal.pose.pose.orientation.z = math.sin(yaw / 2.0)
         goal.pose.pose.orientation.w = math.cos(yaw / 2.0)
 

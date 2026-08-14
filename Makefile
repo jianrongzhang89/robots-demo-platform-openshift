@@ -142,6 +142,58 @@ build-slam-maps: ## One-time: rebuild slam_toolbox posegraphs with full sandbox 
 ##@ Open-RMF
 
 .PHONY: dispatch-patrol
+dispatch-rmf-lidar: ## TRUE RMF+Nav2 demo: traffic planning + negotiation + LiDAR collision avoidance
+	@echo "=== RMF traffic planning + Nav2 LiDAR collision avoidance ==="
+	@echo "Step 1: Restarting pods with slam_toolbox localization..."
+	$(MAKE) restart ROS_DEMO_NS=$(ROS_DEMO_NS)
+	oc rollout status deployment/robot-nav-robot-1 -n $(NAMESPACE) --timeout=5m
+	oc rollout status deployment/robot-nav-robot-2 -n $(NAMESPACE) --timeout=5m
+	oc rollout status deployment/rmf-core           -n $(NAMESPACE) --timeout=4m
+	@echo "Step 2: Polling for bt_navigator ACTIVE + fleet adapter ready..."
+	@NS=$(NAMESPACE); \
+	for i in $$(seq 1 60); do \
+	  NAV1=$$(oc get pod -n $$NS -l app=robot-nav-robot-1 -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
+	  NAV2=$$(oc get pod -n $$NS -l app=robot-nav-robot-2 -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
+	  RMF=$$(oc get pod -n $$NS -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
+	  s1=$$(oc exec -n $$NS $$NAV1 -c nav2 -- bash -c \
+	    'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash; timeout 4 ros2 lifecycle get /bt_navigator 2>/dev/null' 2>/dev/null); \
+	  s2=$$(oc exec -n $$NS $$NAV2 -c nav2 -- bash -c \
+	    'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash; timeout 4 ros2 lifecycle get /bt_navigator 2>/dev/null' 2>/dev/null); \
+	  fleet=$$(oc exec -n $$NS $$RMF -c rmf-core -- bash -c \
+	    'export HOME=/tmp/ros-home; source /opt/ros/jazzy/setup.bash; timeout 3 ros2 topic echo /fleet_states --once 2>/dev/null' 2>/dev/null); \
+	  r1=$$(echo "$$fleet" | grep -c "name: robot_1" 2>/dev/null || echo 0); \
+	  r2=$$(echo "$$fleet" | grep -c "name: robot_2" 2>/dev/null || echo 0); \
+	  echo "  [$$i] bt1=$$s1 | bt2=$$s2 | fleet r1=$$r1 r2=$$r2"; \
+	  echo "$$s1" | grep -q "active \[3\]" && echo "$$s2" | grep -q "active \[3\]" && \
+	    [ "$${r1:-0}" -ge 1 ] && [ "$${r2:-0}" -ge 1 ] && echo "ALL READY" && break; \
+	  sleep 5; \
+	done
+	@echo "Step 3: Dispatching bidirectional south corridor patrol via RMF traffic scheduler..."
+	@echo "  robot_1: s_in → s_out (eastbound, 3 loops)"
+	@echo "  robot_2: s_out → s_in (westbound, 3 loops, 5s stagger)"
+	@echo "  RMF traffic scheduler will detect head-on conflict and invoke negotiation."
+	@echo "  Nav2 RPP with use_collision_detection=True will slow as robots approach."
+	@RMFPOD=$$(oc get pod -n $(NAMESPACE) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
+	oc exec -n $(NAMESPACE) $$RMFPOD -c rmf-core -- bash -c \
+	  'export HOME=/tmp/ros-home; \
+	   source /opt/ros/jazzy/setup.bash; \
+	   source /opt/free_fleet/install/setup.bash 2>/dev/null || true; \
+	   echo "[rmf] Dispatching robot_1: s_in → s_out (eastbound)"; \
+	   ros2 run rmf_demos_tasks dispatch_patrol \
+	     -F turtlebot3 -R robot_1 \
+	     -p s_in s_out \
+	     -n 3 --use_sim_time & \
+	   sleep 5; \
+	   echo "[rmf] Dispatching robot_2: s_out → s_in (westbound, 5s stagger)"; \
+	   ros2 run rmf_demos_tasks dispatch_patrol \
+	     -F turtlebot3 -R robot_2 \
+	     -p s_out s_in \
+	     -n 3 --use_sim_time; \
+	   echo "[rmf] Both dispatched. Monitoring /fleet_states for 10 minutes..."; \
+	   timeout 600 ros2 topic echo /fleet_states --use_sim_time 2>/dev/null | \
+	     grep -E "name: robot|task_id:|location:" || true'
+
+.PHONY: dispatch-patrol
 dispatch-patrol: ## Dispatch patrol: robot_1_home→mid_west→meeting_point (robot_1 only)
 	$(eval RMFPOD := $(shell oc get pod -n $(NAMESPACE) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
 	@test -n "$(RMFPOD)" || { echo "ERROR: rmf-core pod not found in namespace '$(NAMESPACE)'"; exit 1; }

@@ -87,12 +87,12 @@ fp['transform_tolerance'] = 0.2
 fp['use_velocity_scaled_lookahead_dist'] = False  # fixed lookahead in tight gaps
 fp['min_approach_linear_velocity'] = 0.05   # m/s — don't slow to zero near goal
 fp['approach_velocity_scaling_dist'] = 1.0  # m — start slowing 1m from goal
-fp['use_collision_detection'] = False
-# Collision detection disabled: RPP's forward-check stops the robot near
-# corridor walls (which appear as costmap obstacles). The VoxelLayer still
-# marks the other robot as an obstacle — visible as costmap inflation in
-# noVNC — but RPP follows the global path without re-checking local cells.
-# The yield is triggered by the application-layer Gz proximity monitor.
+fp['use_collision_detection'] = True
+# Collision detection re-enabled: with slam_toolbox accuracy (<=0.012m drift
+# vs AMCL 1-3m), the robot's actual position matches the costmap. In the
+# south outer corridor heading east, corridor walls are to the sides — RPP's
+# forward projection does not hit them. When robot_2 appears in the VoxelLayer,
+# RPP scales velocity down, causing ETA drift that triggers RMF negotiation.
 fp['use_regulated_linear_velocity_scaling'] = True   # slow near obstacles
 fp['use_fixed_curvature_lookahead'] = False
 fp['regulated_linear_scaling_min_radius'] = 0.9  # m
@@ -112,14 +112,13 @@ cs.setdefault('general_goal_checker', {})['yaw_goal_tolerance'] = 3.14159
 # RPP's use_collision_detection=False already handles this at the planner level;
 # the collision_monitor node causes double-suppression of velocity.
 cmon = p.setdefault('collision_monitor', {}).setdefault('ros__parameters', {})
-cmon['enabled'] = False
-# collision_monitor disabled: its approach polygon triggers on nearby corridor
-# walls (south outer wall is ~0.5m from the robot), stalling navigation.
-# Layer 2 LiDAR avoidance is demonstrated by RPP's use_collision_detection=True:
-# robot_2's body appears in robot_1's local VoxelLayer costmap → RPP's forward
-# projection detects the high-cost cells → use_regulated_linear_velocity_scaling
-# smoothly reduces robot_1's speed as robot_2 enters its approach distance.
-cmon.setdefault('FootprintApproach', {})['enabled'] = False
+cmon['enabled'] = True
+# collision_monitor re-enabled. With slam_toolbox accuracy the corridor walls
+# no longer cause false positives. Reduce time_before_collision to 0.5s
+# (was 1.2s default) so the approach polygon fires on the other robot at
+# close range without triggering on walls that are further away.
+cmon.setdefault('FootprintApproach', {})['enabled'] = True
+cmon.setdefault('FootprintApproach', {})['time_before_collision'] = 0.5
 
 # ── Global planner: switch NavFn from Dijkstra to A*.
 # Dijkstra hugs obstacle walls and produces paths with sharp turns near pillars.
@@ -162,15 +161,13 @@ if _slam_mode == '1':
     slam['link_scan_maximum_distance'] = 1.5
     print('[nav2-pod] SLAM BUILD MODE: mapping (building new posegraph)')
 else:
-    # AMCL for localization using the pre-built pgm map (full sandbox coverage).
-    # AMCL map frame = world frame so Nav2 goals need no coordinate offset.
-    # Drift in the symmetric south outer corridor does NOT break the LiDAR
-    # collision detection demo — VoxelLayer/RPP operate in the sensor/odom frame.
-    amcl_ros2 = p.setdefault('amcl', {}).setdefault('ros__parameters', {})
-    amcl_ros2['base_frame_id']   = 'base_footprint'
-    amcl_ros2['odom_frame_id']   = 'odom'
-    amcl_ros2['global_frame_id'] = 'map'
-    print('[nav2-pod] AMCL LOCALIZATION MODE: using pre-built pgm map')
+    # slam_toolbox in localization mode (non-lifecycle localization_slam_toolbox_node).
+    # Provides accurate scan-matching TF in the south outer corridor.
+    # The node is started as a standalone process (not through the lifecycle manager)
+    # to bypass the lifecycle activate timeout during posegraph deserialization.
+    # The global_costmap uses /map from slam_toolbox (posegraph-based occupancy grid).
+    # Nav2 goals subtract spawn offset: map = world - (INITIAL_X, INITIAL_Y).
+    print('[nav2-pod] SLAM LOCALIZATION MODE: localization_slam_toolbox_node (non-lifecycle)')
 
 # ── BT XML: use single-plan-then-follow (no 1 Hz replanning).
 # navigate_to_pose_w_replanning_and_recovery replans every sim-second;
@@ -243,19 +240,64 @@ else
 fi
 
 if [ "${SLAM_BUILD_MODE:-0}" = "1" ]; then
+  # Mapping mode: slam_toolbox builds posegraph (SLAM_BUILD_MODE=1 image only)
   ros2 launch nav2_bringup bringup_launch.py \
     use_sim_time:=True \
     autostart:=True \
     use_composition:=False \
     slam:=True \
     ${PARAMS_ARG} &
+  NAV2_PID=$!
 else
-  ros2 launch nav2_bringup bringup_launch.py \
+  # Localization mode: start localization_slam_toolbox_node as a standalone
+  # non-lifecycle process BEFORE nav2 navigation stack.
+  # Bypasses the lifecycle activate timeout that occurs during posegraph loading.
+  # Publishes map→odom TF and /map (posegraph-based occupancy grid).
+  read -r SLAM_QZ SLAM_QW < <(python3 -c \
+    "import math; y=${INITIAL_YAW}; print(math.sin(y/2), math.cos(y/2))")
+  ros2 run slam_toolbox localization_slam_toolbox_node \
+    --ros-args \
+    -p use_sim_time:=true \
+    -p odom_frame:=odom \
+    -p map_frame:=map \
+    -p base_frame:=base_footprint \
+    -p scan_topic:=/scan \
+    -p enable_interactive_mode:=false \
+    -p tf_buffer_duration:=30.0 \
+    -p transform_publish_period:=0.02 &
+  SLAM_LOC_PID=$!
+  echo "[nav2-pod/${ROBOT_NAME}] localization_slam_toolbox_node started (PID ${SLAM_LOC_PID})"
+
+  # Wait for localization_slam_toolbox_node to be ready before loading posegraph
+  sleep 8
+  echo "[nav2-pod/${ROBOT_NAME}] Loading posegraph /opt/ros2-demo/slam_maps/${ROBOT_NAME}_slam..."
+  timeout 60 ros2 service call /slam_toolbox/deserialize_map \
+    slam_toolbox/srv/DeserializePoseGraph \
+    "{filename: '/opt/ros2-demo/slam_maps/${ROBOT_NAME}_slam', match_type: 1, \
+     pose: {x: 0.0, y: 0.0, theta: ${INITIAL_YAW}}}" 2>/dev/null || true
+
+  # Wait for slam_toolbox to publish map→odom TF (indicates posegraph loaded)
+  echo "[nav2-pod/${ROBOT_NAME}] Waiting for slam_toolbox map→odom TF..."
+  for k in $(seq 1 30); do
+    if timeout 5 ros2 run tf2_ros tf2_echo "map" "odom" 2>&1 | grep -q "Translation"; then
+      echo "[nav2-pod/${ROBOT_NAME}] slam_toolbox TF ready. Starting Nav2 navigation stack..."
+      break
+    fi
+    echo "[nav2-pod/${ROBOT_NAME}] TF not yet available (${k}/30)..."
+    sleep 3
+  done
+
+  # Now start Nav2 navigation only (no localization — slam_toolbox handles TF).
+  # navigation_launch.py starts: bt_navigator, controller_server, planner_server,
+  # behavior_server, velocity_smoother, collision_monitor, waypoint_follower.
+  # The global_costmap subscribes to /map from slam_toolbox (correct posegraph
+  # bounds since slam_toolbox already published the full map before this launch).
+  ros2 launch nav2_bringup navigation_launch.py \
     use_sim_time:=True \
     autostart:=True \
     use_composition:=False \
-    map:="${BRINGUP_DIR}/maps/tb3_sandbox.yaml" \
     ${PARAMS_ARG} &
+  NAV2_PID=$!
 fi
 NAV2_PID=$!
 
@@ -451,30 +493,18 @@ if [ "${SLAM_BUILD_MODE:-0}" = "1" ]; then
     sleep 5
   done
 else
-  # ── AMCL localization mode ───────────────────────────────────────────────
-  # Wait for AMCL to activate, then publish /initialpose so it can publish
-  # the map→odom TF. AMCL uses BEST_EFFORT QoS for /initialpose.
-  echo "[nav2-pod/${ROBOT_NAME}] AMCL mode: waiting for AMCL + map→odom TF..."
-  read -r INITIAL_QZ INITIAL_QW < <(python3 -c \
-    "import math; y=${INITIAL_YAW}; print(math.sin(y/2), math.cos(y/2))")
-  for i in $(seq 1 180); do
-    if ros2 node list 2>/dev/null | grep -qE "^(/amcl|/${ROBOT_NAME}/amcl)$"; then
-      echo "[nav2-pod/${ROBOT_NAME}] AMCL detected (attempt ${i}), publishing initialpose..."
-      # Publish /initialpose every 5s while checking for map→odom TF (max 60 tries).
-      # AMCL publishes TF after receiving /initialpose and processing a laser scan.
-      for k in $(seq 1 60); do
-        ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
-          "{header: {frame_id: 'map'}, pose: {pose: {position: {x: ${INITIAL_X}, y: ${INITIAL_Y}, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: ${INITIAL_QZ}, w: ${INITIAL_QW}}}, covariance: [0.01, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01]}}" \
-          --times 1 --qos-reliability best_effort 2>/dev/null || true
-        if timeout 5 ros2 run tf2_ros tf2_echo "map" "odom" 2>&1 | grep -q "Translation"; then
-          echo "[nav2-pod/${ROBOT_NAME}] AMCL active — navigation stack ready."
-          break 3
-        fi
-        echo "[nav2-pod/${ROBOT_NAME}] Waiting for map→odom TF (${k}/60)..."
-        sleep 3
-      done
+  # ── slam_toolbox localization mode (non-lifecycle) ───────────────────────
+  # localization_slam_toolbox_node and navigation_launch.py were started before
+  # this subshell. The TF is already published (from the pre-launch sequence).
+  # Wait for bt_navigator to activate, then set additional params.
+  echo "[nav2-pod/${ROBOT_NAME}] Waiting for bt_navigator to activate (slam_toolbox localization)..."
+  for k in $(seq 1 60); do
+    BT=$(timeout 5 ros2 lifecycle get /bt_navigator 2>/dev/null | grep -oE "[a-z]+ \[[0-9]+\]" | head -1)
+    if echo "${BT}" | grep -q "active"; then
+      echo "[nav2-pod/${ROBOT_NAME}] bt_navigator active — navigation stack ready."
       break
     fi
+    echo "[nav2-pod/${ROBOT_NAME}] bt_navigator: ${BT} (${k}/60)..."
     sleep 5
   done
 
