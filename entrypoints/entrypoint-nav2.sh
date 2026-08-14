@@ -460,17 +460,18 @@ else
   for i in $(seq 1 180); do
     if ros2 node list 2>/dev/null | grep -qE "^(/amcl|/${ROBOT_NAME}/amcl)$"; then
       echo "[nav2-pod/${ROBOT_NAME}] AMCL detected (attempt ${i}), publishing initialpose..."
-      for k in $(seq 1 30); do
-        timeout 20 ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
+      # Publish /initialpose every 5s while checking for map→odom TF (max 60 tries).
+      # AMCL publishes TF after receiving /initialpose and processing a laser scan.
+      for k in $(seq 1 60); do
+        ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
           "{header: {frame_id: 'map'}, pose: {pose: {position: {x: ${INITIAL_X}, y: ${INITIAL_Y}, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: ${INITIAL_QZ}, w: ${INITIAL_QW}}}, covariance: [0.01, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01]}}" \
-          --times 3 --qos-reliability best_effort 2>/dev/null || true
-        sleep 3
-        if timeout 8 ros2 run tf2_ros tf2_echo "map" "odom" 2>&1 | grep -q "Translation"; then
+          --times 1 --qos-reliability best_effort 2>/dev/null || true
+        if timeout 5 ros2 run tf2_ros tf2_echo "map" "odom" 2>&1 | grep -q "Translation"; then
           echo "[nav2-pod/${ROBOT_NAME}] AMCL active — navigation stack ready."
           break 3
         fi
-        echo "[nav2-pod/${ROBOT_NAME}] Waiting for map→odom TF (${k}/30)..."
-        sleep 2
+        echo "[nav2-pod/${ROBOT_NAME}] Waiting for map→odom TF (${k}/60)..."
+        sleep 3
       done
       break
     fi
