@@ -252,79 +252,118 @@ if [ "${SLAM_BUILD_MODE:-0}" = "1" ]; then
 else
   # Localization mode: start localization_slam_toolbox_node as a standalone
   # non-lifecycle process BEFORE nav2 navigation stack.
-  # Bypasses the lifecycle activate timeout that occurs during posegraph loading.
-  # Publishes map→odom TF and /map (posegraph-based occupancy grid).
-  read -r SLAM_QZ SLAM_QW < <(python3 -c \
-    "import math; y=${INITIAL_YAW}; print(math.sin(y/2), math.cos(y/2))")
-  ros2 run slam_toolbox localization_slam_toolbox_node \
-    --ros-args \
-    -p use_sim_time:=true \
-    -p odom_frame:=odom \
-    -p map_frame:=map \
-    -p base_frame:=base_footprint \
-    -p scan_topic:=/scan \
-    -p enable_interactive_mode:=false \
-    -p tf_buffer_duration:=30.0 \
-    -p transform_publish_period:=0.02 &
-  SLAM_LOC_PID=$!
-  echo "[nav2-pod/${ROBOT_NAME}] localization_slam_toolbox_node started (PID ${SLAM_LOC_PID})"
-
-  # localization_slam_toolbox_node is a lifecycle node.
-  # Key insight: UNLIKE sync_slam_toolbox_node, posegraph loading happens via
-  # the deserialize_map SERVICE (after activation), NOT during the activate
-  # transition. So configure+activate are both fast — no timeout risk.
-  # The posegraph loading timeout is controlled by us (timeout 120).
-  sleep 5
-  echo "[nav2-pod/${ROBOT_NAME}] Configuring localization_slam_toolbox_node (lifecycle)..."
-  timeout 15 ros2 lifecycle set /slam_toolbox configure 2>/dev/null || true
-  sleep 3
-  echo "[nav2-pod/${ROBOT_NAME}] Activating localization_slam_toolbox_node (fast, no posegraph yet)..."
-  timeout 15 ros2 lifecycle set /slam_toolbox activate 2>/dev/null || true
-  sleep 3
-
-  echo "[nav2-pod/${ROBOT_NAME}] Loading posegraph /opt/ros2-demo/slam_maps/${ROBOT_NAME}_slam..."
-  timeout 120 ros2 service call /slam_toolbox/deserialize_map \
-    slam_toolbox/srv/DeserializePoseGraph \
-    "{filename: '/opt/ros2-demo/slam_maps/${ROBOT_NAME}_slam', match_type: 1, \
-     pose: {x: 0.0, y: 0.0, theta: ${INITIAL_YAW}}}" 2>/dev/null || true
-  echo "[nav2-pod/${ROBOT_NAME}] Posegraph loaded. Publishing /initialpose..."
-
+  #
+  # ROOT CAUSE OF LOCALIZATION DRIFT (research finding):
+  # Default loop_search_maximum_distance=4.0m allows loop closure to find
+  # posegraph candidates anywhere in the 4m tb3_sandbox. Symmetric corridor
+  # walls make the spawn scan ambiguously similar to other corridor positions
+  # (e.g., map(3.63,-1.49)), causing non-deterministic convergence to wrong
+  # locations. Restricting to 1.0m eliminates all wrong candidates — they are
+  # all >1.5m away from spawn.
+  #
+  # Fix: set loop_search_maximum_distance=1.0 + verify TF is near (0,0) after
+  # initialization, retrying slam_toolbox startup if drift > 0.3m.
   read -r SLAM_QZ SLAM_QW < <(python3 -c \
     "import math; y=${INITIAL_YAW}; print(math.sin(y/2), math.cos(y/2))")
 
-  # Publish /initialpose at map(0,0) = posegraph dock = robot spawn position.
-  ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
-    "{header: {frame_id: 'map'}, pose: {pose: {position: {x: 0.0, y: 0.0, z: 0.0}, \
-    orientation: {x: 0.0, y: 0.0, z: ${SLAM_QZ}, w: ${SLAM_QW}}}, \
-    covariance: [0.25,0,0,0,0,0, 0,0.25,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0, \
-    0,0,0,0,0,0, 0,0,0,0,0,0.05]}}" \
-    --times 5 2>/dev/null || true
+  # Inner function: attempt one slam_toolbox init cycle.
+  # Returns 0 (success) if TF converges to within 0.3m of origin, else 1.
+  _slam_init_one() {
+    local attempt=$1
+    echo "[nav2-pod/${ROBOT_NAME}] slam_toolbox init attempt ${attempt}..."
+    # Kill previous instance if retrying
+    [ -n "${SLAM_LOC_PID:-}" ] && kill "${SLAM_LOC_PID}" 2>/dev/null; sleep 2
 
-  # Wait for map→odom TF to appear (slam_toolbox publishes after first scan match)
-  echo "[nav2-pod/${ROBOT_NAME}] Waiting for slam_toolbox map→odom TF..."
-  for k in $(seq 1 40); do
-    if timeout 5 ros2 run tf2_ros tf2_echo "map" "odom" 2>&1 | grep -q "Translation"; then
-      echo "[nav2-pod/${ROBOT_NAME}] slam_toolbox TF ready. Starting Nav2 navigation stack..."
+    ros2 run slam_toolbox localization_slam_toolbox_node \
+      --ros-args \
+      -p use_sim_time:=true \
+      -p odom_frame:=odom \
+      -p map_frame:=map \
+      -p base_frame:=base_footprint \
+      -p scan_topic:=/scan \
+      -p enable_interactive_mode:=false \
+      -p tf_buffer_duration:=30.0 \
+      -p transform_publish_period:=0.02 \
+      -p loop_search_maximum_distance:=1.0 \
+      -p link_scan_maximum_distance:=1.5 \
+      -p correlation_search_space_dimension:=0.5 \
+      -p minimum_time_interval:=0.5 &
+    SLAM_LOC_PID=$!
+    echo "[nav2-pod/${ROBOT_NAME}] localization_slam_toolbox_node started (PID ${SLAM_LOC_PID})"
+
+    sleep 5
+    timeout 15 ros2 lifecycle set /slam_toolbox configure 2>/dev/null || true
+    sleep 3
+    timeout 15 ros2 lifecycle set /slam_toolbox activate 2>/dev/null || true
+    sleep 3
+
+    echo "[nav2-pod/${ROBOT_NAME}] Loading posegraph /opt/ros2-demo/slam_maps/${ROBOT_NAME}_slam..."
+    timeout 120 ros2 service call /slam_toolbox/deserialize_map \
+      slam_toolbox/srv/DeserializePoseGraph \
+      "{filename: '/opt/ros2-demo/slam_maps/${ROBOT_NAME}_slam', match_type: 1, \
+       pose: {x: 0.0, y: 0.0, theta: ${INITIAL_YAW}}}" 2>/dev/null || true
+
+    # Publish /initialpose at map(0,0) = posegraph origin = robot spawn.
+    ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
+      "{header: {frame_id: 'map'}, pose: {pose: {position: {x: 0.0, y: 0.0, z: 0.0}, \
+      orientation: {x: 0.0, y: 0.0, z: ${SLAM_QZ}, w: ${SLAM_QW}}}, \
+      covariance: [0.01,0,0,0,0,0, 0,0.01,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0, \
+      0,0,0,0,0,0, 0,0,0,0,0,0.01]}}" \
+      --times 5 2>/dev/null || true
+
+    # Wait for TF and verify it is CORRECT (translation < 0.3m).
+    # This catches the case where loop closure still finds a wrong candidate.
+    echo "[nav2-pod/${ROBOT_NAME}] Waiting for slam_toolbox map→odom TF and verifying correctness..."
+    for k in $(seq 1 40); do
+      TF_OUT=$(timeout 5 ros2 run tf2_ros tf2_echo "map" "odom" 2>&1 | grep "Translation" | head -1)
+      if [ -n "${TF_OUT}" ]; then
+        TF_DIST=$(echo "${TF_OUT}" | python3 -c "
+import sys, re, math
+m = re.search(r'\[([^,]+),\s*([^,]+)', sys.stdin.read())
+x, y = (float(m.group(1)), float(m.group(2))) if m else (99, 99)
+print(f'{math.sqrt(x**2+y**2):.3f}|{x:.3f}|{y:.3f}')
+" 2>/dev/null || echo "99|99|99")
+        DIST=$(echo "${TF_DIST}" | cut -d'|' -f1)
+        TX=$(echo "${TF_DIST}" | cut -d'|' -f2)
+        TY=$(echo "${TF_DIST}" | cut -d'|' -f3)
+        echo "[nav2-pod/${ROBOT_NAME}] TF = (${TX}, ${TY}), dist from origin = ${DIST}m"
+        if python3 -c "import sys; exit(0 if float('${DIST}') < 0.30 else 1)" 2>/dev/null; then
+          echo "[nav2-pod/${ROBOT_NAME}] TF CORRECT (< 0.3m). Navigation stack can start."
+          return 0
+        else
+          echo "[nav2-pod/${ROBOT_NAME}] TF WRONG (${DIST}m) — slam_toolbox drifted. Will retry."
+          return 1
+        fi
+      fi
+      if [ $((k % 5)) -eq 0 ]; then
+        ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
+          "{header: {frame_id: 'map'}, pose: {pose: {position: {x: 0.0, y: 0.0, z: 0.0}, \
+          orientation: {x: 0.0, y: 0.0, z: ${SLAM_QZ}, w: ${SLAM_QW}}}, \
+          covariance: [0.01,0,0,0,0,0, 0,0.01,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0, \
+          0,0,0,0,0,0, 0,0,0,0,0,0.01]}}" \
+          --times 3 2>/dev/null || true
+      fi
+      echo "[nav2-pod/${ROBOT_NAME}] TF not yet available (${k}/40)..."
+      sleep 3
+    done
+    echo "[nav2-pod/${ROBOT_NAME}] TF never appeared — retrying."
+    return 1
+  }
+
+  # Retry up to 3 times until TF converges correctly to spawn position.
+  SLAM_INIT_OK=0
+  for attempt in 1 2 3; do
+    if _slam_init_one "${attempt}"; then
+      SLAM_INIT_OK=1
       break
     fi
-    # Re-publish initialpose every 15s if TF hasn't appeared
-    if [ $((k % 5)) -eq 0 ]; then
-      ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
-        "{header: {frame_id: 'map'}, pose: {pose: {position: {x: 0.0, y: 0.0, z: 0.0}, \
-        orientation: {x: 0.0, y: 0.0, z: ${SLAM_QZ}, w: ${SLAM_QW}}}, \
-        covariance: [0.25,0,0,0,0,0, 0,0.25,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0, \
-        0,0,0,0,0,0, 0,0,0,0,0,0.05]}}" \
-        --times 3 2>/dev/null || true
-    fi
-    echo "[nav2-pod/${ROBOT_NAME}] TF not yet available (${k}/40)..."
+    echo "[nav2-pod/${ROBOT_NAME}] Attempt ${attempt} failed. Retrying in 3s..."
     sleep 3
   done
+  [ "${SLAM_INIT_OK}" = "0" ] && \
+    echo "[nav2-pod/${ROBOT_NAME}] WARNING: slam_toolbox failed all 3 attempts — proceeding."
 
-  # Now start Nav2 navigation only (no localization — slam_toolbox handles TF).
-  # navigation_launch.py starts: bt_navigator, controller_server, planner_server,
-  # behavior_server, velocity_smoother, collision_monitor, waypoint_follower.
-  # The global_costmap subscribes to /map from slam_toolbox (correct posegraph
-  # bounds since slam_toolbox already published the full map before this launch).
+  # Start Nav2 navigation only (slam_toolbox provides TF and /map).
   ros2 launch nav2_bringup navigation_launch.py \
     use_sim_time:=True \
     autostart:=True \
