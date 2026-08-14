@@ -42,7 +42,7 @@ ROBOT1_HOME = (-2.0, -0.5)
 ROBOT2_HOME = ( 2.0,  0.5)
 S_IN        = (-1.5, -1.75)   # south corridor west entry
 S_OUT       = ( 1.5, -1.75)   # south corridor east entry
-RETREAT_PT  = ( 2.5, -1.75)   # robot_2 retreats here to clear corridor
+RETREAT_PT  = ( 2.5, -1.50)   # robot_2 retreats east — within map bounds (y=-2.00 map)
 
 YAW_EAST = 0.0          # robot_1 heading east
 YAW_WEST = math.pi      # robot_2 heading west
@@ -263,16 +263,24 @@ def main():
     # robot_2: spawn (2.0,0.5) → S_OUT (1.5,-1.75) directly
     #   The west-then-south path through the explored corridor is in the posegraph.
     #   SE corner (2.0,-1.75) = map(0,-2.25) is outside posegraph bounds.
-    SW_CORNER = (-2.0, -1.75)  # west outer wall — explored by robot_1
+    # Posegraph map bounds (verified):
+    #   robot_1: covers south corridor at y=-1.75 (y_map=-1.25) ✓
+    #   robot_2: map y_min=-2.06 in map frame → world y_min=-1.56; S_OUT at
+    #            world y=-1.75 = map y=-2.25 is outside bounds.
+    # Use R2_ENTRY=(1.5,-1.50) = map(-0.5,-2.00) which is within robot_2's bounds.
+    # LiDAR detection still works: robot_1 at (0,-1.75) to robot_2 at (1.5,-1.50)
+    # = 1.52m < 2.5m obstacle_max_range → VoxelLayer detects robot_2 ✓.
+    SW_CORNER = (-2.0, -1.75)  # west outer wall — within robot_1's map bounds
+    R2_ENTRY  = ( 1.5, -1.50)  # north edge of south corridor — within robot_2's bounds
 
     def phase1a_robot1():
         r1.navigate(*SW_CORNER, YAW_EAST, timeout=60.0)
         r1.navigate(*S_IN,      YAW_EAST, timeout=60.0)
 
     def phase1a_robot2():
-        # Navigate to S_OUT — the posegraph now covers this after the improved
-        # exploration run (robot_2 dwells at s_out and along the corridor).
-        r2.navigate(*S_OUT, YAW_WEST, timeout=120.0)
+        # Navigate to north edge of south corridor — within robot_2's map bounds.
+        # Robot_2 at (1.5,-1.50) is close enough (1-2m) for LiDAR detection.
+        r2.navigate(*R2_ENTRY, YAW_WEST, timeout=120.0)
 
     t1 = threading.Thread(target=phase1a_robot1, daemon=True)
     t2 = threading.Thread(target=phase1a_robot2, daemon=True)
@@ -368,21 +376,26 @@ def main():
     time.sleep(2.0)
 
     # ─────────────────────────────────────────────────────────────────────────
-    # Phase 3 — Both route to final swap positions
+    # Phase 3 — Both route to final positions (within each robot's map bounds)
     # ─────────────────────────────────────────────────────────────────────────
-    print(f"\n[{ts()}] === Phase 3: Route to final swap positions ===")
+    # robot_1: navigate to robot_2_home (2.0,0.5) — large posegraph covers this
+    # robot_2: return to its own spawn area (2.0,0.5) — definitely within map
+    #          robot_2 cannot navigate to robot_1_home (-2.0,-0.5) as that is
+    #          at map(-4.0,-1.0) which is outside robot_2's x bounds.
+    R2_FINAL = (2.0, 0.5)   # robot_2 returns to spawn area — within its map
+    print(f"\n[{ts()}] === Phase 3: Route to final positions ===")
     print(  f"  robot_1 → robot_2_home {ROBOT2_HOME}")
-    print(  f"  robot_2 → robot_1_home {ROBOT1_HOME}")
+    print(  f"  robot_2 → spawn area {R2_FINAL} (robot_1_home outside robot_2 map)")
 
-    # Wait for t1 (robot_1 s_out goal) to complete before sending final goal
+    # Wait for t1 (robot_1 corridor goal) to complete before sending final goal
     t1.join(timeout=60.0)
 
     t3 = threading.Thread(target=r1.navigate,
                           args=(*ROBOT2_HOME,), daemon=True)
     t4 = threading.Thread(target=r2.navigate,
-                          args=(*ROBOT1_HOME,), daemon=True)
+                          args=(*R2_FINAL,), daemon=True)
     t3.start()
-    time.sleep(3)   # slight stagger so routes don't conflict in the transition area
+    time.sleep(3)   # slight stagger
     t4.start()
     t3.join(); t4.join()
 
