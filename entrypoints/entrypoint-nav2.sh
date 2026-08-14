@@ -495,6 +495,15 @@ else
   timeout 8 ros2 param set /global_costmap/global_costmap transform_tolerance 10.0 2>/dev/null || true
   timeout 8 ros2 param set /controller_server general_goal_checker.yaw_goal_tolerance 3.14159 2>/dev/null || true
 
+  # Clear global costmap to force re-initialization from the fully-loaded
+  # slam_toolbox map. The costmap may have initialized from slam_toolbox's
+  # initial empty map before the posegraph was deserialized. Clearing forces
+  # the static_layer to re-subscribe and get the correct posegraph-based map.
+  sleep 5
+  timeout 10 ros2 service call /global_costmap/clear_entirely_global_costmap \
+    std_srvs/srv/Empty "{}" 2>/dev/null || true
+  echo "[nav2-pod/${ROBOT_NAME}] Global costmap cleared (reloads slam_toolbox posegraph map)"
+
   # Zenoh keepalive — prevents cmd_vel route from being garbage-collected (~82s idle).
   python3 -c "
 import zenoh, time, sys, signal
