@@ -269,21 +269,45 @@ else
   echo "[nav2-pod/${ROBOT_NAME}] localization_slam_toolbox_node started (PID ${SLAM_LOC_PID})"
 
   # Wait for localization_slam_toolbox_node to be ready before loading posegraph
-  sleep 8
+  sleep 10
   echo "[nav2-pod/${ROBOT_NAME}] Loading posegraph /opt/ros2-demo/slam_maps/${ROBOT_NAME}_slam..."
   timeout 60 ros2 service call /slam_toolbox/deserialize_map \
     slam_toolbox/srv/DeserializePoseGraph \
     "{filename: '/opt/ros2-demo/slam_maps/${ROBOT_NAME}_slam', match_type: 1, \
-     pose: {x: 0.0, y: 0.0, theta: ${INITIAL_YAW}}}" 2>/dev/null || true
+     pose: {x: 0.0, y: 0.0, theta: ${INITIAL_YAW}}}" 2>&1 | tee /tmp/deserialize_log.txt | head -5 || true
+  echo "[nav2-pod/${ROBOT_NAME}] deserialize_map result: $(cat /tmp/deserialize_log.txt | grep -oE 'result=[0-9]+')"
 
-  # Wait for slam_toolbox to publish map→odom TF (indicates posegraph loaded)
+  sleep 3
+
+  # Publish /initialpose at map(0,0) = posegraph dock = robot spawn.
+  # localization_slam_toolbox_node needs this hint to start scan-matching.
+  read -r SLAM_QZ SLAM_QW < <(python3 -c \
+    "import math; y=${INITIAL_YAW}; print(math.sin(y/2), math.cos(y/2))")
+  echo "[nav2-pod/${ROBOT_NAME}] Publishing /initialpose to start slam_toolbox scan-matching..."
+  ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
+    "{header: {frame_id: 'map'}, pose: {pose: {position: {x: 0.0, y: 0.0, z: 0.0}, \
+    orientation: {x: 0.0, y: 0.0, z: ${SLAM_QZ}, w: ${SLAM_QW}}}, \
+    covariance: [0.25,0,0,0,0,0, 0,0.25,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0, \
+    0,0,0,0,0,0, 0,0,0,0,0,0.05]}}" \
+    --times 5 2>/dev/null || true
+
+  # Wait for slam_toolbox to publish map→odom TF
   echo "[nav2-pod/${ROBOT_NAME}] Waiting for slam_toolbox map→odom TF..."
-  for k in $(seq 1 30); do
+  for k in $(seq 1 40); do
     if timeout 5 ros2 run tf2_ros tf2_echo "map" "odom" 2>&1 | grep -q "Translation"; then
       echo "[nav2-pod/${ROBOT_NAME}] slam_toolbox TF ready. Starting Nav2 navigation stack..."
       break
     fi
-    echo "[nav2-pod/${ROBOT_NAME}] TF not yet available (${k}/30)..."
+    # Re-publish initialpose every 15s in case slam_toolbox dropped the first messages
+    if [ $((k % 5)) -eq 0 ]; then
+      ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
+        "{header: {frame_id: 'map'}, pose: {pose: {position: {x: 0.0, y: 0.0, z: 0.0}, \
+        orientation: {x: 0.0, y: 0.0, z: ${SLAM_QZ}, w: ${SLAM_QW}}}, \
+        covariance: [0.25,0,0,0,0,0, 0,0.25,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0, \
+        0,0,0,0,0,0, 0,0,0,0,0,0.05]}}" \
+        --times 3 2>/dev/null || true
+    fi
+    echo "[nav2-pod/${ROBOT_NAME}] TF not yet available (${k}/40)..."
     sleep 3
   done
 
