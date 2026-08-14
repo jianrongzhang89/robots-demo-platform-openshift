@@ -268,22 +268,30 @@ else
   SLAM_LOC_PID=$!
   echo "[nav2-pod/${ROBOT_NAME}] localization_slam_toolbox_node started (PID ${SLAM_LOC_PID})"
 
-  # Wait for localization_slam_toolbox_node to be ready before loading posegraph
-  sleep 10
-  echo "[nav2-pod/${ROBOT_NAME}] Loading posegraph /opt/ros2-demo/slam_maps/${ROBOT_NAME}_slam..."
-  timeout 60 ros2 service call /slam_toolbox/deserialize_map \
-    slam_toolbox/srv/DeserializePoseGraph \
-    "{filename: '/opt/ros2-demo/slam_maps/${ROBOT_NAME}_slam', match_type: 1, \
-     pose: {x: 0.0, y: 0.0, theta: ${INITIAL_YAW}}}" 2>&1 | tee /tmp/deserialize_log.txt | head -5 || true
-  echo "[nav2-pod/${ROBOT_NAME}] deserialize_map result: $(cat /tmp/deserialize_log.txt | grep -oE 'result=[0-9]+')"
-
+  # localization_slam_toolbox_node is a lifecycle node.
+  # Key insight: UNLIKE sync_slam_toolbox_node, posegraph loading happens via
+  # the deserialize_map SERVICE (after activation), NOT during the activate
+  # transition. So configure+activate are both fast — no timeout risk.
+  # The posegraph loading timeout is controlled by us (timeout 120).
+  sleep 5
+  echo "[nav2-pod/${ROBOT_NAME}] Configuring localization_slam_toolbox_node (lifecycle)..."
+  timeout 15 ros2 lifecycle set /slam_toolbox configure 2>/dev/null || true
+  sleep 3
+  echo "[nav2-pod/${ROBOT_NAME}] Activating localization_slam_toolbox_node (fast, no posegraph yet)..."
+  timeout 15 ros2 lifecycle set /slam_toolbox activate 2>/dev/null || true
   sleep 3
 
-  # Publish /initialpose at map(0,0) = posegraph dock = robot spawn.
-  # localization_slam_toolbox_node needs this hint to start scan-matching.
+  echo "[nav2-pod/${ROBOT_NAME}] Loading posegraph /opt/ros2-demo/slam_maps/${ROBOT_NAME}_slam..."
+  timeout 120 ros2 service call /slam_toolbox/deserialize_map \
+    slam_toolbox/srv/DeserializePoseGraph \
+    "{filename: '/opt/ros2-demo/slam_maps/${ROBOT_NAME}_slam', match_type: 1, \
+     pose: {x: 0.0, y: 0.0, theta: ${INITIAL_YAW}}}" 2>/dev/null || true
+  echo "[nav2-pod/${ROBOT_NAME}] Posegraph loaded. Publishing /initialpose..."
+
   read -r SLAM_QZ SLAM_QW < <(python3 -c \
     "import math; y=${INITIAL_YAW}; print(math.sin(y/2), math.cos(y/2))")
-  echo "[nav2-pod/${ROBOT_NAME}] Publishing /initialpose to start slam_toolbox scan-matching..."
+
+  # Publish /initialpose at map(0,0) = posegraph dock = robot spawn position.
   ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
     "{header: {frame_id: 'map'}, pose: {pose: {position: {x: 0.0, y: 0.0, z: 0.0}, \
     orientation: {x: 0.0, y: 0.0, z: ${SLAM_QZ}, w: ${SLAM_QW}}}, \
@@ -291,14 +299,14 @@ else
     0,0,0,0,0,0, 0,0,0,0,0,0.05]}}" \
     --times 5 2>/dev/null || true
 
-  # Wait for slam_toolbox to publish map→odom TF
+  # Wait for map→odom TF to appear (slam_toolbox publishes after first scan match)
   echo "[nav2-pod/${ROBOT_NAME}] Waiting for slam_toolbox map→odom TF..."
   for k in $(seq 1 40); do
     if timeout 5 ros2 run tf2_ros tf2_echo "map" "odom" 2>&1 | grep -q "Translation"; then
       echo "[nav2-pod/${ROBOT_NAME}] slam_toolbox TF ready. Starting Nav2 navigation stack..."
       break
     fi
-    # Re-publish initialpose every 15s in case slam_toolbox dropped the first messages
+    # Re-publish initialpose every 15s if TF hasn't appeared
     if [ $((k % 5)) -eq 0 ]; then
       ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
         "{header: {frame_id: 'map'}, pose: {pose: {position: {x: 0.0, y: 0.0, z: 0.0}, \
