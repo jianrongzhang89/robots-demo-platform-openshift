@@ -286,24 +286,25 @@ def main():
           f"robot_2 at ({p2[0]:.2f},{p2[1]:.2f})")
 
     # ─────────────────────────────────────────────────────────────────────────
-    # Phase 1b — LiDAR approach: robot_1 moves east, robot_2 is stationary
+    # Phase 1b — Approach: robot_1 navigates toward robot_2's actual position
     # ─────────────────────────────────────────────────────────────────────────
-    # Key design decision: send robot_1 to the CORRIDOR MIDPOINT (0.5,-1.75),
-    # not past robot_2 at s_out (1.5,-1.75). This avoids NavFn failing because
-    # the goal cell is occupied by robot_2 in the global costmap.
-    # As robot_1 moves east toward (0.5,-1.75), robot_2's body enters robot_1's
-    # VoxelLayer local costmap → RPP regulated scaling slows robot_1 (Layer 2).
-    MID_CORRIDOR = (0.5, -1.75)
+    # Use robot_2's Gz ground-truth position as the Nav2 goal for robot_1.
+    # AMCL map frame = world frame, so Gz coordinates work directly as Nav2 goals.
+    # This guarantees robot_1 approaches robot_2 regardless of AMCL drift.
+    # robot_2 holds position as a stationary LiDAR obstacle.
+    p2_now = gz.xy('robot_2') or S_OUT
+    # Target slightly west of robot_2 so path doesn't collide with robot_2 body
+    approach_target = (p2_now[0] - 1.0, p2_now[1])
 
-    print(f"\n[{ts()}] === Phase 1b: LiDAR approach ===")
-    print(  f"  robot_1 → corridor midpoint {MID_CORRIDOR} (approaching robot_2 at s_out)")
-    print(  f"  robot_2 holds at s_out as a stationary LiDAR obstacle")
-    print(  f"  [Layer 2] Watch robot_1 slow as robot_2 enters its VoxelLayer costmap")
+    print(f"\n[{ts()}] === Phase 1b: Approach ===")
+    print(  f"  robot_1 → approach target {approach_target} (robot_2 at {p2_now})")
+    print(  f"  robot_2 holds as stationary LiDAR obstacle")
+    print(  f"  [Layer 2] VoxelLayer marks robot_2 in robot_1's local costmap")
     print(  f"  yield trigger: Gz distance < {YIELD_DIST} m OR {TIMEOUT}s elapsed")
 
-    # Only send robot_1 east — robot_2 stays at s_out as obstacle
+    # Send robot_1 toward robot_2's position
     t1 = threading.Thread(target=r1.navigate,
-                          args=(*MID_CORRIDOR, YAW_EAST), daemon=True)
+                          args=(*approach_target, YAW_EAST), daemon=True)
     t1.start()
 
     # Monitor distance until yield threshold or timeout
