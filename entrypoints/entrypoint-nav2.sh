@@ -87,11 +87,12 @@ fp['transform_tolerance'] = 0.2
 fp['use_velocity_scaled_lookahead_dist'] = False  # fixed lookahead in tight gaps
 fp['min_approach_linear_velocity'] = 0.05   # m/s — don't slow to zero near goal
 fp['approach_velocity_scaling_dist'] = 1.0  # m — start slowing 1m from goal
-fp['use_collision_detection'] = True
-# Collision detection re-enabled for the outer corridor demo: robots navigate
-# via the south/north outer corridors (no pillars), so RPP's forward-check
-# safely detects the other robot as a VoxelLayer obstacle and slows down.
-# The pillar-grid path is not used in the RMF swap demo.
+fp['use_collision_detection'] = False
+# Collision detection disabled: RPP's forward-check stops the robot near
+# corridor walls (which appear as costmap obstacles). The VoxelLayer still
+# marks the other robot as an obstacle — visible as costmap inflation in
+# noVNC — but RPP follows the global path without re-checking local cells.
+# The yield is triggered by the application-layer Gz proximity monitor.
 fp['use_regulated_linear_velocity_scaling'] = True   # slow near obstacles
 fp['use_fixed_curvature_lookahead'] = False
 fp['regulated_linear_scaling_min_radius'] = 0.9  # m
