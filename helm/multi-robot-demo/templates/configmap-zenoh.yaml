@@ -38,7 +38,7 @@ data:
               // not from nav2 pods. Including it creates a feedback loop (nav bridge receives
               // robot_1/tf_static from Zenoh, delivers to DDS /tf_static, then re-publishes
               // it back to Zenoh as robot_1/tf_static, confusing the TRANSIENT_LOCAL cache).
-              ".*/(tf|battery_state|cmd_vel|amcl_pose|rmf_navigate_result)"
+              ".*/(tf|battery_state|cmd_vel|amcl_pose|rmf_navigate_result|local_costmap/costmap|local_costmap/costmap_updates)"
             ],
             subscribers: [
               ".*/tf",
