@@ -286,30 +286,37 @@ def main():
           f"robot_2 at ({p2[0]:.2f},{p2[1]:.2f})")
 
     # ─────────────────────────────────────────────────────────────────────────
-    # Phase 1b — Approach: robot_1 navigates toward robot_2's actual position
+    # Phase 1b — Gz P-controller approach: guaranteed proximity for yield
     # ─────────────────────────────────────────────────────────────────────────
-    # Use robot_2's Gz ground-truth position as the Nav2 goal for robot_1.
-    # AMCL map frame = world frame, so Gz coordinates work directly as Nav2 goals.
-    # This guarantees robot_1 approaches robot_2 regardless of AMCL drift.
-    # robot_2 holds position as a stationary LiDAR obstacle.
+    # AMCL drift makes Nav2-based approach unreliable (wrong position estimates).
+    # The Gz P-controller drives robot_1 directly toward robot_2's ground-truth
+    # position, guaranteeing proximity. During approach, robot_2 appears in
+    # robot_1's local VoxelLayer costmap — visible as obstacle in noVNC.
     p2_now = gz.xy('robot_2') or S_OUT
-    # Target slightly west of robot_2 so path doesn't collide with robot_2 body
-    approach_target = (p2_now[0] - 1.0, p2_now[1])
+    print(f"\n[{ts()}] === Phase 1b: Gz P-controller approach ===")
+    print(  f"  robot_1 drives toward robot_2 at {p2_now}")
+    print(  f"  robot_2 holds — VoxelLayer marks it in robot_1's costmap (Layer 2)")
+    print(  f"  yield trigger: Gz distance < {YIELD_DIST} m")
 
-    print(f"\n[{ts()}] === Phase 1b: Approach ===")
-    print(  f"  robot_1 → approach target {approach_target} (robot_2 at {p2_now})")
-    print(  f"  robot_2 holds as stationary LiDAR obstacle")
-    print(  f"  [Layer 2] VoxelLayer marks robot_2 in robot_1's local costmap")
-    print(  f"  yield trigger: Gz distance < {YIELD_DIST} m OR {TIMEOUT}s elapsed")
+    zero = b'\x00\x01\x00\x00' + b'\x00' * 48
+    def twist(vx, wz):
+        return b'\x00\x01\x00\x00' + struct.pack('<ddd', vx, 0, 0) + struct.pack('<ddd', 0, 0, wz)
 
-    # Send robot_1 toward robot_2's position
-    t1 = threading.Thread(target=r1.navigate,
-                          args=(*approach_target, YAW_EAST), daemon=True)
-    t1.start()
+    # Hold robot_2 in place
+    r2_hold_pub = z.declare_publisher('robot_2/cmd_vel')
+    def hold_r2_loop():
+        deadline = time.time() + 90.0
+        while time.time() < deadline:
+            r2_hold_pub.put(zero)
+            time.sleep(0.04)
+    hold_t = threading.Thread(target=hold_r2_loop, daemon=True)
+    hold_t.start()
 
-    # Monitor distance until yield threshold or timeout
+    # Drive robot_1 toward robot_2
+    r1_drive_pub = z.declare_publisher('robot_1/cmd_vel')
+    target = gz.xy('robot_2') or p2_now
     yield_pos2 = None
-    deadline   = time.time() + TIMEOUT
+    deadline = time.time() + 60.0
     while time.time() < deadline:
         dist = gz.distance()
         if dist is not None:
@@ -317,14 +324,30 @@ def main():
             sys.stdout.flush()
             if dist < YIELD_DIST:
                 yield_pos2 = gz.xy('robot_2')
-                print(f"\n[{ts()}]   PROXIMITY — {dist:.2f} m — LiDAR avoidance demonstrated")
+                print(f"\n[{ts()}]   PROXIMITY — {dist:.2f} m — yield triggering!")
                 break
-        time.sleep(0.25)
-    else:
-        print(f"\n[{ts()}]   Timeout ({TIMEOUT}s) — triggering yield "
-              f"(robot_1 may have been slowed/stopped by LiDAR collision check)")
+        p1 = gz.xy('robot_1')
+        if p1:
+            tx, ty = target
+            x, y, yaw = p1[0], p1[1], gz._gz.get('robot_1', (0,0,0))[2]
+            dx, dy = tx - x, ty - y
+            d = math.sqrt(dx*dx + dy*dy)
+            if d < YIELD_DIST: break
+            he = math.atan2(dy, dx) - yaw
+            while he > math.pi: he -= 2*math.pi
+            while he < -math.pi: he += 2*math.pi
+            vx = 0.22 * min(1.0, d) if abs(he) < 0.8 else 0.0
+            wz = max(min(2.0*he, 1.0), -1.0)
+            r1_drive_pub.put(twist(vx, wz))
+        time.sleep(0.04)
+    r1_drive_pub.put(zero)
+    r1_drive_pub.undeclare()
 
-    t1.join(timeout=2.0)  # give navigation thread a moment then move on
+    if not yield_pos2:
+        print(f"\n[{ts()}]   No proximity within 60s — triggering yield anyway")
+        yield_pos2 = gz.xy('robot_2')
+
+    t1 = None  # no NavAgent thread for Phase 1b in this design
 
     # ─────────────────────────────────────────────────────────────────────────
     # Phase 2 — Application yield: robot_2 retreats east to clear corridor
@@ -378,9 +401,7 @@ def main():
     print(  f"  robot_1 → robot_2_home {ROBOT2_HOME}")
     print(  f"  robot_2 → robot_1_home {ROBOT1_HOME}")
 
-    # Wait for t1 (robot_1 corridor goal) to complete before sending final goal
-    t1.join(timeout=60.0)
-
+    # No t1 thread in Phase 1b (Gz P-controller) — proceed directly to Phase 3
     t3 = threading.Thread(target=r1.navigate,
                           args=(*ROBOT2_HOME,), daemon=True)
     t4 = threading.Thread(target=r2.navigate,
