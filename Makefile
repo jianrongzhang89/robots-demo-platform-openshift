@@ -169,26 +169,25 @@ dispatch-rmf-lidar: ## TRUE RMF+Nav2 demo: traffic planning + negotiation + LiDA
 	  sleep 5; \
 	done
 	@echo "Step 3: Dispatching bidirectional south corridor patrol via RMF traffic scheduler..."
-	@echo "  robot_1: r2_swall_w → s_in → s_out (outer-wall south approach, 3 loops)"
-	@echo "  robot_2: r2_swall_e → s_out → s_in (outer-wall south approach, 3 loops, 5s stagger)"
-	@echo "  Outer-wall route avoids pillar grid → use_collision_detection=True safe."
-	@echo "  RMF traffic scheduler detects s_in↔s_out lane conflict → negotiation."
-	@echo "  Nav2 RPP slows as robots approach → ETA drift → negotiation fires."
+	@echo "  robot_1: s_in → s_out (direct via nav_graph lane [0→14→15], 3 loops)"
+	@echo "  robot_2: s_out → s_in (direct via nav_graph lane [1→15→14], 3 loops, 5s stagger)"
+	@echo "  Both homes have direct lanes to corridor entries — no pillar grid traversal."
+	@echo "  RMF scheduler detects s_in↔s_out bidirectional conflict → negotiation."
 	@RMFPOD=$$(oc get pod -n $(NAMESPACE) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
 	oc exec -n $(NAMESPACE) $$RMFPOD -c rmf-core -- bash -c \
 	  'export HOME=/tmp/ros-home; \
 	   source /opt/ros/jazzy/setup.bash; \
 	   source /opt/free_fleet/install/setup.bash 2>/dev/null || true; \
-	   echo "[rmf] Dispatching robot_1: r2_swall_w → s_in → s_out (outer-wall east)"; \
+	   echo "[rmf] Dispatching robot_1: s_in → s_out (eastbound corridor, 3 loops)"; \
 	   ros2 run rmf_demos_tasks dispatch_patrol \
 	     -F turtlebot3 -R robot_1 \
-	     -p r2_swall_w s_in s_out \
+	     -p s_in s_out \
 	     -n 3 --use_sim_time & \
 	   sleep 5; \
-	   echo "[rmf] Dispatching robot_2: r2_swall_e → s_out → s_in (outer-wall west, 5s stagger)"; \
+	   echo "[rmf] Dispatching robot_2: s_out → s_in (westbound corridor, 3 loops, 5s stagger)"; \
 	   ros2 run rmf_demos_tasks dispatch_patrol \
 	     -F turtlebot3 -R robot_2 \
-	     -p r2_swall_e s_out s_in \
+	     -p s_out s_in \
 	     -n 3 --use_sim_time; \
 	   echo "[rmf] Both dispatched. Monitoring /fleet_states for 10 minutes..."; \
 	   timeout 600 ros2 topic echo /fleet_states --use_sim_time 2>/dev/null | \
