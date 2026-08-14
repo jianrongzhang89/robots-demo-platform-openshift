@@ -20,10 +20,14 @@ ROUTER = "tcp/zenoh-router:7447"
 # Run both robots concurrently to save time.
 
 ROBOT1_WAYPOINTS = [
-    # From spawn (-2.0,-0.5) heading east/south
+    # From spawn (-2.0,-0.5) heading east/south.
+    # Dwell in south outer corridor to ensure posegraph covers full corridor width.
     (-1.5, -0.5),   # move east in the inner area
-    (-1.5, -1.75),  # south to s_in (south outer corridor entry)
-    ( 0.0, -1.75),  # east along south outer corridor
+    (-2.0, -1.75),  # south along west wall to corridor entry (builds west wall coverage)
+    (-1.5, -1.75),  # s_in — south outer corridor
+    (-0.5, -1.75),  # east along corridor (more coverage)
+    ( 0.0, -1.75),  # corridor midpoint
+    ( 0.5, -1.75),  # more corridor coverage
     ( 1.5, -1.75),  # reach s_out
     ( 1.5,  0.0),   # north through east side
     ( 1.5,  1.75),  # north outer corridor east entry (n_in)
@@ -37,9 +41,14 @@ ROBOT1_WAYPOINTS = [
 
 ROBOT2_WAYPOINTS = [
     # From spawn (2.0, 0.5) heading west/south
+    # Extra southern waypoints added to ensure posegraph map covers y=-1.75 corridor.
+    # The robot must dwell at corridor positions so slam_toolbox builds coverage there.
     ( 1.5,  0.5),   # move west in the inner area
-    ( 1.5, -1.75),  # south to s_out (south outer corridor entry)
+    ( 1.5, -1.50),  # south toward corridor (y=-1.50 builds coverage for y=-1.75)
+    ( 1.5, -1.75),  # south outer corridor — full depth, builds map coverage
+    ( 0.5, -1.75),  # move west within corridor (more coverage at y=-1.75)
     ( 0.0, -1.75),  # west along south outer corridor
+    (-0.5, -1.75),  # more corridor coverage
     (-1.5, -1.75),  # reach s_in
     (-1.5,  0.0),   # north through west side
     (-1.5,  1.75),  # north outer corridor west entry (n_out)
@@ -210,8 +219,8 @@ def main():
     t1.start(); t2.start()
     t1.join(); t2.join()
 
-    print("\nExploration done. Waiting 10s for slam_toolbox to finish processing...")
-    time.sleep(10)
+    print("\nExploration done. Waiting 30s for slam_toolbox to process final scans...")
+    time.sleep(30)
 
     print("\nSerializing posegraphs...")
     for name in ['robot_1', 'robot_2']:
