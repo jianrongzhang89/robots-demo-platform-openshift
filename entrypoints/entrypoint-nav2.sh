@@ -87,12 +87,13 @@ fp['transform_tolerance'] = 0.2
 fp['use_velocity_scaled_lookahead_dist'] = False  # fixed lookahead in tight gaps
 fp['min_approach_linear_velocity'] = 0.05   # m/s — don't slow to zero near goal
 fp['approach_velocity_scaling_dist'] = 1.0  # m — start slowing 1m from goal
-fp['use_collision_detection'] = True
-# Collision detection re-enabled: with slam_toolbox accuracy (<=0.012m drift
-# vs AMCL 1-3m), the robot's actual position matches the costmap. In the
-# south outer corridor heading east, corridor walls are to the sides — RPP's
-# forward projection does not hit them. When robot_2 appears in the VoxelLayer,
-# RPP scales velocity down, causing ETA drift that triggers RMF negotiation.
+fp['use_collision_detection'] = False
+# Collision detection disabled: the spawn→s_in diagonal path passes through
+# the pillar grid where RPP's forward check fires on inflated pillar cells.
+# With slam_toolbox localization (<=0.012m drift), the VoxelLayer CORRECTLY
+# marks robot_2 as an obstacle when robots approach — visible in noVNC.
+# RMF negotiation fires via ETA drift (fleet_states position lag causes the
+# scheduler to detect trajectory overlap) rather than via RPP slowdown.
 fp['use_regulated_linear_velocity_scaling'] = True   # slow near obstacles
 fp['use_fixed_curvature_lookahead'] = False
 fp['regulated_linear_scaling_min_radius'] = 0.9  # m
