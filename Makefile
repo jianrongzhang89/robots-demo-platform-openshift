@@ -170,28 +170,33 @@ dispatch-rmf-lidar: ## TRUE RMF+Nav2 demo: traffic planning + negotiation + LiDA
 	done
 	@echo "Step 3: Dispatching bidirectional south corridor patrol via RMF traffic scheduler..."
 	@echo "  robot_1: s_in → s_out (direct via nav_graph lane [0→14→15], 3 loops)"
-	@echo "  robot_2: s_out → s_in (direct via nav_graph lane [1→15→14], 3 loops, 5s stagger)"
-	@echo "  Both homes have direct lanes to corridor entries — no pillar grid traversal."
-	@echo "  RMF scheduler detects s_in↔s_out bidirectional conflict → negotiation."
-	@RMFPOD=$$(oc get pod -n $(NAMESPACE) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
-	oc exec -n $(NAMESPACE) $$RMFPOD -c rmf-core -- bash -c \
-	  'export HOME=/tmp/ros-home; \
-	   source /opt/ros/jazzy/setup.bash; \
-	   source /opt/free_fleet/install/setup.bash 2>/dev/null || true; \
-	   echo "[rmf] Dispatching robot_1: s_in → s_out (eastbound corridor, 3 loops)"; \
-	   ros2 run rmf_demos_tasks dispatch_patrol \
-	     -F turtlebot3 -R robot_1 \
-	     -p s_in s_out \
-	     -n 3 --use_sim_time & \
-	   sleep 5; \
-	   echo "[rmf] Dispatching robot_2: s_out → s_in (westbound corridor, 3 loops, 5s stagger)"; \
-	   ros2 run rmf_demos_tasks dispatch_patrol \
-	     -F turtlebot3 -R robot_2 \
-	     -p s_out s_in \
-	     -n 3 --use_sim_time; \
-	   echo "[rmf] Both dispatched. Monitoring /fleet_states for 10 minutes..."; \
-	   timeout 600 ros2 topic echo /fleet_states --use_sim_time 2>/dev/null | \
-	     grep -E "name: robot|task_id:|location:" || true'
+	@echo "  robot_2: s_out_hold → s_in (3 loops) — dispatched when robot_1 is confirmed mid-corridor."
+	@echo "  Position-triggered dispatch: robot_2 released only after robot_1's world x > -0.5"
+	@echo "  (1m past s_in entry). robot_2 routes via s_out_hold (x=1.5,y=-0.5) which is the"
+	@echo "  responsive_wait staging waypoint — keeps s_out free for robot_1 to depart."
+	@NS=$(NAMESPACE); \
+	GZPOD=$$(oc get pod -n $$NS -l app=gazebo-sim -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
+	RMFPOD=$$(oc get pod -n $$NS -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
+	echo "[rmf] Dispatching robot_1: s_in → s_out (eastbound corridor, 3 loops)..."; \
+	oc exec -n $$NS $$RMFPOD -c rmf-core -- bash -c \
+	  'export HOME=/tmp/ros-home; source /opt/ros/jazzy/setup.bash; \
+	   ros2 run rmf_demos_tasks dispatch_patrol -F turtlebot3 -R robot_1 -p s_in s_out -n 3 --use_sim_time 2>/dev/null' 2>/dev/null; \
+	echo "[rmf] Waiting for robot_1 to enter corridor (world x > -0.5)..."; \
+	for i in $$(seq 1 120); do \
+	  R1X=$$(oc exec -n $$NS $$GZPOD -c gazebo -- bash -c \
+	    'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash; \
+	     for d in /usr/lib64/ros-jazzy/opt/*/lib64; do [ -d "$$d" ] && export LD_LIBRARY_PATH="$${d}:$${LD_LIBRARY_PATH:-}"; done; \
+	     gz topic -e -t /world/tb3_sandbox/dynamic_pose/info --duration 100 2>/dev/null | \
+	     grep -A 4 "name: .robot_1" | grep "x:" | head -1 | awk '"'"'{print $$2}'"'"'' 2>/dev/null); \
+	  [ -n "$$R1X" ] && echo "  [$$i] robot_1 x=$$R1X"; \
+	  [ -n "$$R1X" ] && python3 -c "import sys; exit(0 if float('$$R1X') > -0.5 else 1)" 2>/dev/null && \
+	    { echo "[rmf] robot_1 confirmed mid-corridor (x=$$R1X). Dispatching robot_2..."; break; }; \
+	  sleep 5; \
+	done; \
+	oc exec -n $$NS $$RMFPOD -c rmf-core -- bash -c \
+	  'export HOME=/tmp/ros-home; source /opt/ros/jazzy/setup.bash; \
+	   ros2 run rmf_demos_tasks dispatch_patrol -F turtlebot3 -R robot_2 -p s_out_hold s_in -n 3 --use_sim_time 2>/dev/null' 2>/dev/null; \
+	echo "[rmf] Both dispatched."
 
 .PHONY: dispatch-patrol
 dispatch-patrol: ## Dispatch patrol: robot_1_home→mid_west→meeting_point (robot_1 only)

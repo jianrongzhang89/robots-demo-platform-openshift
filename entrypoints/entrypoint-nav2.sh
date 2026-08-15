@@ -304,7 +304,7 @@ else
        pose: {x: 0.0, y: 0.0, theta: ${INITIAL_YAW}}}" 2>/dev/null || true
 
     # Publish /initialpose at map(0,0) = posegraph origin = robot spawn.
-    ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
+    timeout 30 ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
       "{header: {frame_id: 'map'}, pose: {pose: {position: {x: 0.0, y: 0.0, z: 0.0}, \
       orientation: {x: 0.0, y: 0.0, z: ${SLAM_QZ}, w: ${SLAM_QW}}}, \
       covariance: [0.01,0,0,0,0,0, 0,0.01,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0, \

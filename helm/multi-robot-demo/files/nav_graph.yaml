@@ -69,15 +69,29 @@ levels:
       #
       # robot_2 north route: home(2,0.5) → n_in(1.5,1.75) → n_out(-1.5,1.75) → robot_1_home(-2,-0.5)
       #   Symmetric: diagonal NW, straight west at y=1.75, diagonal SW to robot_1_home
-      - [-1.5, -1.75, {name: s_in,  is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.4}]
-      - [ 1.5, -1.75, {name: s_out, is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.4}]
-      - [ 1.5,  1.75, {name: n_in,  is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.4}]
-      - [-1.5,  1.75, {name: n_out, is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.4}]
-      # Legacy outer wall waypoints (kept for compatibility, not used in swap dispatch)
-      - [-2.0,  1.75, {name: r1_nwall_w, is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.5}]
-      - [ 2.0,  1.75, {name: r1_nwall_e, is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.5}]
-      - [ 2.0, -1.75, {name: r2_swall_e, is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.5}]
-      - [-2.0, -1.75, {name: r2_swall_w, is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.5}]
+      - [-1.5, -1.75, {name: s_in,      is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.4}]
+      - [ 1.5, -1.75, {name: s_out,     is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.4}]
+      - [ 1.5,  1.75, {name: n_in,      is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.4}]
+      - [-1.5,  1.75, {name: n_out,     is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.4}]
+      # ── Corridor holding points: intermediate waypoints between each robot home and
+      # its corridor entry. With responsive_wait=True, when a robot must yield, the
+      # fleet adapter navigates it to the LAST SAFE WAYPOINT before the contested lane.
+      # Without these, the last safe waypoint IS the corridor endpoint (s_in/s_out) itself,
+      # which creates a circular deadlock (both robots hold at the lane endpoints
+      # simultaneously, and neither can depart because the other is there).
+      # With s_in_hold and s_out_hold, the holding robot moves back off the corridor
+      # endpoint, leaving it free for the priority robot to enter/exit.
+      #   18 = s_in_hold  (-1.5, -0.5): approach staging point for robot_1 → s_in
+      #   19 = s_out_hold ( 1.5, -0.5): approach staging point for robot_2 → s_out
+      #   18 = s_in_hold  (-1.5, -0.5): approach staging point for robot_1 → s_in
+      #   19 = s_out_hold ( 1.5, -0.5): approach staging point for robot_2 → s_out
+      - [-1.5, -0.5, {name: s_in_hold,  is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.4}]
+      - [ 1.5, -0.5, {name: s_out_hold, is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 0.4}]
+      # Legacy outer wall waypoints REMOVED: r1_nwall_w/e and r2_swall_e/w had no lanes
+      # but the free_fleet_adapter was selecting r2_swall_w(-2.0,-1.75) as the
+      # responsive_wait holding point for robot_2 (wrong! that's outside the corridor
+      # and outside map bounds in map_r2 frame). Removing them forces the fleet adapter
+      # to use only connected waypoints (s_in_hold/s_out_hold) for holding.
 
     # Bidirectional lanes — list BOTH directions explicitly (official format)
     lanes:
@@ -136,22 +150,33 @@ levels:
       # ── Outer corridor swap route (x=±1.5 entries, avoids corner obstacles) ──
       # Vertex index map: 14=s_in(-1.5,-1.75), 15=s_out(1.5,-1.75),
       #                   16=n_in(1.5,1.75),   17=n_out(-1.5,1.75)
+      #                   18=s_in_hold(-1.5,-0.5), 19=s_out_hold(1.5,-0.5)
       # robot_1 south route: home(0) → s_in(14) → s_out(15) → robot_2_home(1)
       # robot_2 north route: home(1) → n_in(16) → n_out(17) → robot_1_home(0)
-      - [0,  14, {graph_idx: 0, speed_limit: 0.26}]
-      - [14, 0,  {graph_idx: 0, speed_limit: 0.26}]
-      - [14, 15, {graph_idx: 0, speed_limit: 0.26}]
-      - [15, 14, {graph_idx: 0, speed_limit: 0.26}]
-      - [15, 1,  {graph_idx: 0, speed_limit: 0.26}]
-      - [1,  15, {graph_idx: 0, speed_limit: 0.26}]
+      # robot_2 south patrol: home(1) → s_out_hold(19) → s_out(15) → s_in(14)
+      # s_in_hold/s_out_hold connected as responsive_wait staging area waypoints
+      - [0,  14, {graph_idx: 0, speed_limit: 0.26}]  # robot_1_home → s_in (direct)
+      - [14, 0,  {graph_idx: 0, speed_limit: 0.26}]  # s_in → robot_1_home (direct)
+      - [0,  18, {graph_idx: 0, speed_limit: 0.26}]  # robot_1_home → s_in_hold
+      - [18, 0,  {graph_idx: 0, speed_limit: 0.26}]  # s_in_hold → robot_1_home
+      - [18, 14, {graph_idx: 0, speed_limit: 0.26}]  # s_in_hold → s_in
+      - [14, 18, {graph_idx: 0, speed_limit: 0.26}]  # s_in → s_in_hold
+      - [14, 15, {graph_idx: 0, speed_limit: 0.26}]  # s_in → s_out (corridor eastbound)
+      - [15, 14, {graph_idx: 0, speed_limit: 0.26}]  # s_out → s_in (corridor westbound)
+      - [15, 1,  {graph_idx: 0, speed_limit: 0.26}]  # s_out → robot_2_home (direct)
+      - [1,  15, {graph_idx: 0, speed_limit: 0.26}]  # robot_2_home → s_out (direct)
+      - [15, 19, {graph_idx: 0, speed_limit: 0.26}]  # s_out → s_out_hold
+      - [19, 15, {graph_idx: 0, speed_limit: 0.26}]  # s_out_hold → s_out
+      - [19, 1,  {graph_idx: 0, speed_limit: 0.26}]  # s_out_hold → robot_2_home
+      - [1,  19, {graph_idx: 0, speed_limit: 0.26}]  # robot_2_home → s_out_hold
       - [1,  16, {graph_idx: 0, speed_limit: 0.26}]
       - [16, 1,  {graph_idx: 0, speed_limit: 0.26}]
       - [16, 17, {graph_idx: 0, speed_limit: 0.26}]
       - [17, 16, {graph_idx: 0, speed_limit: 0.26}]
       - [17, 0,  {graph_idx: 0, speed_limit: 0.26}]
       - [0,  17, {graph_idx: 0, speed_limit: 0.26}]
-      # Legacy outer wall waypoints (18-21: r1_nwall_w/e, r2_swall_e/w) — no lanes.
-      # Removed to prevent RMF routing swap traffic through the y=±1.75 outer wall
-      # vertices which create unwanted multi-hop paths via robot homes.
+      # Legacy outer wall waypoints (r1_nwall_w/e, r2_swall_e/w) REMOVED.
+      # They had no lanes but the free_fleet_adapter incorrectly selected r2_swall_w(-2,-1.75)
+      # as a responsive_wait holding point, sending robots outside map bounds.
 
 lifts: {}
