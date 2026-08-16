@@ -142,8 +142,31 @@ build-slam-maps: ## One-time: rebuild slam_toolbox posegraphs with full sandbox 
 ##@ Open-RMF
 
 .PHONY: dispatch-patrol
-dispatch-rmf-lidar: ## TRUE RMF+Nav2 demo: traffic planning + negotiation + LiDAR collision avoidance
-	@echo "=== RMF traffic planning + Nav2 LiDAR collision avoidance ==="
+dispatch-rmf-lidar: ## Hybrid RMF+Nav2 demo: robot_1 via RMF fleet management, robot_2 via direct Nav2
+	@echo "========================================================================"
+	@echo " HYBRID DEMO: Open-RMF fleet management + Nav2 LiDAR collision avoidance"
+	@echo "========================================================================"
+	@echo ""
+	@echo " Architecture:"
+	@echo "   robot_1 — FULLY managed by Open-RMF"
+	@echo "     dispatch_patrol → RMF task scheduler → free_fleet_adapter"
+	@echo "     → rmf_navigate_cmd → nav2_relay → Nav2 navigate_to_pose"
+	@echo "     RMF tracks position, computes ETAs, can CANCEL on ETA drift."
+	@echo ""
+	@echo "   robot_2 — Direct Nav2 (NOT managed by RMF)"
+	@echo "     rmf_navigate_cmd published directly, bypassing the fleet adapter."
+	@echo "     Nav2 collision_monitor detects robot_1 via LiDAR and slows robot_2."
+	@echo "     RMF has no visibility of robot_2 for this navigation leg."
+	@echo ""
+	@echo " KNOWN LIMITATION — free_fleet_adapter bug (open-rmf/rmf_ros2#503):"
+	@echo "   When both robots are RMF-managed on the same bidirectional lane,"
+	@echo "   responsive_wait deadlocks if they arrive at both lane endpoints"
+	@echo "   simultaneously. The fleet adapter cannot break the symmetry to"
+	@echo "   grant one robot transit priority. This hybrid approach works around"
+	@echo "   the bug by removing robot_2 from RMF management for the corridor leg."
+	@echo "   Full bilateral RMF negotiation requires fixing rmf_ros2#503 upstream."
+	@echo "========================================================================"
+	@echo ""
 	@echo "Step 1: Restarting pods with slam_toolbox localization..."
 	$(MAKE) restart ROS_DEMO_NS=$(ROS_DEMO_NS)
 	oc rollout status deployment/robot-nav-robot-1 -n $(NAMESPACE) --timeout=5m
@@ -168,35 +191,41 @@ dispatch-rmf-lidar: ## TRUE RMF+Nav2 demo: traffic planning + negotiation + LiDA
 	    [ "$${r1:-0}" -ge 1 ] && [ "$${r2:-0}" -ge 1 ] && echo "ALL READY" && break; \
 	  sleep 5; \
 	done
-	@echo "Step 3: Dispatching bidirectional south corridor patrol via RMF traffic scheduler..."
-	@echo "  robot_1: s_in → s_out (direct via nav_graph lane [0→14→15], 3 loops)"
-	@echo "  robot_2: s_out_hold → s_in (3 loops) — dispatched when robot_1 is confirmed mid-corridor."
-	@echo "  Position-triggered dispatch: robot_2 released only after robot_1's world x > -0.5"
-	@echo "  (1m past s_in entry). robot_2 routes via s_out_hold (x=1.5,y=-0.5) which is the"
-	@echo "  responsive_wait staging waypoint — keeps s_out free for robot_1 to depart."
+	@echo ""
+	@echo "Step 3: Dispatching robot_1 via RMF, then releasing robot_2 direct when robot_1 is mid-corridor..."
 	@NS=$(NAMESPACE); \
 	GZPOD=$$(oc get pod -n $$NS -l app=gazebo-sim -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
 	RMFPOD=$$(oc get pod -n $$NS -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
-	echo "[rmf] Dispatching robot_1: s_in → s_out (eastbound corridor, 3 loops)..."; \
+	NAV2POD=$$(oc get pod -n $$NS -l app=robot-nav-robot-2 -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
+	echo "[RMF ] Dispatching robot_1 patrol: s_in → s_out (3 loops, fully RMF-managed)"; \
 	oc exec -n $$NS $$RMFPOD -c rmf-core -- bash -c \
 	  'export HOME=/tmp/ros-home; source /opt/ros/jazzy/setup.bash; \
-	   ros2 run rmf_demos_tasks dispatch_patrol -F turtlebot3 -R robot_1 -p s_in s_out -n 3 --use_sim_time 2>/dev/null' 2>/dev/null; \
-	echo "[rmf] Waiting for robot_1 to enter corridor (world x > -0.5)..."; \
+	   ros2 run rmf_demos_tasks dispatch_patrol \
+	     -F turtlebot3 -R robot_1 -p s_in s_out -n 3 --use_sim_time 2>/dev/null' 2>/dev/null; \
+	echo "[NAV2] Waiting for robot_1 to enter corridor (world x > -0.5)..."; \
 	for i in $$(seq 1 120); do \
 	  R1X=$$(oc exec -n $$NS $$GZPOD -c gazebo -- bash -c \
 	    'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash; \
 	     for d in /usr/lib64/ros-jazzy/opt/*/lib64; do [ -d "$$d" ] && export LD_LIBRARY_PATH="$${d}:$${LD_LIBRARY_PATH:-}"; done; \
 	     gz topic -e -t /world/tb3_sandbox/dynamic_pose/info --duration 100 2>/dev/null | \
 	     grep -A 4 "name: .robot_1" | grep "x:" | head -1 | awk '"'"'{print $$2}'"'"'' 2>/dev/null); \
-	  [ -n "$$R1X" ] && echo "  [$$i] robot_1 x=$$R1X"; \
+	  [ -n "$$R1X" ] && echo "  [$$i] robot_1 world_x=$$R1X"; \
 	  [ -n "$$R1X" ] && python3 -c "import sys; exit(0 if float('$$R1X') > -0.5 else 1)" 2>/dev/null && \
-	    { echo "[rmf] robot_1 confirmed mid-corridor (x=$$R1X). Dispatching robot_2..."; break; }; \
+	    { echo ""; echo "[NAV2] robot_1 mid-corridor (x=$$R1X) — sending robot_2 direct rmf_navigate_cmd"; break; }; \
 	  sleep 5; \
 	done; \
-	oc exec -n $$NS $$RMFPOD -c rmf-core -- bash -c \
-	  'export HOME=/tmp/ros-home; source /opt/ros/jazzy/setup.bash; \
-	   ros2 run rmf_demos_tasks dispatch_patrol -F turtlebot3 -R robot_2 -p s_out_hold s_in -n 3 --use_sim_time 2>/dev/null' 2>/dev/null; \
-	echo "[rmf] Both dispatched."
+	echo "[NAV2] Direct goal to robot_2: world(-1.5, -1.75) yaw=3.14 (s_in, westbound)"; \
+	echo "       Published directly to /rmf_navigate_cmd on robot_2 nav2 pod DDS domain."; \
+	echo "       robot_2 navigates home → south outer corridor → s_in, heading toward robot_1."; \
+	echo "       Nav2 collision_monitor detects robot_1 via LiDAR and reduces robot_2 velocity."; \
+	echo "       RMF is NOT managing this leg — no traffic negotiation for robot_2."; \
+	NAV2POD=$$(oc get pod -n $$NS -l app=robot-nav-robot-2 -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
+	oc exec -n $$NS $$NAV2POD -c nav2 -- bash -c \
+	  'export HOME=/tmp/ros-home; source /usr/lib64/ros-jazzy/setup.bash; \
+	   timeout 10 ros2 topic pub /rmf_navigate_cmd std_msgs/msg/String \
+	     "data: '"'"'R2DIRECT001 -1.5 -1.75 3.14'"'"'" --times 5 2>/dev/null || true' 2>/dev/null; \
+	echo "[NAV2] robot_2 command sent. Watch noVNC: both robots in south corridor, head-on approach."; \
+	echo ""
 
 .PHONY: dispatch-patrol
 dispatch-patrol: ## Dispatch patrol: robot_1_home→mid_west→meeting_point (robot_1 only)

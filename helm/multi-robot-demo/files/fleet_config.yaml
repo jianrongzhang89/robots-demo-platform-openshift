@@ -47,6 +47,12 @@ rmf_fleet:
   finishing_request: "nothing"
   responsive_wait: True
 
+  # HYBRID DEMO: only robot_1 is managed by the RMF fleet adapter.
+  # robot_2 is controlled directly via rmf_navigate_cmd (bypassing the fleet adapter)
+  # to demonstrate Nav2 LiDAR collision avoidance without RMF traffic negotiation.
+  # This works around open-rmf/rmf_ros2#503: the fleet adapter deadlocks when both
+  # robots simultaneously hold responsive_wait claims on a bidirectional lane's
+  # endpoints — removing robot_2 from the fleet prevents the override conflict.
   robots:
     robot_1:
       charger: "charger_1"
@@ -60,18 +66,14 @@ rmf_fleet:
       maps:
         L1:
           map_url: "/opt/ros/jazzy/share/nav2_bringup/maps/tb3_sandbox.yaml"
-    robot_2:
-      charger: "charger_2"
-      responsive_wait: True
-      navigation_stack: 2
-      init_timeout_sec: 180
-      service_call_timeout_sec: 60.0
-      initial_map: "L1"
-      map_frame: "map"
-      robot_frame: "base_footprint"
-      maps:
-        L1:
-          map_url: "/opt/ros/jazzy/share/nav2_bringup/maps/tb3_sandbox.yaml"
+    # robot_2 intentionally omitted from RMF fleet — see HYBRID DEMO comment above.
+    # robot_2:
+    #   charger: "charger_2"
+    #   navigation_stack: 2
+    #   ...
+    #   maps:
+    #     L1:
+    #       map_url: "/opt/ros/jazzy/share/nav2_bringup/maps/tb3_sandbox.yaml"
 
   # At real_time_factor=0.5, navigation takes 2x longer in wall time.
   # 10.0 Hz gives the RMF traffic planner timely position data for conflict
