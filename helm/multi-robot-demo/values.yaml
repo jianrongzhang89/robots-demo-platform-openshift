@@ -34,6 +34,24 @@ robots:
       yPos: 0.5
       yaw: 3.14159
 
+# ── Demo world selection ────────────────────────────────────────────────────────
+# Change these three blocks together when switching worlds.
+# Supported worlds (baked into quay.io/jianrzha/ros2-demo image):
+#
+#   tb3_sandbox (default) — 8×8 m pillar-grid sandbox, slam_toolbox localization
+#     gazebo.world: tb3_sandbox
+#     nav2.localizationMode: slam_toolbox
+#     nav2.localizationMap: ""   (unused in slam_toolbox mode)
+#     rmf.mapUrl: /opt/ros/jazzy/share/nav2_bringup/maps/tb3_sandbox.yaml
+#     robots: robot_1 @ (-2,-0.5), robot_2 @ (2,0.5)
+#
+#   turtlebot3_world — classic TurtleBot3 maze world, AMCL localization
+#     gazebo.world: turtlebot3_world
+#     nav2.localizationMode: amcl
+#     nav2.localizationMap: /opt/ros/jazzy/share/nav2_bringup/maps/turtlebot3_world.yaml
+#     rmf.mapUrl: /opt/ros/jazzy/share/nav2_bringup/maps/turtlebot3_world.yaml
+#     robots: robot_1 @ (-2,0), robot_2 @ (2,0)   (adjust to match your nav_graph)
+
 # Gazebo simulation pod settings
 gazebo:
   world: tb3_sandbox
@@ -49,6 +67,12 @@ gazebo:
 
 # Nav2 pod resource settings (applied to every robot-nav-* Deployment)
 nav2:
+  # Localization mode: slam_toolbox (default) or amcl
+  # slam_toolbox: uses pre-built posegraph baked into the image (world-specific)
+  # amcl:         uses a pre-built .pgm occupancy map; set localizationMap below
+  localizationMode: slam_toolbox
+  # Path to the nav2 map YAML file (only used when localizationMode=amcl)
+  localizationMap: ""
   resources:
     requests:
       cpu: "2"
@@ -76,6 +100,11 @@ routes:
 # Open-RMF fleet management — free_fleet_adapter + traffic schedule + dashboard
 rmf:
   image: quay.io/jianrzha/ros2-rmf:open-rmf
+  # Path to the nav2 map YAML used in fleet_config.yaml for AMCL-based localization.
+  # For slam_toolbox mode this path is still referenced by fleet_config.yaml but
+  # the nav stack itself uses the posegraph — keep it valid so the fleet adapter
+  # can parse the config without errors.
+  mapUrl: /opt/ros/jazzy/share/nav2_bringup/maps/tb3_sandbox.yaml
   resources:
     requests:
       cpu: "2"

@@ -85,9 +85,9 @@ python3 -m http.server "${WEB_PORT}" --directory /opt/ros2-demo/www &
 # --- 6. Process world xacro and start Gazebo server ---
 WORLD_SDF="/tmp/ros-home/world.sdf"
 
-echo "[gazebo-pod] Processing world xacro..."
+echo "[gazebo-pod] Processing world xacro: ${WORLD_NAME}..."
 xacro -o "${WORLD_SDF}" "headless:=True" \
-  "/opt/ros2-demo/worlds/tb3_sandbox.sdf.xacro"
+  "/opt/ros2-demo/worlds/${WORLD_NAME}.sdf.xacro"
 
 echo "[gazebo-pod] Starting Gazebo server..."
 gz sim -r -s "${WORLD_SDF}" &
@@ -217,8 +217,8 @@ cat > /tmp/gz_world_pos_pub.py << 'GZ_POS_EOF'
 import subprocess, re, zenoh, time, os, signal, math, struct
 
 ROUTER  = "tcp/zenoh-router:7447"
-ROBOTS  = ['robot_1', 'robot_2']
-WORLD   = 'tb3_sandbox'
+ROBOTS  = os.environ.get('ROBOT_NAMES', 'robot_1 robot_2').split()
+WORLD   = os.environ.get('WORLD_NAME', 'tb3_sandbox')
 TOPIC   = f'/world/{WORLD}/dynamic_pose/info'
 GZ_ENV  = {**os.environ,
             'GZ_SIM_RESOURCE_PATH': '/usr/lib64/ros-jazzy/share',

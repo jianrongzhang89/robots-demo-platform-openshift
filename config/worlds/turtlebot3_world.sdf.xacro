@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<!--
+  TurtleBot3 World for Gazebo Harmonic.
+
+  This is the classic TurtleBot3 maze environment (walls + corridors).
+  AMCL localization is used with the pre-built map from nav2_bringup:
+    /opt/ros/jazzy/share/nav2_bringup/maps/turtlebot3_world.yaml
+
+  The world geometry is taken from the turtlebot3_gazebo ROS package.
+  Install the package in the image: ros-jazzy-turtlebot3-gazebo
+
+  Usage (set in values.yaml or values-turtlebot3-world.yaml):
+    gazebo.world: turtlebot3_world
+    nav2.localizationMode: amcl
+    nav2.localizationMap: /opt/ros/jazzy/share/nav2_bringup/maps/turtlebot3_world.yaml
+    rmf.mapUrl: /opt/ros/jazzy/share/nav2_bringup/maps/turtlebot3_world.yaml
+-->
+<sdf version="1.8">
+  <world name="turtlebot3_world">
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"/>
+    <plugin filename="gz-sim-contact-system" name="gz::sim::systems::Contact"/>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <!-- Ground plane -->
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+          <material>
+            <ambient>0.8 0.8 0.8 1</ambient>
+            <diffuse>0.8 0.8 0.8 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!--
+      TurtleBot3 World geometry:
+      Include the world model from the turtlebot3_gazebo package.
+      Requires: ros-jazzy-turtlebot3-gazebo installed in the image.
+
+      TODO: Replace this include with the actual turtlebot3_world walls/corridors
+      once the package path is confirmed on the target cluster.
+      Expected path: /opt/ros/jazzy/share/turtlebot3_gazebo/worlds/turtlebot3_world.sdf
+    -->
+    <include>
+      <uri>model://turtlebot3_world</uri>
+    </include>
+
+  </world>
+</sdf>

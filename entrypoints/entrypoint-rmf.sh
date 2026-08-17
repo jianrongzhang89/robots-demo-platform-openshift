@@ -26,7 +26,7 @@ SERVER_URI="${SERVER_URI:-ws://localhost:8000/_internal}"
 
 # Relay sim clock from Zenoh into local ROS domain 55 so the fleet adapter's
 # use_sim_time=True (-sim flag) gets a valid clock for TF timestamp lookups.
-echo "[rmf-pod] Starting monotonic clock relays for Nav2 pods (robot_1/clock + robot_2/clock -> robot_N/clock_mono)..."
+echo "[rmf-pod] Starting monotonic clock relays for Nav2 pods (${ROBOT_NAMES:-robot_1 robot_2} -> clock_relay/clock_bridge)..."
 # These relays subscribe to the raw Gazebo sim clock for each robot, filter out
 # backwards timestamps, and republish to robot_N/clock_mono. The Nav2 bridge
 # maps clock_mono -> /clock on each Nav2 pod, giving tf2 a monotonic clock that
@@ -78,8 +78,11 @@ def on_clock(sample):
 # Gazebo bridge may publish clock under different keys depending on configuration:
 # - "robot_1/clock" (namespaced, when spawned with namespace=robot_1)
 # - "clock" (bare, when not namespaced)
-# Subscribe to all three to handle both cases.
-for key in ["robot_1/clock", "robot_2/clock", "clock"]:
+# Subscribe to all robot clock keys plus bare 'clock'.
+import os as _os
+_robot_names = _os.environ.get('ROBOT_NAMES', 'robot_1 robot_2').split()
+_clock_keys  = [f'{r}/clock' for r in _robot_names] + ['clock']
+for key in _clock_keys:
     z.declare_subscriber(key, on_clock)
 print("[rmf-pod] Monotonic clock relay active: clock -> clock_relay/clock_bridge")
 while True:
@@ -93,7 +96,7 @@ sleep 2
 # cmd_vel ONLY while there is a Zenoh subscriber. When the Gazebo bridge session
 # changes (~90s after startup), the route drops. This persistent subscriber
 # prevents the dropout by acting as an always-on consumer of the cmd_vel stream.
-echo "[rmf-pod] Starting cmd_vel Zenoh keepalive (robot_1/cmd_vel + robot_2/cmd_vel)..."
+echo "[rmf-pod] Starting cmd_vel Zenoh keepalive (${ROBOT_NAMES:-robot_1 robot_2})..."
 python3 - <<'CMDVEL_KEEP_EOF' &
 import zenoh, time
 
@@ -107,7 +110,8 @@ z = zenoh.open(conf)
 # The zenoh-bridge-ros2dds removes the DDS→Zenoh route when the first
 # subscriber retires (~90s), even if other subscribers exist. Re-subscribing
 # triggers the nav bridge to create a fresh route before the old one dies.
-KEYS = ["robot_1/cmd_vel", "robot_2/cmd_vel"]
+import os as _os2
+KEYS = [f'{r}/cmd_vel' for r in _os2.environ.get('ROBOT_NAMES', 'robot_1 robot_2').split()]
 print("[rmf-pod] cmd_vel Zenoh keepalive active (refreshes every 55s)")
 while True:
     subs = [z.declare_subscriber(k, lambda s: None) for k in KEYS]

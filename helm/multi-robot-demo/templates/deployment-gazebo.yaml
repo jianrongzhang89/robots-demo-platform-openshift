@@ -62,6 +62,9 @@ spec:
             # Space-separated "name:x:y:yaw" tuples — one per robot
             - name: ROBOTS
               value: {{ trimSuffix " " $robotsEnv | quote }}
+            # Space-separated robot names — used by gz_world_pos_pub.py
+            - name: ROBOT_NAMES
+              value: "{{ range .Values.robots }}{{ .name }} {{ end }}"
             {{- if .Values.gazebo.gpu }}
             - name: NVIDIA_VISIBLE_DEVICES
               value: all

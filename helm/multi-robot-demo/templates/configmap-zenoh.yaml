@@ -16,7 +16,26 @@ data:
   clock-bridge.json5: |-
 {{ .Files.Get "files/clock-bridge.json5" | indent 4 }}
   cmd-vel-keepalive.json5: |-
-{{ .Files.Get "files/cmd-vel-keepalive.json5" | indent 4 }}
+    {
+      plugins: {
+        ros2dds: {
+          allow: {
+            subscribers: [{{ range .Values.robots }}"{{ .name }}/cmd_vel", {{ end }}]
+          }
+        }
+      },
+      mode: "client",
+      connect: {
+        endpoints: ["tcp/zenoh-router:7447"],
+        retry: {
+          period_init_ms: 1000,
+          period_max_ms: 16000,
+          period_increase_factor: 2
+        },
+        exit_on_failure: false
+      },
+      scouting: { multicast: { enabled: false } }
+    }
   # Per-robot Nav2 bridge configs — each adds a namespace prefix so the bridge
   # routes bare /tf as robot_N/tf (what free_fleet_adapter subscribes to).
   # publishers:  local DDS topics that go OUT to Zenoh (Nav2 → router)

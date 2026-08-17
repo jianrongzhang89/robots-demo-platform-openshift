@@ -33,6 +33,11 @@ INITIAL_X="${INITIAL_X:--2.0}"
 INITIAL_Y="${INITIAL_Y:--0.5}"
 INITIAL_YAW="${INITIAL_YAW:-0.0}"
 
+# Localization mode: slam_toolbox (default) or amcl
+# amcl requires LOCALIZATION_MAP env var pointing to a nav2 map YAML file.
+LOCALIZATION_MODE="${LOCALIZATION_MODE:-slam_toolbox}"
+LOCALIZATION_MAP="${LOCALIZATION_MAP:-/opt/ros/jazzy/share/nav2_bringup/maps/tb3_sandbox.yaml}"
+
 BRINGUP_DIR="${ROS_PREFIX}/share/nav2_bringup"
 
 echo "[nav2-pod/${ROBOT_NAME}] Starting robot_state_publisher (global TF frames — not namespaced)..."
@@ -249,6 +254,26 @@ if [ "${SLAM_BUILD_MODE:-0}" = "1" ]; then
     slam:=True \
     ${PARAMS_ARG} &
   NAV2_PID=$!
+elif [ "${LOCALIZATION_MODE}" = "amcl" ]; then
+  # AMCL localization mode: uses a pre-built occupancy grid map (.pgm + .yaml).
+  # Works with any world that has a map in nav2_bringup (tb3_sandbox, turtlebot3_world, etc.)
+  # or a custom map mounted via ConfigMap. No posegraph generation required.
+  echo "[nav2-pod/${ROBOT_NAME}] AMCL LOCALIZATION MODE: map=${LOCALIZATION_MAP}"
+  ros2 launch nav2_bringup bringup_launch.py \
+    use_sim_time:=True \
+    autostart:=True \
+    use_composition:=False \
+    map:="${LOCALIZATION_MAP}" \
+    ${PARAMS_ARG} &
+  NAV2_PID=$!
+  echo "[nav2-pod/${ROBOT_NAME}] Nav2 (AMCL) starting, waiting 15s for AMCL to localize..."
+  sleep 15
+  ros2 topic pub /initialpose geometry_msgs/msg/PoseWithCovarianceStamped \
+    "{header: {frame_id: 'map'}, pose: {pose: {position: {x: ${INITIAL_X}, y: ${INITIAL_Y}}, \
+    orientation: {w: 1.0}}, covariance: [0.25,0,0,0,0,0, 0,0.25,0,0,0,0, 0,0,0,0,0,0, \
+    0,0,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0.07]}}" \
+    --times 5 2>/dev/null || true
+  echo "[nav2-pod/${ROBOT_NAME}] AMCL initial pose published."
 else
   # Localization mode: start localization_slam_toolbox_node as a standalone
   # non-lifecycle process BEFORE nav2 navigation stack.

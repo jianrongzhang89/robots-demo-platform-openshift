@@ -43,6 +43,10 @@ spec:
               value: jazzy
             - name: ROS_DOMAIN_ID
               value: "0"
+            - name: LOCALIZATION_MODE
+              value: {{ $.Values.nav2.localizationMode | default "slam_toolbox" | quote }}
+            - name: LOCALIZATION_MAP
+              value: {{ $.Values.nav2.localizationMap | default "" | quote }}
           resources:
             requests:
               cpu: {{ $.Values.nav2.resources.requests.cpu | quote }}

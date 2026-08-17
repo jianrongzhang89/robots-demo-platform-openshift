@@ -65,7 +65,7 @@ rmf_fleet:
       robot_frame: "base_footprint"
       maps:
         L1:
-          map_url: "/opt/ros/jazzy/share/nav2_bringup/maps/tb3_sandbox.yaml"
+          map_url: "MAP_URL_PLACEHOLDER"
     # robot_2 intentionally omitted from RMF fleet — see HYBRID DEMO comment above.
     # robot_2:
     #   charger: "charger_2"
@@ -73,7 +73,7 @@ rmf_fleet:
     #   ...
     #   maps:
     #     L1:
-    #       map_url: "/opt/ros/jazzy/share/nav2_bringup/maps/tb3_sandbox.yaml"
+    #       map_url: "MAP_URL_PLACEHOLDER"
 
   # At real_time_factor=0.5, navigation takes 2x longer in wall time.
   # 10.0 Hz gives the RMF traffic planner timely position data for conflict
