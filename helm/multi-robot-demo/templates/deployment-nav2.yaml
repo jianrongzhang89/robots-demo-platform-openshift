@@ -47,6 +47,13 @@ spec:
               value: {{ $.Values.nav2.localizationMode | default "slam_toolbox" | quote }}
             - name: LOCALIZATION_MAP
               value: {{ $.Values.nav2.localizationMap | default "" | quote }}
+            # Robot's true world-frame spawn position — always xPos/yPos from
+            # values.yaml, never overridden by mapOffsetX/Y. Used by AMCL mode
+            # to publish the initial pose in map frame (= world frame for AMCL).
+            - name: SPAWN_X
+              value: {{ .initialPose.xPos | quote }}
+            - name: SPAWN_Y
+              value: {{ .initialPose.yPos | quote }}
           resources:
             requests:
               cpu: {{ $.Values.nav2.resources.requests.cpu | quote }}

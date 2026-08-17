@@ -260,9 +260,15 @@ if [ "${SLAM_BUILD_MODE:-0}" = "1" ]; then
   NAV2_PID=$!
 elif [ "${LOCALIZATION_MODE}" = "amcl" ]; then
   # AMCL localization mode: uses a pre-built occupancy grid map (.pgm + .yaml).
-  # Works with any world that has a map in nav2_bringup (tb3_sandbox, turtlebot3_world, etc.)
+  # Works with any world that has a map in nav2_bringup (tb3_sandbox, etc.)
   # or a custom map mounted via ConfigMap. No posegraph generation required.
+  #
+  # SPAWN_X/Y is the robot's world-frame spawn position (always = xPos/yPos from
+  # values.yaml). In AMCL mode, map frame = world frame so the initial pose is
+  # published at world coordinates directly. This is independent of INITIAL_X/Y
+  # which is the nav2_relay coordinate offset (0.0 for AMCL with tb3_sandbox).
   echo "[nav2-pod/${ROBOT_NAME}] AMCL LOCALIZATION MODE: map=${LOCALIZATION_MAP}"
+  echo "[nav2-pod/${ROBOT_NAME}] Initial pose will be at spawn=(${SPAWN_X},${SPAWN_Y})"
   ros2 launch nav2_bringup bringup_launch.py \
     use_sim_time:=True \
     autostart:=True \
@@ -270,14 +276,30 @@ elif [ "${LOCALIZATION_MODE}" = "amcl" ]; then
     map:="${LOCALIZATION_MAP}" \
     ${PARAMS_ARG} &
   NAV2_PID=$!
-  echo "[nav2-pod/${ROBOT_NAME}] Nav2 (AMCL) starting, waiting 3s for AMCL to subscribe to /initialpose..."
+
+  echo "[nav2-pod/${ROBOT_NAME}] Nav2 (AMCL) starting, waiting 3s for AMCL to subscribe..."
   sleep 3
-  ros2 topic pub /initialpose geometry_msgs/msg/PoseWithCovarianceStamped \
-    "{header: {frame_id: 'map'}, pose: {pose: {position: {x: ${INITIAL_X}, y: ${INITIAL_Y}}, \
-    orientation: {w: 1.0}}, covariance: [0.25,0,0,0,0,0, 0,0.25,0,0,0,0, 0,0,0,0,0,0, \
-    0,0,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0.07]}}" \
-    --times 5 2>/dev/null || true
-  echo "[nav2-pod/${ROBOT_NAME}] AMCL initial pose published."
+
+  # Publish initial pose and wait for AMCL convergence.
+  # Re-publish every 10 s (up to 60 s) until amcl_pose is received, confirming
+  # the particle filter has processed the pose and can publish map→odom TF.
+  echo "[nav2-pod/${ROBOT_NAME}] Publishing AMCL initial pose and waiting for convergence..."
+  for _try in $(seq 1 6); do
+    ros2 topic pub /initialpose geometry_msgs/msg/PoseWithCovarianceStamped \
+      "{header: {frame_id: 'map'}, pose: {pose: {position: {x: ${SPAWN_X}, y: ${SPAWN_Y}}, \
+      orientation: {x: 0.0, y: 0.0, z: ${SLAM_QZ}, w: ${SLAM_QW}}}, \
+      covariance: [0.10,0,0,0,0,0, 0,0.10,0,0,0,0, 0,0,0,0,0,0, \
+      0,0,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0.05]}}" \
+      --times 3 2>/dev/null || true
+    sleep 10
+    AMCL_OK=$(timeout 3 ros2 topic echo /amcl_pose --once 2>/dev/null | grep -c "position" || echo 0)
+    if [ "${AMCL_OK}" -ge 1 ]; then
+      echo "[nav2-pod/${ROBOT_NAME}] AMCL converged (attempt ${_try}/6)"
+      break
+    fi
+    echo "[nav2-pod/${ROBOT_NAME}] AMCL not yet converged (attempt ${_try}/6), re-publishing pose..."
+  done
+  echo "[nav2-pod/${ROBOT_NAME}] AMCL initialization complete."
 else
   # Localization mode: start localization_slam_toolbox_node as a standalone
   # non-lifecycle process BEFORE nav2 navigation stack.
