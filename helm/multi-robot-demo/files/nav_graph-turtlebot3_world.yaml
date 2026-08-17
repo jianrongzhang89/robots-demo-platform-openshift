@@ -1,35 +1,47 @@
-# Navigation graph for turtlebot3_world.
-# A simple two-robot setup with homes, a central meeting point, and chargers.
-# The turtlebot3_world is a ~5m x 5m corridor maze; robots spawn near (-2,0) and (2,0).
+# Navigation graph for the turtlebot3_world AMCL demo.
+# Robots navigate the south outer corridor (y=-1.75) to avoid the inner pillar
+# grid. Direct home↔meeting_point connections are intentionally absent — the
+# planner is forced to route home→s_in→meeting_point→s_out→home2, keeping
+# all paths in the clear outer-corridor region.
 #
 # Vertex index map:
-#   0 = robot_1_home  (-2.0,  0.0)
-#   1 = robot_2_home  ( 2.0,  0.0)
-#   2 = meeting_point ( 0.0,  0.0)
-#   3 = charger_1     (-2.5, -0.5)
-#   4 = charger_2     ( 2.5,  0.5)
+#   0 = robot_1_home  (-2.0,  0.0)   robot_1 spawn (west)
+#   1 = robot_2_home  ( 2.0,  0.5)   robot_2 spawn (east)
+#   2 = s_in          (-1.5, -1.75)  west entry of south outer corridor
+#   3 = s_out         ( 1.5, -1.75)  east entry of south outer corridor
+#   4 = meeting_point ( 0.0, -1.75)  midpoint of south outer corridor
+#   5 = charger_1     (-2.5, -0.5)
+#   6 = charger_2     ( 2.5,  0.5)
 
 building_name: turtlebot3_world
 doors: {}
 levels:
   L1:
     vertices:
-      - [-2.0,  0.0, {name: robot_1_home,  is_charger: false, is_holding_point: true,  is_parking_spot: true,  merge_radius: 0.5}]
-      - [ 2.0,  0.0, {name: robot_2_home,  is_charger: false, is_holding_point: true,  is_parking_spot: true,  merge_radius: 0.5}]
+      - [-2.0,  0.0,  {name: robot_1_home,  is_charger: false, is_holding_point: true,  is_parking_spot: true,  merge_radius: 0.5}]
+      - [ 2.0,  0.5,  {name: robot_2_home,  is_charger: false, is_holding_point: true,  is_parking_spot: true,  merge_radius: 0.5}]
+      - [-1.5, -1.75, {name: s_in,          is_charger: false, is_holding_point: true,  is_parking_spot: false, merge_radius: 0.4}]
+      - [ 1.5, -1.75, {name: s_out,         is_charger: false, is_holding_point: true,  is_parking_spot: false, merge_radius: 0.4}]
       - [ 0.0, -1.75, {name: meeting_point, is_charger: false, is_holding_point: true,  is_parking_spot: false, merge_radius: 0.5}]
-      - [-2.5, -0.5, {name: charger_1,     is_charger: true,  is_holding_point: false, is_parking_spot: false}]
-      - [ 2.5,  0.5, {name: charger_2,     is_charger: true,  is_holding_point: false, is_parking_spot: false}]
+      - [-2.5, -0.5,  {name: charger_1,     is_charger: true,  is_holding_point: false, is_parking_spot: false}]
+      - [ 2.5,  0.5,  {name: charger_2,     is_charger: true,  is_holding_point: false, is_parking_spot: false}]
 
     lanes:
-      # robot_1_home <-> meeting_point <-> robot_2_home
+      # robot_1_home → s_in (diagonal SE, clears pillar grid)
       - [0, 2, {graph_idx: 0, speed_limit: 0.22}]
       - [2, 0, {graph_idx: 0, speed_limit: 0.22}]
-      - [2, 1, {graph_idx: 0, speed_limit: 0.22}]
-      - [1, 2, {graph_idx: 0, speed_limit: 0.22}]
-      # charger connections
-      - [0, 3, {graph_idx: 0, speed_limit: 0.20}]
-      - [3, 0, {graph_idx: 0, speed_limit: 0.20}]
-      - [1, 4, {graph_idx: 0, speed_limit: 0.20}]
-      - [4, 1, {graph_idx: 0, speed_limit: 0.20}]
+      # South outer corridor: s_in ↔ meeting_point ↔ s_out
+      - [2, 4, {graph_idx: 0, speed_limit: 0.22}]
+      - [4, 2, {graph_idx: 0, speed_limit: 0.22}]
+      - [4, 3, {graph_idx: 0, speed_limit: 0.22}]
+      - [3, 4, {graph_idx: 0, speed_limit: 0.22}]
+      # s_out → robot_2_home (diagonal NE)
+      - [3, 1, {graph_idx: 0, speed_limit: 0.22}]
+      - [1, 3, {graph_idx: 0, speed_limit: 0.22}]
+      # Charger connections
+      - [0, 5, {graph_idx: 0, speed_limit: 0.20}]
+      - [5, 0, {graph_idx: 0, speed_limit: 0.20}]
+      - [1, 6, {graph_idx: 0, speed_limit: 0.20}]
+      - [6, 1, {graph_idx: 0, speed_limit: 0.20}]
 
 lifts: {}
