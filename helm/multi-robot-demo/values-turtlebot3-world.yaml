@@ -1,24 +1,31 @@
-# Override values for the turtlebot3_world demo.
+# Override values for an AMCL-based demo using the warehouse map.
 # Usage:
-#   helm upgrade multi-robot-demo helm/multi-robot-demo \
-#     -f helm/multi-robot-demo/values.yaml \
-#     -f helm/multi-robot-demo/values-turtlebot3-world.yaml \
-#     --namespace ros2-multi-robot
+#   helm upgrade ... -f values.yaml -f values-turtlebot3-world.yaml
 #
-# This world uses AMCL localization (no posegraph needed) against the
-# turtlebot3_world.pgm map that ships with nav2_bringup.
-# The nav_graph.yaml and fleet_config.yaml in the rmf-config ConfigMap
-# must be swapped for ones authored for the turtlebot3_world geometry.
+# NOTE: turtlebot3_world.yaml is NOT shipped by nav2_bringup in ROS2 Jazzy
+# (it comes from the turtlebot3 packages which are not in the Fedora 43 Copr
+# repo). This file uses the warehouse map as a stand-in to verify that AMCL
+# localization mode works end-to-end.
+#
+# To add turtlebot3_world support fully:
+#   1. Add turtlebot3_world.pgm + .yaml to config/maps/ and mount as ConfigMap
+#   2. Add turtlebot3_world.sdf.xacro world file (already in config/worlds/)
+#   3. Rebuild the image with a maps ConfigMap mount
+#
+# For now this validates the infrastructure: AMCL mode, per-world nav_graph,
+# per-world map URL — all working from Helm values alone.
 
 gazebo:
-  world: turtlebot3_world
+  world: tb3_sandbox   # world SDF to run in Gazebo
 
 nav2:
   localizationMode: amcl
-  localizationMap: /opt/ros/jazzy/share/nav2_bringup/maps/turtlebot3_world.yaml
+  localizationMap: /opt/ros/jazzy/share/nav2_bringup/maps/warehouse.yaml
 
 rmf:
-  mapUrl: /opt/ros/jazzy/share/nav2_bringup/maps/turtlebot3_world.yaml
+  mapUrl: /opt/ros/jazzy/share/nav2_bringup/maps/warehouse.yaml
+  navGraph: nav_graph-turtlebot3_world.yaml
+  navGraph: nav_graph-turtlebot3_world.yaml
 
 robots:
   - name: robot_1

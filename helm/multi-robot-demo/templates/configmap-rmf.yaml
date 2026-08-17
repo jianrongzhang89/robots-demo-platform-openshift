@@ -10,4 +10,4 @@ data:
   fleet_config.yaml: |-
 {{ .Files.Get "files/fleet_config.yaml" | replace "MAP_URL_PLACEHOLDER" .Values.rmf.mapUrl | indent 4 }}
   nav_graph.yaml: |-
-{{ .Files.Get "files/nav_graph.yaml" | indent 4 }}
+{{ .Files.Get (printf "files/%s" (.Values.rmf.navGraph | default "nav_graph.yaml")) | indent 4 }}

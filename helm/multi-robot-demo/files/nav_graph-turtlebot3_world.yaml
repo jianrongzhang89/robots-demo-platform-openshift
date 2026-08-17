@@ -1,0 +1,35 @@
+# Navigation graph for turtlebot3_world.
+# A simple two-robot setup with homes, a central meeting point, and chargers.
+# The turtlebot3_world is a ~5m x 5m corridor maze; robots spawn near (-2,0) and (2,0).
+#
+# Vertex index map:
+#   0 = robot_1_home  (-2.0,  0.0)
+#   1 = robot_2_home  ( 2.0,  0.0)
+#   2 = meeting_point ( 0.0,  0.0)
+#   3 = charger_1     (-2.5, -0.5)
+#   4 = charger_2     ( 2.5,  0.5)
+
+building_name: turtlebot3_world
+doors: {}
+levels:
+  L1:
+    vertices:
+      - [-2.0,  0.0, {name: robot_1_home,  is_charger: false, is_holding_point: true,  is_parking_spot: true,  merge_radius: 0.5}]
+      - [ 2.0,  0.0, {name: robot_2_home,  is_charger: false, is_holding_point: true,  is_parking_spot: true,  merge_radius: 0.5}]
+      - [ 0.0,  0.0, {name: meeting_point, is_charger: false, is_holding_point: true,  is_parking_spot: false, merge_radius: 0.5}]
+      - [-2.5, -0.5, {name: charger_1,     is_charger: true,  is_holding_point: false, is_parking_spot: false}]
+      - [ 2.5,  0.5, {name: charger_2,     is_charger: true,  is_holding_point: false, is_parking_spot: false}]
+
+    lanes:
+      # robot_1_home <-> meeting_point <-> robot_2_home
+      - [0, 2, {graph_idx: 0, speed_limit: 0.22}]
+      - [2, 0, {graph_idx: 0, speed_limit: 0.22}]
+      - [2, 1, {graph_idx: 0, speed_limit: 0.22}]
+      - [1, 2, {graph_idx: 0, speed_limit: 0.22}]
+      # charger connections
+      - [0, 3, {graph_idx: 0, speed_limit: 0.20}]
+      - [3, 0, {graph_idx: 0, speed_limit: 0.20}]
+      - [1, 4, {graph_idx: 0, speed_limit: 0.20}]
+      - [4, 1, {graph_idx: 0, speed_limit: 0.20}]
+
+lifts: {}
