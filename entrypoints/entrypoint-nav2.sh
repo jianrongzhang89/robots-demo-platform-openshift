@@ -259,6 +259,9 @@ if [ "${SLAM_BUILD_MODE:-0}" = "1" ]; then
     ${PARAMS_ARG} &
   NAV2_PID=$!
 elif [ "${LOCALIZATION_MODE}" = "amcl" ]; then
+  # Pre-compute quaternion from INITIAL_YAW (needed for initialpose orientation)
+  read -r SLAM_QZ SLAM_QW < <(python3 -c \
+    "import math; y=${INITIAL_YAW}; print(math.sin(y/2), math.cos(y/2))")
   # AMCL localization mode: uses a pre-built occupancy grid map (.pgm + .yaml).
   # Works with any world that has a map in nav2_bringup (tb3_sandbox, etc.)
   # or a custom map mounted via ConfigMap. No posegraph generation required.
