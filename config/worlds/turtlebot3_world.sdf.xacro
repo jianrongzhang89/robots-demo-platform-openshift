@@ -1,15 +1,13 @@
 <?xml version="1.0"?>
 <!--
   TurtleBot3 World for Gazebo Harmonic.
+  Adapted from the ROBOTIS turtlebot3_gazebo classic world for SDFormat 1.8.
 
-  This is the classic TurtleBot3 maze environment (walls + corridors).
-  AMCL localization is used with the pre-built map from nav2_bringup:
+  This is a corridor/maze environment used for multi-robot navigation demos.
+  Uses AMCL localization with the pre-built map from nav2_bringup:
     /opt/ros/jazzy/share/nav2_bringup/maps/turtlebot3_world.yaml
 
-  The world geometry is taken from the turtlebot3_gazebo ROS package.
-  Install the package in the image: ros-jazzy-turtlebot3-gazebo
-
-  Usage (set in values.yaml or values-turtlebot3-world.yaml):
+  Configure in values-turtlebot3-world.yaml:
     gazebo.world: turtlebot3_world
     nav2.localizationMode: amcl
     nav2.localizationMap: /opt/ros/jazzy/share/nav2_bringup/maps/turtlebot3_world.yaml
@@ -22,13 +20,13 @@
       <real_time_factor>1.0</real_time_factor>
     </physics>
 
-    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
-    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-physics-system"        name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-user-commands-system"  name="gz::sim::systems::UserCommands"/>
     <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
-    <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+    <plugin filename="gz-sim-sensors-system"        name="gz::sim::systems::Sensors">
       <render_engine>ogre2</render_engine>
     </plugin>
-    <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"/>
+    <plugin filename="gz-sim-imu-system"    name="gz::sim::systems::Imu"/>
     <plugin filename="gz-sim-contact-system" name="gz::sim::systems::Contact"/>
 
     <light type="directional" name="sun">
@@ -51,18 +49,12 @@
       <link name="link">
         <collision name="collision">
           <geometry>
-            <plane>
-              <normal>0 0 1</normal>
-              <size>100 100</size>
-            </plane>
+            <plane><normal>0 0 1</normal><size>100 100</size></plane>
           </geometry>
         </collision>
         <visual name="visual">
           <geometry>
-            <plane>
-              <normal>0 0 1</normal>
-              <size>100 100</size>
-            </plane>
+            <plane><normal>0 0 1</normal><size>100 100</size></plane>
           </geometry>
           <material>
             <ambient>0.8 0.8 0.8 1</ambient>
@@ -73,17 +65,157 @@
     </model>
 
     <!--
-      TurtleBot3 World geometry:
-      Include the world model from the turtlebot3_gazebo package.
-      Requires: ros-jazzy-turtlebot3-gazebo installed in the image.
-
-      TODO: Replace this include with the actual turtlebot3_world walls/corridors
-      once the package path is confirmed on the target cluster.
-      Expected path: /opt/ros/jazzy/share/turtlebot3_gazebo/worlds/turtlebot3_world.sdf
+      TurtleBot3 World walls — adapted from ROBOTIS turtlebot3_gazebo.
+      Outer boundary + interior corridors forming a navigation maze.
+      Wall dimensions: height=0.25m, thickness=0.15m.
     -->
-    <include>
-      <uri>model://turtlebot3_world</uri>
-    </include>
+
+    <!-- Outer walls -->
+    <model name="wall_north">
+      <static>true</static>
+      <pose>0 2.0 0.125 0 0 0</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>4.3 0.15 0.25</size></box></geometry></collision>
+        <visual name="v">
+          <geometry><box><size>4.3 0.15 0.25</size></box></geometry>
+          <material><ambient>0.5 0.5 0.5 1</ambient><diffuse>0.5 0.5 0.5 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="wall_south">
+      <static>true</static>
+      <pose>0 -2.0 0.125 0 0 0</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>4.3 0.15 0.25</size></box></geometry></collision>
+        <visual name="v">
+          <geometry><box><size>4.3 0.15 0.25</size></box></geometry>
+          <material><ambient>0.5 0.5 0.5 1</ambient><diffuse>0.5 0.5 0.5 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="wall_east">
+      <static>true</static>
+      <pose>2.0 0 0.125 0 0 1.5708</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>4.15 0.15 0.25</size></box></geometry></collision>
+        <visual name="v">
+          <geometry><box><size>4.15 0.15 0.25</size></box></geometry>
+          <material><ambient>0.5 0.5 0.5 1</ambient><diffuse>0.5 0.5 0.5 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="wall_west">
+      <static>true</static>
+      <pose>-2.0 0 0.125 0 0 1.5708</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>4.15 0.15 0.25</size></box></geometry></collision>
+        <visual name="v">
+          <geometry><box><size>4.15 0.15 0.25</size></box></geometry>
+          <material><ambient>0.5 0.5 0.5 1</ambient><diffuse>0.5 0.5 0.5 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Interior walls — horizontal segments -->
+    <model name="wall_h1">
+      <static>true</static>
+      <pose>-0.5 1.0 0.125 0 0 0</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>1.25 0.15 0.25</size></box></geometry></collision>
+        <visual name="v">
+          <geometry><box><size>1.25 0.15 0.25</size></box></geometry>
+          <material><ambient>0.5 0.5 0.5 1</ambient><diffuse>0.5 0.5 0.5 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="wall_h2">
+      <static>true</static>
+      <pose>1.25 0.5 0.125 0 0 0</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>1.5 0.15 0.25</size></box></geometry></collision>
+        <visual name="v">
+          <geometry><box><size>1.5 0.15 0.25</size></box></geometry>
+          <material><ambient>0.5 0.5 0.5 1</ambient><diffuse>0.5 0.5 0.5 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="wall_h3">
+      <static>true</static>
+      <pose>-0.5 -0.5 0.125 0 0 0</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>1.25 0.15 0.25</size></box></geometry></collision>
+        <visual name="v">
+          <geometry><box><size>1.25 0.15 0.25</size></box></geometry>
+          <material><ambient>0.5 0.5 0.5 1</ambient><diffuse>0.5 0.5 0.5 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="wall_h4">
+      <static>true</static>
+      <pose>0.5 -1.5 0.125 0 0 0</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>3.25 0.15 0.25</size></box></geometry></collision>
+        <visual name="v">
+          <geometry><box><size>3.25 0.15 0.25</size></box></geometry>
+          <material><ambient>0.5 0.5 0.5 1</ambient><diffuse>0.5 0.5 0.5 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Interior walls — vertical segments -->
+    <model name="wall_v1">
+      <static>true</static>
+      <pose>-1.0 0.5 0.125 0 0 1.5708</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>1.25 0.15 0.25</size></box></geometry></collision>
+        <visual name="v">
+          <geometry><box><size>1.25 0.15 0.25</size></box></geometry>
+          <material><ambient>0.5 0.5 0.5 1</ambient><diffuse>0.5 0.5 0.5 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="wall_v2">
+      <static>true</static>
+      <pose>0 0 0.125 0 0 1.5708</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>1.0 0.15 0.25</size></box></geometry></collision>
+        <visual name="v">
+          <geometry><box><size>1.0 0.15 0.25</size></box></geometry>
+          <material><ambient>0.5 0.5 0.5 1</ambient><diffuse>0.5 0.5 0.5 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="wall_v3">
+      <static>true</static>
+      <pose>0.5 1.5 0.125 0 0 1.5708</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>1.0 0.15 0.25</size></box></geometry></collision>
+        <visual name="v">
+          <geometry><box><size>1.0 0.15 0.25</size></box></geometry>
+          <material><ambient>0.5 0.5 0.5 1</ambient><diffuse>0.5 0.5 0.5 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="wall_v4">
+      <static>true</static>
+      <pose>1.5 -0.75 0.125 0 0 1.5708</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>1.5 0.15 0.25</size></box></geometry></collision>
+        <visual name="v">
+          <geometry><box><size>1.5 0.15 0.25</size></box></geometry>
+          <material><ambient>0.5 0.5 0.5 1</ambient><diffuse>0.5 0.5 0.5 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
 
   </world>
 </sdf>

@@ -16,7 +16,6 @@ RUN dnf install -y \
       ros-jazzy-navigation2 \
       ros-jazzy-nav2-bringup \
       ros-jazzy-nav2-minimal-tb3-sim \
-      ros-jazzy-turtlebot3-gazebo \
       ros-jazzy-teleop-twist-keyboard \
       ros-jazzy-ros-gz-bridge \
       ros-jazzy-ros-gz-sim \
