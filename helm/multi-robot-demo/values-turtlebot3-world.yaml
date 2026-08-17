@@ -19,11 +19,24 @@ gazebo:
   world: tb3_sandbox   # world SDF to run in Gazebo
 
 nav2:
+  # Map origin offset for nav2_relay.py coordinate transform.
+  # In slam_toolbox mode: map origin = robot spawn (use xPos/yPos, default).
+  # In AMCL mode: map origin = YAML origin field from the map file.
+  # tb3_sandbox.yaml origin: [-10, -10] → mapOffsetX/Y = -10.0
+  # For AMCL with tb3_sandbox, the map frame IS the world frame — no offset.
+  # Relay sends goals in world coordinates directly as map-frame coordinates.
+  mapOffsetX: "0.0"
+  mapOffsetY: "0.0"
+  # AMCL localization against tb3_sandbox map.
+  # The Gazebo world IS tb3_sandbox (turtlebot3_world.sdf is a future addition).
+  # Using tb3_sandbox.yaml gives AMCL a map that matches the running world so
+  # the robot can localize and navigate — demonstrating AMCL as an alternative
+  # to slam_toolbox with the same images but different Helm configuration.
   localizationMode: amcl
-  localizationMap: /usr/lib64/ros-jazzy/share/nav2_bringup/maps/warehouse.yaml
+  localizationMap: /usr/lib64/ros-jazzy/share/nav2_bringup/maps/tb3_sandbox.yaml
 
 rmf:
-  mapUrl: /usr/lib64/ros-jazzy/share/nav2_bringup/maps/warehouse.yaml
+  mapUrl: /usr/lib64/ros-jazzy/share/nav2_bringup/maps/tb3_sandbox.yaml
   navGraph: nav_graph-turtlebot3_world.yaml
   navGraph: nav_graph-turtlebot3_world.yaml
 

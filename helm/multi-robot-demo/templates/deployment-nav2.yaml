@@ -32,9 +32,9 @@ spec:
             - name: ROBOT_NAME
               value: {{ .name | quote }}
             - name: INITIAL_X
-              value: {{ .initialPose.xPos | quote }}
+              value: {{ $.Values.nav2.mapOffsetX | default .initialPose.xPos | quote }}
             - name: INITIAL_Y
-              value: {{ .initialPose.yPos | quote }}
+              value: {{ $.Values.nav2.mapOffsetY | default .initialPose.yPos | quote }}
             - name: INITIAL_YAW
               value: {{ .initialPose.yaw | quote }}
             - name: TURTLEBOT3_MODEL
