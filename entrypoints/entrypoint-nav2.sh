@@ -36,7 +36,7 @@ INITIAL_YAW="${INITIAL_YAW:-0.0}"
 # Localization mode: slam_toolbox (default) or amcl
 # amcl requires LOCALIZATION_MAP env var pointing to a nav2 map YAML file.
 LOCALIZATION_MODE="${LOCALIZATION_MODE:-slam_toolbox}"
-LOCALIZATION_MAP="${LOCALIZATION_MAP:-/opt/ros/jazzy/share/nav2_bringup/maps/tb3_sandbox.yaml}"
+LOCALIZATION_MAP="${LOCALIZATION_MAP:-/usr/lib64/ros-jazzy/share/nav2_bringup/maps/tb3_sandbox.yaml}"
 
 BRINGUP_DIR="${ROS_PREFIX}/share/nav2_bringup"
 
