@@ -218,6 +218,10 @@ for top_key in ['local_costmap', 'global_costmap']:
         # negative effective gap means NavFn correctly finds outer corridor routes.
         cmap_params['robot_radius'] = 0.22
     cmap_params.setdefault('inflation_layer', {})['cost_scaling_factor'] = 5.0
+    # transform_timeout: how long global/local costmap activation waits for TF.
+    # Default (0.1s) is too short for AMCL mode — AMCL must receive initial pose
+    # and publish map→odom before the costmap can activate. 60s covers AMCL startup.
+    cmap_params['transform_timeout'] = 60.0
     # Allow 30 s for map→odom TF during activation. The default (0.3 s) is too
     # short: AMCL may not have published map→odom by the time the lifecycle
     # manager activates planner_server, causing the global_costmap to abort.
@@ -266,8 +270,8 @@ elif [ "${LOCALIZATION_MODE}" = "amcl" ]; then
     map:="${LOCALIZATION_MAP}" \
     ${PARAMS_ARG} &
   NAV2_PID=$!
-  echo "[nav2-pod/${ROBOT_NAME}] Nav2 (AMCL) starting, waiting 15s for AMCL to localize..."
-  sleep 15
+  echo "[nav2-pod/${ROBOT_NAME}] Nav2 (AMCL) starting, waiting 3s for AMCL to subscribe to /initialpose..."
+  sleep 3
   ros2 topic pub /initialpose geometry_msgs/msg/PoseWithCovarianceStamped \
     "{header: {frame_id: 'map'}, pose: {pose: {position: {x: ${INITIAL_X}, y: ${INITIAL_Y}}, \
     orientation: {w: 1.0}}, covariance: [0.25,0,0,0,0,0, 0,0.25,0,0,0,0, 0,0,0,0,0,0, \
