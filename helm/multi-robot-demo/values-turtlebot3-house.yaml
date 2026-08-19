@@ -1,0 +1,55 @@
+# Override values for the turtlebot3_house demo.
+# Usage:
+#   helm upgrade ... -f values.yaml -f values-turtlebot3-house.yaml
+#
+# World: turtlebot3_house — residential floor plan (15m x 10.55m)
+# Localization: AMCL with turtlebot3_house map (baked into image at /opt/ros2-demo/maps/)
+# Nav graph: room-based routing (living_room, kitchen, bedrooms)
+#
+# The house model is downloaded into the image at build time to
+# /opt/ros2-demo/gz_models/turtlebot3_house/. GZ_SIM_RESOURCE_PATH is set
+# in entrypoint-gazebo.sh to include this directory.
+
+gazebo:
+  world: turtlebot3_house
+
+nav2:
+  # slam_toolbox localization with house-specific posegraphs that include furniture.
+  # Posegraphs were built via a SLAM mapping run in the turtlebot3_house Gazebo world.
+  # This gives sub-centimeter accuracy AND correct obstacle knowledge (furniture visible).
+  # SLAM_MAP_DIR overrides the default /slam_maps/ to use the house-specific maps.
+  # AMCL with house map — walls are known so robots stay in corridors.
+  # slam_mapping was routing through unknown walls; localization_slam_toolbox_node
+  # crashed with Ceres segfault. AMCL is stable; FootprintApproach=false prevents
+  # narrow-corridor velocity zeroing.
+  # slam_mapping: online SLAM for robust navigation in house interior.
+  # Waypoints sw_open (-1.5,-1.5) and se_open (1.5,-1.5) are straight south
+  # from each robot's spawn — no wall crossings, LiDAR stops robot before south wall.
+  # slam_mapping: online SLAM for robust navigation in house interior.
+  # Waypoints sw_open (-1.5,-1.5) and se_open (1.5,-1.5) are straight south
+  # from each robot's spawn — no wall crossings, LiDAR stops robot before south wall.
+  # mapOffsetX/Y not set → defaults to each robot's spawn position (correct for slam).
+  localizationMode: slam_mapping
+  localizationMap: ""
+  slamMapDir: "/opt/ros2-demo/slam_maps/house"
+  # Disable FootprintApproach: house corridors (0.7-1.0m) and doorways cause
+  # the approach polygon to constantly trigger on walls, zeroing cmd_vel.
+  enableFootprintApproach: "false"
+
+rmf:
+  mapUrl: /usr/lib64/ros-jazzy/share/nav2_bringup/maps/tb3_sandbox.yaml
+  navGraph: nav_graph-turtlebot3_house.yaml
+
+robots:
+  - name: robot_1
+    color: "0,0,1"       # blue — spawns in main corridor (west side)
+    initialPose:
+      xPos: -1.5
+      yPos: -0.5
+      yaw: 0.0
+  - name: robot_2
+    color: "1,0,0"       # red — spawns in main corridor (east side)
+    initialPose:
+      xPos: 1.5
+      yPos: -0.5
+      yaw: 3.14159

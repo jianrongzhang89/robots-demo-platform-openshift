@@ -1,0 +1,46 @@
+# turtlebot3-house demo image — extends multi-demo to add house-specific assets.
+# Builds on top of the already-built multi-demo image so ROS packages do not
+# need to be re-downloaded from the Copr mirror (avoids intermittent 504 failures).
+#
+# New layers added on top of multi-demo:
+#   1. turtlebot3_house Gazebo model (mesh/texture assets, ~3 MB)
+#   2. turtlebot3_house AMCL map (pgm + yaml, ~147 KB)
+#   3. turtlebot3_house world SDF xacro
+FROM quay.io/jianrzha/ros2-demo:multi-demo
+
+LABEL org.opencontainers.image.title="ROS2 Multi-Robot Demo — TurtleBot3 House" \
+      org.opencontainers.image.description="Two TurtleBot3 Waffle robots patrolling a furnished 3D house via Open-RMF fleet management and Nav2 autonomous navigation on OpenShift" \
+      org.opencontainers.image.source="https://github.com/jianrongzhang89/robots-demo-platform-openshift" \
+      org.opencontainers.image.branch="turtlebot3-house-demo" \
+      org.opencontainers.image.base.name="quay.io/jianrzha/ros2-demo:multi-demo" \
+      io.openshift.tags="ros2,nav2,gazebo,open-rmf,turtlebot3,robotics,jazzy" \
+      io.k8s.description="Gazebo Harmonic simulation + Nav2 Jazzy + Open-RMF fleet management for the turtlebot3_house world demo"
+
+# Download turtlebot3_house Gazebo model from ROBOTIS GitHub (sparse checkout).
+# Model is referenced as model://turtlebot3_house in the world SDF.
+# entrypoint-gazebo.sh sets GZ_SIM_RESOURCE_PATH to include this directory.
+RUN mkdir -p /opt/ros2-demo/gz_models && \
+    cd /tmp && \
+    git clone --depth 1 --filter=blob:none --sparse \
+        https://github.com/ROBOTIS-GIT/turtlebot3_simulations.git && \
+    cd turtlebot3_simulations && \
+    git sparse-checkout set turtlebot3_gazebo/models/turtlebot3_house && \
+    cp -r turtlebot3_gazebo/models/turtlebot3_house /opt/ros2-demo/gz_models/ && \
+    cd / && rm -rf /tmp/turtlebot3_simulations && \
+    ls /opt/ros2-demo/gz_models/turtlebot3_house/
+
+# Add house-specific assets (map, world SDF)
+COPY config/maps/turtlebot3_house.yaml /opt/ros2-demo/maps/
+COPY config/maps/turtlebot3_house.pgm  /opt/ros2-demo/maps/
+COPY config/worlds/turtlebot3_house.sdf.xacro /opt/ros2-demo/worlds/
+
+# Updated entrypoints (GZ_SIM_RESOURCE_PATH + AMCL convergence fixes)
+COPY entrypoints/entrypoint-gazebo.sh /entrypoint-gazebo.sh
+COPY entrypoints/entrypoint-nav2.sh   /entrypoint-nav2.sh
+COPY entrypoints/nav2_relay.py        /nav2_relay.py
+
+# House-specific slam_toolbox posegraphs (built from a mapping run in turtlebot3_house).
+# These include the actual furniture positions so slam_toolbox localization knows
+# where tables, chairs, and other obstacles are — enabling reliable navigation.
+COPY slam_maps/turtlebot3_house/ /opt/ros2-demo/slam_maps/house/
+RUN chmod +x /entrypoint-gazebo.sh /entrypoint-nav2.sh

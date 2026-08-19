@@ -48,7 +48,7 @@ z = zenoh.open(conf)
 
 last_ns = 0
 lock = threading.Lock()
-RESTART_THRESHOLD_NS = 60 * 1_000_000_000  # 60s: large backward jump = Gazebo restart
+RESTART_THRESHOLD_NS = 10 * 1_000_000_000  # 10s: any backward jump > 10s = Gazebo restart
 # Publish filtered clock to clock_relay/clock_bridge — the clock-bridge sidecar
 # on each Nav2 pod (namespace "/clock_relay") subscribes to this and delivers
 # to local DDS /clock_bridge. nav2_relay.py then relays /clock_bridge -> /clock.

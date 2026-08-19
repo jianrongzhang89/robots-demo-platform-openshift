@@ -9,9 +9,10 @@ ENV TURTLEBOT3_MODEL=waffle \
     SLAM_BUILD_MODE=${SLAM_BUILD_MODE}
 
 RUN dnf install -y dnf-plugins-core && \
-    dnf copr enable -y tavie/ros2
+    dnf copr enable -y tavie/ros2 && \
+    dnf makecache --refresh
 
-RUN dnf install -y \
+RUN dnf install -y --setopt=retries=5 \
       ros-jazzy-ros-base \
       ros-jazzy-navigation2 \
       ros-jazzy-nav2-bringup \
@@ -77,8 +78,25 @@ COPY entrypoints/nav2_relay.py /nav2_relay.py
 # then calling /slam_toolbox/serialize_map service.
 COPY slam_maps/ /slam_maps/
 COPY config/worlds/ /opt/ros2-demo/worlds/
+COPY config/maps/ /opt/ros2-demo/maps/
 COPY config/www/ /opt/ros2-demo/www/
 COPY config/nav2/ /opt/ros2-demo/nav2/
+
+# Download turtlebot3_house Gazebo model assets from ROBOTIS GitHub.
+# The model is referenced as model://turtlebot3_house in the world SDF.
+# GZ_SIM_RESOURCE_PATH in entrypoint-gazebo.sh includes /opt/ros2-demo/gz_models.
+RUN mkdir -p /opt/ros2-demo/gz_models && \
+    cd /opt/ros2-demo/gz_models && \
+    # Clone only the turtlebot3_house model directory (sparse checkout)
+    git clone --depth 1 --filter=blob:none --sparse \
+        https://github.com/ROBOTIS-GIT/turtlebot3_simulations.git && \
+    cd turtlebot3_simulations && \
+    git sparse-checkout set turtlebot3_gazebo/models/turtlebot3_house && \
+    cp -r turtlebot3_gazebo/models/turtlebot3_house /opt/ros2-demo/gz_models/ && \
+    cd /opt/ros2-demo/gz_models && \
+    rm -rf turtlebot3_simulations && \
+    # Verify the model is in place
+    ls /opt/ros2-demo/gz_models/turtlebot3_house/
 
 RUN chmod +x /entrypoint-gazebo.sh /entrypoint-nav2.sh
 

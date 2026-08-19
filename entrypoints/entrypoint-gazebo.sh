@@ -48,6 +48,10 @@ WEB_PORT="${WEB_PORT:-8080}"
 VNC_PORT="${VNC_PORT:-5900}"
 NOVNC_PORT="${NOVNC_PORT:-6080}"
 WORLD_NAME="${WORLD_NAME:-tb3_sandbox}"
+
+# Include /opt/ros2-demo/gz_models in GZ_SIM_RESOURCE_PATH so that
+# model:// URIs (e.g. model://turtlebot3_house) resolve to the bundled models.
+export GZ_SIM_RESOURCE_PATH="/opt/ros2-demo/gz_models:${GZ_SIM_RESOURCE_PATH:-}"
 DISPLAY_NUM="${DISPLAY_NUM:-99}"
 RESOLUTION="${RESOLUTION:-1280x720x24}"
 

@@ -123,10 +123,25 @@ class NavRelay(Node):
 
     # ── Clock relay ──────────────────────────────────────────────────────────
 
+    # Large backward jump threshold: if the clock goes back more than 30 s,
+    # treat it as a Gazebo restart (not jitter) and reset the monotonic filter.
+    # Without this, old Gazebo clock messages in the Zenoh pipeline can set
+    # _last_clock_ns high before the new Gazebo's lower clock arrives, causing
+    # the new clock to be silently dropped and all scan timestamps to appear
+    # "too old" relative to the TF buffer (symptom: collision_monitor reports
+    # 100+ second timestamp gap, nav stack goes inactive).
+    _CLOCK_RESTART_THRESHOLD_NS = 30 * 1_000_000_000  # 30 s
+
     def _on_clock_bridge(self, msg: Clock) -> None:
         ns = msg.clock.sec * 1_000_000_000 + msg.clock.nanosec
         if ns < self._last_clock_ns:
-            return  # drop backward jump — prevents TF2 buffer clears
+            if (self._last_clock_ns - ns) > self._CLOCK_RESTART_THRESHOLD_NS:
+                self.get_logger().info(
+                    f"[nav_relay] Clock jumped back {(self._last_clock_ns - ns)/1e9:.1f}s "
+                    f"— Gazebo restart detected, resetting monotonic filter")
+                self._last_clock_ns = 0
+            else:
+                return  # small jitter — drop to prevent TF2 buffer clears
         self._last_clock_ns = ns
         self._clock_pub.publish(msg)
 

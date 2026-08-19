@@ -322,6 +322,10 @@ make build-push-rmf      # Build + push the RMF image
 | `main` | Single-robot meet demo | AMCL |
 | `open-rmf-integration` | Two-robot position swap (separate corridors) | AMCL |
 | `swap-nav2-collison-avoidance` | **This branch** — RMF + Nav2 LiDAR head-on demo | slam_toolbox |
+| `turtlebot3-house-demo` | Two-robot corridor patrol in 3D house world | slam_toolbox (online mapping) |
+
+See [`docs/turtlebot3-house-demo.md`](docs/turtlebot3-house-demo.md) for the
+full documentation of the house demo.
 
 ---
 
