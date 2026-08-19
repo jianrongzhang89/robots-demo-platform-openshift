@@ -47,6 +47,10 @@ spec:
               value: {{ $.Values.nav2.localizationMode | default "slam_toolbox" | quote }}
             - name: LOCALIZATION_MAP
               value: {{ $.Values.nav2.localizationMap | default "" | quote }}
+            - name: SLAM_MAP_DIR
+              value: {{ $.Values.nav2.slamMapDir | default "/opt/ros2-demo/slam_maps" | quote }}
+            - name: ENABLE_FOOTPRINT_APPROACH
+              value: {{ $.Values.nav2.enableFootprintApproach | default "true" | quote }}
             # Robot's true world-frame spawn position — always xPos/yPos from
             # values.yaml, never overridden by mapOffsetX/Y. Used by AMCL mode
             # to publish the initial pose in map frame (= world frame for AMCL).

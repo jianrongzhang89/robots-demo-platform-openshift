@@ -39,6 +39,13 @@ push: ## Push the Gazebo/Nav2 image to the registry
 .PHONY: build-push
 build-push: build push ## Build and push the Gazebo/Nav2 image
 
+.PHONY: build-house
+build-house: ## Build turtlebot3-house image (extends multi-demo, adds house assets)
+	$(PODMAN) build --platform linux/amd64 -t $(IMAGE_REF) -f Containerfile.turtlebot3-house .
+
+.PHONY: build-push-house
+build-push-house: build-house push ## Build and push the turtlebot3-house image
+
 .PHONY: build-rmf
 build-rmf: ## Build the Open-RMF core container image (~20 min first build)
 	$(PODMAN) build --platform linux/amd64 -t $(IMAGE_RMF_REF) -f Containerfile.rmf .
@@ -282,6 +289,29 @@ dispatch-swap-patrol: ## Swap patrol: robots exchange spawn positions via separa
 	     -p robot_2_home n_in n_out robot_1_home \
 	     -n 1 --use_sim_time 2>/dev/null'; \
 	echo "[RMF] Both tasks dispatched. Watch noVNC: robots crossing in opposite outer corridors."
+
+.PHONY: dispatch-house-patrol
+dispatch-house-patrol: ## House demo: robot_1 left corridor, robot_2 right corridor (validated waypoints)
+	@echo "=== TurtleBot3 House patrol demo ==="
+	@echo " robot_1 (blue): robot_1_home(-2,-0.5) ↔ left_north(-2,+0.5) ↔ sw_open(-1.5,-1.5)"
+	@echo " robot_2 (red):  robot_2_home(+2,-0.5) ↔ right_north(+2,+0.5) ↔ se_open(+1.5,-1.5)"
+	@echo " All waypoints confirmed free in map analysis (pixel=254, 100% clearance at r=5px)"
+	@RMFPOD=$$(oc get pod -n $(NAMESPACE) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
+	echo "[RMF] Dispatching robot_1: robot_1_home → left_north → sw_open (3 loops)..."; \
+	oc exec -n $(NAMESPACE) $$RMFPOD -c rmf-core -- bash -c \
+	  'export HOME=/tmp/ros-home; source /opt/ros/jazzy/setup.bash; \
+	   source /opt/free_fleet/install/setup.bash 2>/dev/null || true; \
+	   ros2 run rmf_demos_tasks dispatch_patrol \
+	     -F turtlebot3 -R robot_1 \
+	     -p robot_1_home left_north sw_open -n 3 --use_sim_time 2>/dev/null'; \
+	echo "[RMF] Dispatching robot_2: robot_2_home → right_north → se_open (3 loops)..."; \
+	oc exec -n $(NAMESPACE) $$RMFPOD -c rmf-core -- bash -c \
+	  'export HOME=/tmp/ros-home; source /opt/ros/jazzy/setup.bash; \
+	   source /opt/free_fleet/install/setup.bash 2>/dev/null || true; \
+	   ros2 run rmf_demos_tasks dispatch_patrol \
+	     -F turtlebot3 -R robot_2 \
+	     -p robot_2_home right_north se_open -n 3 --use_sim_time 2>/dev/null'; \
+	echo "[RMF] Both dispatched. Watch noVNC: robots patrol opposite corridors of the house."
 
 .PHONY: dispatch-patrol
 dispatch-patrol: ## Dispatch patrol: robot_1_home→mid_west→meeting_point (robot_1 only)

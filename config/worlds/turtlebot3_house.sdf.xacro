@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<!--
+  TurtleBot3 House world for Gazebo Harmonic.
+  Adapted from ROBOTIS turtlebot3_simulations (jazzy branch).
+
+  The house model is loaded from GZ_SIM_RESOURCE_PATH which must include
+  the directory containing the turtlebot3_house/ model folder.
+  The Containerfile downloads the model to /opt/ros2-demo/gz_models/.
+
+  Uses AMCL localization with the turtlebot3_house map:
+    map: /opt/ros2-demo/maps/turtlebot3_house.yaml
+
+  Configure via values-turtlebot3-house.yaml:
+    gazebo.world: turtlebot3_house
+    nav2.localizationMode: amcl
+    nav2.localizationMap: /opt/ros2-demo/maps/turtlebot3_house.yaml
+
+  Robot spawns:
+    robot_1: (-2.0, -0.5) — west central corridor
+    robot_2: ( 2.0, -0.5) — east central corridor
+-->
+<sdf version="1.8">
+  <world name="turtlebot3_house">
+    <scene>
+      <shadows>0</shadows>
+    </scene>
+
+    <gui fullscreen='0'>
+      <camera name='user_camera'>
+        <pose>0.32 -0.24 9.30 0 1.51 0.01</pose>
+        <view_controller>orbit</view_controller>
+        <projection_type>perspective</projection_type>
+      </camera>
+    </gui>
+
+    <plugin filename="gz-sim-physics-system"        name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-user-commands-system"  name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="gz-sim-sensors-system"        name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin filename="gz-sim-imu-system"    name="gz::sim::systems::Imu"/>
+    <plugin filename="gz-sim-contact-system" name="gz::sim::systems::Contact"/>
+
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Ground Plane</uri>
+    </include>
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Sun</uri>
+    </include>
+
+    <!-- House model loaded from GZ_SIM_RESOURCE_PATH=/opt/ros2-demo/gz_models -->
+    <model name="turtlebot3_house">
+      <static>1</static>
+      <include>
+        <uri>model://turtlebot3_house</uri>
+      </include>
+    </model>
+
+  </world>
+</sdf>

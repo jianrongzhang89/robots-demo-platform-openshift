@@ -118,13 +118,21 @@ cs.setdefault('general_goal_checker', {})['yaw_goal_tolerance'] = 3.14159
 # RPP's use_collision_detection=False already handles this at the planner level;
 # the collision_monitor node causes double-suppression of velocity.
 cmon = p.setdefault('collision_monitor', {}).setdefault('ros__parameters', {})
-cmon['enabled'] = True
-# collision_monitor re-enabled. With slam_toolbox accuracy the corridor walls
-# no longer cause false positives. Reduce time_before_collision to 0.5s
-# (was 1.2s default) so the approach polygon fires on the other robot at
-# close range without triggering on walls that are further away.
-cmon.setdefault('FootprintApproach', {})['enabled'] = True
-cmon.setdefault('FootprintApproach', {})['time_before_collision'] = 0.5
+_loc_mode = os.environ.get('LOCALIZATION_MODE', 'slam_toolbox')
+_footprint_enabled = os.environ.get('ENABLE_FOOTPRINT_APPROACH', '').lower()
+_disable_footprint = (_loc_mode == 'amcl') or (_footprint_enabled == 'false')
+if _disable_footprint:
+    # Disable FootprintApproach in narrow-corridor environments (house, AMCL mode).
+    # House corridors (0.7-1.0m) and doorways cause the approach polygon to
+    # constantly trigger on walls, zeroing cmd_vel and preventing navigation.
+    cmon['enabled'] = True
+    cmon.setdefault('FootprintApproach', {})['enabled'] = False
+else:
+    # slam_toolbox mode (tb3_sandbox LiDAR demo): collision_monitor active
+    # to detect approaching robot_2 and stop robot_2 before physical contact.
+    cmon['enabled'] = True
+    cmon.setdefault('FootprintApproach', {})['enabled'] = True
+    cmon.setdefault('FootprintApproach', {})['time_before_collision'] = 0.5
 
 # ── Global planner: switch NavFn from Dijkstra to A*.
 # Dijkstra hugs obstacle walls and produces paths with sharp turns near pillars.
@@ -140,8 +148,7 @@ pserver.setdefault('GridBased', {})['tolerance'] = 0.5  # accept path ending wit
 # sandbox in mapping mode so slam_toolbox records the full layout. Once the
 # exploration is complete and posegraphs are serialized, the image is rebuilt
 # with localization mode using the new full-coverage posegraphs.
-import os as _os
-_slam_mode = _os.environ.get('SLAM_BUILD_MODE', '0')
+_slam_mode = os.environ.get('SLAM_BUILD_MODE', '0')
 if _slam_mode == '1':
     # SLAM MAPPING mode: build new posegraph from scratch (SLAM_BUILD_MODE=1 image).
     slam = p.setdefault('slam_toolbox', {}).setdefault('ros__parameters', {})
@@ -210,18 +217,27 @@ for top_key in ['local_costmap', 'global_costmap']:
     #   area — the robot can still physically navigate through because RPP with
     #   use_collision_detection=False follows the global path without re-checking.
     # Local at 0.10m: RPP reads local costmap for its path tracking.
-    inflation = 0.15 if top_key == 'global_costmap' else 0.10
+    # In AMCL mode (house demo): use small inflation so doorways (70cm) remain
+    # passable. Total blocked zone = robot_radius + inflation. At 0.22+0.15=0.37m
+    # the planner sees 70-2×37=-4cm clearance → doorway closed. With 0.22+0.05=0.27m
+    # clearance = 70-2×27=16cm → passable.
+    if _loc_mode == 'amcl':
+        inflation = 0.05 if top_key == 'global_costmap' else 0.10
+    else:
+        inflation = 0.15 if top_key == 'global_costmap' else 0.10
     cmap_params.setdefault('inflation_layer', {})['inflation_radius'] = inflation
     if top_key == 'global_costmap':
-        # Use actual robot radius (0.22m) so NavFn routes around pillar grid.
-        # Pillar gap 0.8m - 2x(0.15m pillar inflation + 0.22m robot) = -0.14m:
-        # negative effective gap means NavFn correctly finds outer corridor routes.
-        cmap_params['robot_radius'] = 0.22
+        # In AMCL mode, set robot_radius=0 so the planner can compute paths FROM
+        # positions that are within robot_radius of a wall (narrow house corridors).
+        # Without this, the planner aborts when the start position is in the lethal
+        # zone (within 0.22m of a wall), which happens constantly in the house.
+        cmap_params['robot_radius'] = 0.0 if _loc_mode == 'amcl' else 0.22
     cmap_params.setdefault('inflation_layer', {})['cost_scaling_factor'] = 5.0
     # transform_timeout: how long global/local costmap activation waits for TF.
     # Default (0.1s) is too short for AMCL mode — AMCL must receive initial pose
-    # and publish map→odom before the costmap can activate. 60s covers AMCL startup.
-    cmap_params['transform_timeout'] = 60.0
+    # AND be in active lifecycle state before it publishes map→odom.
+    # 180s covers the full AMCL convergence loop (6 attempts × 10s) plus headroom.
+    cmap_params['transform_timeout'] = 180.0
     # Allow 30 s for map→odom TF during activation. The default (0.3 s) is too
     # short: AMCL may not have published map→odom by the time the lifecycle
     # manager activates planner_server, causing the global_costmap to abort.
@@ -239,7 +255,7 @@ for lm_name in ['lifecycle_manager_navigation', 'lifecycle_manager_localization'
 
 with open('${CUSTOM_PARAMS}', 'w') as f:
     yaml.dump(p, f, default_flow_style=False)
-_build = _os.environ.get('SLAM_BUILD_MODE', '0')
+_build = os.environ.get('SLAM_BUILD_MODE', '0')
 mode_label = 'SLAM-MAPPING' if _build == '1' else 'AMCL'
 print(f'[nav2-pod] Patched nav2 params: {mode_label} + A* + RPP + 300s bond_timeout')
 " && PARAMS_ARG="params_file:=${CUSTOM_PARAMS}" || { echo "[nav2-pod/${ROBOT_NAME}] Python patch FAILED:"; cat /tmp/py_err_${ROBOT_NAME}.log >&1; PARAMS_ARG=""; }
@@ -249,8 +265,12 @@ else
   PARAMS_ARG=""
 fi
 
-if [ "${SLAM_BUILD_MODE:-0}" = "1" ]; then
-  # Mapping mode: slam_toolbox builds posegraph (SLAM_BUILD_MODE=1 image only)
+if [ "${SLAM_BUILD_MODE:-0}" = "1" ] || [ "${LOCALIZATION_MODE}" = "slam_mapping" ]; then
+  # Online SLAM mapping mode: slam_toolbox builds live map from scans.
+  # Launch nav2 immediately — the costmap's 4s TF timeout may cause the first
+  # activation to fail, but the auto-RESUME loop in the subshell below will
+  # retry until odom→base_footprint TF is available (published by Gazebo via
+  # Zenoh bridge + odom_tf_broadcaster started later in this script).
   ros2 launch nav2_bringup bringup_launch.py \
     use_sim_time:=True \
     autostart:=True \
@@ -303,6 +323,25 @@ elif [ "${LOCALIZATION_MODE}" = "amcl" ]; then
     echo "[nav2-pod/${ROBOT_NAME}] AMCL not yet converged (attempt ${_try}/6), re-publishing pose..."
   done
   echo "[nav2-pod/${ROBOT_NAME}] AMCL initialization complete."
+
+  # Verify navigate_to_pose action server is actually accepting goals.
+  # bt_navigator may report 'active [3]' while TF_OLD_DATA flooding prevents
+  # it from processing goals (observed when only the nav2 pod restarts without
+  # Gazebo). A zero-distance test goal confirms the server is truly ready.
+  echo "[nav2-pod/${ROBOT_NAME}] Verifying navigate_to_pose action server..."
+  for _verify in $(seq 1 6); do
+    sleep 5
+    _result=$(timeout 12 ros2 action send_goal /navigate_to_pose \
+      nav2_msgs/action/NavigateToPose \
+      "{pose: {header: {frame_id: map}, pose: {position: {x: ${SPAWN_X}, y: ${SPAWN_Y}}, orientation: {w: 1.0}}}}" \
+      2>/dev/null | grep -c "SUCCEEDED\|status: SUCCEEDED\|Goal finished with status: SUCCEEDED" || echo 0)
+    if [ "${_result}" -ge 1 ]; then
+      echo "[nav2-pod/${ROBOT_NAME}] Action server ready (attempt ${_verify}/6)"
+      break
+    fi
+    echo "[nav2-pod/${ROBOT_NAME}] Action server not ready yet (attempt ${_verify}/6), waiting..."
+  done
+  echo "[nav2-pod/${ROBOT_NAME}] Navigation stack fully ready."
 else
   # Localization mode: start localization_slam_toolbox_node as a standalone
   # non-lifecycle process BEFORE nav2 navigation stack.
@@ -341,21 +380,40 @@ else
       -p loop_search_maximum_distance:=1.0 \
       -p link_scan_maximum_distance:=1.5 \
       -p correlation_search_space_dimension:=0.5 \
-      -p minimum_time_interval:=0.5 &
+      -p minimum_time_interval:=0.5 \
+      -p stack_size_to_use:=40000000 &
     SLAM_LOC_PID=$!
     echo "[nav2-pod/${ROBOT_NAME}] localization_slam_toolbox_node started (PID ${SLAM_LOC_PID})"
 
+    # Drain buffered /scan messages before activation. When the nav pod restarts
+    # while Gazebo keeps running, the Zenoh bridge buffers many scan messages.
+    # Receiving a burst of hundreds of buffered scans during slam_toolbox onActivate
+    # causes a Ceres solver segfault before the internal state is fully set up.
+    timeout 5 ros2 topic echo /scan --once 2>/dev/null || true
     sleep 5
     timeout 15 ros2 lifecycle set /slam_toolbox configure 2>/dev/null || true
     sleep 3
     timeout 15 ros2 lifecycle set /slam_toolbox activate 2>/dev/null || true
     sleep 3
 
-    echo "[nav2-pod/${ROBOT_NAME}] Loading posegraph /opt/ros2-demo/slam_maps/${ROBOT_NAME}_slam..."
+    # Check if slam_toolbox survived activation (it can segfault during onActivate
+    # when the scan buffer from Gazebo arrives during initialization).
+    if ! kill -0 "${SLAM_LOC_PID}" 2>/dev/null; then
+      echo "[nav2-pod/${ROBOT_NAME}] slam_toolbox crashed during activate — retrying."
+      return 1
+    fi
+
+    SLAM_MAP_DIR="${SLAM_MAP_DIR:-/opt/ros2-demo/slam_maps}"
+    echo "[nav2-pod/${ROBOT_NAME}] Loading posegraph ${SLAM_MAP_DIR}/${ROBOT_NAME}_slam..."
     timeout 120 ros2 service call /slam_toolbox/deserialize_map \
       slam_toolbox/srv/DeserializePoseGraph \
-      "{filename: '/opt/ros2-demo/slam_maps/${ROBOT_NAME}_slam', match_type: 1, \
+      "{filename: '${SLAM_MAP_DIR}/${ROBOT_NAME}_slam', match_type: 0, \
        pose: {x: 0.0, y: 0.0, theta: ${INITIAL_YAW}}}" 2>/dev/null || true
+
+    # Wait for slam_toolbox to finish loading the posegraph before sending initialpose.
+    # Without this delay the initialpose triggers re-localization while the graph is
+    # still being processed, causing a Ceres solver segfault in slam_toolbox.
+    sleep 10
 
     # Publish /initialpose at map(0,0) = posegraph origin = robot spawn.
     timeout 30 ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
@@ -390,7 +448,7 @@ print(f'{math.sqrt(x**2+y**2):.3f}|{x:.3f}|{y:.3f}')
         fi
       fi
       if [ $((k % 5)) -eq 0 ]; then
-        ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
+        timeout 15 ros2 topic pub "/initialpose" geometry_msgs/msg/PoseWithCovarianceStamped \
           "{header: {frame_id: 'map'}, pose: {pose: {position: {x: 0.0, y: 0.0, z: 0.0}, \
           orientation: {x: 0.0, y: 0.0, z: ${SLAM_QZ}, w: ${SLAM_QW}}}, \
           covariance: [0.01,0,0,0,0,0, 0,0.01,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0, \
@@ -404,9 +462,10 @@ print(f'{math.sqrt(x**2+y**2):.3f}|{x:.3f}|{y:.3f}')
     return 1
   }
 
-  # Retry up to 3 times until TF converges correctly to spawn position.
+  # Retry up to 8 times — slam_toolbox can crash during activation due to
+  # buffered scan burst from Gazebo; after drain+check, subsequent attempts succeed.
   SLAM_INIT_OK=0
-  for attempt in 1 2 3; do
+  for attempt in 1 2 3 4 5 6 7 8; do
     if _slam_init_one "${attempt}"; then
       SLAM_INIT_OK=1
       break
@@ -512,50 +571,74 @@ COSTMAP_EOF
 while true; do python3 /tmp/costmap_clear.py 2>/dev/null || true; sleep 2; done &
 echo "[nav2-pod/${ROBOT_NAME}] costmap clearing service started"
 
-# slam_toolbox → amcl_pose relay.
-# slam_toolbox publishes /pose (PoseWithCovarianceStamped) in its own MAP frame
-# (origin = robot spawn = world INITIAL_X, INITIAL_Y).  The free_fleet adapter
-# subscribes to robot_N/amcl_pose via Zenoh and expects world-frame coordinates.
-# This relay converts map frame to world frame by adding the spawn offset.
+# odom → amcl_pose relay.
+# Subscribes to /odom (nav_msgs/Odometry) which Gazebo publishes at 10+ Hz.
+# Converts odom frame → world frame by adding the robot's spawn offset.
+# The free_fleet adapter subscribes to robot_N/amcl_pose via Zenoh and expects
+# world-frame coordinates. Using /odom instead of slam_toolbox /pose means the
+# fleet adapter always receives fresh positions regardless of slam_toolbox state.
+# Publishes spawn position immediately at startup so the fleet adapter never sees
+# a gap, even before /odom arrives.
 cat > /tmp/slam_amcl_relay.py << 'SLAM_RELAY_EOF'
 import rclpy, os, time
 from rclpy.node import Node
 from geometry_msgs.msg import PoseWithCovarianceStamped
+from nav_msgs.msg import Odometry
 
 SPAWN_X = float(os.environ.get('INITIAL_X', '0.0'))
 SPAWN_Y = float(os.environ.get('INITIAL_Y', '0.0'))
+SPAWN_YAW = float(os.environ.get('INITIAL_YAW', '0.0'))
 
-class SlamAmclRelay(Node):
+class OdomAmclRelay(Node):
     def __init__(self):
         super().__init__('slam_amcl_relay')
+        import math as _m
         self._pub = self.create_publisher(
             PoseWithCovarianceStamped, '/amcl_pose', 10)
-        self.create_subscription(
-            PoseWithCovarianceStamped, '/pose', self._cb, 10)
+        self.create_subscription(Odometry, '/odom', self._cb, 10)
+        self._last_pub_time = 0.0
+        self._PUB_INTERVAL = 1.0  # 1 Hz — prevents rapid fleet adapter replan loop
+        # Publish spawn position immediately so fleet adapter has data from t=0.
+        init = PoseWithCovarianceStamped()
+        init.header.frame_id = 'map'
+        init.pose.pose.position.x = SPAWN_X
+        init.pose.pose.position.y = SPAWN_Y
+        init.pose.pose.orientation.z = _m.sin(SPAWN_YAW / 2.0)
+        init.pose.pose.orientation.w = _m.cos(SPAWN_YAW / 2.0)
+        for covar_i in [0, 7, 35]:
+            init.pose.covariance[covar_i] = 0.01
+        self._pub.publish(init)
         self.get_logger().info(
-            f'slam→amcl relay: adding spawn offset ({SPAWN_X},{SPAWN_Y})')
+            f'odom→amcl relay ready: spawn ({SPAWN_X},{SPAWN_Y})')
 
     def _cb(self, msg):
+        now = time.monotonic()
+        if now - self._last_pub_time < self._PUB_INTERVAL:
+            return
+        self._last_pub_time = now
         out = PoseWithCovarianceStamped()
         out.header = msg.header
         out.header.frame_id = 'map'
-        out.pose = msg.pose
-        # Convert slam_toolbox map frame → world frame:
-        # world = map_pos + spawn_offset
-        # (slam_toolbox map origin = spawn = world INITIAL_X/Y)
         out.pose.pose.position.x = msg.pose.pose.position.x + SPAWN_X
         out.pose.pose.position.y = msg.pose.pose.position.y + SPAWN_Y
+        out.pose.pose.orientation = msg.pose.pose.orientation
         self._pub.publish(out)
 
 while True:
     try:
         rclpy.init(args=['--ros-args', '-p', 'use_sim_time:=true'])
-        rclpy.spin(SlamAmclRelay())
+        rclpy.spin(OdomAmclRelay())
     except BaseException:
         time.sleep(2)
 SLAM_RELAY_EOF
-while true; do python3 /tmp/slam_amcl_relay.py 2>/dev/null || true; sleep 2; done &
-echo "[nav2-pod/${ROBOT_NAME}] slam→amcl_pose relay started (adds spawn offset to map-frame pose)"
+# In AMCL mode, AMCL itself publishes /amcl_pose in world frame — no relay needed.
+# In slam_toolbox/slam_mapping modes, use the odom relay as the position source.
+if [ "${LOCALIZATION_MODE}" != "amcl" ]; then
+  while true; do python3 /tmp/slam_amcl_relay.py 2>/dev/null || true; sleep 2; done &
+  echo "[nav2-pod/${ROBOT_NAME}] odom→amcl_pose relay started (always-live position tracking)"
+else
+  echo "[nav2-pod/${ROBOT_NAME}] AMCL mode: amcl_pose published by AMCL directly (no relay needed)"
+fi
 
 # cmd_vel Zenoh publisher — bypasses zenoh-bridge-ros2dds for cmd_vel.
 # The bridge's cmd_vel Publisher route gets garbage-collected at ~82 s
@@ -607,14 +690,23 @@ echo "[nav2-pod/${ROBOT_NAME}] cmd_vel Zenoh publisher started"
 
 # Wait for localization node (AMCL or slam_toolbox) to publish map→odom TF.
 (
-if [ "${SLAM_BUILD_MODE:-0}" = "1" ]; then
-  # ── MAPPING mode ──────────────────────────────────────────────────────────
+if [ "${SLAM_BUILD_MODE:-0}" = "1" ] || [ "${LOCALIZATION_MODE}" = "slam_mapping" ]; then
+  # ── MAPPING mode (also used for slam_mapping localization) ────────────────
   # slam_toolbox builds map from scan as robot explores. TF published automatically.
-  echo "[nav2-pod/${ROBOT_NAME}] SLAM mapping mode: waiting for slam_toolbox..."
-  for i in $(seq 1 180); do
-    if ros2 node list 2>/dev/null | grep -qE "^(/slam_toolbox|/${ROBOT_NAME}/slam_toolbox)$"; then
-      echo "[nav2-pod/${ROBOT_NAME}] slam_toolbox ready (attempt ${i}) — drive robot to explore."
+  # The lifecycle_manager_navigation may fail on first activation attempt because
+  # the costmap's transform_timeout is hardcoded at 4s in Jazzy C++ code. If the
+  # activation fails, call RESUME to retry until bt_navigator becomes active.
+  echo "[nav2-pod/${ROBOT_NAME}] SLAM mapping mode: waiting for bt_navigator to activate..."
+  for i in $(seq 1 60); do
+    BT=$(timeout 5 ros2 lifecycle get /bt_navigator 2>/dev/null | grep -oE "[a-z]+ \[[0-9]+\]" | head -1)
+    if echo "${BT}" | grep -q "active"; then
+      echo "[nav2-pod/${ROBOT_NAME}] bt_navigator active (attempt ${i})"
       break
+    fi
+    if echo "${BT}" | grep -q "inactive"; then
+      echo "[nav2-pod/${ROBOT_NAME}] bt_navigator inactive — calling RESUME..."
+      timeout 15 ros2 service call /lifecycle_manager_navigation/manage_nodes \
+        nav2_msgs/srv/ManageLifecycleNodes "{command: 2}" 2>/dev/null || true
     fi
     sleep 5
   done

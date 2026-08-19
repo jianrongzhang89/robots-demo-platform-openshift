@@ -1,0 +1,87 @@
+# Navigation graph for turtlebot3_house
+#
+# Furniture positions (from model.sdf):
+#   cafe_table_0: (6.36, -2.28) — kitchen east side
+#   cafe_table:   (6.36, -3.19) — kitchen east side (south of cafe_table_0)
+#   The kitchen area around these tables is more open than the east corridor.
+#   robot_2 patrols a circuit around these two cafe tables (waypoints 10-13).
+#
+# Robot spawns:
+#   robot_1: (-1.5, -0.5)  left corridor
+#   robot_2: (+1.5, -0.5)  right corridor
+#
+# Vertex index map:
+#   0  = robot_1_home  (-1.5, -0.5)  left corridor — robot_1 spawn
+#   1  = robot_2_home  (+1.5, -0.5)  right corridor — robot_2 spawn
+#   2  = left_north    (-2.0, +0.5)
+#   3  = right_north   (+2.0, +0.5)
+#   4  = center_south  ( 0.0, -0.5)
+#   5  = sw_open       (-1.5, -1.5)
+#   6  = se_open       (+1.5, -1.5)
+#   7  = south_center  ( 0.0, -2.0)
+#   8  = charger_1     (-2.5, -0.5)
+#   9  = charger_2     (+2.5, -0.5)
+#  10  = cafe_w        ( 5.0, -2.73) west entrance to kitchen cafe area
+#  11  = cafe_nw       ( 5.4, -1.6)  northwest of cafe tables
+#  12  = cafe_ne       ( 7.2, -1.6)  northeast of cafe tables
+#  13  = cafe_se       ( 7.2, -3.7)  southeast of cafe tables
+
+building_name: turtlebot3_house
+doors: {}
+levels:
+  L1:
+    vertices:
+      - [-1.5, -0.5, {name: robot_1_home, is_charger: false, is_holding_point: true,  is_parking_spot: true,  merge_radius: 0.5}]
+      - [ 1.5, -0.5, {name: robot_2_home, is_charger: false, is_holding_point: true,  is_parking_spot: true,  merge_radius: 1.5}]
+      - [-2.0,  0.5, {name: left_north,   is_charger: false, is_holding_point: true,  is_parking_spot: false, merge_radius: 0.5}]
+      - [ 2.0,  0.5, {name: right_north,  is_charger: false, is_holding_point: true,  is_parking_spot: false, merge_radius: 0.5}]
+      - [ 0.0, -0.5, {name: center_south, is_charger: false, is_holding_point: true,  is_parking_spot: false, merge_radius: 0.5}]
+      - [-1.5, -1.5, {name: sw_open,      is_charger: false, is_holding_point: true,  is_parking_spot: false, merge_radius: 0.5}]
+      - [ 1.5, -1.5, {name: se_open,      is_charger: false, is_holding_point: true,  is_parking_spot: false, merge_radius: 0.5}]
+      - [ 0.0, -2.0, {name: south_center, is_charger: false, is_holding_point: true,  is_parking_spot: false, merge_radius: 0.5}]
+      - [-2.5, -0.5, {name: charger_1,    is_charger: true,  is_holding_point: false, is_parking_spot: false}]
+      - [ 2.5, -0.5, {name: charger_2,    is_charger: true,  is_holding_point: false, is_parking_spot: false}]
+      # Cafe table circuit — robot_2 circles these in the open kitchen area
+      - [ 5.0, -2.73, {name: cafe_w,  is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 1.0}]
+      - [ 5.4, -1.6,  {name: cafe_nw, is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 1.0}]
+      - [ 7.2, -1.6,  {name: cafe_ne, is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 1.0}]
+      - [ 7.2, -3.7,  {name: cafe_se, is_charger: false, is_holding_point: true, is_parking_spot: false, merge_radius: 1.0}]
+
+    lanes:
+      # robot_1 patrol zone: left corridor (north ↔ south)
+      - [0, 2, {graph_idx: 0, speed_limit: 0.22}]  # robot_1_home ↔ left_north
+      - [2, 0, {graph_idx: 0, speed_limit: 0.22}]
+      - [0, 5, {graph_idx: 0, speed_limit: 0.22}]  # robot_1_home ↔ sw_open
+      - [5, 0, {graph_idx: 0, speed_limit: 0.22}]
+      - [5, 7, {graph_idx: 0, speed_limit: 0.22}]  # sw_open ↔ south_center
+      - [7, 5, {graph_idx: 0, speed_limit: 0.22}]
+      # robot_2 patrol zone: cafe table circuit in kitchen
+      - [1,  10, {graph_idx: 0, speed_limit: 0.22}]  # robot_2_home → cafe_w
+      - [10,  1, {graph_idx: 0, speed_limit: 0.22}]  # cafe_w → robot_2_home
+      - [10, 11, {graph_idx: 0, speed_limit: 0.22}]  # cafe_w → cafe_nw
+      - [11, 10, {graph_idx: 0, speed_limit: 0.22}]
+      - [11, 12, {graph_idx: 0, speed_limit: 0.22}]  # cafe_nw → cafe_ne
+      - [12, 11, {graph_idx: 0, speed_limit: 0.22}]
+      - [12, 13, {graph_idx: 0, speed_limit: 0.22}]  # cafe_ne → cafe_se
+      - [13, 12, {graph_idx: 0, speed_limit: 0.22}]
+      - [13, 10, {graph_idx: 0, speed_limit: 0.22}]  # cafe_se → cafe_w (completes loop)
+      - [10, 13, {graph_idx: 0, speed_limit: 0.22}]
+      # Legacy connections (kept for robot_2 fallback/patrol)
+      - [1, 3, {graph_idx: 0, speed_limit: 0.22}]   # robot_2_home ↔ right_north
+      - [3, 1, {graph_idx: 0, speed_limit: 0.22}]
+      - [1, 6, {graph_idx: 0, speed_limit: 0.22}]   # robot_2_home ↔ se_open
+      - [6, 1, {graph_idx: 0, speed_limit: 0.22}]
+      - [6, 7, {graph_idx: 0, speed_limit: 0.22}]   # se_open ↔ south_center
+      - [7, 6, {graph_idx: 0, speed_limit: 0.22}]
+      # Cross connections via center passage
+      - [0, 4, {graph_idx: 0, speed_limit: 0.22}]
+      - [4, 0, {graph_idx: 0, speed_limit: 0.22}]
+      - [1, 4, {graph_idx: 0, speed_limit: 0.22}]
+      - [4, 1, {graph_idx: 0, speed_limit: 0.22}]
+      # Chargers
+      - [0, 8, {graph_idx: 0, speed_limit: 0.20}]
+      - [8, 0, {graph_idx: 0, speed_limit: 0.20}]
+      - [1, 9, {graph_idx: 0, speed_limit: 0.20}]
+      - [9, 1, {graph_idx: 0, speed_limit: 0.20}]
+
+lifts: {}
