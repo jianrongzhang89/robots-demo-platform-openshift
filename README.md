@@ -315,17 +315,27 @@ make build-push-rmf      # Build + push the RMF image
 
 ---
 
-## Branch Overview
+## Supported Demos
 
-| Branch | Demo | Localization |
-|--------|------|-------------|
-| `main` | Single-robot meet demo | AMCL |
-| `open-rmf-integration` | Two-robot position swap (separate corridors) | AMCL |
-| `swap-nav2-collison-avoidance` | **This branch** — RMF + Nav2 LiDAR head-on demo | slam_toolbox |
-| `turtlebot3-house-demo` | Two-robot corridor patrol in 3D house world | slam_toolbox (online mapping) |
+The `multi-demo-support` branch runs multiple demos from the same standardized
+images, each in its own OpenShift namespace.
 
-See [`docs/turtlebot3-house-demo.md`](docs/turtlebot3-house-demo.md) for the
-full documentation of the house demo.
+| Demo | Namespace | World | Description | Docs |
+|------|-----------|-------|-------------|------|
+| **tb3_sandbox LiDAR** | `ros2-multi-robot` | `tb3_sandbox` | RMF fleet management + Nav2 LiDAR head-on collision avoidance. robot_1 (RMF-managed) and robot_2 (direct Nav2) meet in a narrow corridor; collision_monitor stops robot_2 before contact. | This README |
+| **turtlebot3_world swap** | `ros2-turtlebot3-world` | `turtlebot3_world` | Two robots swap spawn positions via separate outer corridors, fully managed by Open-RMF traffic negotiation. | This README |
+| **turtlebot3_house patrol** | `ros2-turtlebot3-house` | `turtlebot3_house` | Two robots patrol opposite corridors of a furnished 3D house world via Open-RMF dispatch and Nav2 online SLAM. | [`docs/turtlebot3-house-demo.md`](docs/turtlebot3-house-demo.md) |
+
+### Branch History
+
+| Branch | Purpose |
+|--------|---------|
+| `main` | Original single-robot meet demo |
+| `open-rmf-integration` | First two-robot RMF integration (separate corridors) |
+| `swap-nav2-collison-avoidance` | RMF + Nav2 LiDAR head-on demo (tb3_sandbox) |
+| `swap-nav2-planning` | Nav2 planning improvements for swap demo |
+| `multi-demo-support` | **This branch** — standardized images for multiple demo worlds |
+| `turtlebot3-house-demo` | Feature branch — merged into `multi-demo-support` |
 
 ---
 
