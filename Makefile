@@ -360,6 +360,14 @@ dispatch-hotel: ## Hotel demo: dispatch a multi-level patrol (lobby → level-3 
 	     -p $(HOTEL_WAYPOINTS) -n $(HOTEL_LOOPS) --use_sim_time'; \
 	echo "[RMF] Dispatched. Watch noVNC: robot routes to the lift, waits, rides up, completes."
 
+.PHONY: patrol-hotel
+patrol-hotel: ## Hotel demo: start continuous 4-robot patrol loop (runs until Ctrl-C)
+	@POD=$$(oc get pod -n $(NAMESPACE) -l app=hotel-sim -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
+	test -n "$$POD" || { echo "ERROR: hotel-sim pod not found in namespace '$(NAMESPACE)'"; exit 1; }; \
+	echo "[Hotel] Starting continuous patrol loop on pod $$POD ..."; \
+	echo "[Hotel] Each robot patrols its own zone — Ctrl-C to stop."; \
+	oc exec -n $(NAMESPACE) $$POD -- python3 /scripts/hotel_patrol_loop.py
+
 .PHONY: dispatch-patrol
 dispatch-patrol: ## Dispatch patrol: robot_1_home→mid_west→meeting_point (robot_1 only)
 	$(eval RMFPOD := $(shell oc get pod -n $(NAMESPACE) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
