@@ -92,12 +92,16 @@ RUN mkdir -p /opt/gz-models/Open-RMF \
     && ln -s /opt/rmf_demos_ws/install/share/rmf_demos_assets/models/DeliveryRobot \
              /opt/gz-models/Open-RMF/DeliveryRobot
 
-# Stub models and fleet_adapter patch scripts are in scripts/hotel-build/
-# (heredoc syntax is not supported by older OpenShift imagebuilder)
+# Patch scripts (no heredoc — OpenShift imagebuilder doesn't support it)
 RUN mkdir -p /tmp/build-scripts
-COPY scripts/hotel-build/create_stubs.py /tmp/build-scripts/create_stubs.py
+COPY scripts/hotel-build/create_stubs.py             /tmp/build-scripts/create_stubs.py
+COPY scripts/hotel-build/patch_cleaner_spawns.py     /tmp/build-scripts/patch_cleaner_spawns.py
+COPY scripts/hotel-build/patch_delivery_robot_color.py /tmp/build-scripts/patch_delivery_robot_color.py
+
 RUN python3 /tmp/build-scripts/create_stubs.py \
-    && rm /tmp/build-scripts/create_stubs.py
+    && python3 /tmp/build-scripts/patch_cleaner_spawns.py \
+    && python3 /tmp/build-scripts/patch_delivery_robot_color.py \
+    && rm -rf /tmp/build-scripts
 
 # Patch fleet_adapter.py: thread-safe callbacks + GC protection
 COPY scripts/hotel-build/patch_fleet_adapter.py /tmp/build-scripts/patch_fleet_adapter.py

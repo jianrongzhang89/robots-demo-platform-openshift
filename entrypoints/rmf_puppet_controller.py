@@ -29,8 +29,8 @@ WAYPOINTS = {
     "clean_lobby":        {"fleet": "cleanerBotA", "port": 22013, "x": 15.4, "y": -26.0,   "yaw": 0.0, "map": "L1"},
     "clean_restaurant":   {"fleet": "cleanerBotA", "port": 22013, "x": 19.6, "y": -15.8,   "yaw": 0.0, "map": "L1"},
     "clean_waiting_area": {"fleet": "cleanerBotA", "port": 22013, "x": 22.0, "y": -20.0,   "yaw": 0.0, "map": "L1"},
-    "cleanerbot_charger1":{"fleet": "cleanerBotA", "port": 22013, "x": 26.365,"y":-27.753,"yaw":-1.19,"map":"L1"},
-    "cleanerbot_charger2":{"fleet": "cleanerBotA", "port": 22013, "x": 29.239,"y":-27.663,"yaw": 1.34,"map":"L1"},
+    "cleanerbot_charger1":{"fleet": "cleanerBotA", "port": 22013, "x": 19.0,"y":-32.0,"yaw": 0.0,"map":"L1"},
+    "cleanerbot_charger2":{"fleet": "cleanerBotA", "port": 22013, "x": 23.0,"y":-32.0,"yaw": 0.0,"map":"L1"},
     # tinyRobot (nav_graph 0, port 22011)
     "tinybot_charger":    {"fleet": "tinyRobot",   "port": 22011, "x": 23.541,"y":-27.420,"yaw": 1.57,"map":"L1"},
     # deliveryRobot (nav_graph 2, port 22012)
