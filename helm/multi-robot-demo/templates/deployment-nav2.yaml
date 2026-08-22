@@ -1,3 +1,4 @@
+{{- if not .Values.hotel.enabled }}
 {{- range .Values.robots }}
 {{- $safeRobotName := .name | replace "_" "-" }}
 ---
@@ -148,4 +149,5 @@ spec:
         - name: zenoh-config
           configMap:
             name: zenoh-bridge-config
+{{- end }}
 {{- end }}

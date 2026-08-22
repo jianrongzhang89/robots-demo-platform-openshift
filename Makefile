@@ -1,6 +1,7 @@
 REGISTRY    ?= quay.io/jianrzha
 IMAGE       ?= ros2-demo
 IMAGE_RMF   ?= ros2-rmf
+IMAGE_HOTEL ?= ros2-rmf-hotel
 TAG         ?= latest
 # Use ROS_DEMO_NS to avoid clashing with any NAMESPACE env var set by the shell
 ROS_DEMO_NS ?= ros2-multi-robot
@@ -10,8 +11,9 @@ CHART      := helm/multi-robot-demo
 # Convenience alias so existing targets keep working
 NAMESPACE  := $(ROS_DEMO_NS)
 
-IMAGE_REF     := $(REGISTRY)/$(IMAGE):$(TAG)
-IMAGE_RMF_REF := $(REGISTRY)/$(IMAGE_RMF):$(TAG)
+IMAGE_REF       := $(REGISTRY)/$(IMAGE):$(TAG)
+IMAGE_RMF_REF   := $(REGISTRY)/$(IMAGE_RMF):$(TAG)
+IMAGE_HOTEL_REF := $(REGISTRY)/$(IMAGE_HOTEL):$(TAG)
 
 # Auto-detect podman (handles non-standard install paths like /opt/podman/bin)
 PODMAN     := $(shell which podman 2>/dev/null || echo /opt/podman/bin/podman)
@@ -57,6 +59,17 @@ push-rmf: ## Push the RMF image to the registry
 .PHONY: build-push-rmf
 build-push-rmf: build-rmf push-rmf ## Build and push the RMF image
 
+.PHONY: build-hotel
+build-hotel: ## Build the Open-RMF Hotel World image (source-builds rmf_demos; slow first build)
+	$(PODMAN) build --platform linux/amd64 -t $(IMAGE_HOTEL_REF) -f Containerfile.hotel .
+
+.PHONY: push-hotel
+push-hotel: ## Push the Hotel World image to the registry
+	$(PODMAN) push $(IMAGE_HOTEL_REF)
+
+.PHONY: build-push-hotel
+build-push-hotel: build-hotel push-hotel ## Build and push the Hotel World image
+
 ##@ Deploy
 
 .PHONY: deploy
@@ -66,6 +79,17 @@ deploy: ## Install or upgrade the Helm release on OpenShift
 	  --create-namespace \
 	  --set image.repository=$(REGISTRY)/$(IMAGE) \
 	  --set image.tag=$(TAG) \
+	  --wait --timeout 10m
+
+.PHONY: deploy-hotel
+deploy-hotel: ## Deploy the Open-RMF Hotel World demo (single pod; use ROS_DEMO_NS=ros2-rmf-hotel)
+	helm upgrade --install $(RELEASE) $(CHART) \
+	  --namespace $(NAMESPACE) \
+	  --create-namespace \
+	  -f $(CHART)/values.yaml \
+	  -f $(CHART)/values-hotel.yaml \
+	  --set namespace=$(NAMESPACE) \
+	  --set hotel.image=$(IMAGE_HOTEL_REF) \
 	  --wait --timeout 10m
 
 .PHONY: undeploy
@@ -312,6 +336,29 @@ dispatch-house-patrol: ## House demo: robot_1 left corridor, robot_2 right corri
 	     -F turtlebot3 -R robot_2 \
 	     -p robot_2_home right_north se_open -n 3 --use_sim_time 2>/dev/null'; \
 	echo "[RMF] Both dispatched. Watch noVNC: robots patrol opposite corridors of the house."
+
+# Hotel demo dispatch — overridable waypoints/loops.
+# Default: multi-level patrol from lobby up to a level-3 room via the lift.
+# Waypoint names come from the source-built rmf_demos_maps hotel nav graphs;
+# confirm them with:  oc exec ... -- ros2 run rmf_demos_tasks dispatch_patrol -h
+# and by inspecting the generated nav_graphs. Override with:
+#   make dispatch-hotel HOTEL_WAYPOINTS="L1_n1 L3_room1" HOTEL_LOOPS=1
+HOTEL_WAYPOINTS ?= L3_room1 L3_room1
+HOTEL_LOOPS     ?= 1
+
+.PHONY: dispatch-hotel
+dispatch-hotel: ## Hotel demo: dispatch a multi-level patrol (lobby → level-3 room via lift)
+	@echo "=== Open-RMF Hotel World dispatch ==="
+	@echo " Waypoints: $(HOTEL_WAYPOINTS)   loops: $(HOTEL_LOOPS)"
+	@POD=$$(oc get pod -n $(NAMESPACE) -l app=hotel-sim -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
+	test -n "$$POD" || { echo "ERROR: hotel-sim pod not found in namespace '$(NAMESPACE)'"; exit 1; }; \
+	echo "[RMF] Dispatching patrol on pod $$POD ..."; \
+	oc exec -n $(NAMESPACE) $$POD -c hotel -- bash -c \
+	  'export HOME=/tmp/ros-home; source /opt/ros/jazzy/setup.bash; \
+	   source /opt/rmf_demos_ws/install/setup.bash 2>/dev/null || true; \
+	   ros2 run rmf_demos_tasks dispatch_patrol \
+	     -p $(HOTEL_WAYPOINTS) -n $(HOTEL_LOOPS) --use_sim_time'; \
+	echo "[RMF] Dispatched. Watch noVNC: robot routes to the lift, waits, rides up, completes."
 
 .PHONY: dispatch-patrol
 dispatch-patrol: ## Dispatch patrol: robot_1_home→mid_west→meeting_point (robot_1 only)

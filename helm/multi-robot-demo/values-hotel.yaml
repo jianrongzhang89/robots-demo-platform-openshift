@@ -1,0 +1,46 @@
+# Override values for the Open-RMF Hotel World demo (Option A — faithful port).
+# Usage:
+#   helm upgrade ... -f values.yaml -f values-hotel.yaml
+#
+# This demo is single-pod and self-contained: Gazebo (slotcar robots + lift/door
+# plugins) + RMF core (building map server, door/lift supervisors, traffic
+# schedule, task dispatcher) + 3 full_control fleet adapters, all on one
+# localhost DDS domain. It does NOT use the Nav2 pods, the zenoh-router, or the
+# free_fleet_adapter — so those templates are switched off via hotel.enabled.
+
+namespace: ros2-rmf-hotel
+
+hotel:
+  enabled: true
+  image: quay.io/jianrzha/ros2-rmf-hotel:latest
+  # Xvfb virtual display size served over noVNC.
+  resolution: "1600x900x24"
+  # Extra "key:=value" args appended to `ros2 launch rmf_demos_gz hotel.launch.xml`.
+  # Leave empty for the upstream default (Gazebo GUI + RViz). Populate once the
+  # installed launch file's arg names are confirmed (e.g. to disable RViz).
+  launchArgs: ""
+  resources:
+    requests:
+      cpu: "4"
+      memory: "4Gi"
+    limits:
+      cpu: "8"
+      memory: "8Gi"
+
+# No external robots — slotcar robots are spawned inside Gazebo by the RMF world.
+robots: []
+
+# The following blocks are disabled for the hotel demo (guarded by hotel.enabled
+# in each template) but kept here for documentation.
+gazebo:
+  world: hotel
+rmf:
+  routes:
+    dashboardHost: ""
+    apiHost: ""
+
+# ── Roadmap seam (do NOT enable yet) ──────────────────────────────────────────
+# Step 2 (single-level Nav2 fleet): re-introduce robots + Nav2 pods + a separate
+# rmf-core pod + zenoh-router here, registering a real TurtleBot3 as a 4th fleet
+# on the hotel lobby level. That reuses the existing deployment-nav2 / zenoh
+# templates; the hotel pod would then run Gazebo + supervisors only.

@@ -1,3 +1,4 @@
+{{- if not .Values.hotel.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -71,3 +72,4 @@ spec:
       port: 7447
       targetPort: 7447
       protocol: TCP
+{{- end }}

@@ -1,0 +1,89 @@
+{{- if .Values.hotel.enabled }}
+# Open-RMF Hotel World — single, self-contained pod.
+# Runs Gazebo (slotcar robots + lift/door plugins), the RMF building map server,
+# door/lift supervisors, traffic schedule, task dispatcher, and 3 full_control
+# fleet adapters on one localhost DDS domain. No Zenoh sidecar, no Nav2 pods.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hotel-sim
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: hotel-sim
+    app.kubernetes.io/part-of: ros2-multi-robot-demo
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hotel-sim
+  template:
+    metadata:
+      labels:
+        app: hotel-sim
+        app.kubernetes.io/part-of: ros2-multi-robot-demo
+    spec:
+      serviceAccountName: ros2-demo
+      containers:
+        - name: hotel
+          image: {{ .Values.hotel.image }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/entrypoint-hotel.sh"]
+          ports:
+            - name: novnc
+              containerPort: 6080
+              protocol: TCP
+            - name: web
+              containerPort: 8080
+              protocol: TCP
+            - name: api
+              containerPort: 8000
+              protocol: TCP
+            - name: dashboard
+              containerPort: 3000
+              protocol: TCP
+          env:
+            - name: ROS_DISTRO
+              value: jazzy
+            - name: ROS_DOMAIN_ID
+              value: "0"
+            - name: RMW_IMPLEMENTATION
+              value: rmw_cyclonedds_cpp
+            - name: VNC_PORT
+              value: "5900"
+            - name: NOVNC_PORT
+              value: "6080"
+            - name: WEB_PORT
+              value: "8080"
+            - name: API_PORT
+              value: "8000"
+            - name: DASHBOARD_PORT
+              value: "3000"
+            - name: RESOLUTION
+              value: {{ .Values.hotel.resolution | quote }}
+            # Extra "key:=value" args passed verbatim to the hotel launch file.
+            # Use to strip RViz / toggle headless if the launch version supports it.
+            - name: HOTEL_LAUNCH_ARGS
+              value: {{ .Values.hotel.launchArgs | quote }}
+          resources:
+            requests:
+              cpu: {{ .Values.hotel.resources.requests.cpu | quote }}
+              memory: {{ .Values.hotel.resources.requests.memory | quote }}
+            limits:
+              cpu: {{ .Values.hotel.resources.limits.cpu | quote }}
+              memory: {{ .Values.hotel.resources.limits.memory | quote }}
+          readinessProbe:
+            tcpSocket:
+              port: 6080
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 20
+          livenessProbe:
+            tcpSocket:
+              port: 6080
+            initialDelaySeconds: 180
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 10
+{{- end }}

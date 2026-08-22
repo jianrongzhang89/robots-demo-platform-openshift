@@ -1,35 +1,75 @@
-{{- if not .Values.hotel.enabled }}
-# ClusterIP Service — rmf-web API server (internal use by dashboard)
+{{- if .Values.hotel.enabled }}
+# Services + Routes for the Hotel World pod: noVNC (Gazebo GUI) and the
+# optional rmf-web dashboard.
 apiVersion: v1
 kind: Service
 metadata:
-  name: rmf-api-server
+  name: hotel-sim-novnc
   namespace: {{ .Values.namespace }}
   labels:
-    app: rmf-core
+    app: hotel-sim
     app.kubernetes.io/part-of: ros2-multi-robot-demo
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
   selector:
-    app: rmf-core
+    app: hotel-sim
   ports:
-    - name: api
-      port: 8000
-      targetPort: 8000
+    - name: novnc
+      port: 6080
+      targetPort: 6080
       protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hotel-sim-dashboard
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: hotel-sim
+    app.kubernetes.io/part-of: ros2-multi-robot-demo
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  selector:
+    app: hotel-sim
+  ports:
     - name: dashboard
       port: 3000
       targetPort: 3000
       protocol: TCP
 ---
-# OpenShift Route — rmf-web dashboard (browser-accessible)
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: rmf-dashboard
+  name: hotel-novnc
   namespace: {{ .Values.namespace }}
   labels:
-    app: rmf-core
+    app: hotel-sim
+    app.kubernetes.io/part-of: ros2-multi-robot-demo
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  annotations:
+    haproxy.router.openshift.io/timeout: 10m
+spec:
+  {{- if .Values.routes.novncHost }}
+  host: {{ .Values.routes.novncHost }}
+  {{- end }}
+  to:
+    kind: Service
+    name: hotel-sim-novnc
+    weight: 100
+  port:
+    targetPort: novnc
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: hotel-dashboard
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: hotel-sim
     app.kubernetes.io/part-of: ros2-multi-robot-demo
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
@@ -38,38 +78,10 @@ spec:
   {{- end }}
   to:
     kind: Service
-    name: rmf-api-server
+    name: hotel-sim-dashboard
     weight: 100
   port:
     targetPort: dashboard
-  tls:
-    termination: edge
-    insecureEdgeTerminationPolicy: Redirect
-  wildcardPolicy: None
----
-# OpenShift Route — rmf-web API (for CLI access, excludes _internal WebSocket)
-apiVersion: route.openshift.io/v1
-kind: Route
-metadata:
-  name: rmf-api
-  namespace: {{ .Values.namespace }}
-  labels:
-    app: rmf-core
-    app.kubernetes.io/part-of: ros2-multi-robot-demo
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-  annotations:
-    haproxy.router.openshift.io/timeout: 10m
-    haproxy.router.openshift.io/websocket: "true"
-spec:
-  {{- if .Values.rmf.routes.apiHost }}
-  host: {{ .Values.rmf.routes.apiHost }}
-  {{- end }}
-  to:
-    kind: Service
-    name: rmf-api-server
-    weight: 100
-  port:
-    targetPort: api
   tls:
     termination: edge
     insecureEdgeTerminationPolicy: Redirect

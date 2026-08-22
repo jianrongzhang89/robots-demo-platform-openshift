@@ -1,3 +1,4 @@
+{{- if not .Values.hotel.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -11,3 +12,4 @@ data:
 {{ .Files.Get "files/fleet_config.yaml" | replace "MAP_URL_PLACEHOLDER" .Values.rmf.mapUrl | indent 4 }}
   nav_graph.yaml: |-
 {{ .Files.Get (printf "files/%s" (.Values.rmf.navGraph | default "nav_graph.yaml")) | indent 4 }}
+{{- end }}

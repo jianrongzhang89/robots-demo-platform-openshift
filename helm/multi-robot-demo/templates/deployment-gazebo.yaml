@@ -1,3 +1,4 @@
+{{- if not .Values.hotel.enabled }}
 {{- $robots := .Values.robots -}}
 {{- $robotsEnv := "" -}}
 {{- range $robots -}}
@@ -128,3 +129,4 @@ spec:
         - name: zenoh-config
           configMap:
             name: zenoh-bridge-config
+{{- end }}

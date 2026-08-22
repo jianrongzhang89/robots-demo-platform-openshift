@@ -1,0 +1,193 @@
+# Open-RMF Hotel World demo — single-pod, faithful upstream port.
+#
+# Unlike the Nav2/Gazebo demos (Fedora + copr tavie/ros2, which has no RMF
+# packages), this image is built on Ubuntu ros:jazzy where the full rmf_demos
+# Gazebo stack is available via apt. The hotel demo runs entirely in ONE pod on
+# a single localhost DDS domain: Gazebo (slotcar robots + lift/door plugins),
+# the RMF building map server, door/lift supervisors, traffic schedule, task
+# dispatcher, and 3 full_control fleet adapters — no per-robot Nav2, no Zenoh.
+#
+# Build: make build-push-hotel
+#   podman build --platform linux/amd64 -t quay.io/jianrzha/ros2-rmf-hotel:latest -f Containerfile.hotel .
+#   podman push quay.io/jianrzha/ros2-rmf-hotel:latest
+
+FROM --platform=linux/amd64 ros:jazzy
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    ROS_DISTRO=jazzy
+
+# --- Gazebo Harmonic apt repo (ros-jazzy-ros-gz depends on gz-harmonic, which
+#     lives in the OSRF repo, not the ROS repo) ---
+RUN apt-get update 2>/dev/null || true \
+    && apt-get install -y --no-install-recommends curl gnupg lsb-release \
+    && curl -fsSL https://packages.osrfoundation.org/gazebo.gpg \
+         -o /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" \
+         > /etc/apt/sources.list.d/gazebo-stable.list \
+    && rm -rf /var/lib/apt/lists/*
+
+# --- Open-RMF core + sim deps (all apt-available on Jazzy) ---
+# NOTE: rmf_demos / rmf_demos_gz / rmf_demos_maps are NOT bloom-released as debs
+# on Jazzy (verified) — they are built from source below. Their dependencies
+# (core RMF, sim plugins, building-map-tools, ros-gz) ARE available as debs.
+# apt-get update uses || true so transient mirror failures don't abort the build.
+RUN apt-get update 2>/dev/null || apt-get update --allow-releaseinfo-change 2>/dev/null || true
+RUN apt-get install -y --no-install-recommends \
+      ros-jazzy-rmf-dev \
+      ros-jazzy-rmf-building-sim-gz-plugins \
+      ros-jazzy-rmf-robot-sim-gz-plugins \
+      ros-jazzy-rmf-building-map-tools \
+      ros-jazzy-ros-gz \
+      ros-jazzy-rmw-cyclonedds-cpp \
+      ros-jazzy-tf-transformations \
+      python3-colcon-common-extensions \
+      python3-rosdep \
+      python3-vcstool \
+      git wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# --- Stage A: Build rmf_ros2 (core RMF C++ libraries, including rmf_fleet_adapter) ---
+# Built separately so this expensive layer is cached once compiled.
+# -O1 instead of -O2 keeps peak RAM under the 14 GB VM limit per TU.
+# --parallel-workers 1 prevents simultaneous compilations from compounding RAM.
+WORKDIR /opt/rmf_ros2_ws
+RUN apt-get update 2>/dev/null || true \
+    && git clone --depth 1 -b jazzy https://github.com/open-rmf/rmf_ros2.git src/rmf_ros2 \
+    && git clone --depth 1 -b jazzy https://github.com/open-rmf/rmf_simulation.git src/rmf_simulation \
+    && . /opt/ros/jazzy/setup.sh \
+    && (rosdep init 2>/dev/null || true) \
+    && rosdep update \
+    && rosdep install --from-paths src --ignore-src -r -y 2>/dev/null || true \
+    && colcon build --merge-install --parallel-workers 4 \
+         --cmake-args -DCMAKE_BUILD_TYPE=Release \
+    && rm -rf build log src/rmf_ros2/.git src/rmf_simulation/.git \
+    && rm -rf /var/lib/apt/lists/*
+
+# --- Stage B: Build rmf_demos (hotel world, launch files, fleet_adapter) ---
+# Sources rmf_ros2 overlay to link against source-built librmf_fleet_adapter.so.
+WORKDIR /opt/rmf_demos_ws
+RUN apt-get update 2>/dev/null || true \
+    && git clone --depth 1 -b jazzy https://github.com/open-rmf/rmf_demos.git src/rmf_demos \
+    && . /opt/ros/jazzy/setup.sh \
+    && . /opt/rmf_ros2_ws/install/setup.sh \
+    && (rosdep init 2>/dev/null || true) \
+    && rosdep update \
+    && rosdep install --from-paths src --ignore-src -r -y 2>/dev/null || true \
+    && colcon build --merge-install --parallel-workers 2 \
+         --cmake-args -DCMAKE_BUILD_TYPE=Release \
+    && rm -rf build log src/rmf_demos/.git \
+    && rm -rf /var/lib/apt/lists/*
+
+
+# Create Open-RMF/ model directory for Fuel-style URIs used by hotel.world.
+# hotel.world references robots as model://Open-RMF/TinyRobot etc. Gazebo
+# resolves these by searching GZ_SIM_RESOURCE_PATH for a subdirectory named
+# "Open-RMF/<ModelName>". The rmf_demos_assets package already ships complete
+# model.config + model.sdf for all three robots; we just need the wrapper dir.
+RUN mkdir -p /opt/gz-models/Open-RMF \
+    && ln -s /opt/rmf_demos_ws/install/share/rmf_demos_assets/models/TinyRobot \
+             /opt/gz-models/Open-RMF/TinyRobot \
+    && ln -s /opt/rmf_demos_ws/install/share/rmf_demos_assets/models/CleanerBotA \
+             /opt/gz-models/Open-RMF/CleanerBotA \
+    && ln -s /opt/rmf_demos_ws/install/share/rmf_demos_assets/models/DeliveryRobot \
+             /opt/gz-models/Open-RMF/DeliveryRobot
+
+# Stub models and fleet_adapter patch scripts are in scripts/hotel-build/
+# (heredoc syntax is not supported by older OpenShift imagebuilder)
+RUN mkdir -p /tmp/build-scripts
+COPY scripts/hotel-build/create_stubs.py /tmp/build-scripts/create_stubs.py
+RUN python3 /tmp/build-scripts/create_stubs.py \
+    && rm /tmp/build-scripts/create_stubs.py
+
+# Patch fleet_adapter.py: thread-safe callbacks + GC protection
+COPY scripts/hotel-build/patch_fleet_adapter.py /tmp/build-scripts/patch_fleet_adapter.py
+RUN python3 /tmp/build-scripts/patch_fleet_adapter.py \
+    && rm /tmp/build-scripts/patch_fleet_adapter.py
+
+# Declare headless arg in simulation.launch.xml with default=false so the GUI
+# launches (the launch XML's if/unless logic is unreliable, but the arg
+# declaration alone stops the "undeclared variable" exit).
+# With Xorg+dummy driver + QT_QPA_PLATFORM=xcb the Gazebo GUI now renders
+# properly on the virtual display and is visible over VNC.
+RUN sed -i \
+    "s|<arg name=\"sim_update_rate\" default='100'/>|<arg name=\"sim_update_rate\" default='100'/>\n  <arg name=\"headless\" default=\"false\"/>|" \
+    /opt/rmf_demos_ws/install/share/rmf_demos_gz/simulation.launch.xml
+
+# --- Headless GUI / noVNC visualization stack (mirrors the Fedora Containerfile) ---
+RUN apt-get update 2>/dev/null || true \
+    && apt-get install -y --no-install-recommends \
+      xvfb \
+      xserver-xorg \
+      xserver-xorg-video-dummy \
+      x11vnc \
+      novnc \
+      python3-websockify \
+      openbox \
+      xterm \
+      mesa-utils \
+      libgl1-mesa-dri \
+      python3 \
+      python3-pip \
+      git wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Xorg dummy driver config — used instead of Xvfb so that OpenGL (llvmpipe)
+# properly composites into the X framebuffer and appears in VNC.
+# Xvfb uses direct DRI rendering which bypasses the X framebuffer entirely,
+# making OpenGL content invisible to x11vnc. Xorg+dummy does not have this
+# limitation: it uses a shared memory framebuffer that x11vnc can capture.
+RUN mkdir -p /etc/X11
+COPY config/hotel/xorg-dummy.conf /etc/X11/xorg-dummy.conf
+
+# --- Optional rmf-web API server + dashboard (reused from Containerfile.rmf).
+#     The entrypoint starts it only if importable; safe to keep for task UI. ---
+RUN pip3 install --break-system-packages \
+      "python-socketio~=5.11.1" \
+      "fastapi~=0.109.0" \
+      "uvicorn[standard]~=0.28.0" \
+      "pydantic~=2.8.0" \
+      "tortoise-orm~=0.21.4" \
+      "aiosqlite" \
+      "websockets" \
+    || echo "WARN: rmf-web python deps not fully installed; dashboard optional"
+
+WORKDIR /opt/rmf-web
+RUN git clone --depth 1 -b jazzy https://github.com/open-rmf/rmf-web.git . \
+    && cd packages/api-server \
+    && pip3 install --break-system-packages . \
+    && sed -i 's/"host": "127.0.0.1"/"host": "0.0.0.0"/' api_server/default_config.py \
+    && sed -i 's|"public_url": "http://localhost:8000"|"public_url": ""|' api_server/default_config.py \
+    && sed -i \
+         's/user_dep = authenticator.fastapi_dep()/async def _demo_user():\n    return type("U", (), {"username": "admin", "is_admin": True})()\nuser_dep = _demo_user/' \
+         api_server/authenticator.py \
+    && rm -rf /opt/rmf-web/.git \
+    || echo "WARN: rmf-web api-server build failed; continuing without dashboard"
+
+RUN mkdir -p /tmp/ros-home/.ros \
+             /opt/rmf-web/packages/api-server/run/cache \
+    && chmod -R 777 /tmp/ros-home \
+    && chmod -R 777 /opt/rmf-web/packages/api-server/run 2>/dev/null || true
+
+WORKDIR /opt/ros2-demo
+
+COPY entrypoints/entrypoint-hotel.sh /entrypoint-hotel.sh
+COPY entrypoints/rmf_puppet_controller.py /entrypoints/rmf_puppet_controller.py
+COPY config/www/ /opt/ros2-demo/www/
+RUN mkdir -p /opt/rmf-dashboard
+COPY config/rmf/dashboard.html /opt/rmf-dashboard/index.html
+RUN chmod +x /entrypoint-hotel.sh
+
+# noVNC: auto-connect + scale to fit browser window
+RUN printf '<!DOCTYPE html>\n<html><head><meta http-equiv="refresh" content="0;url=vnc_lite.html?autoconnect=true&resize=scale"></head></html>\n' \
+      > /usr/share/novnc/index.html
+
+# OCI labels — consistent with the other demo images
+LABEL org.opencontainers.image.title="ROS2 Multi-Robot Demo — Open-RMF Hotel World" \
+      org.opencontainers.image.description="Multi-level hotel with lifts, doors, and 3 slotcar fleets via Open-RMF" \
+      org.opencontainers.image.source="https://github.com/jianrongzhang89/robots-demo-platform-openshift" \
+      org.opencontainers.image.base.name="docker.io/library/ros:jazzy" \
+      io.openshift.tags="ros2,open-rmf,gazebo,hotel,lifts,doors,robotics,jazzy"
+
+EXPOSE 6080 8080 8000 3000
+
+CMD ["/entrypoint-hotel.sh"]

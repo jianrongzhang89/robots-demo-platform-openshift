@@ -4,6 +4,22 @@
 
 namespace: ros2-multi-robot
 
+# Hotel World demo (Option A) toggle. When true, the chart renders ONLY the
+# single self-contained hotel-sim pod and switches off the gazebo/nav2/rmf-core/
+# zenoh templates. Overridden to true by values-hotel.yaml. Default: off.
+hotel:
+  enabled: false
+  image: quay.io/jianrzha/ros2-rmf-hotel:latest
+  resolution: "1600x900x24"
+  launchArgs: ""
+  resources:
+    requests:
+      cpu: "4"
+      memory: "4Gi"
+    limits:
+      cpu: "8"
+      memory: "8Gi"
+
 # Container image — same image runs both gazebo and nav2 entrypoints
 image:
   repository: quay.io/jianrzha/ros2-demo

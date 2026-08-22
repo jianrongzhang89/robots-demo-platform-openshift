@@ -326,6 +326,7 @@ images, each in its own OpenShift namespace.
 | **tb3_sandbox LiDAR** | `ros2-multi-robot` | `tb3_sandbox` | `multi-demo-support` | RMF fleet management + Nav2 LiDAR head-on collision avoidance. robot_1 (RMF-managed) and robot_2 (direct Nav2) meet in a narrow corridor; collision_monitor stops robot_2 before contact. | This README |
 | **turtlebot3_world swap** | `ros2-turtlebot3-world` | `turtlebot3_world` | `multi-demo-support` | Two robots swap spawn positions via separate outer corridors, fully managed by Open-RMF traffic negotiation. | This README |
 | **turtlebot3_house patrol** | `ros2-turtlebot3-house` | `turtlebot3_house` | `multi-demo-support` | Two robots patrol opposite corridors of a furnished 3D house world via Open-RMF dispatch and Nav2 online SLAM. | [`docs/turtlebot3-house-demo.md`](docs/turtlebot3-house-demo.md) |
+| **RMF hotel world** | `ros2-rmf-hotel` | `hotel` | `rmf-hotel-world-demo` | Multi-level hotel (3 floors, 2 lifts, doors) with three slotcar fleets managed by Open-RMF full-control fleet adapters. Robots ride lifts autonomously between levels. Single pod — no Nav2 or Zenoh required. | [`docs/rmf-hotel-world-demo.md`](docs/rmf-hotel-world-demo.md) |
 
 > **Note**: The **Standalone Nav2** and **tb3_sandbox LiDAR** demos both use the
 > `ros2-multi-robot` namespace and cannot run simultaneously. Deploy the Standalone
