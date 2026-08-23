@@ -4,20 +4,32 @@
 #   helm upgrade ... -f values.yaml -f values-hotel-federated.yaml
 #
 # This variant runs the hotel world in a distributed architecture:
-#   - Gazebo pod: hotel world simulation (no slotcar robots, only building/doors/lifts)
-#   - 4 separate Nav2 pods: real TurtleBot3 Waffle robots with Nav2 autonomy
-#   - RMF-core pod: fleet management, traffic scheduling, task dispatch
+#   - Gazebo pod: hotel world with slotcar robots, building, doors, lifts
+#   - RMF-core pod: fleet management (separate from Gazebo), traffic scheduling, task dispatch
 #   - Zenoh-router pod: federation hub for cross-pod ROS2 communication
-#   - Each pod has zenoh-bridge sidecars for DDS-Zenoh bridging
+#   - Zenoh bridges in each pod for DDS-Zenoh communication
+#   - Monotonic clock relay to fix timing issues across pods
 #
-# This integrates the hotel building (multi-level, lifts, doors) with real Nav2
-# robots using the same Zenoh federation pattern as the tb3_sandbox demo.
+# This demonstrates Zenoh federation while preserving the full hotel demo
+# experience (slotcar robots, lifts, doors, multiple levels).
 
 namespace: ros2-rmf-hotel-federated
 
-# Hotel demo disabled (we're using the federated approach instead)
+# Hotel demo enabled in federated multi-pod mode
 hotel:
-  enabled: false
+  enabled: true
+  # Separate RMF components into rmf-core pod (federated architecture)
+  separateRmfPod: true
+  image: quay.io/jianrzha/ros2-rmf-hotel:latest
+  resolution: "1600x900x24"
+  launchArgs: ""
+  resources:
+    requests:
+      cpu: "4"
+      memory: "4Gi"
+    limits:
+      cpu: "8"
+      memory: "8Gi"
 
 # Container images (renamed to ros2-hotel-demo)
 image:
@@ -33,32 +45,20 @@ zenohRouter:
 zenohBridge:
   image: eclipse/zenoh-bridge-ros2dds:1.5.0
 
-# 2 TurtleBot3 Waffle robots (working configuration with pre-built slam maps)
-robots:
-  - name: robot_1
-    color: "1,0,0"      # red
-    initialPose:
-      xPos: -2.0
-      yPos: -0.5
-      yaw: 0.0
-  - name: robot_2
-    color: "0,0,1"      # blue
-    initialPose:
-      xPos: 2.0
-      yPos: 0.5
-      yaw: 3.14159
+# No separate robot pods - slotcar robots are embedded in hotel world
+robots: []
 
-# Gazebo simulation pod settings (use tb3_sandbox for initial testing)
+# Gazebo simulation pod settings - hotel world
 gazebo:
-  world: tb3_sandbox
+  world: hotel
   gpu: false
   resources:
     requests:
-      cpu: "1"
-      memory: 2Gi
-    limits:
       cpu: "2"
       memory: 4Gi
+    limits:
+      cpu: "4"
+      memory: 8Gi
 
 # Nav2 pod resource settings
 nav2:

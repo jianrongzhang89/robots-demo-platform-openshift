@@ -1,0 +1,175 @@
+{{- if and .Values.hotel.enabled .Values.hotel.separateRmfPod }}
+# =============================================================================
+# Hotel Gazebo Pod (Federated Architecture)
+# =============================================================================
+# Runs Gazebo simulation with hotel world and slotcar robots.
+# RMF fleet adapters run in separate rmf-core pod.
+# Communication via Zenoh federation with clock relay.
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hotel-gazebo-federated
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: hotel-gazebo-federated
+    app.kubernetes.io/part-of: ros2-multi-robot-demo
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hotel-gazebo-federated
+  template:
+    metadata:
+      labels:
+        app: hotel-gazebo-federated
+        app.kubernetes.io/part-of: ros2-multi-robot-demo
+    spec:
+      serviceAccountName: ros2-demo
+      containers:
+        # --- Main container: Hotel Gazebo simulation ---
+        - name: gazebo
+          image: {{ .Values.hotel.image }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/entrypoint-hotel-gazebo-federated.sh"]
+          ports:
+            - name: novnc
+              containerPort: 6080
+              protocol: TCP
+            - name: web
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: ROS_DISTRO
+              value: jazzy
+            - name: ROS_DOMAIN_ID
+              value: "0"
+            - name: RMW_IMPLEMENTATION
+              value: rmw_cyclonedds_cpp
+            - name: VNC_PORT
+              value: "5900"
+            - name: NOVNC_PORT
+              value: "6080"
+            - name: WEB_PORT
+              value: "8080"
+            - name: RESOLUTION
+              value: {{ .Values.hotel.resolution | quote }}
+          resources:
+            requests:
+              cpu: {{ .Values.gazebo.resources.requests.cpu | quote }}
+              memory: {{ .Values.gazebo.resources.requests.memory | quote }}
+            limits:
+              cpu: {{ .Values.gazebo.resources.limits.cpu | quote }}
+              memory: {{ .Values.gazebo.resources.limits.memory | quote }}
+          readinessProbe:
+            tcpSocket:
+              port: 6080
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            timeoutSeconds: 5
+
+        # --- Sidecar: zenoh-bridge-ros2dds (publishes Gazebo data to Zenoh) ---
+        - name: zenoh-bridge
+          image: {{ .Values.zenohBridge.image }}
+          args: ["-c", "/zenoh-config/gazebo-bridge.json5"]
+          env:
+            - name: ROS_DOMAIN_ID
+              value: "0"
+            - name: ROS_DISTRO
+              value: jazzy
+          volumeMounts:
+            - name: zenoh-config
+              mountPath: /zenoh-config/gazebo-bridge.json5
+              subPath: gazebo-bridge.json5
+              readOnly: true
+          resources:
+            requests:
+              cpu: {{ .Values.zenohResources.requests.cpu | quote }}
+              memory: {{ .Values.zenohResources.requests.memory | quote }}
+            limits:
+              cpu: {{ .Values.zenohResources.limits.cpu | quote }}
+              memory: {{ .Values.zenohResources.limits.memory | quote }}
+
+      volumes:
+        - name: zenoh-config
+          configMap:
+            name: zenoh-bridge-config
+
+---
+# =============================================================================
+# Hotel RMF-Core Pod (Federated Architecture)
+# =============================================================================
+# Runs RMF fleet management, traffic schedule, task dispatcher.
+# Includes monotonic clock relay for cross-pod synchronization.
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hotel-rmf-federated
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: hotel-rmf-federated
+    app.kubernetes.io/part-of: ros2-multi-robot-demo
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hotel-rmf-federated
+  template:
+    metadata:
+      labels:
+        app: hotel-rmf-federated
+        app.kubernetes.io/part-of: ros2-multi-robot-demo
+    spec:
+      serviceAccountName: ros2-demo
+      containers:
+        - name: rmf-core
+          image: {{ .Values.hotel.image }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/entrypoint-hotel-rmf-federated.sh"]
+          ports:
+            - name: api
+              containerPort: 8000
+              protocol: TCP
+            - name: dashboard
+              containerPort: 3000
+              protocol: TCP
+          env:
+            - name: ROS_DOMAIN_ID
+              value: "55"  # Separate domain from Gazebo
+            - name: ROS_DISTRO
+              value: jazzy
+            - name: RMW_IMPLEMENTATION
+              value: rmw_cyclonedds_cpp
+            - name: API_PORT
+              value: "8000"
+            - name: DASHBOARD_PORT
+              value: "3000"
+            - name: SERVER_URI
+              value: "ws://localhost:8000/_internal"
+          volumeMounts:
+            - name: zenoh-config
+              mountPath: /opt/ros2-demo/zenoh
+              readOnly: true
+          resources:
+            requests:
+              cpu: {{ .Values.rmf.resources.requests.cpu | quote }}
+              memory: {{ .Values.rmf.resources.requests.memory | quote }}
+            limits:
+              cpu: {{ .Values.rmf.resources.limits.cpu | quote }}
+              memory: {{ .Values.rmf.resources.limits.memory | quote }}
+          readinessProbe:
+            httpGet:
+              path: /user
+              port: 8000
+            initialDelaySeconds: 45
+            periodSeconds: 15
+            failureThreshold: 10
+
+      volumes:
+        - name: zenoh-config
+          configMap:
+            name: zenoh-bridge-config
+{{- end }}
