@@ -1,242 +1,169 @@
 # Open-RMF Hotel World Demo
 
-A cloud-native robotics demo running the canonical Open-RMF hotel world on
-OpenShift in a single pod. The hotel building has three levels (lobby + two
-guest floors), two lifts, automatic doors, and three slotcar robot fleets
-managed by RMF's full-control fleet adapters — with no per-robot Nav2 stack
-required.
+A cloud-native robotics demo running the Open-RMF hotel world on OpenShift
+in a **single pod**. The hotel building has three levels (lobby + two guest
+floors), two lifts, automatic doors, and four slotcar robots managed by
+RMF's full-control fleet adapters — with no per-robot Nav2 stack required.
 
 **Branch**: `rmf-hotel-world-demo`  
 **Namespace**: `ros2-rmf-hotel`  
-**Image**: `quay.io/jianrzha/ros2-rmf-hotel:latest`
+**Image**: `quay.io/jianrzha/ros2-rmf-hotel:latest`  
+**Build**: OpenShift BuildConfig `hotel-image-build` (~20 min on cluster)
 
 ---
 
 ## What the Demo Shows
 
-The upstream [open-rmf/rmf_demos](https://github.com/open-rmf/rmf_demos)
-hotel world with three robot fleets operating simultaneously:
+Four robots patrolling dedicated zones across the hotel lobby floor (L1),
+all managed and dispatched by Open-RMF:
 
-| Fleet | Model | Nav graph | Floors |
-|-------|-------|-----------|--------|
-| `TinyRobot` | slotcar | 0 | Lobby (L1) |
-| `cleanerBotA` | slotcar | 1 | L1 + L2 (uses Lift A) |
-| `DeliveryRobot` | slotcar | 2 | L1 + L3 (uses Lift B) |
+| Robot | Color | Fleet | Zone | Movement |
+|-------|-------|-------|------|----------|
+| `deliveryBot_1` | 🔴 Red | `deliveryRobot` | West corridor | Up to 17m — deepest into the building |
+| `tinyBot_1` | Blue | `tinyRobot` | Center-east lobby | N ↔ S sweep |
+| `cleanerBotA_1` | Gray | `cleanerBotA` | South-west lobby | N ↔ S sweep |
+| `cleanerBotA_2` | Gray | `cleanerBotA` | South strip | N ↔ S sweep |
 
-All fleets are managed by RMF `full_control` fleet adapters. Robots ride the
-lifts automatically between floors when their patrol waypoints span levels.
-
-### Default Dispatch
-
-The `dispatch-hotel` Makefile target sends a `dispatch_patrol` task to the
-first available robot in any fleet, requesting a two-waypoint patrol that
-spans levels (lobby → level-3 room via Lift B):
-
-```
-L3_room1 → L3_room1   (loops, so the robot returns to L3_room1)
-```
-
-The robot leaves L1, enters Lift B, rides up to L3, navigates to `L3_room1`,
-then returns — demonstrating automatic lift traversal.
+The demo illustrates:
+- **RMF task dispatch and bidding** — tasks are auctioned to the cheapest fleet
+- **Puppet Controller** — drives robots via the fleet_manager REST API (see [Known Limitation](#known-limitation--easyfullcontrol-sigsegv))
+- **Gazebo 3D visualization** — hotel building with 3 floors visible over noVNC
+- **Continuous autonomous patrol** — robots run indefinitely without intervention
 
 ---
 
-## Architecture
+## Quick-Start (Repeating the Demo)
 
-Single pod, single DDS domain (`ROS_DOMAIN_ID=0`). All RMF processes run
-in-process within the same Gazebo context — no Zenoh, no cross-pod bridging.
+### Prerequisites
 
-```
-┌─────────────────── OpenShift namespace: ros2-rmf-hotel ───────────────────┐
-│                                                                            │
-│  ┌─────────────────────────────── Pod: hotel-sim ──────────────────────┐  │
-│  │                                                                      │  │
-│  │  Xvfb → openbox → x11vnc → websockify (noVNC :6080)                 │  │
-│  │                                                                      │  │
-│  │  gz sim                 hotel.world (3 levels, 2 lifts, doors)       │  │
-│  │  ├── rmf_building_sim_gz_plugins  (lift + door controllers)          │  │
-│  │  └── rmf_robot_sim_gz_plugins     (slotcar kinematic model)          │  │
-│  │                                                                      │  │
-│  │  ros2 launch rmf_demos_gz hotel.launch.xml                           │  │
-│  │  ├── building_map_server  (serves building.yaml + nav graphs)        │  │
-│  │  ├── door_supervisor                                                  │  │
-│  │  ├── lift_supervisor                                                  │  │
-│  │  ├── rmf_traffic_schedule                                             │  │
-│  │  ├── rmf_task_ros2         (task dispatcher)                          │  │
-│  │  ├── fleet_adapter (TinyRobot,  graph 0)                              │  │
-│  │  ├── fleet_adapter (cleanerBotA, graph 1)                             │  │
-│  │  └── fleet_adapter (DeliveryRobot, graph 2)                           │  │
-│  │                                                                      │  │
-│  │  Optional: rmf-web api-server :8000 + dashboard :3000                │  │
-│  └──────────────────────────────────────────────────────────────────────┘  │
-│                                                                            │
-│  Route: hotel-novnc       → :6080  (noVNC browser view)                   │
-│  Route: hotel-dashboard   → :3000  (rmf-web dashboard)                    │
-└────────────────────────────────────────────────────────────────────────────┘
-```
+- OpenShift cluster with the `ros2-rmf-hotel` namespace and `hotel-image-build` BuildConfig
+- `oc` CLI logged in and targeting the correct cluster
+- This repo checked out on the `rmf-hotel-world-demo` branch
 
-### Why Single Pod?
-
-Slotcar robots are driven entirely by the Gazebo plugins — there is no
-separate Nav2 stack or cross-pod communication to worry about. A single
-pod eliminates all Zenoh/DDS bridge complexity from earlier demos and is
-the correct architecture for this fleet type.
-
-This is also the cleanest seam for adding a real Nav2 fleet later (Step 2):
-spin up a second pod with Nav2 + free_fleet_adapter and connect it to the
-same RMF traffic schedule.
-
----
-
-## Quick-Start
-
-### 1. Build and Push the Image
+### 1. Deploy
 
 ```bash
-make build-push-hotel
-# Builds Containerfile.hotel (Ubuntu ros:jazzy + source-built rmf_demos)
-# and pushes to quay.io/jianrzha/ros2-rmf-hotel:latest
+make deploy-hotel NAMESPACE=ros2-rmf-hotel \
+  IMAGE_HOTEL_REF=quay.io/jianrzha/ros2-rmf-hotel:latest
 ```
 
-> The build clones and compiles `open-rmf/rmf_demos` (jazzy branch) from
-> source — `rmf-demos-gz` and `rmf-demos-maps` are not available as Jazzy
-> debs. Expect ~10-15 min for the first build.
-
-### 2. Deploy
-
-```bash
-make deploy-hotel NAMESPACE=ros2-rmf-hotel
-```
-
-This installs only the hotel resources (single pod + 2 services + 2 routes)
-while suppressing all Nav2/Zenoh/multi-pod templates via `hotel.enabled=true`.
-
-### 3. Wait for Ready
-
-The hotel pod takes ~3 min to start (Gazebo + RMF initialisation, RTF ≈ 0.5).
-The liveness probe TCP-checks `:6080`; the pod enters `Running` once noVNC
-is up.
+### 2. Wait for initialization (~90 seconds)
 
 ```bash
 oc get pod -n ros2-rmf-hotel -w
-# Look for: hotel-sim-XXXXX   1/1   Running
+# Wait for: hotel-sim-XXXXX   1/1   Running
 ```
 
-### 4. Dispatch a Patrol
+Look for these lines in the logs to confirm everything is ready:
 
 ```bash
-make dispatch-hotel NAMESPACE=ros2-rmf-hotel
-# Sends a multi-level patrol: lobby → L3_room1 via Lift B
+oc logs -n ros2-rmf-hotel $(oc get pod -n ros2-rmf-hotel -l app=hotel-sim \
+  -o jsonpath='{.items[0].metadata.name}') | grep "Successfully added"
+# Should show: deliveryBot_1, tinyBot_1, cleanerBotA_1, cleanerBotA_2
 ```
 
-Override waypoints or loop count:
+### 3. Start continuous patrol
+
 ```bash
-make dispatch-hotel NAMESPACE=ros2-rmf-hotel \
-  HOTEL_WAYPOINTS="L1_n1 L1_n2" HOTEL_LOOPS=3
+make patrol-hotel NAMESPACE=ros2-rmf-hotel
 ```
 
-### 5. Watch in noVNC
+This runs the 4-robot patrol loop (prints a position report every cycle).
+Press **Ctrl-C** to stop.
+
+### 4. Watch in noVNC
 
 ```bash
 make routes NAMESPACE=ros2-rmf-hotel
 # Prints the hotel-novnc URL
 ```
 
-Open the URL and switch the Gazebo camera to the lift area to watch the
-robot ride between floors.
+Open the URL in a browser. In the Gazebo view you will see:
+- 🔴 Red delivery robot moving through the western hotel corridor
+- Blue tinyBot sweeping across the center-east lobby
+- Two gray cleaner robots patrolling the south lobby
 
 ---
 
-## Configuration
+## Architecture
 
-### values-hotel.yaml (key overrides)
+Single pod, single localhost DDS domain (`ROS_DOMAIN_ID=0`). No Zenoh,
+no cross-pod bridging.
 
-```yaml
-namespace: ros2-rmf-hotel
-
-hotel:
-  enabled: true
-  image: quay.io/jianrzha/ros2-rmf-hotel:latest
-  resolution: "1600x900x24"
-  launchArgs: ""          # passed verbatim to hotel.launch.xml
-  resources:
-    requests: { cpu: "4", memory: "4Gi" }
-    limits:   { cpu: "8", memory: "8Gi" }
+```
+┌─────────────────── OpenShift namespace: ros2-rmf-hotel ───────────────────┐
+│                                                                            │
+│  ┌─────────────────────────── Pod: hotel-sim ──────────────────────────┐  │
+│  │                                                                      │  │
+│  │  Xorg (dummy driver) → x11vnc → websockify → noVNC :6080            │  │
+│  │                                                                      │  │
+│  │  gz sim (server + GUI) ── hotel.world (3 floors, 2 lifts, doors)    │  │
+│  │    ├── rmf_building_sim_gz_plugins  (lift + door controllers)        │  │
+│  │    └── rmf_robot_sim_gz_plugins     (slotcar kinematic drive)        │  │
+│  │                                                                      │  │
+│  │  ros2 launch rmf_demos_gz hotel.launch.xml                           │  │
+│  │    ├── building_map_server   (hotel building YAML + nav graphs)      │  │
+│  │    ├── door_supervisor / lift_supervisor                              │  │
+│  │    ├── rmf_traffic_schedule + rmf_task_ros2                           │  │
+│  │    ├── fleet_adapter × 3    (tinyRobot, cleanerBotA, deliveryRobot)  │  │
+│  │    └── fleet_manager × 3    (REST servers :22011/:22012/:22013)      │  │
+│  │                                                                      │  │
+│  │  rmf_puppet_controller.py   (monitors /dispatch_states, drives       │  │
+│  │                              robots via fleet_manager HTTP API)      │  │
+│  │                                                                      │  │
+│  │  static_transform_publisher (map TF root frame for RViz2)            │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+│                                                                            │
+│  Route: hotel-novnc     → :6080  (Gazebo GUI over noVNC)                   │
+│  Route: hotel-dashboard → :3000  (rmf-web dashboard, if available)         │
+└────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Launch File Arguments
+---
 
-The entrypoint runs:
+## Patrol Zones
+
+Each robot is assigned a dedicated non-overlapping zone to avoid collision
+avoidance deadlocks. The zone boundaries are tuned to the hotel building's
+wall layout:
+
 ```
-ros2 launch rmf_demos_gz hotel.launch.xml ${HOTEL_LAUNCH_ARGS}
+   X →  12    15    19    23    27
+Y        │     │     │     │     │
+-22  ────┤deliveryBot north turn  │
+         │  (west corridor)       │
+-27  ────┤   tinyBot_1 patrol     │──── cleanerBotA_1 ───┤
+         │   x=22, y=-26 to -30  │   x=15, y=-30 to -35 │
+-30  ────┤                       │                       │
+         │                       │   cleanerBotA_2       │
+-35  ────┤deliveryBot south turn  │   x=22, y=-33 to -37 │
+         │   v5 (14.87,-28.77)   │                       │
 ```
 
-Set `launchArgs` in `values-hotel.yaml` or `--set hotel.launchArgs=...` to
-pass arguments to the launch file (e.g., `use_sim_time:=true headless:=false`).
+The delivery robot travels the deepest route (up to 17 m) through the
+western hotel corridor via proven waypoints v5→v7→v8→v9.
 
 ---
 
 ## Makefile Reference
 
 ```bash
-make build-hotel           # Build hotel image (linux/amd64)
-make push-hotel            # Push hotel image
+# Image lifecycle (local Podman build — needs 14+ GB VM)
+make build-hotel           # Build image locally
+make push-hotel            # Push to quay.io
 make build-push-hotel      # Build + push
-make deploy-hotel          # Helm install/upgrade with hotel values
-make dispatch-hotel        # Dispatch multi-level patrol task
+
+# Cluster build (recommended — uses OpenShift node RAM, ~20 min)
+oc start-build hotel-image-build --from-dir=. -n ros2-rmf-hotel
+
+# Deployment
+make deploy-hotel NAMESPACE=ros2-rmf-hotel \
+  IMAGE_HOTEL_REF=quay.io/jianrzha/ros2-rmf-hotel:latest
+
+# Demo
+make patrol-hotel NAMESPACE=ros2-rmf-hotel   # continuous 4-robot patrol loop
+make dispatch-hotel NAMESPACE=ros2-rmf-hotel # one-off RMF task dispatch
 ```
-
-`dispatch-hotel` variables:
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `HOTEL_WAYPOINTS` | `L3_room1 L3_room1` | Space-separated patrol waypoints |
-| `HOTEL_LOOPS` | `1` | Number of patrol loops (`-n`) |
-| `NAMESPACE` | *(inherited)* | OpenShift namespace to exec into |
-
----
-
-## Container Image
-
-### Image: `quay.io/jianrzha/ros2-rmf-hotel:latest`
-
-**Base**: `ros:jazzy` (Ubuntu 24.04)
-
-**Contents**:
-- ROS2 Jazzy + CycloneDDS
-- Gazebo Harmonic + OSRF ros-gz bridge
-- `rmf-building-sim-gz-plugins`, `rmf-robot-sim-gz-plugins` (apt)
-- `rmf-building-map-tools`, `rmf-demos-tasks`, `rmf-demos-fleet-adapter` (apt)
-- `rmf_demos` repo (jazzy branch) — source-built at `/opt/rmf_demos_ws/install`
-  (provides `rmf_demos_gz`, `rmf_demos_maps`, `rmf_demos` launch files)
-- noVNC stack: Xvfb + openbox + x11vnc + websockify
-- Optional: rmf-web api-server + dashboard
-
-**Build command**:
-```bash
-make build-push-hotel
-# equivalent to:
-podman build --platform linux/amd64 \
-  -t quay.io/jianrzha/ros2-rmf-hotel:latest \
-  -f Containerfile.hotel .
-podman push quay.io/jianrzha/ros2-rmf-hotel:latest
-```
-
-**Image hierarchy** (independent from the Fedora/Nav2 line):
-```
-ubuntu:24.04 (ros:jazzy)
-  └── quay.io/jianrzha/ros2-rmf-hotel:latest   ← this demo
-```
-
-**OCI Labels**:
-
-| Label | Value |
-|-------|-------|
-| `org.opencontainers.image.title` | `Open-RMF Hotel World Demo` |
-| `org.opencontainers.image.description` | Multi-level hotel world with slotcar fleets, lifts, and doors via Open-RMF |
-| `org.opencontainers.image.source` | https://github.com/jianrongzhang89/robots-demo-platform-openshift |
-| `org.opencontainers.image.branch` | `rmf-hotel-world-demo` |
-| `io.openshift.tags` | `ros2,gazebo,open-rmf,rmf,hotel,robotics,jazzy` |
 
 ---
 
@@ -244,55 +171,131 @@ ubuntu:24.04 (ros:jazzy)
 
 | File | Purpose |
 |------|---------|
-| `Containerfile.hotel` | Ubuntu ros:jazzy image; source-builds rmf_demos |
-| `entrypoints/entrypoint-hotel.sh` | Single-pod entrypoint: noVNC + RMF launch |
-| `helm/multi-robot-demo/values-hotel.yaml` | Hotel demo Helm overrides |
-| `helm/multi-robot-demo/templates/deployment-hotel.yaml` | Hotel pod definition |
+| `Containerfile.hotel` | Image build: Ubuntu ros:jazzy, source-builds rmf_ros2 + rmf_simulation + rmf_demos |
+| `entrypoints/entrypoint-hotel.sh` | Pod entrypoint: Xorg, map TF, puppet controller, RMF launch |
+| `entrypoints/rmf_puppet_controller.py` | Monitors `/dispatch_states`, drives robots via fleet_manager HTTP |
+| `scripts/hotel_patrol_loop.py` | Continuous 4-robot patrol loop (called by `make patrol-hotel`) |
+| `scripts/hotel-build/create_stubs.py` | Creates stub SDF models for 27 furniture items not in apt packages |
+| `scripts/hotel-build/patch_cleaner_spawns.py` | Moves cleaner spawns from locked rooms to open lobby; patches nav graph charger waypoints |
+| `scripts/hotel-build/patch_delivery_robot_color.py` | Sets DeliveryRobot body material to red for visibility |
+| `scripts/hotel-build/patch_fleet_adapter.py` | Thread-safe callback wrappers (GC + Python 3.12 fix) |
+| `helm/multi-robot-demo/values-hotel.yaml` | Helm overrides: namespace, image, resources |
+| `helm/multi-robot-demo/templates/deployment-hotel.yaml` | Hotel pod spec |
 | `helm/multi-robot-demo/templates/services-routes-hotel.yaml` | noVNC + dashboard routes |
+| `config/hotel/xorg-dummy.conf` | Xorg dummy driver for headless OpenGL rendering over VNC |
 
 ---
 
-## Known Limitations
+## Build Details
 
-### 1. RTF ≈ 0.5 (Software Rendering)
+The image is built on the OpenShift cluster (not locally) because compiling
+`rmf_fleet_adapter` from source requires ~28 GB RAM which exceeds local VM limits.
 
-Gazebo runs at ~half real-time with `LIBGL_ALWAYS_SOFTWARE=1` (Mesa llvmpipe).
-All timeouts (lift travel, door open/close, fleet adapter response) are doubled
-relative to upstream documentation. GPU-accelerated nodes would achieve RTF ≈ 1.
+### Stages
 
-### 2. rmf_demos Source Build (~10–15 min)
+**Stage A — `rmf_ros2` + `rmf_simulation`** (`/opt/rmf_ros2_ws`):
+Builds `rmf_fleet_adapter`, `rmf_traffic_ros2`, `rmf_task_ros2`, and
+`rmf_robot_sim_gz_plugins` from the jazzy branch. This ensures ABI
+compatibility between all C++ RMF components.
 
-`rmf-demos-gz` and `rmf-demos-maps` are not released as Jazzy debs. The
-Containerfile clones and builds the `jazzy` branch at image build time. The
-`build` and `log` directories are removed to keep the layer lean, but the
-source checkout adds ~5 min to the build.
+**Stage B — `rmf_demos`** (`/opt/rmf_demos_ws`):
+Builds the hotel world assets (hotel.world, nav graphs, building maps,
+launch files) from the jazzy branch, sourcing Stage A's overlay.
 
-### 3. Waypoint Names Must Match Nav Graphs
+**Build-time patches** (applied after Stage B):
+- `create_stubs.py` — 27 zero-geometry SDF stub models for furniture that
+  gz sim would otherwise fail to load (exits before plugin init without them)
+- `patch_cleaner_spawns.py` — moves `cleanerBotA_1/2` spawn from enclosed
+  rooms (behind locked doors) to the open south lobby; also patches the nav
+  graph charger waypoints so the fleet adapter's startup parking task keeps
+  robots in the lobby
+- `patch_delivery_robot_color.py` — DeliveryRobot body → red (RGBA 0.8 0 0 1)
+- `patch_fleet_adapter.py` — wraps Python callbacks in daemon threads to
+  prevent GC and Python 3.12/pybind11 threading issues
 
-The `HOTEL_WAYPOINTS` must exactly match waypoint names in the hotel nav graphs
-(defined in `rmf_demos_maps`). Inspect them with:
+### Triggering a Rebuild
+
 ```bash
-POD=$(oc get pod -n ros2-rmf-hotel -l app=hotel-sim \
-  -o jsonpath='{.items[0].metadata.name}')
-oc exec -n ros2-rmf-hotel $POD -c hotel -- bash -c '
-  source /opt/ros/jazzy/setup.bash
-  source /opt/rmf_demos_ws/install/setup.bash
-  ros2 run rmf_demos_tasks dispatch_patrol -h'
+cd <repo-root>
+oc start-build hotel-image-build --from-dir=. -n ros2-rmf-hotel
+# Monitor:
+oc logs hotel-image-build-N-build -n ros2-rmf-hotel -f
 ```
 
 ---
 
-## Roadmap: Adding a Nav2 Fleet (Step 2)
+## Known Limitation — EasyFullControl SIGSEGV
 
-The single-pod architecture is intentionally designed as a foundation. Adding
-a real Nav2 fleet alongside the slotcar fleets requires:
+The `librmf_fleet_adapter.so 2.7.2` (apt-installed) crashes with SIGSEGV
+the moment the EasyFullControl C++ tries to execute any navigation task.
+Root cause: pybind11 calls a Python callback from a non-Python C++ thread
+without proper GIL setup on Python 3.12.
 
-1. A separate `robot-nav` pod (Fedora + Nav2) connected to the same
-   `ros2-rmf-hotel` namespace via Zenoh.
-2. A `free_fleet_adapter` instance in the hotel pod (or as a sidecar)
-   with a nav graph that maps to the real building layout.
-3. The `nav2_relay.py` pattern from the existing Nav2 demos.
+**Workaround — `rmf_puppet_controller.py`**:
 
-The RMF infrastructure (building_map_server, traffic schedule, task dispatcher)
-is already fleet-agnostic — it needs no changes to support a new fleet type.
-See `values-hotel.yaml` for the commented Step 2 seam.
+The Puppet Controller bypasses the crashing C++ execution path entirely:
+
+1. Monitors `/dispatch_states` (published by the RMF task dispatcher)
+2. When a task is awarded to a robot, reads the destination waypoint
+3. Sends an HTTP `POST /navigate` to the fleet_manager REST server
+4. The fleet_manager publishes a `PathRequest` to `/robot_path_requests`
+5. The slotcar plugin subscribes and drives the robot to the destination
+
+RMF task management (bidding, awarding, scheduling) works correctly; only
+the C++ task *execution* path is bypassed.
+
+**Effect on the demo**: robots move autonomously in response to RMF tasks.
+The EasyFullControl crash does not affect the visible behaviour — the patrol
+loop (`make patrol-hotel`) keeps all four robots cycling continuously.
+
+---
+
+## Visualization Stack
+
+The Gazebo GUI renders on a headless Xorg display (dummy driver) and is
+exposed over VNC:
+
+```
+gz sim GUI → Xorg :99 (dummy driver, llvmpipe software GL)
+                ↓
+           x11vnc :5900
+                ↓
+        websockify :6080 (noVNC web proxy)
+                ↓
+        Browser ← OpenShift Route (TLS edge, 10 min timeout)
+```
+
+**Why Xorg+dummy, not Xvfb**: Xvfb uses direct DRI rendering which bypasses
+the X framebuffer. x11vnc cannot capture direct-rendered GL content. Xorg with
+the dummy video driver uses a shared-memory framebuffer that x11vnc can capture.
+
+**Why `QT_QPA_PLATFORM=xcb`**: Qt6 on Ubuntu 24.04 probes for Wayland first.
+Without this env var, the Gazebo GUI creates an off-screen EGL surface that
+never composites to the X display, leaving the noVNC canvas black.
+
+---
+
+## RTF and Timing
+
+Gazebo runs at approximately **RTF ≈ 0.5** (software llvmpipe rendering on
+cluster nodes without GPU). All motion is half real-time:
+
+| Metric | Value |
+|--------|-------|
+| Nominal slotcar speed | 0.65 m/s |
+| Effective speed (RTF 0.5) | ~0.33 m/s wall-clock |
+| deliveryBot corridor traversal | ~90 s for 17 m route |
+| Full patrol cycle (all 4 robots) | ~3–5 minutes |
+
+---
+
+## Roadmap — Adding a Nav2 Fleet (Step 2)
+
+The RMF infrastructure (building_map_server, traffic schedule, task
+dispatcher) is fleet-agnostic. Adding a Nav2-driven robot requires:
+
+1. A separate `robot-nav` pod (Fedora + Nav2) in the same namespace
+2. A `free_fleet_adapter` sidecar with a nav graph for the hotel corridors
+3. The `nav2_relay.py` pattern from the existing Nav2 demos
+
+See `values-hotel.yaml` for the Step 2 seam comments.
