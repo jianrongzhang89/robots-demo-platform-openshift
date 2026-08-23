@@ -62,11 +62,11 @@ gazebo:
 
 # Nav2 pod resource settings
 nav2:
-  # Use slam_toolbox localization - need to build maps first OR use smaller world
-  localizationMode: slam_toolbox
-  # Map path unused in slam_toolbox mode
-  localizationMap: ""
-  # Reduce world size - use basic tb3 world without pillars
+  # Use AMCL localization with pre-built map
+  localizationMode: amcl
+  # Use tb3_sandbox map (simple world without obstacles)
+  localizationMap: /usr/lib64/ros-jazzy/share/nav2_bringup/maps/tb3_sandbox.yaml
+  # SLAM map dir not used in AMCL mode
   slamMapDir: /opt/ros2-demo/slam_maps
   resources:
     requests:
