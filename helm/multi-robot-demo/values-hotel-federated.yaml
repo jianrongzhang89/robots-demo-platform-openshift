@@ -33,31 +33,19 @@ zenohRouter:
 zenohBridge:
   image: eclipse/zenoh-bridge-ros2dds:1.5.0
 
-# 4 TurtleBot3 Waffle robots in tb3_sandbox world
+# 2 TurtleBot3 Waffle robots (working configuration with pre-built slam maps)
 robots:
   - name: robot_1
     color: "1,0,0"      # red
     initialPose:
-      xPos: -2.5
+      xPos: -2.0
       yPos: -0.5
       yaw: 0.0
   - name: robot_2
     color: "0,0,1"      # blue
     initialPose:
-      xPos: 2.5
+      xPos: 2.0
       yPos: 0.5
-      yaw: 3.14159
-  - name: robot_3
-    color: "0,1,0"      # green
-    initialPose:
-      xPos: -2.5
-      yPos: 2.0
-      yaw: 0.0
-  - name: robot_4
-    color: "1,1,0"      # yellow
-    initialPose:
-      xPos: 2.5
-      yPos: -2.0
       yaw: 3.14159
 
 # Gazebo simulation pod settings (use tb3_sandbox for initial testing)
@@ -74,10 +62,12 @@ gazebo:
 
 # Nav2 pod resource settings
 nav2:
-  # Use slam_toolbox localization (no pre-built map required)
+  # Use slam_toolbox localization - need to build maps first OR use smaller world
   localizationMode: slam_toolbox
   # Map path unused in slam_toolbox mode
   localizationMap: ""
+  # Reduce world size - use basic tb3 world without pillars
+  slamMapDir: /opt/ros2-demo/slam_maps
   resources:
     requests:
       cpu: "1"

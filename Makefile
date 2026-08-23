@@ -411,6 +411,15 @@ patrol-hotel: ## Hotel demo: start continuous 4-robot patrol loop (runs until Ct
 	echo "[Hotel] Each robot patrols its own zone — Ctrl-C to stop."; \
 	oc exec -n $(NAMESPACE) $$POD -- python3 /scripts/hotel_patrol_loop.py
 
+.PHONY: patrol-federated
+patrol-federated: ## Federated demo: start continuous 2-robot patrol loop (runs until Ctrl-C)
+	@POD=$$(oc get pod -n $(NAMESPACE) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
+	test -n "$$POD" || { echo "ERROR: rmf-core pod not found in namespace '$(NAMESPACE)'"; exit 1; }; \
+	echo "[Federated] Starting continuous patrol loop for 2 robots..."; \
+	echo "[Federated] robot_1 (red) + robot_2 (blue) — Ctrl-C to stop."; \
+	oc cp scripts/federated_patrol_loop.py $(NAMESPACE)/$$POD:/tmp/federated_patrol_loop.py && \
+	oc exec -n $(NAMESPACE) $$POD -- python3 /tmp/federated_patrol_loop.py
+
 .PHONY: dispatch-patrol
 dispatch-patrol: ## Dispatch patrol: robot_1_home→mid_west→meeting_point (robot_1 only)
 	$(eval RMFPOD := $(shell oc get pod -n $(NAMESPACE) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null))
