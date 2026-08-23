@@ -1,0 +1,72 @@
+# RMF Traffic Graph for Hotel World Lobby (L1)
+# Coordinates in meters, matching the hotel world coordinate system.
+# 4 non-overlapping patrol zones to avoid deadlocks.
+
+levels:
+  L1:
+    # All waypoints, lanes, and doors for hotel lobby level 1
+    vertices:
+      # Robot 1 (DeliveryBot) — West corridor patrol zone
+      r1_west_deep:
+        [13.57, -21.79, 0.0]
+      r1_west_mid:
+        [14.22, -25.28, 0.0]
+      r1_west_shallow:
+        [14.87, -28.77, 0.0]
+
+      # Robot 2 (TinyBot) — Center-east lobby patrol zone
+      r2_center_north:
+        [22.0, -26.5, 0.0]
+      r2_center_south:
+        [22.0, -30.0, 0.0]
+
+      # Robot 3 (CleanerBotA_1) — South-west lobby patrol zone
+      r3_sw_north:
+        [15.0, -30.5, 0.0]
+      r3_sw_mid:
+        [15.0, -32.75, 0.0]
+      r3_sw_south:
+        [15.0, -35.0, 0.0]
+
+      # Robot 4 (CleanerBotA_2) — South strip patrol zone
+      r4_south_north:
+        [22.0, -33.5, 0.0]
+      r4_south_mid:
+        [22.0, -35.25, 0.0]
+      r4_south_south:
+        [22.0, -37.0, 0.0]
+
+      # Charger locations (one per robot)
+      charger_1:
+        [14.0, -22.0, 0.0]
+      charger_2:
+        [23.0, -27.0, 0.0]
+      charger_3:
+        [14.0, -35.0, 0.0]
+      charger_4:
+        [23.0, -37.0, 0.0]
+
+    lanes:
+      # Robot 1 patrol lanes (bidirectional)
+      - [0, 1, { bidirectional: true }]  # r1_west_deep <-> r1_west_mid
+      - [1, 2, { bidirectional: true }]  # r1_west_mid <-> r1_west_shallow
+
+      # Robot 2 patrol lanes (bidirectional)
+      - [3, 4, { bidirectional: true }]  # r2_center_north <-> r2_center_south
+
+      # Robot 3 patrol lanes (bidirectional)
+      - [5, 6, { bidirectional: true }]  # r3_sw_north <-> r3_sw_mid
+      - [6, 7, { bidirectional: true }]  # r3_sw_mid <-> r3_sw_south
+
+      # Robot 4 patrol lanes (bidirectional)
+      - [8, 9, { bidirectional: true }]  # r4_south_north <-> r4_south_mid
+      - [9, 10, { bidirectional: true }] # r4_south_mid <-> r4_south_south
+
+      # Charger access lanes (bidirectional)
+      - [0, 11, { bidirectional: true }]  # r1_west_deep <-> charger_1
+      - [3, 12, { bidirectional: true }]  # r2_center_north <-> charger_2
+      - [7, 13, { bidirectional: true }]  # r3_sw_south <-> charger_3
+      - [10, 14, { bidirectional: true }] # r4_south_south <-> charger_4
+
+    # No doors in the open lobby area
+    doors: []

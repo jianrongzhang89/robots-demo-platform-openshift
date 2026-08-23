@@ -1,0 +1,96 @@
+# free_fleet fleet configuration for the Hotel World federated demo.
+# 4 TurtleBot3 Waffle robots patrolling the hotel lobby (L1).
+
+rmf_fleet:
+  name: "turtlebot3_hotel"
+  limits:
+    linear: [0.22, 0.5]
+    angular: [1.0, 1.0]
+  profile:
+    footprint: 0.3
+    vicinity: 1.0
+  reversible: True
+  battery_system:
+    voltage: 12.0
+    capacity: 24.0
+    charging_current: 5.0
+  mechanical_system:
+    mass: 20.0
+    moment_of_inertia: 10.0
+    friction_coefficient: 0.22
+  ambient_system:
+    power: 20.0
+  tool_system:
+    power: 0.0
+  recharge_threshold: 0.05
+  recharge_soc: 1.0
+  publish_fleet_state: 300.0
+  account_for_battery_drain: True
+  task_capabilities:
+    loop: True
+    delivery: True
+  finishing_request: "nothing"
+  responsive_wait: False
+
+  # 4 robots in the hotel lobby
+  robots:
+    robot_1:
+      charger: "charger_1"
+      responsive_wait: False
+      navigation_stack: 2
+      init_timeout_sec: 180
+      service_call_timeout_sec: 60.0
+      initial_map: "L1"
+      map_frame: "map"
+      robot_frame: "base_footprint"
+      maps:
+        L1:
+          map_url: "MAP_URL_PLACEHOLDER"
+    robot_2:
+      charger: "charger_2"
+      responsive_wait: False
+      navigation_stack: 2
+      init_timeout_sec: 180
+      service_call_timeout_sec: 60.0
+      initial_map: "L1"
+      map_frame: "map"
+      robot_frame: "base_footprint"
+      maps:
+        L1:
+          map_url: "MAP_URL_PLACEHOLDER"
+    robot_3:
+      charger: "charger_3"
+      responsive_wait: False
+      navigation_stack: 2
+      init_timeout_sec: 180
+      service_call_timeout_sec: 60.0
+      initial_map: "L1"
+      map_frame: "map"
+      robot_frame: "base_footprint"
+      maps:
+        L1:
+          map_url: "MAP_URL_PLACEHOLDER"
+    robot_4:
+      charger: "charger_4"
+      responsive_wait: False
+      navigation_stack: 2
+      init_timeout_sec: 180
+      service_call_timeout_sec: 60.0
+      initial_map: "L1"
+      map_frame: "map"
+      robot_frame: "base_footprint"
+      maps:
+        L1:
+          map_url: "MAP_URL_PLACEHOLDER"
+
+  robot_state_update_frequency: 10.0
+
+# Identity transform: RMF frame == Nav2 world frame
+reference_coordinates:
+  L1:
+    rmf:   [[ 0.0, 0.0], [5.0, 0.0], [0.0, 5.0], [5.0, 5.0]]
+    robot: [[ 0.0, 0.0], [5.0, 0.0], [0.0, 5.0], [5.0, 5.0]]
+
+fleet_manager:
+  zenoh:
+    router: "tcp/zenoh-router:7447"

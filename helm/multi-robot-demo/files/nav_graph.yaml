@@ -46,6 +46,10 @@ levels:
       - [ 0.0,  0.0, {name: meeting_point, is_charger: false, is_holding_point: true,  is_parking_spot: false, merge_radius: 0.5}]
       - [-3.0, -1.0, {name: charger_1,     is_charger: true,  is_holding_point: false, is_parking_spot: false}]
       - [ 3.0,  1.0, {name: charger_2,     is_charger: true,  is_holding_point: false, is_parking_spot: false}]
+      - [-2.5,  2.0, {name: robot_3_home,  is_charger: false, is_holding_point: true,  is_parking_spot: true,  merge_radius: 0.5}]
+      - [ 2.5, -2.0, {name: robot_4_home,  is_charger: false, is_holding_point: true,  is_parking_spot: true,  merge_radius: 0.5}]
+      - [-3.0,  2.5, {name: charger_3,     is_charger: true,  is_holding_point: false, is_parking_spot: false}]
+      - [ 3.0, -2.5, {name: charger_4,     is_charger: true,  is_holding_point: false, is_parking_spot: false}]
       # Intermediate waypoints keep the robot "on graph" when Nav2 deviates
       - [-1.0, -0.25, {name: mid_west,    is_charger: false, is_holding_point: true,  is_parking_spot: false, merge_radius: 0.5}]
       - [ 1.0,  0.25, {name: mid_east,    is_charger: false, is_holding_point: true,  is_parking_spot: false, merge_radius: 0.5}]

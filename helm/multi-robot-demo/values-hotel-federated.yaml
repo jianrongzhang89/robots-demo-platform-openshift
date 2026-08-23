@@ -1,0 +1,120 @@
+# Open-RMF Hotel World — Federated multi-pod architecture with Zenoh
+#
+# Usage:
+#   helm upgrade ... -f values.yaml -f values-hotel-federated.yaml
+#
+# This variant runs the hotel world in a distributed architecture:
+#   - Gazebo pod: hotel world simulation (no slotcar robots, only building/doors/lifts)
+#   - 4 separate Nav2 pods: real TurtleBot3 Waffle robots with Nav2 autonomy
+#   - RMF-core pod: fleet management, traffic scheduling, task dispatch
+#   - Zenoh-router pod: federation hub for cross-pod ROS2 communication
+#   - Each pod has zenoh-bridge sidecars for DDS-Zenoh bridging
+#
+# This integrates the hotel building (multi-level, lifts, doors) with real Nav2
+# robots using the same Zenoh federation pattern as the tb3_sandbox demo.
+
+namespace: ros2-rmf-hotel-federated
+
+# Hotel demo disabled (we're using the federated approach instead)
+hotel:
+  enabled: false
+
+# Container images (renamed to ros2-hotel-demo)
+image:
+  repository: quay.io/jianrzha/ros2-hotel-demo
+  tag: latest
+  pullPolicy: Always
+
+# Dedicated Zenoh router pod
+zenohRouter:
+  image: eclipse/zenoh:1.5.0
+
+# Zenoh bridge sidecar image
+zenohBridge:
+  image: eclipse/zenoh-bridge-ros2dds:1.5.0
+
+# 4 TurtleBot3 Waffle robots in tb3_sandbox world
+robots:
+  - name: robot_1
+    color: "1,0,0"      # red
+    initialPose:
+      xPos: -2.5
+      yPos: -0.5
+      yaw: 0.0
+  - name: robot_2
+    color: "0,0,1"      # blue
+    initialPose:
+      xPos: 2.5
+      yPos: 0.5
+      yaw: 3.14159
+  - name: robot_3
+    color: "0,1,0"      # green
+    initialPose:
+      xPos: -2.5
+      yPos: 2.0
+      yaw: 0.0
+  - name: robot_4
+    color: "1,1,0"      # yellow
+    initialPose:
+      xPos: 2.5
+      yPos: -2.0
+      yaw: 3.14159
+
+# Gazebo simulation pod settings (use tb3_sandbox for initial testing)
+gazebo:
+  world: tb3_sandbox
+  gpu: false
+  resources:
+    requests:
+      cpu: "1"
+      memory: 2Gi
+    limits:
+      cpu: "2"
+      memory: 4Gi
+
+# Nav2 pod resource settings
+nav2:
+  # Use slam_toolbox localization (no pre-built map required)
+  localizationMode: slam_toolbox
+  # Map path unused in slam_toolbox mode
+  localizationMap: ""
+  resources:
+    requests:
+      cpu: "1"
+      memory: 1Gi
+    limits:
+      cpu: "2"
+      memory: 2Gi
+
+# zenoh-bridge sidecar resources
+zenohResources:
+  requests:
+    cpu: 500m
+    memory: 256Mi
+  limits:
+    cpu: "1"
+    memory: 512Mi
+
+# OpenShift Route hostnames
+routes:
+  novncHost: ""
+  webHost: ""
+
+# Open-RMF fleet management
+rmf:
+  image: quay.io/jianrzha/ros2-rmf:latest
+  # Map path (required by fleet config but unused in slam_toolbox mode)
+  mapUrl: /usr/lib64/ros-jazzy/share/nav2_bringup/maps/tb3_sandbox.yaml
+  # Use 4-robot fleet config
+  fleetConfig: fleet_config_hotel.yaml
+  navGraph: nav_graph.yaml
+  resources:
+    requests:
+      cpu: "1"
+      memory: 1Gi
+    limits:
+      cpu: "2"
+      memory: 2Gi
+  routes:
+    dashboardHost: ""
+    apiHost: ""

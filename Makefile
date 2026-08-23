@@ -70,6 +70,39 @@ push-hotel: ## Push the Hotel World image to the registry
 .PHONY: build-push-hotel
 build-push-hotel: build-hotel push-hotel ## Build and push the Hotel World image
 
+.PHONY: build-hotel-gazebo
+build-hotel-gazebo: ## Build the Hotel Gazebo image (federated architecture, building only)
+	$(PODMAN) build --platform linux/amd64 -t $(REGISTRY)/$(IMAGE):hotel-federated-gazebo -f Containerfile.hotel-gazebo .
+
+.PHONY: push-hotel-gazebo
+push-hotel-gazebo: ## Push the Hotel Gazebo image to the registry
+	$(PODMAN) push $(REGISTRY)/$(IMAGE):hotel-federated-gazebo
+
+.PHONY: build-push-hotel-gazebo
+build-push-hotel-gazebo: build-hotel-gazebo push-hotel-gazebo ## Build and push the Hotel Gazebo image
+
+.PHONY: build-hotel-nav2
+build-hotel-nav2: ## Build the Nav2 image for hotel demo (uses base image with hotel maps)
+	$(PODMAN) build --platform linux/amd64 -t $(REGISTRY)/$(IMAGE):hotel-federated-nav2 -f Containerfile .
+
+.PHONY: push-hotel-nav2
+push-hotel-nav2: ## Push the Hotel Nav2 image to the registry
+	$(PODMAN) push $(REGISTRY)/$(IMAGE):hotel-federated-nav2
+
+.PHONY: build-push-hotel-nav2
+build-push-hotel-nav2: build-hotel-nav2 push-hotel-nav2 ## Build and push the Hotel Nav2 image
+
+.PHONY: build-hotel-rmf
+build-hotel-rmf: ## Build the RMF core image for hotel demo (4 robots)
+	$(PODMAN) build --platform linux/amd64 -t $(REGISTRY)/$(IMAGE_RMF):hotel-federated -f Containerfile.rmf .
+
+.PHONY: push-hotel-rmf
+push-hotel-rmf: ## Push the Hotel RMF image to the registry
+	$(PODMAN) push $(REGISTRY)/$(IMAGE_RMF):hotel-federated
+
+.PHONY: build-push-hotel-rmf
+build-push-hotel-rmf: build-hotel-rmf push-hotel-rmf ## Build and push the Hotel RMF image
+
 ##@ Deploy
 
 .PHONY: deploy
@@ -90,6 +123,16 @@ deploy-hotel: ## Deploy the Open-RMF Hotel World demo (single pod; use ROS_DEMO_
 	  -f $(CHART)/values-hotel.yaml \
 	  --set namespace=$(NAMESPACE) \
 	  --set hotel.image=$(IMAGE_HOTEL_REF) \
+	  --wait --timeout 10m
+
+.PHONY: deploy-hotel-federated
+deploy-hotel-federated: ## Deploy the Hotel World demo with Zenoh federation (4 separate robot pods)
+	helm upgrade --install $(RELEASE) $(CHART) \
+	  --namespace $(NAMESPACE) \
+	  --create-namespace \
+	  -f $(CHART)/values.yaml \
+	  -f $(CHART)/values-hotel-federated.yaml \
+	  --set namespace=$(NAMESPACE) \
 	  --wait --timeout 10m
 
 .PHONY: undeploy
