@@ -1,4 +1,4 @@
-{{- if not .Values.hotel.enabled }}
+{{- if or (not .Values.hotel.enabled) .Values.hotel.separateRmfPod }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
