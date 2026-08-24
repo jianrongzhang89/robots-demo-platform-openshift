@@ -19,8 +19,14 @@ namespace: ros2-rmf-hotel-federated
 hotel:
   enabled: false
 
-# Container images - use ros2-rmf-hotel (has hotel world + RMF)
+# Container images - Nav2 robots use ros2-demo (Fedora with Nav2)
 image:
+  repository: quay.io/jianrzha/ros2-demo
+  tag: latest
+  pullPolicy: Always
+
+# Hotel-specific image for Gazebo pod (Ubuntu with hotel world)
+hotelImage:
   repository: quay.io/jianrzha/ros2-rmf-hotel
   tag: latest
   pullPolicy: Always

@@ -35,8 +35,8 @@ spec:
       containers:
         # --- Main container: Hotel Gazebo simulation + noVNC visualization ---
         - name: gazebo
-          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: {{ .Values.hotelImage.repository }}:{{ .Values.hotelImage.tag }}
+          imagePullPolicy: {{ .Values.hotelImage.pullPolicy }}
           command: ["/entrypoint-hotel.sh"]
           ports:
             - name: novnc
