@@ -15,21 +15,9 @@
 
 namespace: ros2-rmf-hotel-federated
 
-# Hotel demo enabled in federated multi-pod mode
+# Hotel demo disabled - using federated multi-pod with TurtleBot3 robots
 hotel:
-  enabled: true
-  # Separate RMF components into rmf-core pod (federated architecture)
-  separateRmfPod: true
-  image: quay.io/jianrzha/ros2-rmf-hotel:latest
-  resolution: "1600x900x24"
-  launchArgs: ""
-  resources:
-    requests:
-      cpu: "4"
-      memory: "4Gi"
-    limits:
-      cpu: "8"
-      memory: "8Gi"
+  enabled: false
 
 # Container images (renamed to ros2-hotel-demo)
 image:
@@ -45,8 +33,34 @@ zenohRouter:
 zenohBridge:
   image: eclipse/zenoh-bridge-ros2dds:1.5.0
 
-# No separate robot pods - slotcar robots are embedded in hotel world
-robots: []
+# 4 TurtleBot3 Waffle robots for hotel world
+# These spawn as separate Nav2 pods, not slotcars
+# Initial positions are on the hotel's lobby level (L1)
+robots:
+  - name: robot_1
+    color: "1,0,0"      # red - delivery robot
+    initialPose:
+      xPos: 10.0
+      yPos: -25.0
+      yaw: 0.0
+  - name: robot_2
+    color: "0,1,0"      # green - cleaning robot
+    initialPose:
+      xPos: 15.0
+      yPos: -30.0
+      yaw: 1.57
+  - name: robot_3
+    color: "0,0,1"      # blue - tiny robot
+    initialPose:
+      xPos: 20.0
+      yPos: -25.0
+      yaw: 3.14
+  - name: robot_4
+    color: "1,1,0"      # yellow - cleaning robot
+    initialPose:
+      xPos: 15.0
+      yPos: -35.0
+      yaw: -1.57
 
 # Gazebo simulation pod settings - hotel world
 gazebo:
