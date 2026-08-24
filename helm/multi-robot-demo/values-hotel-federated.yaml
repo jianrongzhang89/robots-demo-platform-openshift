@@ -19,10 +19,10 @@ namespace: ros2-rmf-hotel-federated
 hotel:
   enabled: false
 
-# Container images (renamed to ros2-hotel-demo)
+# Container images - use standard multi-demo image
 image:
-  repository: quay.io/jianrzha/ros2-hotel-demo
-  tag: latest
+  repository: quay.io/jianrzha/ros2-demo
+  tag: multi-demo
   pullPolicy: Always
 
 # Dedicated Zenoh router pod
