@@ -19,9 +19,9 @@ namespace: ros2-rmf-hotel-federated
 hotel:
   enabled: false
 
-# Container images - use ros2-hotel-demo (confirmed working)
+# Container images - use ros2-rmf-hotel (has hotel world + RMF)
 image:
-  repository: quay.io/jianrzha/ros2-hotel-demo
+  repository: quay.io/jianrzha/ros2-rmf-hotel
   tag: latest
   pullPolicy: Always
 
