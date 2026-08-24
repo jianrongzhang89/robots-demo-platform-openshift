@@ -37,7 +37,7 @@ spec:
         - name: gazebo
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ["/entrypoint-hotel-gazebo.sh"]
+          command: ["/entrypoint-hotel-gazebo-federated.sh"]
           ports:
             - name: novnc
               containerPort: 6080
