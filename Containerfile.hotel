@@ -175,12 +175,14 @@ RUN mkdir -p /tmp/ros-home/.ros \
 WORKDIR /opt/ros2-demo
 
 COPY entrypoints/entrypoint-hotel.sh /entrypoint-hotel.sh
+COPY entrypoints/entrypoint-hotel-gazebo-federated.sh /entrypoint-hotel-gazebo-federated.sh
+COPY entrypoints/entrypoint-hotel-rmf-federated.sh /entrypoint-hotel-rmf-federated.sh
 COPY entrypoints/rmf_puppet_controller.py /entrypoints/rmf_puppet_controller.py
 COPY scripts/hotel_patrol_loop.py /scripts/hotel_patrol_loop.py
 COPY config/www/ /opt/ros2-demo/www/
 RUN mkdir -p /opt/rmf-dashboard
 COPY config/rmf/dashboard.html /opt/rmf-dashboard/index.html
-RUN chmod +x /entrypoint-hotel.sh
+RUN chmod +x /entrypoint-hotel.sh /entrypoint-hotel-gazebo-federated.sh /entrypoint-hotel-rmf-federated.sh
 
 # noVNC: auto-connect + scale to fit browser window
 RUN printf '<!DOCTYPE html>\n<html><head><meta http-equiv="refresh" content="0;url=vnc_lite.html?autoconnect=true&resize=scale"></head></html>\n' \
