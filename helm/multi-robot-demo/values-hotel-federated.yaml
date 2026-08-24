@@ -19,9 +19,10 @@ namespace: ros2-rmf-hotel-federated
 hotel:
   enabled: false
 
-# Container images - Nav2 robots use ros2-demo (Fedora with Nav2)
+# Container images - Keep old robots running (they use this older build)
+# TODO: Switch to proper ros2-demo image after verifying hotel world works
 image:
-  repository: quay.io/jianrzha/ros2-demo
+  repository: quay.io/jianrzha/ros2-hotel-demo
   tag: latest
   pullPolicy: Always
 
