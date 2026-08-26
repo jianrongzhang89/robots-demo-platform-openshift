@@ -1,0 +1,26 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: rmf-hotel-nav2-integrated
+  namespace: ros2-rmf-hotel-federated
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: rmf-hotel-nav2-integrated:latest
+  source:
+    type: Binary
+  strategy:
+    type: Docker
+    dockerStrategy:
+      from:
+        kind: ImageStreamTag
+        name: rmf-hotel-navgraph-extended:latest
+        namespace: ros2-rmf-hotel-federated
+  resources:
+    limits:
+      cpu: "4"
+      memory: "8Gi"
+    requests:
+      cpu: "2"
+      memory: "4Gi"

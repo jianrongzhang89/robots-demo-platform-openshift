@@ -1,0 +1,8 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: rmf-hotel-nav2-integrated
+  namespace: ros2-rmf-hotel-federated
+spec:
+  lookupPolicy:
+    local: false
