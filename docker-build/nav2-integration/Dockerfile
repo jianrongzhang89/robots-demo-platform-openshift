@@ -43,8 +43,21 @@ COPY map_gen_container.py /opt/nav2_scripts/
 COPY nav2_launch.py /opt/nav2_scripts/
 COPY rmf_nav2_bridge.py /opt/nav2_scripts/
 
-# Make scripts executable
-RUN chmod +x /opt/nav2_scripts/*.py
+# ADDED: Copy modified TinyRobot model with diff_drive plugin for Nav2
+# This overlays the original slotcar-only model with one that supports both
+# RMF slotcar control AND Nav2 cmd_vel control
+COPY custom_models/TinyRobot/model.sdf /opt/rmf_demos_ws/install/share/rmf_demos_assets/models/TinyRobot/model.sdf
+
+# Copy and configure Nav2 bridge startup script
+COPY start_nav2_bridge.sh /opt/nav2_scripts/
+COPY start_nav2_stack.sh /opt/nav2_scripts/
+COPY generate_hotel_map.sh /opt/nav2_scripts/
+COPY entrypoint-nav2.sh /entrypoint-nav2.sh
+
+# Make all scripts executable
+RUN chmod +x /opt/nav2_scripts/*.sh && \
+    chmod +x /opt/nav2_scripts/*.py && \
+    chmod +x /entrypoint-nav2.sh
 
 # Set permissions for OpenShift (non-root)
 RUN chown -R 1001:0 /opt/nav2_config /opt/nav2_scripts /opt/nav2_maps && \
