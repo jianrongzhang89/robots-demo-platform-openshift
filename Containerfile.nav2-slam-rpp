@@ -1,0 +1,41 @@
+# Nav2 image with slam_toolbox + Regulated Pure Pursuit controller
+# Fixes DWB critics issue by switching to simpler RPP controller
+
+FROM quay.io/jianrzha/ros2-hotel-nav2-federated-nav2:v17-slam-verified
+
+# Switch to root to install files
+USER root
+
+# Copy slam_toolbox posegraph maps
+RUN mkdir -p /opt/slam_maps
+COPY config/slam_maps/hotel_L1_map.posegraph /opt/slam_maps/
+COPY config/slam_maps/hotel_L1_map.data /opt/slam_maps/
+
+# Copy UPDATED Nav2 params with RPP controller (not DWB)
+COPY config/nav2/tinybot_nav2_params_rpp.yaml /opt/nav2_config/tinybot_nav2_params.yaml
+
+# Copy updated scripts
+COPY scripts/activate_nav2_lifecycle_slam.sh /opt/nav2_scripts/
+COPY scripts/pose_relay.py /opt/nav2_scripts/
+COPY entrypoints/entrypoint-tinybot-nav2-slam.sh /entrypoint-tinybot-nav2.sh
+
+# Make files executable and world-readable
+RUN chmod +x /opt/nav2_scripts/activate_nav2_lifecycle_slam.sh && \
+    chmod +x /opt/nav2_scripts/pose_relay.py && \
+    chmod +x /entrypoint-tinybot-nav2.sh && \
+    chmod -R 755 /opt/slam_maps && \
+    ls -lh /opt/slam_maps/ && \
+    ls -lh /opt/nav2_scripts/ | grep -E 'activate|pose_relay' && \
+    echo "slam_toolbox posegraph maps and RPP controller params installed successfully"
+
+# Verify RPP params are correct
+RUN grep -A5 'FollowPath:' /opt/nav2_config/tinybot_nav2_params.yaml | grep 'RegulatedPurePursuitController' || \
+    (echo "ERROR: RPP controller not found in params!" && exit 1)
+
+# Switch back to non-root user
+USER 1001210000
+
+# Labels
+LABEL org.opencontainers.image.title="ROS2 Nav2 Federated - SLAM + RPP" \
+      org.opencontainers.image.description="Nav2 with slam_toolbox localization and Regulated Pure Pursuit controller" \
+      org.opencontainers.image.source="https://github.com/jianrongzhang89/robots-demo-platform-openshift"
