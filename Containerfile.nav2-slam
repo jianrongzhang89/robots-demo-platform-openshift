@@ -11,10 +11,19 @@ RUN mkdir -p /opt/slam_maps
 COPY config/slam_maps/hotel_L1_map.posegraph /opt/slam_maps/
 COPY config/slam_maps/hotel_L1_map.data /opt/slam_maps/
 
-# Make files world-readable
-RUN chmod -R 755 /opt/slam_maps && \
+# Copy updated scripts
+COPY scripts/activate_nav2_lifecycle_slam.sh /opt/nav2_scripts/
+COPY scripts/pose_relay.py /opt/nav2_scripts/
+COPY entrypoints/entrypoint-tinybot-nav2-slam.sh /entrypoint-tinybot-nav2.sh
+
+# Make files executable and world-readable
+RUN chmod +x /opt/nav2_scripts/activate_nav2_lifecycle_slam.sh && \
+    chmod +x /opt/nav2_scripts/pose_relay.py && \
+    chmod +x /entrypoint-tinybot-nav2.sh && \
+    chmod -R 755 /opt/slam_maps && \
     ls -lh /opt/slam_maps/ && \
-    echo "slam_toolbox posegraph maps installed successfully"
+    ls -lh /opt/nav2_scripts/ | grep -E 'activate|pose_relay' && \
+    echo "slam_toolbox posegraph maps and scripts installed successfully"
 
 # Switch back to non-root user
 USER 1001210000
