@@ -102,12 +102,15 @@ ODOM_TF_PID=$!
 echo "  Odom→base_footprint TF publisher PID: $ODOM_TF_PID"
 
 # base_footprint → lidar_link (from tinyBot model: lidar is at 0.05m forward, 0.28m up)
-bash -c ". /opt/ros/jazzy/setup.sh && export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp && export ROS_DOMAIN_ID=0 && ros2 run tf2_ros static_transform_publisher --x 0.05 --y 0 --z 0.28 --roll 0 --pitch 0 --yaw 0 --frame-id ${ROBOT_NAME}/base_footprint --child-frame-id ${ROBOT_NAME}/lidar_link --ros-args -p use_sim_time:=true" > /tmp/ros_logs/tf_base_lidar_${ROBOT_NAME}.log 2>&1 &
+# Using dynamic_tf.py to publish with current simulation timestamps (not timestamp=0)
+# This fixes slam_toolbox message_filter TF synchronization issue
+bash -c ". /opt/ros/jazzy/setup.sh && export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp && export ROS_DOMAIN_ID=0 && python3 /opt/nav2_scripts/dynamic_tf.py $ROBOT_NAME ${ROBOT_NAME}/base_footprint ${ROBOT_NAME}/lidar_link 0.05 0 0.28 0 0 0" > /tmp/ros_logs/tf_base_lidar_${ROBOT_NAME}.log 2>&1 &
 TF_BASE_LIDAR_PID=$!
 echo "  TF base_footprint→lidar_link publisher PID: $TF_BASE_LIDAR_PID"
 
 # lidar_link → lidar_link/lidar (identity transform for frame ID compatibility)
-bash -c ". /opt/ros/jazzy/setup.sh && export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp && export ROS_DOMAIN_ID=0 && ros2 run tf2_ros static_transform_publisher --x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id ${ROBOT_NAME}/lidar_link --child-frame-id ${ROBOT_NAME}/lidar_link/lidar --ros-args -p use_sim_time:=true" > /tmp/ros_logs/tf_lidar_sensor_${ROBOT_NAME}.log 2>&1 &
+# Using dynamic_tf.py to publish with current simulation timestamps (not timestamp=0)
+bash -c ". /opt/ros/jazzy/setup.sh && export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp && export ROS_DOMAIN_ID=0 && python3 /opt/nav2_scripts/dynamic_tf.py $ROBOT_NAME ${ROBOT_NAME}/lidar_link ${ROBOT_NAME}/lidar_link/lidar 0 0 0 0 0 0" > /tmp/ros_logs/tf_lidar_sensor_${ROBOT_NAME}.log 2>&1 &
 TF_LIDAR_SENSOR_PID=$!
 echo "  TF lidar_link→lidar_link/lidar publisher PID: $TF_LIDAR_SENSOR_PID"
 

@@ -24,20 +24,24 @@ COPY config/nav2/tinybot_nav2_params_rpp.yaml /opt/nav2_config/tinybot_nav2_para
 # Copy updated scripts
 COPY scripts/activate_nav2_lifecycle_slam.sh /opt/nav2_scripts/
 COPY scripts/pose_relay.py /opt/nav2_scripts/
+COPY scripts/odom_to_tf.py /opt/nav2_scripts/
+COPY scripts/dynamic_tf.py /opt/nav2_scripts/
 COPY entrypoints/entrypoint-tinybot-nav2-slam.sh /entrypoint-tinybot-nav2.sh
 
 # Make files executable and world-readable
 RUN chmod +x /opt/nav2_scripts/activate_nav2_lifecycle_slam.sh && \
     chmod +x /opt/nav2_scripts/pose_relay.py && \
+    chmod +x /opt/nav2_scripts/odom_to_tf.py && \
+    chmod +x /opt/nav2_scripts/dynamic_tf.py && \
     chmod +x /entrypoint-tinybot-nav2.sh && \
     chmod -R 755 /opt/slam_maps && \
     ls -lh /opt/slam_maps/ && \
-    ls -lh /opt/nav2_scripts/ | grep -E 'activate|pose_relay' && \
+    ls -lh /opt/nav2_scripts/ | grep -E 'activate|pose_relay|odom_to_tf|dynamic_tf' && \
     echo "slam_toolbox posegraph maps and RPP controller installed successfully"
 
-# Verify RPP params are correct
-RUN grep -A5 'FollowPath:' /opt/nav2_config/tinybot_nav2_params.yaml | grep 'RegulatedPurePursuitController' || \
-    (echo "ERROR: RPP controller not found in params!" && exit 1)
+# Verify DWB params are correct
+RUN grep -A5 'FollowPath:' /opt/nav2_config/tinybot_nav2_params.yaml | grep 'dwb_core::DWBLocalPlanner' || \
+    (echo "ERROR: DWB controller not found in params!" && exit 1)
 
 # Switch back to non-root user
 USER 1001210000

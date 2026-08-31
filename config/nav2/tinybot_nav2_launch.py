@@ -126,6 +126,9 @@ def generate_launch_description():
             'base_frame': f'{robot_name}/base_footprint',
             'scan_topic': 'scan',
 
+            # Localization mode (not mapping!)
+            'mode': 'localization',
+
             # Load pre-built posegraph map
             'map_file_name': slam_map_file,
             'map_start_pose': [robot_x, robot_y, robot_yaw],
