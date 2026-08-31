@@ -1,0 +1,25 @@
+# Nav2 image with slam_toolbox posegraph maps
+# Extends the existing Nav2 image to add pre-built slam_toolbox maps
+
+FROM quay.io/jianrzha/ros2-hotel-nav2-federated-nav2:v17-slam-verified
+
+# Switch to root to install files
+USER root
+
+# Copy slam_toolbox posegraph maps
+RUN mkdir -p /opt/slam_maps
+COPY config/slam_maps/hotel_L1_map.posegraph /opt/slam_maps/
+COPY config/slam_maps/hotel_L1_map.data /opt/slam_maps/
+
+# Make files world-readable
+RUN chmod -R 755 /opt/slam_maps && \
+    ls -lh /opt/slam_maps/ && \
+    echo "slam_toolbox posegraph maps installed successfully"
+
+# Switch back to non-root user
+USER 1001210000
+
+# Labels
+LABEL org.opencontainers.image.title="ROS2 Nav2 Federated - SLAM Toolbox" \
+      org.opencontainers.image.description="Nav2 with slam_toolbox localization posegraph maps" \
+      org.opencontainers.image.source="https://github.com/jianrongzhang89/robots-demo-platform-openshift"
