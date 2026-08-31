@@ -133,14 +133,14 @@ def generate_launch_description():
             # Localization parameters
             'resolution': 0.05,
             'max_laser_range': 12.0,
-            'tf_buffer_duration': 30.0,
+            'tf_buffer_duration': 60.0,  # Increased for better TF buffering
             'transform_publish_period': 0.02,
-            'transform_timeout': 1.0,
+            'transform_timeout': 5.0,  # Increased to allow time for static TF extrapolation
             'minimum_time_interval': 0.5,
 
             # Scan matching
-            'scan_buffer_size': 10,
-            'scan_buffer_maximum_scan_distance': 10.0,
+            'scan_buffer_size': 25,  # Increased buffer for better TF waiting
+            'scan_buffer_maximum_scan_distance': 20.0,
             'link_match_minimum_response_fine': 0.1,
             'link_scan_maximum_distance': 1.5,
 
