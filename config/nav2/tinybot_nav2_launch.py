@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Nav2 Launch for TinyBot in Hotel World - Federated Architecture
-Using slam_toolbox localization mode with pre-built posegraph maps
+Using AMCL for robust localization with pre-built maps
 
 Launches complete Nav2 stack for a single tinyBot robot.
 Robot namespace and parameters are configured via environment variables.
@@ -20,6 +20,9 @@ Usage:
   export ROBOT_YAW=0.0
   export MAP_LEVEL=L1
   ros2 launch /opt/nav2_launch/tinybot_nav2_launch.py
+
+Note: Switched from slam_toolbox to AMCL for more stable TF handling
+and faster initialization in multi-robot federated environment.
 """
 
 import os
@@ -112,44 +115,56 @@ def generate_launch_description():
             }]
         ))
 
-    # slam_toolbox localization with pre-built posegraph
+    # AMCL localization - more stable TF handling than slam_toolbox
     ld.add_action(Node(
-        package='slam_toolbox',
-        executable='localization_slam_toolbox_node',
-        name='slam_toolbox',
+        package='nav2_amcl',
+        executable='amcl',
+        name='amcl',
         namespace=robot_name,
         output='screen',
         parameters=[{
             'use_sim_time': use_sim_time,
-            'odom_frame': f'{robot_name}/odom',
-            'map_frame': 'map',
-            'base_frame': f'{robot_name}/base_footprint',
+            'odom_frame_id': f'{robot_name}/odom',
+            'global_frame_id': 'map',
+            'base_frame_id': f'{robot_name}/base_footprint',
             'scan_topic': 'scan',
 
-            # Localization mode (not mapping!)
-            'mode': 'localization',
+            # Set initial pose from environment variables
+            'set_initial_pose': True,
+            'initial_pose.x': robot_x,
+            'initial_pose.y': robot_y,
+            'initial_pose.z': 0.0,
+            'initial_pose.yaw': robot_yaw,
 
-            # Load pre-built posegraph map
-            'map_file_name': slam_map_file,
-            'map_start_pose': [robot_x, robot_y, robot_yaw],
+            # Particle filter parameters
+            'min_particles': 500,
+            'max_particles': 2000,
 
-            # Localization parameters
-            'resolution': 0.05,
-            'max_laser_range': 12.0,
-            'tf_buffer_duration': 60.0,  # Increased for better TF buffering
-            'transform_publish_period': 0.02,
-            'transform_timeout': 5.0,  # Increased to allow time for static TF extrapolation
-            'minimum_time_interval': 0.5,
+            # Laser model parameters
+            'laser_model_type': 'likelihood_field',
+            'laser_max_range': 12.0,
+            'laser_min_range': 0.15,
+            'max_beams': 60,
 
-            # Scan matching
-            'scan_buffer_size': 25,  # Increased buffer for better TF waiting
-            'scan_buffer_maximum_scan_distance': 20.0,
-            'link_match_minimum_response_fine': 0.1,
-            'link_scan_maximum_distance': 1.5,
+            # Odometry model (diff drive)
+            'odom_model_type': 'diff-corrected',
+            'alpha1': 0.2,  # rotation noise from rotation
+            'alpha2': 0.2,  # rotation noise from translation
+            'alpha3': 0.2,  # translation noise from translation
+            'alpha4': 0.2,  # translation noise from rotation
 
-            # Loop closure (less important for localization)
-            'loop_search_maximum_distance': 3.0,
-            'do_loop_closing': False,
+            # Update frequencies
+            'update_min_d': 0.1,  # min translation before update
+            'update_min_a': 0.2,  # min rotation before update
+            'resample_interval': 1,
+            'transform_tolerance': 1.0,  # TF tolerance for simulation
+
+            # Recovery behavior
+            'recovery_alpha_slow': 0.001,
+            'recovery_alpha_fast': 0.1,
+
+            # Always include pose in PoseWithCovarianceStamped
+            'always_reset_initial_pose': False,
         }]
     ))
 
@@ -263,7 +278,7 @@ def generate_launch_description():
         }]
     ))
 
-    # Lifecycle manager for localization
+    # Lifecycle manager for localization (AMCL)
     ld.add_action(Node(
         package='nav2_lifecycle_manager',
         executable='lifecycle_manager',
@@ -273,7 +288,7 @@ def generate_launch_description():
         parameters=[{
             'use_sim_time': use_sim_time,
             'autostart': True,
-            'node_names': ['slam_toolbox']
+            'node_names': ['amcl']
         }]
     ))
 

@@ -43,8 +43,8 @@ activate_node() {
 # Activate map_server first (if it exists)
 activate_node "map_server" || true
 
-# Activate slam_toolbox localization
-activate_node "slam_toolbox" || true
+# Activate AMCL localization (switched from slam_toolbox for stability)
+activate_node "amcl" || true
 
 # Activate navigation nodes
 activate_node "controller_server" || true

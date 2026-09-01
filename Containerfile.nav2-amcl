@@ -1,0 +1,52 @@
+# Nav2 image with AMCL localization for stable multi-robot operation
+# Switches from slam_toolbox to AMCL for more robust TF handling
+
+FROM quay.io/jianrzha/ros2-hotel-nav2-federated-nav2:v17-slam-verified
+
+# Switch to root to install packages and files
+USER root
+
+# Install AMCL package (should already be in nav2_bringup, but verify)
+RUN apt-get update && \
+    apt-get install -y \
+        ros-jazzy-nav2-amcl \
+        ros-jazzy-nav2-regulated-pure-pursuit-controller && \
+    rm -rf /var/lib/apt/lists/* && \
+    echo "AMCL and RPP packages installed successfully"
+
+# Note: Hotel maps (hotel_L1.pgm, hotel_L2.pgm, hotel_L3.pgm) are mounted
+# via ConfigMap at /opt/maps/ and /opt/map_images/ in the deployment.
+# No need to copy them into the image.
+
+# Copy UPDATED Nav2 launch file (with AMCL instead of slam_toolbox)
+COPY config/nav2/tinybot_nav2_launch.py /opt/nav2_launch/tinybot_nav2_launch.py
+
+# Copy Nav2 params with DWB controller
+COPY config/nav2/tinybot_nav2_params_rpp.yaml /opt/nav2_config/tinybot_nav2_params.yaml
+
+# Copy updated scripts (keep TF timestamp fixes)
+COPY scripts/odom_to_tf.py /opt/nav2_scripts/
+COPY scripts/dynamic_tf.py /opt/nav2_scripts/
+COPY scripts/pose_publisher.py /opt/nav2_scripts/
+COPY entrypoints/entrypoint-tinybot-nav2-slam.sh /entrypoint-tinybot-nav2.sh
+
+# Make files executable
+RUN chmod +x /opt/nav2_scripts/*.py && \
+    chmod +x /opt/nav2_launch/*.py && \
+    chmod +x /entrypoint-tinybot-nav2.sh && \
+    chmod -R 755 /opt/maps 2>/dev/null || true && \
+    ls -lh /opt/nav2_launch/ && \
+    ls -lh /opt/nav2_scripts/ && \
+    echo "AMCL configuration installed successfully"
+
+# Verify launch file has AMCL
+RUN grep -q 'nav2_amcl' /opt/nav2_launch/tinybot_nav2_launch.py || \
+    (echo "ERROR: AMCL not found in launch file!" && exit 1)
+
+# Switch back to non-root user
+USER 1001210000
+
+# Labels
+LABEL org.opencontainers.image.title="ROS2 Nav2 Federated - AMCL Localization" \
+      org.opencontainers.image.description="Nav2 with AMCL localization for stable multi-robot operation" \
+      org.opencontainers.image.source="https://github.com/jianrongzhang89/robots-demo-platform-openshift"
