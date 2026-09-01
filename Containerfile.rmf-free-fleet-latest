@@ -1,0 +1,73 @@
+# RMF Container with Latest Free Fleet from main branch
+# Rebuilds Free Fleet to fix segfault issues with ROS Jazzy multi-robot scenarios
+#
+# Base: Existing RMF container with AMCL localization
+FROM quay.io/jianrzha/ros2-hotel-nav2-federated-rmf:v16-amcl-spin-once
+
+# Switch to root for building
+USER root
+
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y \
+        git \
+        python3-pip \
+        python3-colcon-common-extensions \
+        ros-jazzy-rmw-cyclonedds-cpp && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies for Free Fleet
+RUN pip3 install --break-system-packages \
+    nudged \
+    eclipse-zenoh==1.5.0 \
+    pycdr2 \
+    rosbags
+
+# Remove old Free Fleet installation
+RUN rm -rf /opt/free_fleet_ws/src/free_fleet \
+           /opt/free_fleet_ws/build/free_fleet* \
+           /opt/free_fleet_ws/install/free_fleet*
+
+# Clone latest Free Fleet from main branch
+WORKDIR /opt/free_fleet_ws/src
+RUN git clone https://github.com/open-rmf/free_fleet.git && \
+    cd free_fleet && \
+    echo "Free Fleet commit: $(git rev-parse HEAD)" && \
+    echo "Free Fleet date: $(git log -1 --format=%cd)"
+
+# Build Free Fleet with colcon
+WORKDIR /opt/free_fleet_ws
+RUN . /opt/ros/jazzy/setup.sh && \
+    colcon build \
+        --packages-select free_fleet free_fleet_adapter free_fleet_examples \
+        --cmake-args -DCMAKE_BUILD_TYPE=Release \
+        --event-handlers console_direct+ && \
+    echo "✅ Free Fleet built successfully from latest main branch"
+
+# Verify the installation
+RUN . /opt/ros/jazzy/setup.sh && \
+    . /opt/free_fleet_ws/install/setup.sh && \
+    python3 -c "from free_fleet_adapter.nav2_robot_adapter import Nav2RobotAdapter; print('✅ Nav2RobotAdapter imports successfully')" && \
+    python3 -c "from free_fleet_adapter.ros2_action_interface import NavigateToPoseActionInterface; print('✅ ros2_action_interface module found')" && \
+    python3 -c "from rclpy.experimental import EventsExecutor; print('✅ EventsExecutor available')" && \
+    echo "✅ All imports verified"
+
+# Check the executor type in the built fleet_adapter.py
+RUN echo "Checking built fleet_adapter.py for EventsExecutor:" && \
+    grep -n "EventsExecutor\|SingleThreadedExecutor" \
+        /opt/free_fleet_ws/install/free_fleet_adapter/lib/free_fleet_adapter/fleet_adapter.py \
+        || echo "No executor found"
+
+# Switch back to non-root user
+USER 1001210000
+
+# Set working directory back
+WORKDIR /
+
+# Labels
+LABEL org.opencontainers.image.title="ROS2 RMF Free Fleet - Latest from main" \
+      org.opencontainers.image.description="Free Fleet rebuilt from latest main branch for ROS Jazzy compatibility" \
+      org.opencontainers.image.source="https://github.com/jianrongzhang89/robots-demo-platform-openshift" \
+      org.opencontainers.image.version="v18-free-fleet-latest" \
+      free-fleet.source="github.com/open-rmf/free_fleet:main" \
+      free-fleet.build-date="2026-09-01"
