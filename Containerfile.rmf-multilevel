@@ -72,7 +72,7 @@ RUN git clone --depth 1 https://github.com/open-rmf/free_fleet.git src/free_flee
     && FLEET_ADAPTER2=/opt/free_fleet_ws/install/free_fleet_adapter/lib/python3.12/site-packages/free_fleet_adapter/fleet_adapter.py \
     && cp /tmp/fleet_adapter_patch.py "${FLEET_ADAPTER}" \
     && cp /tmp/fleet_adapter_patch.py "${FLEET_ADAPTER2}" \
-    && chmod 644 "${FLEET_ADAPTER}" "${FLEET_ADAPTER2}" \
+    && chmod 755 "${FLEET_ADAPTER}" "${FLEET_ADAPTER2}" \
     && echo "Replaced fleet_adapter.py with patched version (executor threading fixes)"
 
 # Build rmf-web API server (no React dashboard — avoids pnpm OOM in 6GB VM)
