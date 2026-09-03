@@ -17,6 +17,13 @@ rmf:
   image: quay.io/jianrzha/ros2-rmf:multilevel
   navGraph: hotel_nav_graph_multilevel_2d.yaml
   mapUrl: /opt/rmf_config/hotel_nav_graph_enhanced.yaml
+  # Disable health probes - rmf-web API server is not running
+  livenessProbe:
+    enabled: false
+  readinessProbe:
+    enabled: false
+  # Disable server URI - rmf-web API server is not running
+  serverUri: ""
   resources:
     requests:
       cpu: "2"
