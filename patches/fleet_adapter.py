@@ -25,7 +25,7 @@ from free_fleet_adapter.nav2_robot_adapter import Nav2RobotAdapter
 import nudged
 import rclpy
 from rclpy.duration import Duration
-from rclpy.experimental import EventsExecutor
+from rclpy.executors import SingleThreadedExecutor
 import rclpy.node
 from rclpy.parameter import Parameter
 import rmf_adapter
@@ -144,6 +144,63 @@ def start_fleet_adapter(
             for action in plugin_actions:
                 fleet_handle.more().add_performable_action(action, _accept_action)
 
+    # Register standard task capabilities from config
+    task_capabilities = config_yaml.get('rmf_fleet', {}).get('task_capabilities', {})
+    if task_capabilities:
+        node.get_logger().info(
+            f'Registering task capabilities: {list(task_capabilities.keys())}'
+        )
+        for capability_name, enabled in task_capabilities.items():
+            if enabled:
+                fleet_handle.more().add_performable_action(
+                    capability_name,
+                    _accept_action
+                )
+                node.get_logger().info(
+                    f'Registered task capability: [{capability_name}]'
+                )
+    else:
+        node.get_logger().warn(
+            'No task_capabilities found in config! Fleet will not accept any standard tasks.'
+        )
+
+    # Create and start executor BEFORE creating robots
+    # This is critical because robot initialization uses timers
+    # which require an active executor to process callbacks
+    node.get_logger().warn('Creating SingleThreadedExecutor...')
+    rclpy_executor = SingleThreadedExecutor()
+    node.get_logger().warn('Adding node to executor...')
+    rclpy_executor.add_node(node)
+
+    # Start executor in a separate non-daemon thread so it runs properly
+    def spin_executor():
+        try:
+            node.get_logger().warn('Executor thread: Starting spin()')
+            rclpy_executor.spin()
+            node.get_logger().warn('Executor thread: spin() exited normally')
+        except Exception as e:
+            node.get_logger().error(f'Executor thread: Exception during spin(): {type(e).__name__}: {e}')
+
+    node.get_logger().warn('Starting executor thread...')
+    executor_thread = threading.Thread(target=spin_executor, daemon=False)
+    executor_thread.start()
+    time.sleep(0.1)  # Give thread a moment to start
+    node.get_logger().warn(f'Executor thread started (alive: {executor_thread.is_alive()})')
+
+    # Give executor a moment to start spinning
+    time.sleep(0.5)
+    node.get_logger().warn('Executor ready for robot initialization')
+
+    # TEST: Create a simple timer to verify executor is processing callbacks
+    test_timer_count = [0]
+    def test_timer_callback():
+        test_timer_count[0] += 1
+        node.get_logger().warn(f'TEST TIMER FIRED: count={test_timer_count[0]}')
+    test_timer = node.create_timer(1.0, test_timer_callback)
+    time.sleep(3.0)  # Wait for timer to fire a few times
+    node.destroy_timer(test_timer)
+    node.get_logger().warn(f'Test timer fired {test_timer_count[0]} times')
+
     robots = {}
     for robot_name in fleet_config.known_robots:
         robot_config_yaml = config_yaml['rmf_fleet']['robots'][robot_name]
@@ -209,12 +266,9 @@ def start_fleet_adapter(
     update_thread = threading.Thread(target=update_loop, args=())
     update_thread.start()
 
-    # Create executor for the command handle node
-    rclpy_executor = EventsExecutor()
-    rclpy_executor.add_node(node)
-
-    # Start the fleet adapter
-    rclpy_executor.spin()
+    # Executor is already running in a thread (started before robot creation)
+    # Just wait for it to finish (will run until shutdown)
+    executor_thread.join()
 
     # Shutdown
     node.destroy_node()

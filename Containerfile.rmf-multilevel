@@ -42,8 +42,9 @@ RUN pip3 install --break-system-packages \
       "aiosqlite" \
       "websockets"
 
-# Copy patch script before the free_fleet build (used in the same RUN step)
+# Copy patch scripts before the free_fleet build (used in the same RUN step)
 COPY patch_adapter.py /patch_adapter.py
+COPY patches/fleet_adapter.py /tmp/fleet_adapter_patch.py
 
 # Build free_fleet from source (not yet in apt)
 # Build all packages: free_fleet (C++ lib), free_fleet_msgs, free_fleet_adapter
@@ -66,7 +67,13 @@ RUN git clone --depth 1 https://github.com/open-rmf/free_fleet.git src/free_flee
     && echo "Patched namespacify calls — adapter uses map_frame/robot_frame directly" \
     && python3 /patch_adapter.py "${ADAPTER}" \
     && python3 /patch_adapter.py "${ADAPTER2}" \
-    && echo "Patched both adapter paths"
+    && echo "Patched both nav2_robot_adapter.py paths" \
+    && FLEET_ADAPTER=/opt/free_fleet_ws/install/free_fleet_adapter/lib/free_fleet_adapter/fleet_adapter.py \
+    && FLEET_ADAPTER2=/opt/free_fleet_ws/install/free_fleet_adapter/lib/python3.12/site-packages/free_fleet_adapter/fleet_adapter.py \
+    && cp /tmp/fleet_adapter_patch.py "${FLEET_ADAPTER}" \
+    && cp /tmp/fleet_adapter_patch.py "${FLEET_ADAPTER2}" \
+    && chmod 644 "${FLEET_ADAPTER}" "${FLEET_ADAPTER2}" \
+    && echo "Replaced fleet_adapter.py with patched version (executor threading fixes)"
 
 # Build rmf-web API server (no React dashboard — avoids pnpm OOM in 6GB VM)
 WORKDIR /opt/rmf-web
