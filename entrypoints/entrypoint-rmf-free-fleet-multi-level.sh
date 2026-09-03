@@ -78,15 +78,25 @@ ros2 run tf2_ros static_transform_publisher \
     --ros-args -p use_sim_time:=true &
 TF_PID=$!
 
-# --- Launch AMCL Pose to TF Republisher ---
-echo "Launching AMCL Pose to TF republisher..."
-python3 /opt/free_fleet_scripts/amcl_pose_to_tf.py &
-TF_REPUB_PID=$!
+# --- Launch AMCL Pose to TF Republisher (optional) ---
+if [ -f /opt/free_fleet_scripts/amcl_pose_to_tf.py ]; then
+  echo "Launching AMCL Pose to TF republisher..."
+  python3 /opt/free_fleet_scripts/amcl_pose_to_tf.py &
+  TF_REPUB_PID=$!
+else
+  echo "AMCL Pose to TF republisher not found (optional component)"
+  TF_REPUB_PID=""
+fi
 
-# --- Publish Namespaced Map Frames for Free Fleet ---
-echo "Publishing namespaced map frames (tinyBot_X/map → map)..."
-python3 /opt/free_fleet_scripts/publish_namespaced_map_frames.py &
-NAMESPACED_MAP_PID=$!
+# --- Publish Namespaced Map Frames for Free Fleet (optional) ---
+if [ -f /opt/free_fleet_scripts/publish_namespaced_map_frames.py ]; then
+  echo "Publishing namespaced map frames (tinyBot_X/map → map)..."
+  python3 /opt/free_fleet_scripts/publish_namespaced_map_frames.py &
+  NAMESPACED_MAP_PID=$!
+else
+  echo "Namespaced map frames publisher not found (optional component)"
+  NAMESPACED_MAP_PID=""
+fi
 
 # --- Launch RMF Traffic Schedule ---
 echo "Launching RMF traffic schedule..."
