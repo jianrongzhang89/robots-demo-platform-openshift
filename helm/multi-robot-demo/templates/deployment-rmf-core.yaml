@@ -45,7 +45,7 @@ spec:
             - name: NAV_GRAPH
               value: /opt/ros2-demo/rmf/nav_graph.yaml
             - name: SERVER_URI
-              value: {{ .Values.rmf.serverUri | default "ws://localhost:8000/_internal" | quote }}
+              value: {{ if .Values.rmf.serverUri }}{{ .Values.rmf.serverUri | quote }}{{ else }}""{{ end }}
             # Space-separated robot names — used by entrypoint-rmf.sh for clock
             # relay and cmd_vel keepalive key generation. Derived from values.yaml.
             - name: ROBOT_NAMES

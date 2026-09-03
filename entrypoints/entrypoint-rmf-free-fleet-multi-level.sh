@@ -122,9 +122,22 @@ sleep 2
 
 # --- Launch RMF Task Dispatcher ---
 echo "Launching RMF task dispatcher..."
-ros2 run rmf_task_ros2 rmf_task_dispatcher \
-  -s "${SERVER_URI}" \
-  --ros-args -p use_sim_time:=true &
+# IMPORTANT: Do NOT pass -s flag if SERVER_URI is empty
+# Empty server_uri disables task dispatching logic
+if [ -n "${SERVER_URI}" ]; then
+  echo "  Using server URI: ${SERVER_URI}"
+  ros2 run rmf_task_ros2 rmf_task_dispatcher \
+    -s "${SERVER_URI}" \
+    --ros-args \
+    -p use_sim_time:=true \
+    --log-level rmf_task_ros2:=DEBUG &
+else
+  echo "  Running in standalone mode (no server URI)"
+  ros2 run rmf_task_ros2 rmf_task_dispatcher \
+    --ros-args \
+    -p use_sim_time:=true \
+    --log-level rmf_task_ros2:=DEBUG &
+fi
 DISPATCHER_PID=$!
 
 sleep 3
