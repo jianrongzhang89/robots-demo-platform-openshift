@@ -140,14 +140,22 @@ echo "Launching RMF task dispatcher..."
 echo "  Dispatcher configuration:"
 echo "    - bidding_time_window: 2.0 seconds"
 echo "    - use_unique_hex_string_with_task_id: true"
-echo "    - server_uri: ${SERVER_URI:-}"
-ros2 run rmf_task_ros2 rmf_task_dispatcher \
-  --ros-args \
-  -p use_sim_time:=true \
-  -p bidding_time_window:=2.0 \
-  -p use_unique_hex_string_with_task_id:=true \
-  -p server_uri:="${SERVER_URI:-}" \
-  --log-level rmf_task_ros2:=DEBUG &
+echo "    - server_uri: ${SERVER_URI:-<empty>}"
+
+# Build dispatcher command with required parameters
+DISPATCHER_CMD="ros2 run rmf_task_ros2 rmf_task_dispatcher --ros-args"
+DISPATCHER_CMD="${DISPATCHER_CMD} -p use_sim_time:=true"
+DISPATCHER_CMD="${DISPATCHER_CMD} -p bidding_time_window:=2.0"
+DISPATCHER_CMD="${DISPATCHER_CMD} -p use_unique_hex_string_with_task_id:=true"
+
+# Only add server_uri parameter if it's non-empty
+if [ -n "${SERVER_URI}" ]; then
+  DISPATCHER_CMD="${DISPATCHER_CMD} -p server_uri:=${SERVER_URI}"
+fi
+
+DISPATCHER_CMD="${DISPATCHER_CMD} --log-level rmf_task_ros2:=DEBUG"
+
+eval ${DISPATCHER_CMD} &
 DISPATCHER_PID=$!
 
 sleep 3
