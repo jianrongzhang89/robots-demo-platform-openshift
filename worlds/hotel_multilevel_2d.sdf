@@ -1,0 +1,241 @@
+<?xml version="1.0" ?>
+<!--
+  Multi-Level Hotel World (2.5D approach)
+  Three "floors" arranged as separate regions in a single 2D plane
+  Lift zones teleport robots between floor regions
+
+  Layout:
+  - L1 (Lobby): X=[0, 50], Y=[-25, 25]
+  - L2 (Rooms): X=[60, 110], Y=[-25, 25]
+  - L3 (Suites): X=[120, 170], Y=[-25, 25]
+  - Lift zones connect the regions
+-->
+<sdf version="1.9">
+  <world name="hotel_multilevel">
+
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <!-- ========== LEVEL 1 - Lobby Area ========== -->
+    <model name="L1_floor">
+      <static>true</static>
+      <pose>25 0 0 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <box><size>50 50 0.1</size></box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box><size>50 50 0.1</size></box>
+          </geometry>
+          <material>
+            <ambient>0.8 0.8 0.8 1</ambient>
+            <diffuse>0.8 0.8 0.8 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- L1 Perimeter walls -->
+    <model name="L1_walls">
+      <static>true</static>
+      <pose>25 0 1.5 0 0 0</pose>
+      <link name="link">
+        <collision name="north"><pose>0 25 0 0 0 0</pose><geometry><box><size>50 0.2 3</size></box></geometry></collision>
+        <visual name="north_v"><pose>0 25 0 0 0 0</pose><geometry><box><size>50 0.2 3</size></box></geometry><material><ambient>0.5 0.5 0.5 1</ambient></material></visual>
+
+        <collision name="south"><pose>0 -25 0 0 0 0</pose><geometry><box><size>50 0.2 3</size></box></geometry></collision>
+        <visual name="south_v"><pose>0 -25 0 0 0 0</pose><geometry><box><size>50 0.2 3</size></box></geometry><material><ambient>0.5 0.5 0.5 1</ambient></material></visual>
+
+        <collision name="west"><pose>-25 0 0 0 0 0</pose><geometry><box><size>0.2 50 3</size></box></geometry></collision>
+        <visual name="west_v"><pose>-25 0 0 0 0 0</pose><geometry><box><size>0.2 50 3</size></box></geometry><material><ambient>0.5 0.5 0.5 1</ambient></material></visual>
+
+        <!-- East wall has gap for lift access -->
+        <collision name="east_n"><pose>25 12.5 0 0 0 0</pose><geometry><box><size>0.2 25 3</size></box></geometry></collision>
+        <visual name="east_n_v"><pose>25 12.5 0 0 0 0</pose><geometry><box><size>0.2 25 3</size></box></geometry><material><ambient>0.5 0.5 0.5 1</ambient></material></visual>
+
+        <collision name="east_s"><pose>25 -12.5 0 0 0 0</pose><geometry><box><size>0.2 25 3</size></box></geometry></collision>
+        <visual name="east_s_v"><pose>25 -12.5 0 0 0 0</pose><geometry><box><size>0.2 25 3</size></box></geometry><material><ambient>0.5 0.5 0.5 1</ambient></material></visual>
+      </link>
+    </model>
+
+    <!-- ========== LEVEL 2 - Rooms Area ========== -->
+    <model name="L2_floor">
+      <static>true</static>
+      <pose>85 0 0 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <box><size>50 50 0.1</size></box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box><size>50 50 0.1</size></box>
+          </geometry>
+          <material>
+            <ambient>0.7 0.8 0.7 1</ambient>
+            <diffuse>0.7 0.8 0.7 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="L2_walls">
+      <static>true</static>
+      <pose>85 0 1.5 0 0 0</pose>
+      <link name="link">
+        <collision name="north"><pose>0 25 0 0 0 0</pose><geometry><box><size>50 0.2 3</size></box></geometry></collision>
+        <visual name="north_v"><pose>0 25 0 0 0 0</pose><geometry><box><size>50 0.2 3</size></box></geometry><material><ambient>0.6 0.6 0.6 1</ambient></material></visual>
+
+        <collision name="south"><pose>0 -25 0 0 0 0</pose><geometry><box><size>50 0.2 3</size></box></geometry></collision>
+        <visual name="south_v"><pose>0 -25 0 0 0 0</pose><geometry><box><size>50 0.2 3</size></box></geometry><material><ambient>0.6 0.6 0.6 1</ambient></material></visual>
+
+        <collision name="east"><pose>25 0 0 0 0 0</pose><geometry><box><size>0.2 50 3</size></box></geometry></collision>
+        <visual name="east_v"><pose>25 0 0 0 0 0</pose><geometry><box><size>0.2 50 3</size></box></geometry><material><ambient>0.6 0.6 0.6 1</ambient></material></visual>
+
+        <!-- West wall has gaps for lift access from L1 and to L3 -->
+        <collision name="west_n"><pose>-25 12.5 0 0 0 0</pose><geometry><box><size>0.2 25 3</size></box></geometry></collision>
+        <visual name="west_n_v"><pose>-25 12.5 0 0 0 0</pose><geometry><box><size>0.2 25 3</size></box></geometry><material><ambient>0.6 0.6 0.6 1</ambient></material></visual>
+
+        <collision name="west_s"><pose>-25 -12.5 0 0 0 0</pose><geometry><box><size>0.2 25 3</size></box></geometry></collision>
+        <visual name="west_s_v"><pose>-25 -12.5 0 0 0 0</pose><geometry><box><size>0.2 25 3</size></box></geometry><material><ambient>0.6 0.6 0.6 1</ambient></material></visual>
+      </link>
+    </model>
+
+    <!-- ========== LEVEL 3 - Suites Area ========== -->
+    <model name="L3_floor">
+      <static>true</static>
+      <pose>145 0 0 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <box><size>50 50 0.1</size></box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box><size>50 50 0.1</size></box>
+          </geometry>
+          <material>
+            <ambient>0.7 0.7 0.8 1</ambient>
+            <diffuse>0.7 0.7 0.8 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="L3_walls">
+      <static>true</static>
+      <pose>145 0 1.5 0 0 0</pose>
+      <link name="link">
+        <collision name="north"><pose>0 25 0 0 0 0</pose><geometry><box><size>50 0.2 3</size></box></geometry></collision>
+        <visual name="north_v"><pose>0 25 0 0 0 0</pose><geometry><box><size>50 0.2 3</size></box></geometry><material><ambient>0.7 0.7 0.7 1</ambient></material></visual>
+
+        <collision name="south"><pose>0 -25 0 0 0 0</pose><geometry><box><size>50 0.2 3</size></box></geometry></collision>
+        <visual name="south_v"><pose>0 -25 0 0 0 0</pose><geometry><box><size>50 0.2 3</size></box></geometry><material><ambient>0.7 0.7 0.7 1</ambient></material></visual>
+
+        <collision name="east"><pose>25 0 0 0 0 0</pose><geometry><box><size>0.2 50 3</size></box></geometry></collision>
+        <visual name="east_v"><pose>25 0 0 0 0 0</pose><geometry><box><size>0.2 50 3</size></box></geometry><material><ambient>0.7 0.7 0.7 1</ambient></material></visual>
+
+        <!-- West wall has gap for lift access from L2 -->
+        <collision name="west_n"><pose>-25 12.5 0 0 0 0</pose><geometry><box><size>0.2 25 3</size></box></geometry></collision>
+        <visual name="west_n_v"><pose>-25 12.5 0 0 0 0</pose><geometry><box><size>0.2 25 3</size></box></geometry><material><ambient>0.7 0.7 0.7 1</ambient></material></visual>
+
+        <collision name="west_s"><pose>-25 -12.5 0 0 0 0</pose><geometry><box><size>0.2 25 3</size></box></geometry></collision>
+        <visual name="west_s_v"><pose>-25 -12.5 0 0 0 0</pose><geometry><box><size>0.2 25 3</size></box></geometry><material><ambient>0.7 0.7 0.7 1</ambient></material></visual>
+      </link>
+    </model>
+
+    <!-- ========== LIFT ZONES (Visual markers) ========== -->
+    <!-- Lift zone L1-L2 connection -->
+    <model name="lift_zone_L1">
+      <static>true</static>
+      <pose>52.5 0 0.05 0 0 0</pose>
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <box><size>5 5 0.02</size></box>
+          </geometry>
+          <material>
+            <ambient>0.3 0.3 0.8 0.5</ambient>
+            <diffuse>0.3 0.3 0.8 0.5</diffuse>
+            <transparency>0.5</transparency>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="lift_zone_L2">
+      <static>true</static>
+      <pose>57.5 0 0.05 0 0 0</pose>
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <box><size>5 5 0.02</size></box>
+          </geometry>
+          <material>
+            <ambient>0.3 0.8 0.3 0.5</ambient>
+            <diffuse>0.3 0.8 0.3 0.5</diffuse>
+            <transparency>0.5</transparency>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Lift zone L2-L3 connection -->
+    <model name="lift_zone_L2_L3">
+      <static>true</static>
+      <pose>112.5 0 0.05 0 0 0</pose>
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <box><size>5 5 0.02</size></box>
+          </geometry>
+          <material>
+            <ambient>0.3 0.8 0.3 0.5</ambient>
+            <diffuse>0.3 0.8 0.3 0.5</diffuse>
+            <transparency>0.5</transparency>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="lift_zone_L3">
+      <static>true</static>
+      <pose>117.5 0 0.05 0 0 0</pose>
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <box><size>5 5 0.02</size></box>
+          </geometry>
+          <material>
+            <ambient>0.8 0.3 0.3 0.5</ambient>
+            <diffuse>0.8 0.3 0.3 0.5</diffuse>
+            <transparency>0.5</transparency>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+  </world>
+</sdf>

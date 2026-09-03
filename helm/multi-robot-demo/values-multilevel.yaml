@@ -1,0 +1,67 @@
+# Multi-Level Navigation Demo Values (2.5D Layout)
+# Extends values.yaml for RMF + Nav2 + Zenoh multi-level navigation
+#
+# Usage:
+#   helm upgrade --install multi-robot-demo helm/multi-robot-demo \
+#     --namespace ros2-multi-robot --create-namespace \
+#     -f helm/multi-robot-demo/values.yaml \
+#     -f helm/multi-robot-demo/values-multilevel.yaml
+
+# Override image repository to use multi-level images
+image:
+  repository: quay.io/jianrzha/ros2-demo
+  tag: multilevel
+
+# RMF with multi-level navigation graph
+rmf:
+  image: quay.io/jianrzha/ros2-rmf:multilevel
+  mapUrl: /opt/rmf_config/hotel_nav_graph_enhanced.yaml
+  resources:
+    requests:
+      cpu: "2"
+      memory: 3Gi
+    limits:
+      cpu: "4"
+      memory: 6Gi
+
+# Gazebo with 2.5D multi-level world
+gazebo:
+  world: hotel_multilevel_2d  # 2.5D multi-level world
+  gpu: false
+  resources:
+    requests:
+      cpu: "2"
+      memory: 4Gi
+    limits:
+      cpu: "4"
+      memory: 8Gi
+
+# Nav2 configuration for multi-level setup
+nav2:
+  # Use hotel_multilevel map
+  localizationMode: slam_toolbox
+  localizationMap: /opt/ros2-demo/maps/hotel_multilevel.yaml
+  resources:
+    requests:
+      cpu: "2"
+      memory: 2Gi
+    limits:
+      cpu: "4"
+      memory: 4Gi
+
+# Robot fleet for multi-level demo
+# Initial positions in L1 (Lobby area)
+# NOTE: Robot names must use underscores, not dashes (ROS2 namespace requirement)
+robots:
+  - name: robot_1
+    color: "0,0,1"      # blue
+    initialPose:
+      xPos: 20.0        # lobby_east (L1)
+      yPos: 30.0
+      yaw: 0.0
+  - name: robot_2
+    color: "1,0,0"      # red
+    initialPose:
+      xPos: 10.0        # lobby_west (L1)
+      yPos: 30.0
+      yaw: 0.0

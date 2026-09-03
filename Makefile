@@ -1,8 +1,9 @@
 REGISTRY    ?= quay.io/jianrzha
-IMAGE       ?= ros2-demo
-IMAGE_RMF   ?= ros2-rmf
-IMAGE_HOTEL ?= ros2-rmf-hotel
-TAG         ?= latest
+IMAGE            ?= ros2-demo
+IMAGE_RMF        ?= ros2-rmf
+IMAGE_HOTEL      ?= ros2-rmf-hotel
+TAG              ?= latest
+TAG_MULTILEVEL   ?= multilevel
 # Use ROS_DEMO_NS to avoid clashing with any NAMESPACE env var set by the shell
 ROS_DEMO_NS ?= ros2-multi-robot
 RELEASE    ?= multi-robot-demo
@@ -11,9 +12,10 @@ CHART      := helm/multi-robot-demo
 # Convenience alias so existing targets keep working
 NAMESPACE  := $(ROS_DEMO_NS)
 
-IMAGE_REF       := $(REGISTRY)/$(IMAGE):$(TAG)
-IMAGE_RMF_REF   := $(REGISTRY)/$(IMAGE_RMF):$(TAG)
-IMAGE_HOTEL_REF := $(REGISTRY)/$(IMAGE_HOTEL):$(TAG)
+IMAGE_REF        := $(REGISTRY)/$(IMAGE):$(TAG)
+IMAGE_RMF_REF    := $(REGISTRY)/$(IMAGE_RMF):$(TAG)
+IMAGE_RMF_ML_REF := $(REGISTRY)/$(IMAGE_RMF):$(TAG_MULTILEVEL)
+IMAGE_HOTEL_REF  := $(REGISTRY)/$(IMAGE_HOTEL):$(TAG)
 
 # Auto-detect podman (handles non-standard install paths like /opt/podman/bin)
 PODMAN     := $(shell which podman 2>/dev/null || echo /opt/podman/bin/podman)
@@ -59,6 +61,17 @@ push-rmf: ## Push the RMF image to the registry
 .PHONY: build-push-rmf
 build-push-rmf: build-rmf push-rmf ## Build and push the RMF image
 
+.PHONY: build-rmf-multilevel
+build-rmf-multilevel: ## Build the RMF Multi-Level Navigation image with baked-in config
+	$(PODMAN) build --platform linux/amd64 -t $(IMAGE_RMF_ML_REF) -f Containerfile.rmf-multilevel .
+
+.PHONY: push-rmf-multilevel
+push-rmf-multilevel: ## Push the RMF Multi-Level image to the registry
+	$(PODMAN) push $(IMAGE_RMF_ML_REF)
+
+.PHONY: build-push-rmf-multilevel
+build-push-rmf-multilevel: build-rmf-multilevel push-rmf-multilevel ## Build and push the RMF Multi-Level image
+
 .PHONY: build-hotel
 build-hotel: ## Build the Open-RMF Hotel World image (source-builds rmf_demos; slow first build)
 	$(PODMAN) build --platform linux/amd64 -t $(IMAGE_HOTEL_REF) -f Containerfile.hotel .
@@ -90,6 +103,16 @@ deploy-hotel: ## Deploy the Open-RMF Hotel World demo (single pod; use ROS_DEMO_
 	  -f $(CHART)/values-hotel.yaml \
 	  --set namespace=$(NAMESPACE) \
 	  --set hotel.image=$(IMAGE_HOTEL_REF) \
+	  --wait --timeout 10m
+
+.PHONY: deploy-multilevel
+deploy-multilevel: ## Deploy RMF Multi-Level Navigation demo with Nav2 + Zenoh federation
+	helm upgrade --install $(RELEASE) $(CHART) \
+	  --namespace $(NAMESPACE) \
+	  --create-namespace \
+	  -f $(CHART)/values.yaml \
+	  -f $(CHART)/values-multilevel.yaml \
+	  --set namespace=$(NAMESPACE) \
 	  --wait --timeout 10m
 
 .PHONY: undeploy
@@ -345,6 +368,18 @@ dispatch-house-patrol: ## House demo: robot_1 left corridor, robot_2 right corri
 #   make dispatch-hotel HOTEL_WAYPOINTS="L1_n1 L3_room1" HOTEL_LOOPS=1
 HOTEL_WAYPOINTS ?= L3_room1 L3_room1
 HOTEL_LOOPS     ?= 1
+
+.PHONY: dispatch-multilevel
+dispatch-multilevel: ## Multi-level Nav2 demo: tinyBot_1 navigates from L1 lobby to L2 via lift
+	@echo "=== Multi-Level Navigation Test ==="
+	@POD=$$(oc get pod -n $(NAMESPACE) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
+	test -n "$$POD" || { echo "ERROR: rmf-core pod not found in namespace '$(NAMESPACE)'"; exit 1; }; \
+	echo "[RMF] Copying test script to pod $$POD ..."; \
+	oc cp test_multilevel_navigation.py $(NAMESPACE)/$$POD:/tmp/test_multilevel_navigation.py -c rmf-core; \
+	echo "[RMF] Running multi-level navigation test..."; \
+	oc exec -n $(NAMESPACE) $$POD -c rmf-core -- bash -c \
+	  'export HOME=/tmp/ros-home; source /opt/ros/jazzy/setup.bash; \
+	   python3 /tmp/test_multilevel_navigation.py'
 
 .PHONY: dispatch-hotel
 dispatch-hotel: ## Hotel demo: dispatch a multi-level patrol (lobby → level-3 room via lift)
@@ -656,3 +691,22 @@ set-image: ## Upgrade the release with a new image tag (make set-image TAG=v1.2)
 	  --reuse-values \
 	  --set image.repository=$(REGISTRY)/$(IMAGE) \
 	  --set image.tag=$(TAG)
+
+.PHONY: build-multilevel-gazebo
+build-multilevel-gazebo: ## Build the Multi-Level Gazebo image (2.5D hotel world)
+	$(PODMAN) build --platform linux/amd64 -t $(REGISTRY)/$(IMAGE):multilevel -f Containerfile.hotel-multilevel .
+
+.PHONY: push-multilevel-gazebo
+push-multilevel-gazebo: ## Push the Multi-Level Gazebo image
+	$(PODMAN) push $(REGISTRY)/$(IMAGE):multilevel
+
+.PHONY: build-multilevel-rmf
+build-multilevel-rmf: ## Build the Multi-Level RMF image (with 2.5D nav graph)
+	$(PODMAN) build --platform linux/amd64 -t quay.io/jianrzha/ros2-rmf:multilevel -f Containerfile.rmf-multilevel .
+
+.PHONY: push-multilevel-rmf
+push-multilevel-rmf: ## Push the Multi-Level RMF image
+	$(PODMAN) push quay.io/jianrzha/ros2-rmf:multilevel
+
+.PHONY: build-push-multilevel
+build-push-multilevel: build-multilevel-gazebo push-multilevel-gazebo build-multilevel-rmf push-multilevel-rmf ## Build and push all multi-level images

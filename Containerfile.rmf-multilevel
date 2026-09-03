@@ -1,0 +1,133 @@
+# Open-RMF container with Multi-Level Navigation Support
+# Includes: Free Fleet Adapter + Nav2 Puppet Controller + Lift Supervisor
+#
+# This image bakes in the complete multi-level navigation implementation:
+#   - Enhanced navigation graph with lift_lanes
+#   - Hotel building configuration with lift definitions
+#   - Nav2 puppet controller for task execution
+#   - Updated entrypoint with lift supervisor
+#
+# Build: podman build --platform linux/amd64 -t quay.io/jianrzha/ros2-rmf:multilevel -f Containerfile.rmf-multilevel .
+# Push:  podman push quay.io/jianrzha/ros2-rmf:multilevel
+
+FROM --platform=linux/amd64 ros:jazzy
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# RMF packages — separate layer for retry-safe caching
+RUN apt-get update 2>/dev/null || apt-get update --allow-releaseinfo-change 2>/dev/null || true
+RUN apt-get install -y --no-install-recommends \
+      ros-jazzy-rmf-dev \
+      ros-jazzy-rmw-cyclonedds-cpp \
+      ros-jazzy-rmf-demos-tasks \
+      ros-jazzy-tf-transformations \
+      python3-pip \
+      python3-colcon-common-extensions \
+      python3-rosdep \
+      git wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Python deps for free_fleet (zenoh pinned to 1.5.0) and rmf-web api-server
+RUN pip3 install --break-system-packages \
+      "eclipse-zenoh==1.5.0" \
+      "pycdr2" \
+      "numpy" \
+      "nudged" \
+      "rosbags" \
+      "python-socketio~=5.11.1" \
+      "fastapi~=0.109.0" \
+      "uvicorn[standard]~=0.28.0" \
+      "pydantic~=2.8.0" \
+      "tortoise-orm~=0.21.4" \
+      "aiosqlite" \
+      "websockets"
+
+# Copy patch script before the free_fleet build (used in the same RUN step)
+COPY patch_adapter.py /patch_adapter.py
+
+# Build free_fleet from source (not yet in apt)
+# Build all packages: free_fleet (C++ lib), free_fleet_msgs, free_fleet_adapter
+WORKDIR /opt/free_fleet_ws
+RUN git clone --depth 1 https://github.com/open-rmf/free_fleet.git src/free_fleet \
+    && . /opt/ros/jazzy/setup.sh \
+    && rosdep init 2>/dev/null || true \
+    && rosdep update \
+    && rosdep install --from-paths src --ignore-src -r -y 2>/dev/null || true \
+    && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release \
+    && rm -rf build log src/.git \
+    && ADAPTER=/opt/free_fleet_ws/install/free_fleet_adapter/lib/python3.12/site-packages/free_fleet_adapter/nav2_robot_adapter.py \
+    && ADAPTER2=/opt/free_fleet_ws/install/free_fleet_adapter/lib/free_fleet_adapter/nav2_robot_adapter.py \
+    && sed -i \
+         's/namespacify(self\.map_frame, self\.robot_name)/self.map_frame/g' \
+         "${ADAPTER}" "${ADAPTER2}" \
+    && sed -i \
+         's/namespacify(self\.robot_frame, self\.robot_name)/self.robot_frame/g' \
+         "${ADAPTER}" "${ADAPTER2}" \
+    && echo "Patched namespacify calls — adapter uses map_frame/robot_frame directly" \
+    && python3 /patch_adapter.py "${ADAPTER}" \
+    && python3 /patch_adapter.py "${ADAPTER2}" \
+    && echo "Patched both adapter paths"
+
+# Build rmf-web API server (no React dashboard — avoids pnpm OOM in 6GB VM)
+WORKDIR /opt/rmf-web
+RUN git clone --depth 1 -b jazzy https://github.com/open-rmf/rmf-web.git . \
+    && cd packages/api-server \
+    && pip3 install --break-system-packages . \
+    && sed -i 's/"host": "127.0.0.1"/"host": "0.0.0.0"/' \
+         api_server/default_config.py \
+    && sed -i 's|"public_url": "http://localhost:8000"|"public_url": ""|' \
+         api_server/default_config.py \
+    && sed -i \
+         's/user_dep = authenticator.fastapi_dep()/async def _demo_user():\n    return type("U", (), {"username": "admin", "is_admin": True})()\nuser_dep = _demo_user/' \
+         api_server/authenticator.py \
+    && rm -rf /opt/rmf-web/.git \
+    && echo "Dashboard will be injected at /dashboard route via entrypoint"
+
+# Runtime dirs
+RUN mkdir -p /tmp/ros-home/.ros \
+             /opt/rmf-web/packages/api-server/run/cache \
+             /opt/rmf_config \
+             /opt/hotel_config \
+             /opt/scripts \
+             /opt/free_fleet_config \
+             /opt/free_fleet_scripts \
+             /opt/free_fleet_zenoh_config \
+    && chmod -R 777 /tmp/ros-home \
+    && chmod -R 777 /opt/rmf-web/packages/api-server/run
+
+WORKDIR /opt/ros2-demo
+
+# === Multi-Level Navigation Configuration (BAKED IN) ===
+
+# Enhanced navigation graph with lift_lanes (2.5D multi-level layout)
+COPY config/rmf/hotel_nav_graph_multilevel_2d.yaml /opt/rmf_config/hotel_nav_graph_enhanced.yaml
+
+# Hotel building configuration with lift definitions
+COPY config/hotel/hotel.building.yaml /opt/hotel_config/hotel.building.yaml
+
+# Nav2 Puppet Controller script
+COPY scripts/nav2_puppet_controller.py /opt/scripts/nav2_puppet_controller.py
+RUN chmod +x /opt/scripts/nav2_puppet_controller.py
+
+# Free Fleet configuration (multi-level version)
+COPY config/free_fleet/tinybot_fleet_config_multilevel.yaml /opt/free_fleet_config/tinybot_fleet_config.yaml
+COPY config/zenoh/free-fleet-client.json5 /opt/free_fleet_zenoh_config/free-fleet-client.json5
+
+# TF helper scripts (these exist in the repo)
+COPY scripts/odom_to_tf.py /opt/free_fleet_scripts/odom_to_tf.py
+COPY scripts/tf_relay.py /opt/free_fleet_scripts/tf_relay.py
+RUN chmod +x /opt/free_fleet_scripts/*.py
+
+# Multi-level entrypoint (with lift supervisor and puppet controller)
+COPY entrypoints/entrypoint-rmf-free-fleet-multi-level.sh /entrypoint-rmf-free-fleet-multi-level.sh
+# Also copy as /entrypoint-rmf.sh for Helm template compatibility
+COPY entrypoints/entrypoint-rmf-free-fleet-multi-level.sh /entrypoint-rmf.sh
+RUN chmod +x /entrypoint-rmf-free-fleet-multi-level.sh /entrypoint-rmf.sh
+
+# Custom lightweight dashboard — served by the API server at /dashboard
+RUN mkdir -p /opt/rmf-dashboard
+COPY config/rmf/dashboard.html /opt/rmf-dashboard/index.html
+
+EXPOSE 8000 3000
+
+CMD ["/entrypoint-rmf-free-fleet-multi-level.sh"]

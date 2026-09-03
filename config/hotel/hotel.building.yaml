@@ -1,0 +1,61 @@
+# RMF Building Map for Hotel Multi-Level Demo
+# Format based on rmf_demos/rmf_demos_maps/maps/hotel/hotel.building.yaml
+
+name: hotel
+
+levels:
+  L1:
+    elevation: 0.0
+  L2:
+    elevation: 4.0
+  L3:
+    elevation: 8.0
+
+lifts:
+  Lift1:
+    reference_floor_name: L1
+    x: 355.0
+    y: 340.0
+    yaw: 0.0
+    width: 2.7
+    depth: 2.7
+    highest_floor: L3
+    lowest_floor: L1
+    initial_floor_name: L1
+    doors:
+      lift1_door:
+        door_type: 2
+        motion_axis_orientation: 0.0
+        width: 1.7
+        x: 0
+        y: -1.5
+    level_doors:
+      L1: [lift1_door]
+      L2: [lift1_door]
+      L3: [lift1_door]
+    plugins: true
+
+  Lift2:
+    reference_floor_name: L1
+    x: 305.0
+    y: 435.0
+    yaw: 0.0
+    width: 2.7
+    depth: 2.7
+    highest_floor: L3
+    lowest_floor: L1
+    initial_floor_name: L1
+    doors:
+      lift2_door:
+        door_type: 2
+        motion_axis_orientation: 0.0
+        width: 1.7
+        x: 0
+        y: -1.5
+    level_doors:
+      L1: [lift2_door]
+      L2: [lift2_door]
+      L3: [lift2_door]
+    plugins: true
+
+doors: {}

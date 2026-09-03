@@ -1,0 +1,507 @@
+<?xml version="1.0" ?>
+<!--
+  Multi-Level Hotel World for RMF Demo
+  3 floors connected by 2 lifts
+  Each floor has simplified navigation areas
+-->
+<sdf version="1.9">
+  <world name="hotel_multilevel">
+
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <plugin
+      filename="gz-sim-physics-system"
+      name="gz::sim::systems::Physics">
+    </plugin>
+    <plugin
+      filename="gz-sim-sensors-system"
+      name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin
+      filename="gz-sim-user-commands-system"
+      name="gz::sim::systems::UserCommands">
+    </plugin>
+    <plugin
+      filename="gz-sim-scene-broadcaster-system"
+      name="gz::sim::systems::SceneBroadcaster">
+    </plugin>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <!-- ========== LEVEL 1 (Lobby) - Elevation 0m ========== -->
+
+    <!-- L1 Floor -->
+    <model name="L1_floor">
+      <static>true</static>
+      <pose>0 0 0 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>50 50 0.1</size>
+            </geometry>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>50 50 0.1</size>
+            </geometry>
+          </geometry>
+          <material>
+            <ambient>0.8 0.8 0.8 1</ambient>
+            <diffuse>0.8 0.8 0.8 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- L1 Walls - Lobby area -->
+    <model name="L1_walls">
+      <static>true</static>
+      <pose>0 0 1.5 0 0 0</pose>
+      <link name="link">
+        <!-- North wall -->
+        <collision name="north_wall">
+          <pose>0 25 0 0 0 0</pose>
+          <geometry>
+            <box><size>50 0.2 3</size></box>
+          </geometry>
+        </collision>
+        <visual name="north_wall_visual">
+          <pose>0 25 0 0 0 0</pose>
+          <geometry>
+            <box><size>50 0.2 3</size></box>
+          </geometry>
+          <material>
+            <ambient>0.5 0.5 0.5 1</ambient>
+            <diffuse>0.5 0.5 0.5 1</diffuse>
+          </material>
+        </visual>
+
+        <!-- South wall -->
+        <collision name="south_wall">
+          <pose>0 -25 0 0 0 0</pose>
+          <geometry>
+            <box><size>50 0.2 3</size></box>
+          </geometry>
+        </collision>
+        <visual name="south_wall_visual">
+          <pose>0 -25 0 0 0 0</pose>
+          <geometry>
+            <box><size>50 0.2 3</size></box>
+          </geometry>
+          <material>
+            <ambient>0.5 0.5 0.5 1</ambient>
+            <diffuse>0.5 0.5 0.5 1</diffuse>
+          </material>
+        </visual>
+
+        <!-- East wall -->
+        <collision name="east_wall">
+          <pose>25 0 0 0 0 0</pose>
+          <geometry>
+            <box><size>0.2 50 3</size></box>
+          </geometry>
+        </collision>
+        <visual name="east_wall_visual">
+          <pose>25 0 0 0 0 0</pose>
+          <geometry>
+            <box><size>0.2 50 3</size></box>
+          </geometry>
+          <material>
+            <ambient>0.5 0.5 0.5 1</ambient>
+            <diffuse>0.5 0.5 0.5 1</diffuse>
+          </material>
+        </visual>
+
+        <!-- West wall -->
+        <collision name="west_wall">
+          <pose>-25 0 0 0 0 0</pose>
+          <geometry>
+            <box><size>0.2 50 3</size></box>
+          </geometry>
+        </collision>
+        <visual name="west_wall_visual">
+          <pose>-25 0 0 0 0 0</pose>
+          <geometry>
+            <box><size>0.2 50 3</size></box>
+          </geometry>
+          <material>
+            <ambient>0.5 0.5 0.5 1</ambient>
+            <diffuse>0.5 0.5 0.5 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ========== LEVEL 2 - Elevation 4m ========== -->
+
+    <!-- L2 Floor -->
+    <model name="L2_floor">
+      <static>true</static>
+      <pose>0 0 4 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>40 40 0.1</size>
+            </geometry>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>40 40 0.1</size>
+            </geometry>
+          </geometry>
+          <material>
+            <ambient>0.7 0.8 0.7 1</ambient>
+            <diffuse>0.7 0.8 0.7 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- L2 Walls -->
+    <model name="L2_walls">
+      <static>true</static>
+      <pose>0 0 5.5 0 0 0</pose>
+      <link name="link">
+        <collision name="north_wall">
+          <pose>0 20 0 0 0 0</pose>
+          <geometry>
+            <box><size>40 0.2 3</size></box>
+          </geometry>
+        </collision>
+        <visual name="north_wall_visual">
+          <pose>0 20 0 0 0 0</pose>
+          <geometry>
+            <box><size>40 0.2 3</size></box>
+          </geometry>
+          <material>
+            <ambient>0.6 0.6 0.6 1</ambient>
+            <diffuse>0.6 0.6 0.6 1</diffuse>
+          </material>
+        </visual>
+
+        <collision name="south_wall">
+          <pose>0 -20 0 0 0 0</pose>
+          <geometry>
+            <box><size>40 0.2 3</size></box>
+          </geometry>
+        </collision>
+        <visual name="south_wall_visual">
+          <pose>0 -20 0 0 0 0</pose>
+          <geometry>
+            <box><size>40 0.2 3</size></box>
+          </geometry>
+          <material>
+            <ambient>0.6 0.6 0.6 1</ambient>
+            <diffuse>0.6 0.6 0.6 1</diffuse>
+          </material>
+        </visual>
+
+        <collision name="east_wall">
+          <pose>20 0 0 0 0 0</pose>
+          <geometry>
+            <box><size>0.2 40 3</size></box>
+          </geometry>
+        </collision>
+        <visual name="east_wall_visual">
+          <pose>20 0 0 0 0 0</pose>
+          <geometry>
+            <box><size>0.2 40 3</size></box>
+          </geometry>
+          <material>
+            <ambient>0.6 0.6 0.6 1</ambient>
+            <diffuse>0.6 0.6 0.6 1</diffuse>
+          </material>
+        </visual>
+
+        <collision name="west_wall">
+          <pose>-20 0 0 0 0 0</pose>
+          <geometry>
+            <box><size>0.2 40 3</size></box>
+          </geometry>
+        </collision>
+        <visual name="west_wall_visual">
+          <pose>-20 0 0 0 0 0</pose>
+          <geometry>
+            <box><size>0.2 40 3</size></box>
+          </geometry>
+          <material>
+            <ambient>0.6 0.6 0.6 1</ambient>
+            <diffuse>0.6 0.6 0.6 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ========== LEVEL 3 - Elevation 8m ========== -->
+
+    <!-- L3 Floor -->
+    <model name="L3_floor">
+      <static>true</static>
+      <pose>0 0 8 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>35 35 0.1</size>
+            </geometry>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>35 35 0.1</size>
+            </geometry>
+          </geometry>
+          <material>
+            <ambient>0.7 0.7 0.8 1</ambient>
+            <diffuse>0.7 0.7 0.8 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- L3 Walls -->
+    <model name="L3_walls">
+      <static>true</static>
+      <pose>0 0 9.5 0 0 0</pose>
+      <link name="link">
+        <collision name="north_wall">
+          <pose>0 17.5 0 0 0 0</pose>
+          <geometry>
+            <box><size>35 0.2 3</size></box>
+          </geometry>
+        </collision>
+        <visual name="north_wall_visual">
+          <pose>0 17.5 0 0 0 0</pose>
+          <geometry>
+            <box><size>35 0.2 3</size></box>
+          </geometry>
+          <material>
+            <ambient>0.7 0.7 0.7 1</ambient>
+            <diffuse>0.7 0.7 0.7 1</diffuse>
+          </material>
+        </visual>
+
+        <collision name="south_wall">
+          <pose>0 -17.5 0 0 0 0</pose>
+          <geometry>
+            <box><size>35 0.2 3</size></box>
+          </geometry>
+        </collision>
+        <visual name="south_wall_visual">
+          <pose>0 -17.5 0 0 0 0</pose>
+          <geometry>
+            <box><size>35 0.2 3</size></box>
+          </geometry>
+          <material>
+            <ambient>0.7 0.7 0.7 1</ambient>
+            <diffuse>0.7 0.7 0.7 1</diffuse>
+          </material>
+        </visual>
+
+        <collision name="east_wall">
+          <pose>17.5 0 0 0 0 0</pose>
+          <geometry>
+            <box><size>0.2 35 3</size></box>
+          </geometry>
+        </collision>
+        <visual name="east_wall_visual">
+          <pose>17.5 0 0 0 0 0</pose>
+          <geometry>
+            <box><size>0.2 35 3</size></box>
+          </geometry>
+          <material>
+            <ambient>0.7 0.7 0.7 1</ambient>
+            <diffuse>0.7 0.7 0.7 1</diffuse>
+          </material>
+        </visual>
+
+        <collision name="west_wall">
+          <pose>-17.5 0 0 0 0 0</pose>
+          <geometry>
+            <box><size>0.2 35 3</size></box>
+          </geometry>
+        </collision>
+        <visual name="west_wall_visual">
+          <pose>-17.5 0 0 0 0 0</pose>
+          <geometry>
+            <box><size>0.2 35 3</size></box>
+          </geometry>
+          <material>
+            <ambient>0.7 0.7 0.7 1</ambient>
+            <diffuse>0.7 0.7 0.7 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ========== LIFT 1 ========== -->
+    <!-- Simplified lift platform - will add RMF lift plugin -->
+    <model name="Lift1">
+      <pose>10 10 0 0 0 0</pose>
+      <link name="platform">
+        <inertial>
+          <mass>1000</mass>
+          <inertia>
+            <ixx>100</ixx>
+            <iyy>100</iyy>
+            <izz>100</izz>
+          </inertia>
+        </inertial>
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>3 3 0.1</size>
+            </geometry>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>3 3 0.1</size>
+            </geometry>
+          </geometry>
+          <material>
+            <ambient>0.3 0.3 0.8 1</ambient>
+            <diffuse>0.3 0.3 0.8 1</diffuse>
+          </material>
+        </visual>
+      </link>
+
+      <!-- RMF Lift Plugin -->
+      <plugin filename="gz-sim-lift-system" name="gz::sim::systems::Lift">
+        <lift_name>Lift1</lift_name>
+
+        <floor name="L1" elevation="0.0">
+          <door name="lift1_door" type="DoubleSlidingDoor">
+            <width>2.0</width>
+            <length>0.01</length>
+            <v_max_door>0.3</v_max_door>
+            <a_max_door>0.3</a_max_door>
+          </door>
+        </floor>
+
+        <floor name="L2" elevation="4.0">
+          <door name="lift1_door" type="DoubleSlidingDoor">
+            <width>2.0</width>
+            <length>0.01</length>
+            <v_max_door>0.3</v_max_door>
+            <a_max_door>0.3</a_max_door>
+          </door>
+        </floor>
+
+        <floor name="L3" elevation="8.0">
+          <door name="lift1_door" type="DoubleSlidingDoor">
+            <width>2.0</width>
+            <length>0.01</length>
+            <v_max_door>0.3</v_max_door>
+            <a_max_door>0.3</a_max_door>
+          </door>
+        </floor>
+
+        <initial_floor>L1</initial_floor>
+        <v_max_cabin>2.0</v_max_cabin>
+        <a_max_cabin>1.0</a_max_cabin>
+        <a_nom_cabin>0.5</a_nom_cabin>
+        <jerk_max_cabin>2.0</jerk_max_cabin>
+        <reference_floor>L1</reference_floor>
+        <cabin_joint_name>cabin_joint</cabin_joint_name>
+      </plugin>
+    </model>
+
+    <!-- ========== LIFT 2 ========== -->
+    <model name="Lift2">
+      <pose>-10 -10 0 0 0 0</pose>
+      <link name="platform">
+        <inertial>
+          <mass>1000</mass>
+          <inertia>
+            <ixx>100</ixx>
+            <iyy>100</iyy>
+            <izz>100</izz>
+          </inertia>
+        </inertial>
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>3 3 0.1</size>
+            </geometry>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>3 3 0.1</size>
+            </geometry>
+          </geometry>
+          <material>
+            <ambient>0.8 0.3 0.3 1</ambient>
+            <diffuse>0.8 0.3 0.3 1</diffuse>
+          </material>
+        </visual>
+      </link>
+
+      <plugin filename="gz-sim-lift-system" name="gz::sim::systems::Lift">
+        <lift_name>Lift2</lift_name>
+
+        <floor name="L1" elevation="0.0">
+          <door name="lift2_door" type="DoubleSlidingDoor">
+            <width>2.0</width>
+            <length>0.01</length>
+            <v_max_door>0.3</v_max_door>
+            <a_max_door>0.3</a_max_door>
+          </door>
+        </floor>
+
+        <floor name="L2" elevation="4.0">
+          <door name="lift2_door" type="DoubleSlidingDoor">
+            <width>2.0</width>
+            <length>0.01</length>
+            <v_max_door>0.3</v_max_door>
+            <a_max_door>0.3</a_max_door>
+          </door>
+        </floor>
+
+        <floor name="L3" elevation="8.0">
+          <door name="lift2_door" type="DoubleSlidingDoor">
+            <width>2.0</width>
+            <length>0.01</length>
+            <v_max_door>0.3</v_max_door>
+            <a_max_door>0.3</a_max_door>
+          </door>
+        </floor>
+
+        <initial_floor>L1</initial_floor>
+        <v_max_cabin>2.0</v_max_cabin>
+        <a_max_cabin>1.0</a_max_cabin>
+        <a_nom_cabin>0.5</a_nom_cabin>
+        <jerk_max_cabin>2.0</jerk_max_cabin>
+        <reference_floor>L1</reference_floor>
+        <cabin_joint_name>cabin_joint</cabin_joint_name>
+      </plugin>
+    </model>
+
+  </world>
+</sdf>
