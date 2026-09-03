@@ -122,22 +122,22 @@ sleep 2
 
 # --- Launch RMF Task Dispatcher ---
 echo "Launching RMF task dispatcher..."
-# IMPORTANT: Do NOT pass -s flag if SERVER_URI is empty
-# Empty server_uri disables task dispatching logic
-if [ -n "${SERVER_URI}" ]; then
-  echo "  Using server URI: ${SERVER_URI}"
-  ros2 run rmf_task_ros2 rmf_task_dispatcher \
-    -s "${SERVER_URI}" \
-    --ros-args \
-    -p use_sim_time:=true \
-    --log-level rmf_task_ros2:=DEBUG &
-else
-  echo "  Running in standalone mode (no server URI)"
-  ros2 run rmf_task_ros2 rmf_task_dispatcher \
-    --ros-args \
-    -p use_sim_time:=true \
-    --log-level rmf_task_ros2:=DEBUG &
-fi
+# Use ROS parameters (not command-line args) to match rmf_demos official launch
+# Critical parameters from rmf_demos/launch/common.launch.xml:
+#   - bidding_time_window: Time window for bidding process (default: 2.0)
+#   - use_unique_hex_string_with_task_id: Append unique hex to task IDs (default: true)
+#   - server_uri: API server URI (default: "")
+echo "  Dispatcher configuration:"
+echo "    - bidding_time_window: 2.0 seconds"
+echo "    - use_unique_hex_string_with_task_id: true"
+echo "    - server_uri: ${SERVER_URI:-}"
+ros2 run rmf_task_ros2 rmf_task_dispatcher \
+  --ros-args \
+  -p use_sim_time:=true \
+  -p bidding_time_window:=2.0 \
+  -p use_unique_hex_string_with_task_id:=true \
+  -p server_uri:="${SERVER_URI:-}" \
+  --log-level rmf_task_ros2:=DEBUG &
 DISPATCHER_PID=$!
 
 sleep 3
@@ -146,27 +146,29 @@ sleep 3
 echo "Launching Free Fleet Adapter for tinyRobot fleet..."
 NAV_GRAPH="${NAV_GRAPH:-/opt/rmf_config/hotel_nav_graph_enhanced.yaml}"
 if [ -f "${NAV_GRAPH}" ]; then
-  # Check if Zenoh config exists and launch accordingly
-  if [ -f "${ZENOH_CONFIG}" ]; then
-    echo "  Using Zenoh config: ${ZENOH_CONFIG}"
-    # Launch directly with fleet_adapter.py to pass --zenoh-config
-    ros2 run free_fleet_adapter fleet_adapter.py \
-      -c /opt/free_fleet_config/tinybot_fleet_config.yaml \
-      -n "${NAV_GRAPH}" \
-      -sim \
-      --zenoh-config "${ZENOH_CONFIG}" \
-      --ros-args \
-      -p use_sim_time:=true \
-      --log-level rmf_fleet_adapter:=INFO &
-  else
-    echo "  WARNING: Zenoh config not found: ${ZENOH_CONFIG}"
-    echo "  Launching without Zenoh config (default peer-to-peer mode)"
-    ros2 run free_fleet_adapter fleet_adapter.py \
-      -c /opt/free_fleet_config/tinybot_fleet_config.yaml \
-      -n "${NAV_GRAPH}" \
-      -sim \
-      --ros-args -p use_sim_time:=true &
+  # Build fleet adapter command with consistent parameters
+  FLEET_CMD="ros2 run free_fleet_adapter fleet_adapter.py"
+  FLEET_CMD="${FLEET_CMD} -c /opt/free_fleet_config/tinybot_fleet_config.yaml"
+  FLEET_CMD="${FLEET_CMD} -n ${NAV_GRAPH}"
+  FLEET_CMD="${FLEET_CMD} -sim"
+
+  # Add server_uri if provided (matches rmf_demos fleet_adapter configuration)
+  if [ -n "${SERVER_URI}" ]; then
+    FLEET_CMD="${FLEET_CMD} -s ${SERVER_URI}"
+    echo "  Server URI: ${SERVER_URI}"
   fi
+
+  # Add Zenoh config if available
+  if [ -f "${ZENOH_CONFIG}" ]; then
+    FLEET_CMD="${FLEET_CMD} --zenoh-config ${ZENOH_CONFIG}"
+    echo "  Zenoh config: ${ZENOH_CONFIG}"
+  fi
+
+  # Add ROS args
+  FLEET_CMD="${FLEET_CMD} --ros-args -p use_sim_time:=true --log-level rmf_fleet_adapter:=INFO"
+
+  echo "  Launching fleet adapter..."
+  eval ${FLEET_CMD} &
   FREE_FLEET_PID=$!
   echo "  ✅ Free Fleet adapter running (PID ${FREE_FLEET_PID})"
   echo "  📍 Nav graph: ${NAV_GRAPH}"
