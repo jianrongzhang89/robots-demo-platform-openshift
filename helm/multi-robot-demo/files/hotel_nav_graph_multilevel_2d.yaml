@@ -1,0 +1,135 @@
+# RMF Navigation Graph for Hotel Multi-Level Demo (2.5D Layout)
+# Three "floors" arranged horizontally:
+# - L1 (Lobby):  X=[5, 45],   Y=[10, 50]
+# - L2 (Rooms):  X=[65, 105], Y=[10, 50]
+# - L3 (Suites): X=[125, 165], Y=[10, 50]
+# Lift zones connect the floors
+
+building_name: hotel
+
+doors: {}
+lifts: {}
+
+levels:
+  # ========== Level 1 - Lobby ==========
+  L1:
+    vertices:
+      # Main lobby waypoints
+      - [20.0, 30.0, {name: lobby_east, is_holding_point: true}]
+      - [10.0, 30.0, {name: lobby_west, is_holding_point: true}]
+      - [10.0, 15.0, {name: lobby_southwest, is_holding_point: true}]
+      - [35.0, 15.0, {name: lobby_southeast, is_holding_point: true}]
+      - [20.0, 25.0, {name: lobby_center, is_holding_point: true}]
+
+      # Charger waypoints
+      - [8.0, 35.0, {name: charger_1, is_charger: true, is_parking_spot: true}]
+      - [8.0, 32.0, {name: charger_2, is_charger: true, is_parking_spot: true}]
+
+      # Lift approach and cabin waypoints for L1
+      - [48.0, 27.5, {name: lift1_approach_L1, is_holding_point: true}]
+      - [52.5, 27.5, {name: lift1_cabin_L1, lift_cabin: Lift1, is_holding_point: true}]
+
+    lanes:
+      # Lobby internal navigation
+      - [0, 4, {}]  # lobby_east <-> lobby_center
+      - [4, 0, {}]
+      - [1, 4, {}]  # lobby_west <-> lobby_center
+      - [4, 1, {}]
+      - [2, 4, {}]  # lobby_southwest <-> lobby_center
+      - [4, 2, {}]
+      - [3, 4, {}]  # lobby_southeast <-> lobby_center
+      - [4, 3, {}]
+
+      # Charger connections
+      - [1, 5, {}]
+      - [5, 1, {}]
+      - [1, 6, {}]
+      - [6, 1, {}]
+
+      # Lift access
+      - [4, 7, {}]  # lobby_center <-> lift_approach
+      - [7, 4, {}]
+      - [7, 8, {dock_name: lift1_dock_enter_L1}]  # approach -> cabin
+      - [8, 7, {dock_name: lift1_dock_exit_L1}]   # cabin -> approach
+
+  # ========== Level 2 - Rooms ==========
+  L2:
+    vertices:
+      # L2 waypoints
+      - [70.0, 30.0, {name: L2_room1, is_holding_point: true}]
+      - [85.0, 30.0, {name: L2_room2, is_holding_point: true}]
+      - [70.0, 20.0, {name: L2_room3, is_holding_point: true}]
+      - [85.0, 20.0, {name: L2_room4, is_holding_point: true}]
+      - [78.0, 25.0, {name: L2_center, is_holding_point: true}]
+
+      # Lift approach and cabin waypoints for L2
+      - [62.0, 27.5, {name: lift1_approach_L2_from_L1, is_holding_point: true}]
+      - [57.5, 27.5, {name: lift1_cabin_L2, lift_cabin: Lift1, is_holding_point: true}]
+
+      # Second lift access (to L3)
+      - [108.0, 27.5, {name: lift2_approach_L2_to_L3, is_holding_point: true}]
+      - [112.5, 27.5, {name: lift2_cabin_L2, lift_cabin: Lift2, is_holding_point: true}]
+
+    lanes:
+      # L2 internal navigation
+      - [0, 4, {}]  # room1 <-> center
+      - [4, 0, {}]
+      - [1, 4, {}]  # room2 <-> center
+      - [4, 1, {}]
+      - [2, 4, {}]  # room3 <-> center
+      - [4, 2, {}]
+      - [3, 4, {}]  # room4 <-> center
+      - [4, 3, {}]
+
+      # Lift 1 access (from L1)
+      - [4, 5, {}]  # center <-> lift1_approach
+      - [5, 4, {}]
+      - [5, 6, {dock_name: lift1_dock_enter_L2}]  # approach -> cabin
+      - [6, 5, {dock_name: lift1_dock_exit_L2}]   # cabin -> approach
+
+      # Lift 2 access (to L3)
+      - [4, 7, {}]  # center <-> lift2_approach
+      - [7, 4, {}]
+      - [7, 8, {dock_name: lift2_dock_enter_L2}]  # approach -> cabin
+      - [8, 7, {dock_name: lift2_dock_exit_L2}]   # cabin -> approach
+
+  # ========== Level 3 - Suites ==========
+  L3:
+    vertices:
+      # L3 waypoints
+      - [130.0, 30.0, {name: L3_suite1, is_holding_point: true}]
+      - [145.0, 30.0, {name: L3_suite2, is_holding_point: true}]
+      - [130.0, 20.0, {name: L3_suite3, is_holding_point: true}]
+      - [145.0, 20.0, {name: L3_suite4, is_holding_point: true}]
+      - [138.0, 25.0, {name: L3_center, is_holding_point: true}]
+
+      # Lift approach and cabin waypoints for L3
+      - [122.0, 27.5, {name: lift2_approach_L3, is_holding_point: true}]
+      - [117.5, 27.5, {name: lift2_cabin_L3, lift_cabin: Lift2, is_holding_point: true}]
+
+    lanes:
+      # L3 internal navigation
+      - [0, 4, {}]  # suite1 <-> center
+      - [4, 0, {}]
+      - [1, 4, {}]  # suite2 <-> center
+      - [4, 1, {}]
+      - [2, 4, {}]  # suite3 <-> center
+      - [4, 2, {}]
+      - [3, 4, {}]  # suite4 <-> center
+      - [4, 3, {}]
+
+      # Lift 2 access (from L2)
+      - [4, 5, {}]  # center <-> lift_approach
+      - [5, 4, {}]
+      - [5, 6, {dock_name: lift2_dock_enter_L3}]  # approach -> cabin
+      - [6, 5, {dock_name: lift2_dock_exit_L3}]   # cabin -> approach
+
+# Cross-level lift lane connections
+lift_lanes:
+  # Lift 1: Connects L1 and L2
+  - [lift1_cabin_L1, lift1_cabin_L2, {lift_name: Lift1, orientation_constraint: "forward"}]
+  - [lift1_cabin_L2, lift1_cabin_L1, {lift_name: Lift1, orientation_constraint: "forward"}]
+
+  # Lift 2: Connects L2 and L3
+  - [lift2_cabin_L2, lift2_cabin_L3, {lift_name: Lift2, orientation_constraint: "forward"}]
+  - [lift2_cabin_L3, lift2_cabin_L2, {lift_name: Lift2, orientation_constraint: "forward"}]

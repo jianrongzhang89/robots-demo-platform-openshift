@@ -1,97 +1,86 @@
-# free_fleet fleet configuration for the tb3_sandbox multi-robot demo.
-# Modelled after the official free_fleet nav2_unique_multi_tb3 example config.
-# All coordinates are in Nav2 world frame (meters) with identity transform.
+# Free Fleet configuration for Hotel Multi-Level Demo (2.5D layout)
+# All three "floors" share the same map (horizontally arranged)
 
 rmf_fleet:
   name: "turtlebot3"
   limits:
-    # Use realistic Nav2 RPP speed (0.22 m/s) so the RMF traffic scheduler
-    # computes accurate ETAs. With the old 0.02 m/s, the scheduler gave robots
-    # 75-second windows on a 1.5m segment — conflicts were caught at dispatch
-    # time (prevention) rather than mid-execution (negotiation). Realistic ETAs
-    # mean the scheduler commits overlapping windows when staggered dispatch
-    # causes trajectory overlap → conflict detected mid-execution → negotiation.
-    linear: [0.22, 0.5]
-    angular: [1.0, 1.0]
+    linear: [0.5, 0.75]
+    angular: [0.6, 2.0]
   profile:
-    # footprint: robot's physical radius for collision planning (m).
-    # Also used for "arrived at waypoint" detection — keep it near actual robot size.
     footprint: 0.3
-    # vicinity: radius within which a robot is snapped onto the traffic graph (m).
-    # 1.0 m tolerates typical AMCL drift (~0.2 m) plus slight off-lane deviations.
-    # Must be less than half the distance between adjacent waypoints (~2.5 m apart).
-    vicinity: 1.0
+    vicinity: 2.0
   reversible: True
   battery_system:
     voltage: 12.0
-    capacity: 24.0        # Ahr — standard TurtleBot3 Waffle spec
+    capacity: 24.0
     charging_current: 5.0
   mechanical_system:
-    mass: 20.0            # kg
+    mass: 20.0
     moment_of_inertia: 10.0
     friction_coefficient: 0.22
   ambient_system:
-    power: 20.0           # W
+    power: 20.0
   tool_system:
     power: 0.0
-  recharge_threshold: 0.05  # 5% — never triggers (robots start at 100%)
+  recharge_threshold: 0.05
   recharge_soc: 1.0
-  # At real_time_factor=0.5, navigation takes 2x longer in wall time.
-  # Increase from 10.0 to 300.0 so the traffic manager doesn't replan
-  # before the robot has time to complete each navigation segment.
-  publish_fleet_state: 300.0
-  account_for_battery_drain: True  # True avoids the low_capacity planner error
+  publish_fleet_state: 10.0
+  account_for_battery_drain: True
   task_capabilities:
     loop: True
     delivery: True
   finishing_request: "nothing"
-  responsive_wait: False
+  responsive_wait: True
 
-  # Both robots are managed by the RMF fleet adapter.
-  #
-  # dispatch-swap-patrol: both robots need fleet management for RMF to dispatch
-  # simultaneous patrol tasks through separate outer corridors.
-  #
-  # dispatch-rmf-lidar (hybrid LiDAR demo): robot_2 receives a direct
-  # rmf_navigate_cmd (bypassing the fleet adapter). With finishing_request="nothing"
-  # and no active task, the fleet adapter does not override robot_2's position.
-  # If the fleet adapter does interfere, see open-rmf/rmf_ros2#503.
   robots:
     robot_1:
       charger: "charger_1"
       responsive_wait: False
       navigation_stack: 2
-      init_timeout_sec: 180
-      service_call_timeout_sec: 60.0
+      init_timeout_sec: 60
+      service_call_timeout_sec: 10.0
       initial_map: "L1"
       map_frame: "map"
       robot_frame: "base_footprint"
       maps:
         L1:
-          map_url: "MAP_URL_PLACEHOLDER"
+          map_url: "/opt/maps/hotel_multilevel.yaml"
+        L2:
+          map_url: "/opt/maps/hotel_multilevel.yaml"
+        L3:
+          map_url: "/opt/maps/hotel_multilevel.yaml"
+
     robot_2:
       charger: "charger_2"
       responsive_wait: False
       navigation_stack: 2
-      init_timeout_sec: 180
-      service_call_timeout_sec: 60.0
+      init_timeout_sec: 60
+      service_call_timeout_sec: 10.0
       initial_map: "L1"
       map_frame: "map"
       robot_frame: "base_footprint"
       maps:
         L1:
-          map_url: "MAP_URL_PLACEHOLDER"
+          map_url: "/opt/maps/hotel_multilevel.yaml"
+        L2:
+          map_url: "/opt/maps/hotel_multilevel.yaml"
+        L3:
+          map_url: "/opt/maps/hotel_multilevel.yaml"
 
-  # At real_time_factor=0.5, navigation takes 2x longer in wall time.
-  # 10.0 Hz gives the RMF traffic planner timely position data for conflict
-  # detection. The nav segment timeout is handled by service_call_timeout_sec.
   robot_state_update_frequency: 10.0
 
-# Identity transform: RMF frame == Nav2 world frame (both in meters)
+# Identity transform: RMF frame == Nav2 world frame
+# Reference coordinates must use actual waypoint positions from nav graph
 reference_coordinates:
   L1:
-    rmf:   [[ 0.0, 0.0], [5.0, 0.0], [0.0, 5.0], [5.0, 5.0]]
-    robot: [[ 0.0, 0.0], [5.0, 0.0], [0.0, 5.0], [5.0, 5.0]]
+    rmf:   [[10.0, 15.0], [20.0, 15.0], [10.0, 30.0], [20.0, 30.0]]
+    robot: [[10.0, 15.0], [20.0, 15.0], [10.0, 30.0], [20.0, 30.0]]
+  L2:
+    rmf:   [[70.0, 15.0], [80.0, 15.0], [70.0, 30.0], [80.0, 30.0]]
+    robot: [[70.0, 15.0], [80.0, 15.0], [70.0, 30.0], [80.0, 30.0]]
+  L3:
+    rmf:   [[130.0, 15.0], [140.0, 15.0], [130.0, 30.0], [140.0, 30.0]]
+    robot: [[130.0, 15.0], [140.0, 15.0], [130.0, 30.0], [140.0, 30.0]]
 
 fleet_manager:
   zenoh:
