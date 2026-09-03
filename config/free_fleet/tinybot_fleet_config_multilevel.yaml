@@ -12,7 +12,7 @@ rmf_fleet:
   reversible: True
   battery_system:
     voltage: 12.0
-    capacity: 24.0
+    capacity: 240.0
     charging_current: 5.0
   mechanical_system:
     mass: 20.0
@@ -25,7 +25,7 @@ rmf_fleet:
   recharge_threshold: 0.05
   recharge_soc: 1.0
   publish_fleet_state: 10.0
-  account_for_battery_drain: True
+  account_for_battery_drain: False
   task_capabilities:
     loop: True
     delivery: True
