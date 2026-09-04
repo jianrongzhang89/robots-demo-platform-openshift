@@ -21,10 +21,11 @@ data:
       // RMF clock bridge: subscribes to Zenoh "clock" (published by Gazebo pod)
       // and delivers to local DDS /clock on Domain 55 (where RMF nodes live).
       // This allows RMF nodes with use_sim_time:=true to receive clock messages.
+      // The regex matches the DDS topic name "/clock" (with leading slash).
       plugins: {
         ros2dds: {
           allow: {
-            subscribers: ["^clock$"]
+            subscribers: ["^/clock$"]
           }
         }
       },
