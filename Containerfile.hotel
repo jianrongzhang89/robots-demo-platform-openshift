@@ -78,6 +78,42 @@ RUN apt-get update 2>/dev/null || true \
     && rm -rf build log src/rmf_demos/.git \
     && rm -rf /var/lib/apt/lists/*
 
+# --- Python dependencies for Free Fleet (zenoh) ---
+RUN pip3 install --break-system-packages \
+      "eclipse-zenoh==1.5.0" \
+      "pycdr2" \
+      "numpy" \
+      "nudged" \
+      "rosbags"
+
+# --- Stage C: Build Free Fleet (for Nav2 integration in hybrid mode) ---
+COPY patch_adapter.py /patch_adapter.py
+WORKDIR /opt/free_fleet
+RUN git clone --depth 1 https://github.com/open-rmf/free_fleet.git src/free_fleet \
+    && . /opt/ros/jazzy/setup.sh \
+    && . /opt/rmf_ros2_ws/install/setup.sh \
+    && (rosdep init 2>/dev/null || true) \
+    && rosdep update \
+    && rosdep install --from-paths src --ignore-src -r -y 2>/dev/null || true \
+    && colcon build --merge-install --cmake-args -DCMAKE_BUILD_TYPE=Release \
+    && rm -rf build log src/.git \
+    && ADAPTER=/opt/free_fleet/install/free_fleet_adapter/lib/python3.12/site-packages/free_fleet_adapter/nav2_robot_adapter.py \
+    && ADAPTER2=/opt/free_fleet/install/free_fleet_adapter/lib/free_fleet_adapter/nav2_robot_adapter.py \
+    && sed -i \
+         's/namespacify(self\.map_frame, self\.robot_name)/self.map_frame/g' \
+         "${ADAPTER}" "${ADAPTER2}" \
+    && sed -i \
+         's/namespacify(self\.robot_frame, self\.robot_name)/self.robot_frame/g' \
+         "${ADAPTER}" "${ADAPTER2}" \
+    && echo "Patched namespacify calls — adapter uses map_frame/robot_frame directly" \
+    && python3 /patch_adapter.py "${ADAPTER}" \
+    && python3 /patch_adapter.py "${ADAPTER2}" \
+    && echo "Patched both adapter paths" \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy enhanced nav2_robot_adapter.py with multi-level navigation support
+COPY patches/nav2_robot_adapter.py /opt/free_fleet/install/free_fleet_adapter/lib/python3.12/site-packages/free_fleet_adapter/nav2_robot_adapter.py
+COPY patches/nav2_robot_adapter.py /opt/free_fleet/install/free_fleet_adapter/lib/free_fleet_adapter/nav2_robot_adapter.py
 
 # Create Open-RMF/ model directory for Fuel-style URIs used by hotel.world.
 # hotel.world references robots as model://Open-RMF/TinyRobot etc. Gazebo
@@ -175,6 +211,7 @@ RUN mkdir -p /tmp/ros-home/.ros \
 WORKDIR /opt/ros2-demo
 
 COPY entrypoints/entrypoint-hotel.sh /entrypoint-hotel.sh
+COPY entrypoints/entrypoint-rmf.sh /entrypoint-rmf.sh
 COPY entrypoints/rmf_puppet_controller.py /entrypoints/rmf_puppet_controller.py
 COPY scripts/hotel_patrol_loop.py /scripts/hotel_patrol_loop.py
 COPY scripts/spawn_turtlebot3_hotel.py /opt/ros2-demo/scripts/spawn_turtlebot3_hotel.py
@@ -182,7 +219,7 @@ RUN chmod +x /opt/ros2-demo/scripts/spawn_turtlebot3_hotel.py
 COPY config/www/ /opt/ros2-demo/www/
 RUN mkdir -p /opt/rmf-dashboard
 COPY config/rmf/dashboard.html /opt/rmf-dashboard/index.html
-RUN chmod +x /entrypoint-hotel.sh
+RUN chmod +x /entrypoint-hotel.sh /entrypoint-rmf.sh
 
 # noVNC: auto-connect + scale to fit browser window
 RUN printf '<!DOCTYPE html>\n<html><head><meta http-equiv="refresh" content="0;url=vnc_lite.html?autoconnect=true&resize=scale"></head></html>\n' \

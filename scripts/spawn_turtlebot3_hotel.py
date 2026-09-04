@@ -29,7 +29,7 @@ TURTLEBOT3_WAFFLE_SDF_TEMPLATE = """<?xml version="1.0"?>
 """
 
 
-def wait_for_world(world_name='hotel', timeout=60):
+def wait_for_world(world_name='hotel', timeout=180):
     """Wait for Gazebo world to be ready."""
     print(f"[spawn-tb3] Waiting for Gazebo world '{world_name}' to be ready...")
 
@@ -178,8 +178,8 @@ def main():
     parser.add_argument(
         '--wait-timeout',
         type=int,
-        default=60,
-        help='Timeout waiting for world (default: 60s)'
+        default=180,
+        help='Timeout waiting for world (default: 180s)'
     )
 
     args = parser.parse_args()

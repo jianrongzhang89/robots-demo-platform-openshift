@@ -71,8 +71,8 @@ nav2:
 
 # --- RMF Configuration ---
 rmf:
-  enabled: false  # Temporarily disabled - entrypoint issue
-  image: quay.io/jianrzha/ros2-demo:latest  # Use ros2-demo image (has entrypoint-rmf.sh)
+  enabled: false  # Will be enabled after hotel image rebuild completes
+  image: quay.io/jianrzha/ros2-rmf-hotel:latest  # Hotel image now has entrypoint-rmf.sh + Free Fleet
   navGraph: /opt/ros2-demo/rmf/nav_graph.yaml   # Hotel multi-level nav graph
   fleetConfig: /opt/ros2-demo/rmf/fleet_config.yaml  # Hotel fleet config
   serverUri: ""

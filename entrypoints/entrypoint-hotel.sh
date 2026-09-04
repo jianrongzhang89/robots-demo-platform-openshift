@@ -148,7 +148,8 @@ if [ "${SPAWN_TURTLEBOT3:-false}" = "true" ]; then
     --x "${SPAWN_X}" \
     --y "${SPAWN_Y}" \
     --yaw "${SPAWN_YAW}" \
-    --world hotel &
+    --world hotel \
+    --wait-timeout 180 &
   SPAWN_PID=$!
   echo "[hotel-pod] TurtleBot3 spawn initiated (PID: ${SPAWN_PID})"
 else
