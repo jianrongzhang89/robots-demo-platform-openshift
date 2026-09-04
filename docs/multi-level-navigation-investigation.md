@@ -181,11 +181,40 @@ config/free_fleet/tinybot_fleet_config_multilevel.yaml - Config source
 - Memory: [[demo_requirements]] - Hard requirements mandate multi-level with lifts
 - Memory: [[rmf_hotel_world_plan]] - Original multi-level plan notes
 
+## Test Results
+
+### Option 3: Add Lift Definitions ❌ FAILED
+
+**Attempted:** 2026-09-04 11:25 UTC
+
+Added lift definitions to nav_graph.yaml:
+```yaml
+lifts:
+  Lift1:
+    reference_floor_name: L1
+    x: 52.5
+    y: 27.5
+    yaw: 0.0
+    width: 2.7
+    depth: 2.7
+```
+
+**Result:** Fleet adapter crashed on startup
+```
+RuntimeError: invalid node; first invalid key: "position"
+[ros2run]: Process exited with failure 1
+```
+
+**Root Cause:** Free Fleet's `FleetConfiguration.from_config_files()` cannot parse lift definitions in nav_graph.yaml. Lift definitions belong in building.yaml (separate file), not the navigation graph.
+
+**Conclusion:** Option 3 is not viable. nav_graph.yaml must have `lifts: {}`.
+
 ## Status
 
-**Current State:** Infrastructure ready, nav graph restructured, but multi-level path planning fails.
+**Current State:** Infrastructure ready, nav graph restructured correctly with global indices, but multi-level path planning fails.
 
-**Recommendation:** Try Option 3 first (add lift definitions), then Option 1 (true multi-level with elevations).
+**Option 3 Result:** ❌ Incompatible with Free Fleet parser  
+**Next Step:** Implement Option 1 (true multi-level structure with elevations)
 
 **Date:** 2026-09-04  
 **Branch:** rmf-hotel-world-demo  
