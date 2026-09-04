@@ -44,12 +44,14 @@ from free_fleet_adapter.action import (
 )
 from free_fleet_adapter.robot_adapter import ExecutionHandle, RobotAdapter
 
-from geometry_msgs.msg import TransformStamped
+from geometry_msgs.msg import TransformStamped, PoseWithCovarianceStamped
+from lifecycle_msgs.srv import ChangeState
 import numpy as np
 import rclpy
 import rmf_adapter.easy_full_control as rmf_easy
 from rmf_adapter.robot_update_handle import ActivityIdentifier, Tier
 from tf_transformations import euler_from_quaternion, quaternion_from_euler
+import time
 import zenoh
 
 
@@ -130,6 +132,36 @@ class Nav2RobotAdapter(RobotAdapter):
         default_robot_frame = 'base_footprint'
         self.map_frame = self.robot_config_yaml.get('map_frame', default_map_frame)
         self.robot_frame = self.robot_config_yaml.get('robot_frame', default_robot_frame)
+
+        # Multi-level navigation support
+        self.current_level = self.robot_config_yaml['initial_map']  # e.g., "L1"
+        self.target_level = None  # Level we're transitioning to
+        self.in_lift_transition = False  # Flag during lift travel
+
+        # Load map definitions per level from config (if present)
+        self.level_maps = {}
+        maps_config = self.robot_config_yaml.get('maps', {})
+        for level_name, map_config in maps_config.items():
+            self.level_maps[level_name] = {
+                'map_url': map_config.get('map_url', ''),
+                'lift_exit_poses': map_config.get('lift_exit_poses', {}),
+                'lift_cabin_poses': map_config.get('lift_cabin_poses', {})
+            }
+
+        if self.level_maps:
+            self.node.get_logger().info(
+                f'Multi-level navigation enabled for [{self.name}]: '
+                f'{list(self.level_maps.keys())}'
+            )
+
+        # Lift state tracking (will be populated if multi-level enabled)
+        self.lift_states = {}  # lift_name → LiftState message
+
+        # Service clients and publishers for map switching (lazy init)
+        self.lifecycle_clients = {}
+        self.amcl_initial_pose_pub = None
+        self.lift_state_sub = None
+        self.lift_request_pub = None
 
         # TODO(ac): Only use full battery if sim is indicated
         self.battery_soc = 1.0
@@ -312,6 +344,503 @@ class Nav2RobotAdapter(RobotAdapter):
         ]
         return robot_pose
 
+    def _setup_map_switching_infrastructure(self):
+        """
+        Initialize service clients and subscriptions for map switching.
+        Called lazily when multi-level maps are configured.
+        """
+        if not self.level_maps:
+            return  # No multi-level support configured
+
+        # Create service clients for lifecycle state changes
+        for level in self.level_maps.keys():
+            client = self.node.create_client(
+                ChangeState,
+                f'/{self.name}/map_server_{level}/change_state'
+            )
+            self.lifecycle_clients[level] = client
+
+        # Publisher for AMCL initial pose
+        self.amcl_initial_pose_pub = self.node.create_publisher(
+            PoseWithCovarianceStamped,
+            f'/{self.name}/initialpose',
+            10
+        )
+
+        # Note: Lift state subscription and request publisher would be added here
+        # when RMF lift integration is ready (requires rmf_lift_msgs)
+        # For now, these are placeholders for future integration
+
+        self.node.get_logger().info(
+            f'Map-switching infrastructure initialized for [{self.name}]'
+        )
+
+    def switch_map(self, new_level: str) -> bool:
+        """
+        Switch Nav2's active map to a different level.
+
+        Uses lifecycle state management to activate/deactivate map servers.
+        Only one map server publishes /map at a time.
+
+        Args:
+            new_level: Target level name (e.g., "L2")
+
+        Returns:
+            True if switch successful, False otherwise
+        """
+        # Lazy init of map switching infrastructure
+        if not self.lifecycle_clients and self.level_maps:
+            self._setup_map_switching_infrastructure()
+
+        if new_level not in self.level_maps:
+            self.node.get_logger().error(
+                f'Unknown level [{new_level}], available: '
+                f'{list(self.level_maps.keys())}'
+            )
+            return False
+
+        if new_level == self.current_level:
+            self.node.get_logger().info(
+                f'Already on level [{new_level}], no switch needed'
+            )
+            return True
+
+        old_level = self.current_level
+        self.node.get_logger().info(
+            f'Switching map: {old_level} → {new_level}'
+        )
+
+        # Step 1: Deactivate old map server
+        if not self._change_map_server_state(old_level, 'deactivate'):
+            self.node.get_logger().error(
+                f'Failed to deactivate map_server_{old_level}'
+            )
+            return False
+
+        # Step 2: Activate new map server
+        if not self._change_map_server_state(new_level, 'activate'):
+            self.node.get_logger().error(
+                f'Failed to activate map_server_{new_level}'
+            )
+            # Try to reactivate old map server
+            self._change_map_server_state(old_level, 'activate')
+            return False
+
+        # Step 3: Update state
+        self.current_level = new_level
+        self.map_name = new_level
+
+        self.node.get_logger().info(
+            f'Successfully switched to map [{new_level}]'
+        )
+        return True
+
+    def _change_map_server_state(self, level: str, transition: str) -> bool:
+        """
+        Change lifecycle state of a map server.
+
+        Args:
+            level: Level name (e.g., "L1")
+            transition: 'activate' or 'deactivate'
+
+        Returns:
+            True if successful, False otherwise
+        """
+        client = self.lifecycle_clients.get(level)
+        if not client:
+            self.node.get_logger().error(
+                f'No lifecycle client for level {level}'
+            )
+            return False
+
+        # Wait for service to be available
+        if not client.wait_for_service(timeout_sec=5.0):
+            self.node.get_logger().error(
+                f'Lifecycle service for map_server_{level} not available'
+            )
+            return False
+
+        # Map transition names to lifecycle transition IDs
+        transition_ids = {
+            'configure': 1,
+            'cleanup': 2,
+            'activate': 3,
+            'deactivate': 4,
+            'shutdown': 5
+        }
+
+        request = ChangeState.Request()
+        request.transition.id = transition_ids.get(transition, 0)
+
+        # Call service synchronously (blocking)
+        future = client.call_async(request)
+        rclpy.spin_until_future_complete(self.node, future, timeout_sec=10.0)
+
+        if future.result() is not None and future.result().success:
+            self.node.get_logger().info(
+                f'Successfully {transition}d map_server_{level}'
+            )
+            return True
+        else:
+            self.node.get_logger().error(
+                f'Failed to {transition} map_server_{level}'
+            )
+            return False
+
+    def reinitialize_amcl(self, pose: list[float]):
+        """
+        Reset AMCL localization with new pose on current map.
+
+        Args:
+            pose: [x, y, yaw] on the current level's map
+        """
+        if not self.amcl_initial_pose_pub:
+            self._setup_map_switching_infrastructure()
+
+        if not self.amcl_initial_pose_pub:
+            self.node.get_logger().error(
+                'AMCL initial pose publisher not initialized'
+            )
+            return
+
+        pose_msg = PoseWithCovarianceStamped()
+        pose_msg.header.stamp = self.node.get_clock().now().to_msg()
+        pose_msg.header.frame_id = 'map'
+
+        # Set position
+        pose_msg.pose.pose.position.x = pose[0]
+        pose_msg.pose.pose.position.y = pose[1]
+        pose_msg.pose.pose.position.z = 0.0
+
+        # Set orientation from yaw
+        quat = quaternion_from_euler(0, 0, pose[2])
+        pose_msg.pose.pose.orientation.x = quat[0]
+        pose_msg.pose.pose.orientation.y = quat[1]
+        pose_msg.pose.pose.orientation.z = quat[2]
+        pose_msg.pose.pose.orientation.w = quat[3]
+
+        # Set covariance (initial uncertainty after map switch)
+        # Format: [x, y, z, roll, pitch, yaw] (6x6 matrix flattened)
+        pose_msg.pose.covariance = [
+            0.25, 0.0,  0.0, 0.0, 0.0, 0.0,   # x: ±0.5m
+            0.0,  0.25, 0.0, 0.0, 0.0, 0.0,   # y: ±0.5m
+            0.0,  0.0,  0.0, 0.0, 0.0, 0.0,   # z: ignored
+            0.0,  0.0,  0.0, 0.0, 0.0, 0.0,   # roll: ignored
+            0.0,  0.0,  0.0, 0.0, 0.0, 0.0,   # pitch: ignored
+            0.0,  0.0,  0.0, 0.0, 0.0, 0.068  # yaw: ±15°
+        ]
+
+        self.amcl_initial_pose_pub.publish(pose_msg)
+
+        self.node.get_logger().info(
+            f'Reinitialized AMCL at ({pose[0]:.2f}, {pose[1]:.2f}, '
+            f'{np.degrees(pose[2]):.1f}°) on map [{self.current_level}]'
+        )
+
+    def get_lift_exit_pose(self, level: str, lift_name: str) -> list[float]:
+        """
+        Get the pose where robot exits lift on specified level.
+
+        Args:
+            level: Level name (e.g., "L2")
+            lift_name: Lift name (e.g., "Lift1")
+
+        Returns:
+            [x, y, yaw] pose on the level's map
+        """
+        level_config = self.level_maps.get(level, {})
+        exit_poses = level_config.get('lift_exit_poses', {})
+
+        if lift_name not in exit_poses:
+            self.node.get_logger().warn(
+                f'No exit pose defined for {lift_name} on {level}, '
+                f'using default [0, 0, 0]'
+            )
+            return [0.0, 0.0, 0.0]
+
+        return exit_poses[lift_name]
+
+    def detect_lift_entry(self, robot_pose: list[float]) -> bool:
+        """
+        Detect if robot is currently inside a lift cabin.
+
+        Checks robot position against all lift cabin waypoints on current level.
+
+        Args:
+            robot_pose: Current robot [x, y, yaw]
+
+        Returns:
+            True if inside any lift cabin, False otherwise
+        """
+        cabin_threshold = 0.5  # meters
+
+        # Check against known cabin positions from level_maps config
+        level_config = self.level_maps.get(self.current_level, {})
+        cabin_poses = level_config.get('lift_cabin_poses', {})
+
+        for lift_name, cabin_pose in cabin_poses.items():
+            dist = np.sqrt(
+                (robot_pose[0] - cabin_pose[0])**2 +
+                (robot_pose[1] - cabin_pose[1])**2
+            )
+
+            if dist < cabin_threshold:
+                self.node.get_logger().debug(
+                    f'Robot inside {lift_name} cabin (distance: {dist:.2f}m)'
+                )
+                return True
+
+        return False
+
+    def find_lift_between_levels(
+        self,
+        from_level: str,
+        to_level: str
+    ) -> tuple[str, list, list] | None:
+        """
+        Find a lift that connects two levels.
+
+        Args:
+            from_level: Starting level
+            to_level: Destination level
+
+        Returns:
+            (lift_name, from_cabin_pose, to_cabin_pose) if found, None otherwise
+        """
+        # Hardcoded mapping based on nav graph lift_lanes
+        # TODO: Parse this from nav graph dynamically
+        lift_connections = {
+            ('L1', 'L2'): 'Lift1',
+            ('L2', 'L1'): 'Lift1',
+            ('L2', 'L3'): 'Lift2',
+            ('L3', 'L2'): 'Lift2',
+        }
+
+        lift_name = lift_connections.get((from_level, to_level))
+
+        if lift_name:
+            # Get cabin poses for both levels
+            from_config = self.level_maps.get(from_level, {})
+            to_config = self.level_maps.get(to_level, {})
+
+            from_cabin = from_config.get('lift_cabin_poses', {}).get(lift_name, [])
+            to_cabin = to_config.get('lift_cabin_poses', {}).get(lift_name, [])
+
+            return (lift_name, from_cabin, to_cabin)
+
+        return None
+
+    def wait_for_lift_arrival(
+        self,
+        lift_name: str,
+        floor: str,
+        timeout: float = 60.0
+    ) -> bool:
+        """
+        Wait for lift to arrive at specified floor.
+
+        Args:
+            lift_name: Lift name
+            floor: Floor/level name
+            timeout: Maximum wait time in seconds
+
+        Returns:
+            True if arrived, False on timeout
+        """
+        # TODO: Implement when rmf_lift_msgs available
+        # For now, return True immediately (assumes lift is ready)
+        self.node.get_logger().info(
+            f'[STUB] Waiting for {lift_name} arrival at {floor}'
+        )
+        return True
+
+    def wait_for_lift_doors(
+        self,
+        lift_name: str,
+        state: str,
+        timeout: float = 30.0
+    ) -> bool:
+        """
+        Wait for lift doors to reach specified state.
+
+        Args:
+            lift_name: Lift name
+            state: 'OPEN' or 'CLOSED'
+            timeout: Maximum wait time in seconds
+
+        Returns:
+            True if reached state, False on timeout
+        """
+        # TODO: Implement when rmf_lift_msgs available
+        self.node.get_logger().info(
+            f'[STUB] Waiting for {lift_name} doors to be {state}'
+        )
+        return True
+
+    def wait_for_lift_travel(
+        self,
+        lift_name: str,
+        destination_floor: str,
+        timeout: float = 120.0
+    ) -> bool:
+        """
+        Wait for lift to complete travel to destination floor.
+
+        Args:
+            lift_name: Lift name
+            destination_floor: Target floor/level
+            timeout: Maximum wait time in seconds
+
+        Returns:
+            True if reached destination, False on timeout
+        """
+        # TODO: Implement when rmf_lift_msgs available
+        self.node.get_logger().info(
+            f'[STUB] Waiting for {lift_name} to reach {destination_floor}'
+        )
+        return True
+
+    def request_lift_travel(self, lift_name: str, destination_floor: str):
+        """
+        Request lift to travel to destination floor.
+
+        Args:
+            lift_name: Lift name
+            destination_floor: Target floor/level
+        """
+        # TODO: Implement when rmf_lift_msgs available
+        self.node.get_logger().info(
+            f'[STUB] Requesting {lift_name} to {destination_floor}'
+        )
+
+    def execute_level_transition(
+        self,
+        from_level: str,
+        to_level: str,
+        lift_name: str,
+        final_destination: list[float]
+    ) -> bool:
+        """
+        Execute complete level transition via lift.
+
+        Workflow:
+        1. Robot navigates to lift cabin on current level (RMF handles)
+        2. Wait for lift arrival at current floor
+        3. Detect robot entry into lift cabin
+        4. Request lift travel to target floor
+        5. Wait for lift travel completion
+        6. Switch map to target level
+        7. Reinitialize AMCL at lift exit waypoint
+        8. Robot exits cabin and continues to destination (RMF handles)
+
+        Args:
+            from_level: Starting level (e.g., "L1")
+            to_level: Destination level (e.g., "L2")
+            lift_name: Lift to use (e.g., "Lift1")
+            final_destination: Final [x, y, yaw] on target level
+
+        Returns:
+            True if transition successful, False otherwise
+        """
+        self.in_lift_transition = True
+        self.target_level = to_level
+
+        try:
+            self.node.get_logger().info(
+                f'Starting level transition: {from_level} → {to_level} '
+                f'via {lift_name}'
+            )
+
+            # Step 1: Wait for lift arrival at current floor
+            self.node.get_logger().info(
+                f'Step 1/8: Waiting for {lift_name} arrival at {from_level}...'
+            )
+            if not self.wait_for_lift_arrival(lift_name, from_level, timeout=60.0):
+                self.node.get_logger().error('Lift arrival timeout')
+                return False
+
+            # Step 2: Wait for lift doors to open
+            self.node.get_logger().info(
+                f'Step 2/8: Waiting for {lift_name} doors to open...'
+            )
+            if not self.wait_for_lift_doors(lift_name, 'OPEN', timeout=30.0):
+                self.node.get_logger().error('Lift doors did not open')
+                return False
+
+            # Step 3: Detect robot entry into cabin
+            # Note: RMF path should navigate robot into cabin
+            self.node.get_logger().info(
+                f'Step 3/8: Waiting for robot to enter cabin...'
+            )
+            entry_timeout = 60.0
+            start_time = time.time()
+            while time.time() - start_time < entry_timeout:
+                robot_pose = self.get_pose()
+                if robot_pose and self.detect_lift_entry(robot_pose):
+                    self.node.get_logger().info(
+                        f'Robot entered {lift_name} cabin'
+                    )
+                    break
+                time.sleep(0.1)
+            else:
+                self.node.get_logger().error('Robot did not enter cabin in time')
+                return False
+
+            # Step 4: Request lift travel to destination floor
+            self.node.get_logger().info(
+                f'Step 4/8: Requesting {lift_name} travel to {to_level}...'
+            )
+            self.request_lift_travel(lift_name, to_level)
+
+            # Step 5: Wait for lift travel completion
+            self.node.get_logger().info(
+                f'Step 5/8: Waiting for lift travel...'
+            )
+            if not self.wait_for_lift_travel(lift_name, to_level, timeout=120.0):
+                self.node.get_logger().error('Lift travel timeout')
+                return False
+
+            # Step 6: Switch map to destination level
+            self.node.get_logger().info(
+                f'Step 6/8: Switching map to {to_level}...'
+            )
+            if not self.switch_map(to_level):
+                self.node.get_logger().error('Map switch failed')
+                return False
+
+            # Step 7: Reinitialize AMCL at lift exit waypoint
+            lift_exit_pose = self.get_lift_exit_pose(to_level, lift_name)
+            self.node.get_logger().info(
+                f'Step 7/8: Reinitializing AMCL at lift exit...'
+            )
+            self.reinitialize_amcl(lift_exit_pose)
+
+            # Step 8: Wait for doors to open on new level
+            self.node.get_logger().info(
+                f'Step 8/8: Waiting for doors to open on {to_level}...'
+            )
+            if not self.wait_for_lift_doors(lift_name, 'OPEN', timeout=30.0):
+                self.node.get_logger().error('Lift doors did not open on new level')
+                return False
+
+            self.node.get_logger().info(
+                f'Level transition complete: {from_level} → {to_level}'
+            )
+
+            # Robot will now exit cabin and navigate to final destination
+            # (RMF handles this via the original navigation command)
+            return True
+
+        except Exception as e:
+            self.node.get_logger().error(
+                f'Level transition exception: {type(e).__name__}: {e}'
+            )
+            return False
+
+        finally:
+            self.in_lift_transition = False
+            self.target_level = None
+
     def _is_navigation_done(self, nav_handle: ExecutionHandle) -> bool:
         if nav_handle.goal_id is None:
             return True
@@ -446,23 +975,85 @@ class Nav2RobotAdapter(RobotAdapter):
         yaw: float,
         nav_handle: ExecutionHandle
     ):
-        if map_name != self.map_name:
-            # TODO(ac): test this map related replanning behavior
-            self.replan_counts += 1
-            self.node.get_logger().error(
-                f'Destination is on map [{map_name}], while robot '
-                f'[{self.name}] is on map [{self.map_name}], replan count '
-                f'[{self.replan_counts}]'
+        # Check if destination is on a different level
+        if map_name != self.current_level:
+            self.node.get_logger().info(
+                f'Cross-level navigation: {self.current_level} → {map_name}'
             )
 
-            if self.update_handle is None:
-                error_message = \
-                    f'Failed to replan for robot {self.name}, robot adapter ' \
-                    'has not yet been initialized with a fleet update handle.'
-                self.node.get_logger().error(error_message)
+            # Check if multi-level is supported
+            if not self.level_maps:
+                self.replan_counts += 1
+                self.node.get_logger().error(
+                    f'Destination is on map [{map_name}], but multi-level '
+                    f'navigation not configured. Requesting replan. '
+                    f'Replan count [{self.replan_counts}]'
+                )
+                if self.update_handle is None:
+                    error_message = \
+                        f'Failed to replan for robot {self.name}, robot ' \
+                        'adapter has not yet been initialized with a fleet ' \
+                        'update handle.'
+                    self.node.get_logger().error(error_message)
+                    return
+                self.update_handle.more().replan()
                 return
-            self.update_handle.more().replan()
-            return
+
+            # Find lift connecting these levels
+            lift_info = self.find_lift_between_levels(self.current_level, map_name)
+
+            if lift_info:
+                lift_name, _, _ = lift_info
+
+                self.node.get_logger().info(
+                    f'Will use {lift_name} for level transition'
+                )
+
+                # Execute level transition
+                destination_pose = [x, y, yaw]
+                success = self.execute_level_transition(
+                    self.current_level,
+                    map_name,
+                    lift_name,
+                    destination_pose
+                )
+
+                if not success:
+                    self.replan_counts += 1
+                    self.node.get_logger().error(
+                        f'Level transition failed, requesting replan. '
+                        f'Replan count [{self.replan_counts}]'
+                    )
+                    if self.update_handle is None:
+                        error_message = \
+                            f'Failed to replan for robot {self.name}, robot ' \
+                            'adapter has not yet been initialized with a ' \
+                            'fleet update handle.'
+                        self.node.get_logger().error(error_message)
+                        return
+                    self.update_handle.more().replan()
+                    return
+
+                # After successful transition, current_level is now map_name
+                # Fall through to normal navigation to final destination
+
+            else:
+                # No lift found connecting these levels
+                self.replan_counts += 1
+                self.node.get_logger().error(
+                    f'No lift connects {self.current_level} and {map_name}, '
+                    f'cannot navigate. Requesting replan. '
+                    f'Replan count [{self.replan_counts}]'
+                )
+                if self.update_handle is None:
+                    error_message = \
+                        f'Failed to replan for robot {self.name}, robot ' \
+                        'adapter has not yet been initialized with a fleet ' \
+                        'update handle.'
+                    self.node.get_logger().error(error_message)
+                    return
+                self.update_handle.more().replan()
+                return
 
         time_now = self.node.get_clock().now().seconds_nanoseconds()
         stamp = Time(sec=time_now[0], nanosec=time_now[1])

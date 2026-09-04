@@ -45,11 +45,27 @@ rmf_fleet:
       robot_frame: "base_footprint"
       maps:
         L1:
-          map_url: "/opt/maps/hotel_multilevel.yaml"
+          map_url: "/opt/maps/hotel_L1.yaml"
+          # Where robot exits each lift on this level [x, y, yaw]
+          lift_exit_poses:
+            Lift1: [52.5, 27.5, 0.0]
+          # Where each lift cabin is on this level [x, y]
+          lift_cabin_poses:
+            Lift1: [52.5, 27.5]
         L2:
-          map_url: "/opt/maps/hotel_multilevel.yaml"
+          map_url: "/opt/maps/hotel_L2.yaml"
+          lift_exit_poses:
+            Lift1: [57.5, 27.5, 3.14159]  # Exit facing opposite direction
+            Lift2: [112.5, 27.5, 0.0]
+          lift_cabin_poses:
+            Lift1: [57.5, 27.5]
+            Lift2: [112.5, 27.5]
         L3:
-          map_url: "/opt/maps/hotel_multilevel.yaml"
+          map_url: "/opt/maps/hotel_L3.yaml"
+          lift_exit_poses:
+            Lift2: [117.5, 27.5, 3.14159]
+          lift_cabin_poses:
+            Lift2: [117.5, 27.5]
 
     robot_2:
       charger: "charger_2"
@@ -62,11 +78,25 @@ rmf_fleet:
       robot_frame: "base_footprint"
       maps:
         L1:
-          map_url: "/opt/maps/hotel_multilevel.yaml"
+          map_url: "/opt/maps/hotel_L1.yaml"
+          lift_exit_poses:
+            Lift1: [52.5, 27.5, 0.0]
+          lift_cabin_poses:
+            Lift1: [52.5, 27.5]
         L2:
-          map_url: "/opt/maps/hotel_multilevel.yaml"
+          map_url: "/opt/maps/hotel_L2.yaml"
+          lift_exit_poses:
+            Lift1: [57.5, 27.5, 3.14159]
+            Lift2: [112.5, 27.5, 0.0]
+          lift_cabin_poses:
+            Lift1: [57.5, 27.5]
+            Lift2: [112.5, 27.5]
         L3:
-          map_url: "/opt/maps/hotel_multilevel.yaml"
+          map_url: "/opt/maps/hotel_L3.yaml"
+          lift_exit_poses:
+            Lift2: [117.5, 27.5, 3.14159]
+          lift_cabin_poses:
+            Lift2: [117.5, 27.5]
 
   robot_state_update_frequency: 10.0
 

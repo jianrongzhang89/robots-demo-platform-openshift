@@ -87,8 +87,66 @@ def generate_launch_description():
     # Create list of navigation nodes (to be wrapped in GroupAction with namespace)
     nav_nodes = []
 
-    # Map server (if map file exists - used for costmaps)
-    if map_yaml_file:
+    # Multi-level map servers - one per level, only initial level active
+    # For multi-level navigation, launch separate map servers for L1, L2, L3
+    # and switch between them using lifecycle state management
+    enable_multilevel = os.environ.get('ENABLE_MULTILEVEL', 'false').lower() == 'true'
+
+    if enable_multilevel and map_yaml_file:
+        # Define map files for each level
+        level_maps = {
+            'L1': '/opt/maps/hotel_L1.yaml',
+            'L2': '/opt/maps/hotel_L2.yaml',
+            'L3': '/opt/maps/hotel_L3.yaml'
+        }
+
+        print(f"Multi-level navigation ENABLED")
+        print(f"  Initial level: {map_level}")
+        print(f"  Available levels: {list(level_maps.keys())}")
+
+        # Launch one map server per level
+        for level, level_map_file in level_maps.items():
+            # Check if map file exists
+            if not os.path.exists(level_map_file):
+                print(f"  WARNING: Map file not found: {level_map_file}")
+                print(f"           Skipping map_server_{level}")
+                continue
+
+            # Create map server for this level
+            ld.add_action(Node(
+                package='nav2_map_server',
+                executable='map_server',
+                name=f'map_server_{level}',
+                namespace=robot_name,
+                output='screen',
+                parameters=[{
+                    'use_sim_time': use_sim_time,
+                    'yaml_filename': level_map_file
+                }]
+            ))
+
+            # Lifecycle manager for this map server
+            # Only activate the initial level, others start inactive
+            initial_state = 'active' if level == map_level else 'inactive'
+
+            ld.add_action(Node(
+                package='nav2_lifecycle_manager',
+                executable='lifecycle_manager',
+                name=f'lifecycle_manager_map_{level}',
+                namespace=robot_name,
+                output='screen',
+                parameters=[{
+                    'use_sim_time': use_sim_time,
+                    'autostart': True,
+                    'node_names': [f'map_server_{level}'],
+                    'bond_timeout': 4.0
+                }]
+            ))
+
+            print(f"  Configured map_server_{level}: {initial_state}")
+
+    elif map_yaml_file:
+        # Single map server (original behavior for non-multilevel)
         ld.add_action(Node(
             package='nav2_map_server',
             executable='map_server',
