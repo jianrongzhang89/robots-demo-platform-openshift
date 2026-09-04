@@ -71,8 +71,8 @@ nav2:
 
 # --- RMF Configuration ---
 rmf:
-  enabled: true
-  image: quay.io/jianrzha/ros2-rmf-demo:latest  # Same image as main demo
+  enabled: false  # Temporarily disabled - entrypoint issue
+  image: quay.io/jianrzha/ros2-demo:latest  # Use ros2-demo image (has entrypoint-rmf.sh)
   navGraph: /opt/ros2-demo/rmf/nav_graph.yaml   # Hotel multi-level nav graph
   fleetConfig: /opt/ros2-demo/rmf/fleet_config.yaml  # Hotel fleet config
   serverUri: ""
@@ -87,14 +87,17 @@ rmf:
     enabled: false  # Disable while testing
   livenessProbe:
     enabled: false
+  routes:
+    dashboardHost: ""
+    apiHost: ""
 
 # --- Zenoh Configuration ---
 zenohRouter:
   enabled: true
-  image: eclipse/zenoh-bridge-ros2dds:0.11.0-debian
+  image: eclipse/zenoh:1.5.0
 
 zenohBridge:
-  image: eclipse/zenoh-bridge-ros2dds:0.11.0-debian
+  image: eclipse/zenoh-bridge-ros2dds:1.5.0
 
 zenohResources:
   requests:
@@ -104,15 +107,10 @@ zenohResources:
     cpu: 250m
     memory: 256Mi
 
-# --- Routes Configuration ---
-rmf:
-  routes:
-    dashboardHost: ""
-    apiHost: ""
-
 # --- Image Configuration ---
+# Nav2 pods use this image (has Nav2 stack)
 image:
-  repository: quay.io/jianrzha/ros2-rmf-demo
+  repository: quay.io/jianrzha/ros2-demo
   tag: latest
   pullPolicy: Always
 
