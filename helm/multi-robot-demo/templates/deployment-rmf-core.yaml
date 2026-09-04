@@ -93,6 +93,31 @@ spec:
             periodSeconds: 30
             failureThreshold: 5
           {{- end }}
+
+        # --- Sidecar: Zenoh clock bridge ---
+        # Bridges /clock from Zenoh (published by Gazebo) to DDS Domain 55 (RMF).
+        # Without this, RMF nodes with use_sim_time:=true never receive clock messages
+        # and block on time-dependent operations (like publishing bid responses).
+        - name: zenoh-clock-bridge
+          image: {{ .Values.zenohBridge.image }}
+          args: ["-c", "/zenoh-config/rmf-clock-bridge.json5"]
+          env:
+            - name: ROS_DOMAIN_ID
+              value: "55"
+            - name: ROS_DISTRO
+              value: jazzy
+          volumeMounts:
+            - name: zenoh-config
+              mountPath: /zenoh-config/rmf-clock-bridge.json5
+              subPath: rmf-clock-bridge.json5
+              readOnly: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
       volumes:
         - name: rmf-config
           configMap:

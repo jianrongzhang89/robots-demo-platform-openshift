@@ -16,6 +16,34 @@ data:
 {{ .Files.Get "files/fleet-adapter-zenoh.json5" | indent 4 }}
   clock-bridge.json5: |-
 {{ .Files.Get "files/clock-bridge.json5" | indent 4 }}
+  rmf-clock-bridge.json5: |-
+    {
+      // RMF clock bridge: subscribes to Zenoh "clock" (published by Gazebo pod)
+      // and delivers to local DDS /clock on Domain 55 (where RMF nodes live).
+      // This allows RMF nodes with use_sim_time:=true to receive clock messages.
+      plugins: {
+        ros2dds: {
+          allow: {
+            subscribers: ["^clock$"]
+          }
+        }
+      },
+      mode: "client",
+      connect: {
+        endpoints: ["tcp/zenoh-router:7447"],
+        retry: {
+          period_init_ms: 1000,
+          period_max_ms: 16000,
+          period_increase_factor: 2
+        },
+        exit_on_failure: false
+      },
+      scouting: {
+        multicast: {
+          enabled: false
+        }
+      }
+    }
   cmd-vel-keepalive.json5: |-
     {
       plugins: {
