@@ -65,6 +65,19 @@ spec:
             # Use to strip RViz / toggle headless if the launch version supports it.
             - name: HOTEL_LAUNCH_ARGS
               value: {{ .Values.hotel.launchArgs | quote }}
+            # TurtleBot3 spawning (for Nav2 integration)
+            {{- if .Values.hybridNav2.enabled }}
+            - name: SPAWN_TURTLEBOT3
+              value: "true"
+            - name: ROBOT_NAME
+              value: {{ (index .Values.robots 0).name | quote }}
+            - name: SPAWN_X
+              value: {{ (index .Values.robots 0).initialPose.xPos | quote }}
+            - name: SPAWN_Y
+              value: {{ (index .Values.robots 0).initialPose.yPos | quote }}
+            - name: SPAWN_YAW
+              value: {{ (index .Values.robots 0).initialPose.yaw | quote }}
+            {{- end }}
           resources:
             requests:
               cpu: {{ .Values.hotel.resources.requests.cpu | quote }}
@@ -86,4 +99,33 @@ spec:
             periodSeconds: 30
             timeoutSeconds: 5
             failureThreshold: 10
+
+        {{- if .Values.hybridNav2.enabled }}
+        # --- Sidecar: Zenoh bridge for Gazebo topics ---
+        # Publishes Gazebo topics to Zenoh for cross-pod federation
+        - name: zenoh-bridge-gazebo
+          image: {{ .Values.zenohBridge.image }}
+          args: ["-c", "/zenoh-config/gazebo-bridge.json5"]
+          env:
+            - name: ROS_DOMAIN_ID
+              value: "0"
+            - name: ROS_DISTRO
+              value: jazzy
+          volumeMounts:
+            - name: zenoh-config
+              mountPath: /zenoh-config/gazebo-bridge.json5
+              subPath: gazebo-bridge.json5
+              readOnly: true
+          resources:
+            requests:
+              cpu: {{ .Values.zenohResources.requests.cpu | quote }}
+              memory: {{ .Values.zenohResources.requests.memory | quote }}
+            limits:
+              cpu: {{ .Values.zenohResources.limits.cpu | quote }}
+              memory: {{ .Values.zenohResources.limits.memory | quote }}
+      volumes:
+        - name: zenoh-config
+          configMap:
+            name: zenoh-bridge-config
+        {{- end }}
 {{- end }}

@@ -177,6 +177,8 @@ WORKDIR /opt/ros2-demo
 COPY entrypoints/entrypoint-hotel.sh /entrypoint-hotel.sh
 COPY entrypoints/rmf_puppet_controller.py /entrypoints/rmf_puppet_controller.py
 COPY scripts/hotel_patrol_loop.py /scripts/hotel_patrol_loop.py
+COPY scripts/spawn_turtlebot3_hotel.py /opt/ros2-demo/scripts/spawn_turtlebot3_hotel.py
+RUN chmod +x /opt/ros2-demo/scripts/spawn_turtlebot3_hotel.py
 COPY config/www/ /opt/ros2-demo/www/
 RUN mkdir -p /opt/rmf-dashboard
 COPY config/rmf/dashboard.html /opt/rmf-dashboard/index.html

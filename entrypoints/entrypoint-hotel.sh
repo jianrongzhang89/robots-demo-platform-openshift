@@ -131,6 +131,30 @@ echo "            ros2 launch ${HOTEL_LAUNCH_PKG} ${HOTEL_LAUNCH_FILE} ${HOTEL_L
 ros2 launch "${HOTEL_LAUNCH_PKG}" "${HOTEL_LAUNCH_FILE}" ${HOTEL_LAUNCH_ARGS} &
 LAUNCH_PID=$!
 
+# --- 7b. Spawn TurtleBot3 robots (if enabled) ---
+# For Nav2 integration, spawn TurtleBot3 Waffle instead of slotcar robots
+if [ "${SPAWN_TURTLEBOT3:-false}" = "true" ]; then
+  echo "[hotel-pod] TurtleBot3 spawning enabled"
+
+  # Single robot configuration
+  ROBOT_NAME="${ROBOT_NAME:-robot_1}"
+  SPAWN_X="${SPAWN_X:-10.0}"
+  SPAWN_Y="${SPAWN_Y:-30.0}"
+  SPAWN_YAW="${SPAWN_YAW:-0.0}"
+
+  echo "[hotel-pod] Spawning ${ROBOT_NAME} at (${SPAWN_X}, ${SPAWN_Y}, yaw=${SPAWN_YAW})..."
+  python3 /opt/ros2-demo/scripts/spawn_turtlebot3_hotel.py \
+    --name "${ROBOT_NAME}" \
+    --x "${SPAWN_X}" \
+    --y "${SPAWN_Y}" \
+    --yaw "${SPAWN_YAW}" \
+    --world hotel &
+  SPAWN_PID=$!
+  echo "[hotel-pod] TurtleBot3 spawn initiated (PID: ${SPAWN_PID})"
+else
+  echo "[hotel-pod] TurtleBot3 spawning disabled (using slotcar robots from launch file)"
+fi
+
 echo ""
 echo "=================================================="
 echo " Open-RMF Hotel World running (single pod)"

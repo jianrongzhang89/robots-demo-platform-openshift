@@ -1,0 +1,126 @@
+# Helm values for Hotel + Nav2 hybrid deployment
+#
+# This configuration combines:
+#   - Hotel world (Gazebo + supervisors + lift/door plugins)
+#   - TurtleBot3 robot (NOT slotcar)
+#   - Nav2 navigation stack (in separate pod)
+#   - Free Fleet adapter (RMF integration)
+#   - Zenoh federation (cross-pod communication)
+#
+# Architecture:
+#   hotel-sim:     Gazebo + TurtleBot3 + supervisors + Zenoh bridge
+#   zenoh-router:  Central federation router
+#   robot-nav:     Nav2 stack with multi-level map-switching
+#   rmf-core:      Free Fleet + task dispatcher
+#
+# Usage:
+#   helm upgrade multi-robot-demo ./helm/multi-robot-demo \
+#     -f helm/multi-robot-demo/values.yaml \
+#     -f helm/multi-robot-demo/values-hotel-nav2.yaml \
+#     -n ros2-rmf-hotel --create-namespace
+
+namespace: ros2-rmf-hotel
+
+# --- Hybrid Mode Flag ---
+# Enables both hotel-sim AND nav2/rmf-core/zenoh pods
+hybridNav2:
+  enabled: true
+
+# --- Hotel World Configuration ---
+hotel:
+  enabled: true
+  image: quay.io/jianrzha/ros2-rmf-hotel:latest
+  resolution: "1600x900x24"
+  launchArgs: ""  # Could add headless:=true if needed
+  resources:
+    requests:
+      cpu: "4"
+      memory: "4Gi"
+    limits:
+      cpu: "8"
+      memory: "8Gi"
+
+# --- Robot Configuration ---
+# Single robot for testing multi-level navigation
+robots:
+  - name: robot_1
+    initialPose:
+      xPos: 10.0   # lobby_west area on L1
+      yPos: 30.0
+      yaw: 0.0
+
+# --- Gazebo Configuration ---
+# Hotel world included in hotel-sim pod, so this is disabled
+gazebo:
+  enabled: false
+
+# --- Nav2 Configuration ---
+nav2:
+  localizationMode: "amcl"  # AMCL for multi-level
+  enableMultilevel: true     # Enable multi-map server mode
+  initialLevel: L1           # Start on level 1
+  mapOffsetX: 0.0            # Identity transform (RMF frame = Nav2 frame)
+  mapOffsetY: 0.0
+  resources:
+    requests:
+      cpu: "1"
+      memory: "1Gi"
+    limits:
+      cpu: "2"
+      memory: "2Gi"
+
+# --- RMF Configuration ---
+rmf:
+  enabled: true
+  image: quay.io/jianrzha/ros2-rmf-demo:latest  # Same image as main demo
+  navGraph: /opt/ros2-demo/rmf/nav_graph.yaml   # Hotel multi-level nav graph
+  fleetConfig: /opt/ros2-demo/rmf/fleet_config.yaml  # Hotel fleet config
+  serverUri: ""
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "512Mi"
+    limits:
+      cpu: "1"
+      memory: "1Gi"
+  readinessProbe:
+    enabled: false  # Disable while testing
+  livenessProbe:
+    enabled: false
+
+# --- Zenoh Configuration ---
+zenohRouter:
+  enabled: true
+  image: eclipse/zenoh-bridge-ros2dds:0.11.0-debian
+
+zenohBridge:
+  image: eclipse/zenoh-bridge-ros2dds:0.11.0-debian
+
+zenohResources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 250m
+    memory: 256Mi
+
+# --- Routes Configuration ---
+rmf:
+  routes:
+    dashboardHost: ""
+    apiHost: ""
+
+# --- Image Configuration ---
+image:
+  repository: quay.io/jianrzha/ros2-rmf-demo
+  tag: latest
+  pullPolicy: Always
+
+# --- Resource Defaults ---
+defaultResources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
