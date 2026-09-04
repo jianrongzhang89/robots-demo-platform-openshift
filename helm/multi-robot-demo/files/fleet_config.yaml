@@ -46,6 +46,10 @@ rmf_fleet:
       maps:
         L1:
           map_url: "/opt/maps/hotel_multilevel.yaml"
+        L2:
+          map_url: "/opt/maps/hotel_multilevel.yaml"
+        L3:
+          map_url: "/opt/maps/hotel_multilevel.yaml"
 
     robot_2:
       charger: "charger_2"
@@ -59,16 +63,26 @@ rmf_fleet:
       maps:
         L1:
           map_url: "/opt/maps/hotel_multilevel.yaml"
+        L2:
+          map_url: "/opt/maps/hotel_multilevel.yaml"
+        L3:
+          map_url: "/opt/maps/hotel_multilevel.yaml"
 
   robot_state_update_frequency: 10.0
 
 # Identity transform: RMF frame == Nav2 world frame
-# Flattened 2.5D structure: single level "L1" spans all zones (L1, L2, L3)
-# Reference coordinates cover the entire horizontal layout
+# True multi-level structure: L1, L2, L3 at elevation 0 (2.5D horizontal layout)
+# Reference coordinates per level using actual waypoint positions from nav graph
 reference_coordinates:
   L1:
-    rmf:   [[10.0, 15.0], [130.0, 15.0], [10.0, 30.0], [130.0, 30.0]]
-    robot: [[10.0, 15.0], [130.0, 15.0], [10.0, 30.0], [130.0, 30.0]]
+    rmf:   [[10.0, 15.0], [20.0, 15.0], [10.0, 30.0], [20.0, 30.0]]
+    robot: [[10.0, 15.0], [20.0, 15.0], [10.0, 30.0], [20.0, 30.0]]
+  L2:
+    rmf:   [[70.0, 20.0], [85.0, 20.0], [70.0, 30.0], [85.0, 30.0]]
+    robot: [[70.0, 20.0], [85.0, 20.0], [70.0, 30.0], [85.0, 30.0]]
+  L3:
+    rmf:   [[130.0, 20.0], [145.0, 20.0], [130.0, 30.0], [145.0, 30.0]]
+    robot: [[130.0, 20.0], [145.0, 20.0], [130.0, 30.0], [145.0, 30.0]]
 
 fleet_manager:
   zenoh:
