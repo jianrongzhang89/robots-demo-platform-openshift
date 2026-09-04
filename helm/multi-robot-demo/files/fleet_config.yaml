@@ -12,7 +12,7 @@ rmf_fleet:
   reversible: True
   battery_system:
     voltage: 12.0
-    capacity: 240.0
+    capacity: 1000000.0
     charging_current: 5.0
   mechanical_system:
     mass: 20.0
@@ -46,10 +46,6 @@ rmf_fleet:
       maps:
         L1:
           map_url: "/opt/maps/hotel_multilevel.yaml"
-        L2:
-          map_url: "/opt/maps/hotel_multilevel.yaml"
-        L3:
-          map_url: "/opt/maps/hotel_multilevel.yaml"
 
     robot_2:
       charger: "charger_2"
@@ -63,25 +59,16 @@ rmf_fleet:
       maps:
         L1:
           map_url: "/opt/maps/hotel_multilevel.yaml"
-        L2:
-          map_url: "/opt/maps/hotel_multilevel.yaml"
-        L3:
-          map_url: "/opt/maps/hotel_multilevel.yaml"
 
   robot_state_update_frequency: 10.0
 
 # Identity transform: RMF frame == Nav2 world frame
-# Reference coordinates must use actual waypoint positions from nav graph
+# Flattened 2.5D structure: single level "L1" spans all zones (L1, L2, L3)
+# Reference coordinates cover the entire horizontal layout
 reference_coordinates:
   L1:
-    rmf:   [[10.0, 15.0], [20.0, 15.0], [10.0, 30.0], [20.0, 30.0]]
-    robot: [[10.0, 15.0], [20.0, 15.0], [10.0, 30.0], [20.0, 30.0]]
-  L2:
-    rmf:   [[70.0, 15.0], [80.0, 15.0], [70.0, 30.0], [80.0, 30.0]]
-    robot: [[70.0, 15.0], [80.0, 15.0], [70.0, 30.0], [80.0, 30.0]]
-  L3:
-    rmf:   [[130.0, 15.0], [140.0, 15.0], [130.0, 30.0], [140.0, 30.0]]
-    robot: [[130.0, 15.0], [140.0, 15.0], [130.0, 30.0], [140.0, 30.0]]
+    rmf:   [[10.0, 15.0], [130.0, 15.0], [10.0, 30.0], [130.0, 30.0]]
+    robot: [[10.0, 15.0], [130.0, 15.0], [10.0, 30.0], [130.0, 30.0]]
 
 fleet_manager:
   zenoh:
