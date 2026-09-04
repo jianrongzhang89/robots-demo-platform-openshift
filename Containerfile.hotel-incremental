@@ -1,0 +1,76 @@
+# Incremental hotel image build - adds Free Fleet and fixes to existing hotel image
+#
+# This builds on top of quay.io/jianrzha/ros2-rmf-hotel:latest and adds:
+#   - Free Fleet (for Nav2 integration in hybrid mode)
+#   - entrypoint-rmf.sh (for rmf-core pod)
+#   - Enhanced nav2_robot_adapter.py with multi-level navigation support
+#   - Updated spawn script with 180s timeout
+#
+# Build: podman build --platform linux/amd64 -t quay.io/jianrzha/ros2-rmf-hotel:latest -f Containerfile.hotel-incremental .
+
+FROM --platform=linux/amd64 quay.io/jianrzha/ros2-rmf-hotel:latest
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    ROS_DISTRO=jazzy
+
+# --- Python dependencies for Free Fleet (zenoh) ---
+RUN pip3 install --break-system-packages \
+      "eclipse-zenoh==1.5.0" \
+      "pycdr2" \
+      "numpy" \
+      "nudged" \
+      "rosbags"
+
+# --- Build Free Fleet (for Nav2 integration in hybrid mode) ---
+COPY patch_adapter.py /patch_adapter.py
+WORKDIR /opt/free_fleet
+RUN apt-get update 2>/dev/null || true \
+    && git clone --depth 1 https://github.com/open-rmf/free_fleet.git src/free_fleet \
+    && . /opt/ros/jazzy/setup.sh \
+    && . /opt/rmf_ros2_ws/install/setup.sh \
+    && (rosdep init 2>/dev/null || true) \
+    && rosdep update \
+    && rosdep install --from-paths src --ignore-src -r -y 2>/dev/null || true \
+    && colcon build --merge-install --cmake-args -DCMAKE_BUILD_TYPE=Release \
+    && rm -rf build log src/.git \
+    && ADAPTER=/opt/free_fleet/install/lib/python3.12/site-packages/free_fleet_adapter/nav2_robot_adapter.py \
+    && ADAPTER2=/opt/free_fleet/install/lib/free_fleet_adapter/nav2_robot_adapter.py \
+    && sed -i \
+         's/namespacify(self\.map_frame, self\.robot_name)/self.map_frame/g' \
+         "${ADAPTER}" "${ADAPTER2}" \
+    && sed -i \
+         's/namespacify(self\.robot_frame, self\.robot_name)/self.robot_frame/g' \
+         "${ADAPTER}" "${ADAPTER2}" \
+    && echo "Patched namespacify calls — adapter uses map_frame/robot_frame directly" \
+    && python3 /patch_adapter.py "${ADAPTER}" \
+    && python3 /patch_adapter.py "${ADAPTER2}" \
+    && echo "Patched both adapter paths" \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy enhanced nav2_robot_adapter.py with multi-level navigation support
+COPY patches/nav2_robot_adapter.py /opt/free_fleet/install/lib/python3.12/site-packages/free_fleet_adapter/nav2_robot_adapter.py
+COPY patches/nav2_robot_adapter.py /opt/free_fleet/install/lib/free_fleet_adapter/nav2_robot_adapter.py
+
+# Copy entrypoint-rmf.sh for rmf-core pod
+WORKDIR /opt/ros2-demo
+COPY entrypoints/entrypoint-rmf.sh /entrypoint-rmf.sh
+RUN chmod +x /entrypoint-rmf.sh
+
+# Update spawn script with 180s timeout (replaces existing version)
+COPY scripts/spawn_turtlebot3_hotel.py /opt/ros2-demo/scripts/spawn_turtlebot3_hotel.py
+RUN chmod +x /opt/ros2-demo/scripts/spawn_turtlebot3_hotel.py
+
+# Update hotel entrypoint with 180s timeout
+COPY entrypoints/entrypoint-hotel.sh /entrypoint-hotel.sh
+RUN chmod +x /entrypoint-hotel.sh
+
+# OCI labels — update to reflect incremental build
+LABEL org.opencontainers.image.title="ROS2 Multi-Robot Demo — Open-RMF Hotel World + Free Fleet" \
+      org.opencontainers.image.description="Multi-level hotel with Free Fleet for hybrid Nav2+RMF integration" \
+      org.opencontainers.image.source="https://github.com/jianrongzhang89/robots-demo-platform-openshift" \
+      org.opencontainers.image.base.name="quay.io/jianrzha/ros2-rmf-hotel:latest" \
+      io.openshift.tags="ros2,open-rmf,gazebo,hotel,free-fleet,nav2,multi-level,jazzy"
+
+EXPOSE 6080 8080 8000 3000
+
+CMD ["/entrypoint-hotel.sh"]
