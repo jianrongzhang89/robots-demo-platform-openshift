@@ -142,6 +142,11 @@ if [ "${SPAWN_TURTLEBOT3:-false}" = "true" ]; then
   SPAWN_Y="${SPAWN_Y:-30.0}"
   SPAWN_YAW="${SPAWN_YAW:-0.0}"
 
+  # Wait for Gazebo to start before attempting spawn
+  # Hotel world takes 90-120s to fully initialize
+  echo "[hotel-pod] Waiting 120s for Gazebo hotel world to initialize..."
+  sleep 120
+
   echo "[hotel-pod] Spawning ${ROBOT_NAME} at (${SPAWN_X}, ${SPAWN_Y}, yaw=${SPAWN_YAW})..."
   python3 /opt/ros2-demo/scripts/spawn_turtlebot3_hotel.py \
     --name "${ROBOT_NAME}" \

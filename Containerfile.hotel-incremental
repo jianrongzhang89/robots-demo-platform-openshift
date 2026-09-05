@@ -60,7 +60,7 @@ RUN chmod +x /entrypoint-rmf.sh
 COPY scripts/spawn_turtlebot3_hotel.py /opt/ros2-demo/scripts/spawn_turtlebot3_hotel.py
 RUN chmod +x /opt/ros2-demo/scripts/spawn_turtlebot3_hotel.py
 
-# Update hotel entrypoint with 180s timeout
+# Update hotel entrypoint with 120s delay + 180s timeout
 COPY entrypoints/entrypoint-hotel.sh /entrypoint-hotel.sh
 RUN chmod +x /entrypoint-hotel.sh
 

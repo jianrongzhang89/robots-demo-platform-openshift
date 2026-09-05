@@ -1,0 +1,14 @@
+# Quick update to add 120s delay before TurtleBot3 spawn
+# Builds on hybrid-nav2-v1 which already has Free Fleet
+
+FROM --platform=linux/amd64 quay.io/jianrzha/ros2-rmf-hotel:hybrid-nav2-v1
+
+# Update hotel entrypoint with 120s delay before spawn
+COPY entrypoints/entrypoint-hotel.sh /entrypoint-hotel.sh
+RUN chmod +x /entrypoint-hotel.sh
+
+LABEL org.opencontainers.image.title="ROS2 Multi-Robot Demo — Hotel v2 with spawn delay" \
+      org.opencontainers.image.description="Adds 120s delay before TurtleBot3 spawn" \
+      org.opencontainers.image.base.name="quay.io/jianrzha/ros2-rmf-hotel:hybrid-nav2-v1"
+
+CMD ["/entrypoint-hotel.sh"]
