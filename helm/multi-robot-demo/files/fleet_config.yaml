@@ -67,37 +67,6 @@ rmf_fleet:
           lift_cabin_poses:
             Lift2: [117.5, 27.5]
 
-    robot_2:
-      charger: "charger_2"
-      responsive_wait: False
-      navigation_stack: 2
-      init_timeout_sec: 60
-      service_call_timeout_sec: 10.0
-      initial_map: "L1"
-      map_frame: "map"
-      robot_frame: "base_footprint"
-      maps:
-        L1:
-          map_url: "/opt/maps/hotel_L1.yaml"
-          lift_exit_poses:
-            Lift1: [52.5, 27.5, 0.0]
-          lift_cabin_poses:
-            Lift1: [52.5, 27.5]
-        L2:
-          map_url: "/opt/maps/hotel_L2.yaml"
-          lift_exit_poses:
-            Lift1: [57.5, 27.5, 3.14159]
-            Lift2: [112.5, 27.5, 0.0]
-          lift_cabin_poses:
-            Lift1: [57.5, 27.5]
-            Lift2: [112.5, 27.5]
-        L3:
-          map_url: "/opt/maps/hotel_L3.yaml"
-          lift_exit_poses:
-            Lift2: [117.5, 27.5, 3.14159]
-          lift_cabin_poses:
-            Lift2: [117.5, 27.5]
-
   robot_state_update_frequency: 10.0
 
 # Identity transform: RMF frame == Nav2 world frame
