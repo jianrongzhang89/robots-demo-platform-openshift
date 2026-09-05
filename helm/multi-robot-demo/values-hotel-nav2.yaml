@@ -73,7 +73,8 @@ nav2:
 rmf:
   enabled: true  # Enabled - hotel image now has entrypoint-rmf.sh + Free Fleet
   image: quay.io/jianrzha/ros2-rmf-hotel:hybrid-nav2-v2  # Hotel image with Free Fleet + 120s spawn delay
-  navGraph: /opt/ros2-demo/rmf/hotel_nav_graph_multilevel_2d.yaml   # Hotel multi-level nav graph
+  navGraph: hotel_nav_graph_multilevel_2d.yaml   # Hotel multi-level nav graph (filename only for ConfigMap)
+  navGraphPath: /opt/ros2-demo/rmf/nav_graph.yaml   # Mounted path in pod
   fleetConfig: /opt/ros2-demo/rmf/fleet_config.yaml  # Hotel fleet config
   serverUri: ""
   resources:

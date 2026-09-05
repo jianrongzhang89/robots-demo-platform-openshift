@@ -43,7 +43,7 @@ spec:
             - name: FLEET_CONFIG
               value: {{ .Values.rmf.fleetConfig | default "/opt/ros2-demo/rmf/fleet_config.yaml" }}
             - name: NAV_GRAPH
-              value: {{ .Values.rmf.navGraph | default "/opt/ros2-demo/rmf/nav_graph.yaml" }}
+              value: {{ .Values.rmf.navGraphPath | default "/opt/ros2-demo/rmf/nav_graph.yaml" }}
             - name: SERVER_URI
               value: {{ if .Values.rmf.serverUri }}{{ .Values.rmf.serverUri | quote }}{{ else }}""{{ end }}
             # Space-separated robot names — used by entrypoint-rmf.sh for clock
