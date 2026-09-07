@@ -1,0 +1,76 @@
+# Hotel + Nav2 v3: Add TurtleBot3 Waffle model for Nav2 integration
+#
+# This adds TurtleBot3 Waffle models to the hotel image so we can spawn
+# a real diff-drive robot with LiDAR that Nav2 can control via /cmd_vel.
+#
+# Build on OpenShift cluster (requires ~28 GB RAM):
+#   oc start-build hotel-image-build --from-dir=. -n ros2-rmf-hotel -F
+#
+# Or locally:
+#   podman build --platform linux/amd64 -t quay.io/jianrzha/ros2-rmf-hotel:nav2-v3 -f Containerfile.hotel-nav2-v3 .
+
+FROM --platform=linux/amd64 quay.io/jianrzha/ros2-rmf-hotel:hybrid-nav2-v2
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    ROS_DISTRO=jazzy
+
+# --- Install TurtleBot3 model packages ---
+# We need the TurtleBot3 Waffle model with:
+#   - Differential drive plugin (responds to /cmd_vel)
+#   - LiDAR sensor (for Nav2 obstacle detection)
+#   - IMU (for localization)
+RUN apt-get update 2>/dev/null || true \
+    && apt-get install -y --no-install-recommends \
+         ros-jazzy-turtlebot3-gazebo \
+         ros-jazzy-turtlebot3-description \
+    && rm -rf /var/lib/apt/lists/*
+
+# --- Clone TurtleBot3 simulation repository for Gazebo Harmonic models ---
+# The apt package may have older Gazebo Classic models; we need Gazebo Harmonic (gz-sim) models
+WORKDIR /opt/turtlebot3_ws
+RUN git clone --depth 1 -b jazzy-devel https://github.com/ROBOTIS-GIT/turtlebot3_simulations.git src/turtlebot3_simulations \
+    && . /opt/ros/jazzy/setup.sh \
+    && colcon build --merge-install --packages-select turtlebot3_gazebo \
+         --cmake-args -DCMAKE_BUILD_TYPE=Release \
+    && rm -rf build log src/.git
+
+# --- Create TurtleBot3 model directory for Gazebo ---
+# Make TurtleBot3 models discoverable at model://turtlebot3_waffle
+RUN mkdir -p /opt/gz-models/turtlebot3_waffle \
+    && if [ -d /opt/turtlebot3_ws/install/share/turtlebot3_gazebo/models/turtlebot3_waffle ]; then \
+         ln -s /opt/turtlebot3_ws/install/share/turtlebot3_gazebo/models/turtlebot3_waffle/* \
+               /opt/gz-models/turtlebot3_waffle/ ; \
+       elif [ -d /opt/ros/jazzy/share/turtlebot3_gazebo/models/turtlebot3_waffle ]; then \
+         ln -s /opt/ros/jazzy/share/turtlebot3_gazebo/models/turtlebot3_waffle/* \
+               /opt/gz-models/turtlebot3_waffle/ ; \
+       else \
+         echo "WARNING: TurtleBot3 Waffle model not found in expected locations" ; \
+       fi
+
+# --- Convert TurtleBot3 model to Gazebo Harmonic if needed ---
+# TurtleBot3 models may be in Gazebo Classic format; we need gz-sim format
+# Create a minimal SDF with diff_drive plugin if the source model doesn't work
+RUN mkdir -p /tmp/tb3-model
+COPY scripts/create_tb3_gz_model.py /tmp/tb3-model/create_tb3_gz_model.py
+RUN python3 /tmp/tb3-model/create_tb3_gz_model.py /opt/gz-models/turtlebot3_waffle \
+    && rm -rf /tmp/tb3-model
+
+# --- Update GZ_SIM_RESOURCE_PATH in entrypoint ---
+# Already set in entrypoint-hotel.sh, but ensure turtlebot3_waffle is findable
+RUN sed -i 's|GZ_SIM_RESOURCE_PATH="|GZ_SIM_RESOURCE_PATH="/opt/gz-models:/opt/turtlebot3_ws/install/share/turtlebot3_gazebo/models:|g' /entrypoint-hotel.sh \
+    || echo "NOTE: GZ_SIM_RESOURCE_PATH not found in entrypoint (may already be correct)"
+
+# --- Disable built-in fleet adapters when SPAWN_TURTLEBOT3=true ---
+# Create a modified hotel launch file that skips the slotcar fleet adapters in hybrid mode
+COPY scripts/create_hybrid_hotel_launch.py /tmp/create_hybrid_hotel_launch.py
+RUN python3 /tmp/create_hybrid_hotel_launch.py \
+    && rm /tmp/create_hybrid_hotel_launch.py
+
+# OCI labels
+LABEL org.opencontainers.image.title="ROS2 Multi-Robot Demo — Hotel with TurtleBot3 + Nav2" \
+      org.opencontainers.image.description="Hotel world with TurtleBot3 Waffle for RMF+Nav2+Zenoh multi-level navigation" \
+      org.opencontainers.image.source="https://github.com/jianrongzhang89/robots-demo-platform-openshift" \
+      org.opencontainers.image.base.name="quay.io/jianrzha/ros2-rmf-hotel:hybrid-nav2-v2" \
+      io.openshift.tags="ros2,open-rmf,gazebo,hotel,turtlebot3,nav2,multi-level,jazzy"
+
+CMD ["/entrypoint-hotel.sh"]
