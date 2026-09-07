@@ -9,7 +9,7 @@
 # Or locally:
 #   podman build --platform linux/amd64 -t quay.io/jianrzha/ros2-rmf-hotel:nav2-v3 -f Containerfile.hotel-nav2-v3 .
 
-FROM --platform=linux/amd64 quay.io/jianrzha/ros2-rmf-hotel:hybrid-nav2-v2
+FROM --platform=linux/amd64 quay.io/jianrzha/ros2-rmf-hotel:latest
 
 ENV DEBIAN_FRONTEND=noninteractive \
     ROS_DISTRO=jazzy
@@ -70,7 +70,7 @@ RUN python3 /tmp/create_hybrid_hotel_launch.py \
 LABEL org.opencontainers.image.title="ROS2 Multi-Robot Demo — Hotel with TurtleBot3 + Nav2" \
       org.opencontainers.image.description="Hotel world with TurtleBot3 Waffle for RMF+Nav2+Zenoh multi-level navigation" \
       org.opencontainers.image.source="https://github.com/jianrongzhang89/robots-demo-platform-openshift" \
-      org.opencontainers.image.base.name="quay.io/jianrzha/ros2-rmf-hotel:hybrid-nav2-v2" \
+      org.opencontainers.image.base.name="quay.io/jianrzha/ros2-rmf-hotel:latest" \
       io.openshift.tags="ros2,open-rmf,gazebo,hotel,turtlebot3,nav2,multi-level,jazzy"
 
 CMD ["/entrypoint-hotel.sh"]
