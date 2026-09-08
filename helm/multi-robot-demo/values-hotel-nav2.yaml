@@ -29,7 +29,7 @@ hybridNav2:
 # --- Hotel World Configuration ---
 hotel:
   enabled: true
-  image: quay.io/jianrzha/ros2-rmf-hotel:hybrid-nav2-v2
+  image: quay.io/jianrzha/ros2-rmf-hotel:nav2-v3
   resolution: "1600x900x24"
   launchArgs: ""  # Could add headless:=true if needed
   resources:
@@ -72,7 +72,7 @@ nav2:
 # --- RMF Configuration ---
 rmf:
   enabled: true  # Enabled - hotel image now has entrypoint-rmf.sh + Free Fleet
-  image: quay.io/jianrzha/ros2-rmf-hotel:hybrid-nav2-v2  # Hotel image with Free Fleet + 120s spawn delay
+  image: quay.io/jianrzha/ros2-rmf-hotel:nav2-v3  # Hotel image with TurtleBot3 + Free Fleet
   navGraph: hotel_nav_graph_multilevel_2d.yaml   # Hotel multi-level nav graph (filename only for ConfigMap)
   navGraphPath: /opt/ros2-demo/rmf/nav_graph.yaml   # Mounted path in pod
   fleetConfig: /opt/ros2-demo/rmf/fleet_config.yaml  # Hotel fleet config
