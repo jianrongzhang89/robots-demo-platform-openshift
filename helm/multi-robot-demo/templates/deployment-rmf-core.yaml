@@ -118,6 +118,30 @@ spec:
             limits:
               cpu: 200m
               memory: 128Mi
+
+        # --- Sidecar: Zenoh robot state bridge ---
+        # Bridges robot topics (amcl_pose, odom, etc.) from Zenoh to DDS Domain 55.
+        # This allows Free Fleet to receive robot state published by Nav2 pods.
+        - name: zenoh-robot-bridge
+          image: {{ .Values.zenohBridge.image }}
+          args: ["-c", "/zenoh-config/rmf-robot-bridge.json5"]
+          env:
+            - name: ROS_DOMAIN_ID
+              value: "55"
+            - name: ROS_DISTRO
+              value: jazzy
+          volumeMounts:
+            - name: zenoh-config
+              mountPath: /zenoh-config/rmf-robot-bridge.json5
+              subPath: rmf-robot-bridge.json5
+              readOnly: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
       volumes:
         - name: rmf-config
           configMap:

@@ -45,6 +45,36 @@ data:
         }
       }
     }
+  rmf-robot-bridge.json5: |-
+    {
+      // RMF robot state bridge: subscribes to robot topics from Zenoh
+      // (published by Nav2 pods on Domain 0) and delivers to Domain 55 (RMF).
+      // This allows Free Fleet to receive amcl_pose, odom, battery_state, etc.
+      plugins: {
+        ros2dds: {
+          allow: {
+            subscribers: [
+              ".*/(amcl_pose|odom|battery_state|scan|tf|tf_static|joint_states)"
+            ]
+          }
+        }
+      },
+      mode: "client",
+      connect: {
+        endpoints: ["tcp/zenoh-router:7447"],
+        retry: {
+          period_init_ms: 1000,
+          period_max_ms: 16000,
+          period_increase_factor: 2
+        },
+        exit_on_failure: false
+      },
+      scouting: {
+        multicast: {
+          enabled: false
+        }
+      }
+    }
   cmd-vel-keepalive.json5: |-
     {
       plugins: {
