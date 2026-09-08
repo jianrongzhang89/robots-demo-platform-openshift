@@ -25,11 +25,10 @@ RUN python3 /tmp/create_tb3_gz_model.py /opt/gz-models/turtlebot3_waffle \
     && rm /tmp/create_tb3_gz_model.py \
     && ls -la /opt/gz-models/turtlebot3_waffle/
 
-# --- Disable built-in fleet adapters when SPAWN_TURTLEBOT3=true ---
-# Create a modified hotel launch file that skips the slotcar fleet adapters in hybrid mode
-COPY scripts/create_hybrid_hotel_launch.py /tmp/create_hybrid_hotel_launch.py
-RUN python3 /tmp/create_hybrid_hotel_launch.py \
-    && rm /tmp/create_hybrid_hotel_launch.py
+# --- Built-in fleet adapters will run but won't interfere ---
+# The slotcar adapters control their own robots (tinyBot, deliveryBot, cleanerBot)
+# Free Fleet controls robot_1 (TurtleBot3) via Nav2
+# They operate in parallel without conflict
 
 # OCI labels
 LABEL org.opencontainers.image.title="ROS2 Multi-Robot Demo — Hotel with TurtleBot3 + Nav2" \
