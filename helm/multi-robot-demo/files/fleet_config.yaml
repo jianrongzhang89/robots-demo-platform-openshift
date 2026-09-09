@@ -12,20 +12,20 @@ rmf_fleet:
   reversible: True
   battery_system:
     voltage: 12.0
-    capacity: 1000000.0
+    capacity: 10000000000.0
     charging_current: 5.0
   mechanical_system:
     mass: 20.0
     moment_of_inertia: 10.0
-    friction_coefficient: 0.22
+    friction_coefficient: 0.1
   ambient_system:
-    power: 20.0
+    power: 5.0
   tool_system:
     power: 0.0
-  recharge_threshold: 0.05
+  recharge_threshold: 0.001
   recharge_soc: 1.0
   publish_fleet_state: 10.0
-  account_for_battery_drain: False
+  account_for_battery_drain: True
   task_capabilities:
     loop: True
     delivery: True
@@ -55,11 +55,9 @@ rmf_fleet:
         L2:
           map_url: "/opt/maps/hotel_L2.yaml"
           lift_exit_poses:
-            Lift1: [57.5, 27.5, 3.14159]  # Exit facing opposite direction
-            Lift2: [112.5, 27.5, 0.0]
+            Lift1: [52.5, 27.5, 3.14159]  # Exit facing opposite direction (MUST match nav_graph lift_cabin coords)
           lift_cabin_poses:
-            Lift1: [57.5, 27.5]
-            Lift2: [112.5, 27.5]
+            Lift1: [52.5, 27.5]  # MUST match L1 cabin coords for vertical alignment
         L3:
           map_url: "/opt/maps/hotel_L3.yaml"
           lift_exit_poses:

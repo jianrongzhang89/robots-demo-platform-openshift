@@ -15,15 +15,106 @@ import sys
 import time
 
 
-# TurtleBot3 Waffle SDF model template
-# This uses the standard TurtleBot3 Waffle model from turtlebot3_gazebo
+# TurtleBot3 Waffle SDF model template with embedded full model definition
+# This embeds the complete model instead of using <include> to avoid model:// resolution issues
 TURTLEBOT3_WAFFLE_SDF_TEMPLATE = """<?xml version="1.0"?>
 <sdf version="1.9">
   <model name="{robot_name}">
-    <include>
-      <uri>model://turtlebot3_waffle</uri>
-    </include>
-    <pose>{x} {y} 0.01 0 0 {yaw}</pose>
+    <pose>{x} {y} 0.1 0 0 {yaw}</pose>
+    <link name="base_footprint">
+      <inertial>
+        <mass>0.001</mass>
+        <inertia><ixx>0.0001</ixx><iyy>0.0001</iyy><izz>0.0001</izz><ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia>
+      </inertial>
+    </link>
+    <link name="base_link">
+      <inertial>
+        <mass>1.37</mass>
+        <inertia><ixx>0.0087</ixx><iyy>0.0086</iyy><izz>0.0146</izz><ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia>
+      </inertial>
+      <collision name="base_collision">
+        <pose>-0.032 0 0.07 0 0 0</pose>
+        <geometry><box><size>0.28 0.31 0.14</size></box></geometry>
+      </collision>
+      <visual name="base_visual">
+        <pose>-0.032 0 0.07 0 0 0</pose>
+        <geometry><box><size>0.28 0.31 0.14</size></box></geometry>
+      </visual>
+    </link>
+    <link name="wheel_left_link">
+      <pose>0 0.144 0.023 -1.57 0 0</pose>
+      <inertial>
+        <mass>0.028</mass>
+        <inertia><ixx>1.1e-5</ixx><iyy>1.1e-5</iyy><izz>2.1e-5</izz><ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia>
+      </inertial>
+      <collision name="left_wheel_collision">
+        <geometry><cylinder><radius>0.033</radius><length>0.018</length></cylinder></geometry>
+        <surface><friction><ode><mu>100000</mu><mu2>100000</mu2></ode></friction></surface>
+      </collision>
+      <visual name="left_wheel_visual">
+        <geometry><cylinder><radius>0.033</radius><length>0.018</length></cylinder></geometry>
+      </visual>
+    </link>
+    <link name="wheel_right_link">
+      <pose>0 -0.144 0.023 -1.57 0 0</pose>
+      <inertial>
+        <mass>0.028</mass>
+        <inertia><ixx>1.1e-5</ixx><iyy>1.1e-5</iyy><izz>2.1e-5</izz><ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia>
+      </inertial>
+      <collision name="right_wheel_collision">
+        <geometry><cylinder><radius>0.033</radius><length>0.018</length></cylinder></geometry>
+        <surface><friction><ode><mu>100000</mu><mu2>100000</mu2></ode></friction></surface>
+      </collision>
+      <visual name="right_wheel_visual">
+        <geometry><cylinder><radius>0.033</radius><length>0.018</length></cylinder></geometry>
+      </visual>
+    </link>
+    <link name="base_scan">
+      <pose>-0.064 0 0.172 0 0 0</pose>
+      <inertial>
+        <mass>0.125</mass>
+        <inertia><ixx>0.001</ixx><iyy>0.001</iyy><izz>0.001</izz><ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia>
+      </inertial>
+      <sensor name="lidar" type="gpu_lidar">
+        <topic>/scan</topic>
+        <frame_id>base_scan</frame_id>
+        <update_rate>5</update_rate>
+        <always_on>1</always_on>
+        <visualize>true</visualize>
+        <lidar>
+          <scan><horizontal><samples>360</samples><resolution>1</resolution><min_angle>0</min_angle><max_angle>6.28</max_angle></horizontal></scan>
+          <range><min>0.12</min><max>3.5</max><resolution>0.015</resolution></range>
+        </lidar>
+      </sensor>
+    </link>
+    <link name="imu_link">
+      <pose>0 0 0.068 0 0 0</pose>
+      <inertial>
+        <mass>0.0001</mass>
+        <inertia><ixx>0.0001</ixx><iyy>0.0001</iyy><izz>0.0001</izz><ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia>
+      </inertial>
+      <sensor name="imu" type="imu">
+        <topic>/imu</topic>
+        <update_rate>200</update_rate>
+        <always_on>1</always_on>
+      </sensor>
+    </link>
+    <joint name="base_joint" type="fixed"><parent>base_footprint</parent><child>base_link</child></joint>
+    <joint name="left_wheel_joint" type="revolute"><parent>base_link</parent><child>wheel_left_link</child><axis><xyz>0 0 1</xyz></axis></joint>
+    <joint name="right_wheel_joint" type="revolute"><parent>base_link</parent><child>wheel_right_link</child><axis><xyz>0 0 1</xyz></axis></joint>
+    <joint name="lidar_joint" type="fixed"><parent>base_link</parent><child>base_scan</child></joint>
+    <joint name="imu_joint" type="fixed"><parent>base_link</parent><child>imu_link</child></joint>
+    <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive">
+      <left_joint>left_wheel_joint</left_joint>
+      <right_joint>right_wheel_joint</right_joint>
+      <wheel_separation>0.287</wheel_separation>
+      <wheel_radius>0.033</wheel_radius>
+      <odom_publish_frequency>50</odom_publish_frequency>
+      <topic>cmd_vel</topic>
+      <odom_topic>odometry</odom_topic>
+      <frame_id>odom</frame_id>
+      <child_frame_id>base_footprint</child_frame_id>
+    </plugin>
   </model>
 </sdf>
 """
@@ -58,6 +149,68 @@ def wait_for_world(world_name='hotel', timeout=180):
     return False
 
 
+def spawn_ground_plane(world_name='hotel'):
+    """
+    Spawn a static ground plane to provide collision support.
+    The hotel world's mesh-based floor collisions don't work in Gazebo Harmonic.
+    """
+    ground_sdf = """<?xml version="1.0"?>
+<sdf version="1.9">
+  <model name="ground_plane">
+    <static>true</static>
+    <pose>0 0 -0.05 0 0 0</pose>
+    <link name="ground_link">
+      <collision name="ground_collision">
+        <geometry>
+          <box><size>100 100 0.1</size></box>
+        </geometry>
+        <surface>
+          <friction>
+            <ode><mu>1.0</mu><mu2>1.0</mu2></ode>
+          </friction>
+        </surface>
+      </collision>
+    </link>
+  </model>
+</sdf>
+"""
+
+    import tempfile
+    import os
+
+    try:
+        fd, sdf_path = tempfile.mkstemp(suffix='.sdf', prefix='ground_plane_')
+        with os.fdopen(fd, 'w') as f:
+            f.write(ground_sdf)
+
+        print(f"[spawn-tb3] Adding ground plane collision support...")
+
+        result = subprocess.run(
+            [
+                'gz', 'service',
+                '-s', f'/world/{world_name}/create',
+                '--reqtype', 'gz.msgs.EntityFactory',
+                '--reptype', 'gz.msgs.Boolean',
+                '--timeout', '5000',
+                '--req', f'sdf_filename: "{sdf_path}"'
+            ],
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
+
+        if result.returncode == 0:
+            print(f"[spawn-tb3] Ground plane added successfully")
+            return True
+        else:
+            print(f"[spawn-tb3] Failed to add ground plane: {result.stderr}")
+            return False
+
+    except Exception as e:
+        print(f"[spawn-tb3] Exception adding ground plane: {e}")
+        return False
+
+
 def spawn_robot(robot_name, x, y, yaw, world_name='hotel'):
     """
     Spawn TurtleBot3 robot using Gazebo service.
@@ -81,10 +234,21 @@ def spawn_robot(robot_name, x, y, yaw, world_name='hotel'):
     )
 
     print(f"[spawn-tb3] Spawning {robot_name} at ({x}, {y}, yaw={yaw})...")
-    print(f"[spawn-tb3] SDF content:\n{sdf_content}")
 
-    # Call gz service to create entity
+    # Write SDF to temporary file (gz service --req cannot handle multi-line XML strings)
+    # Use sdf_filename parameter instead of sdf parameter to avoid protobuf text parsing issues
+    import tempfile
+    import os
+
     try:
+        # Create temporary file
+        fd, sdf_path = tempfile.mkstemp(suffix='.sdf', prefix=f'{robot_name}_')
+        with os.fdopen(fd, 'w') as f:
+            f.write(sdf_content)
+
+        print(f"[spawn-tb3] Wrote SDF to {sdf_path}")
+
+        # Call gz service to create entity using sdf_filename
         result = subprocess.run(
             [
                 'gz', 'service',
@@ -92,12 +256,17 @@ def spawn_robot(robot_name, x, y, yaw, world_name='hotel'):
                 '--reqtype', 'gz.msgs.EntityFactory',
                 '--reptype', 'gz.msgs.Boolean',
                 '--timeout', '5000',
-                '--req', f'sdf: "{sdf_content}"'
+                '--req', f'sdf_filename: "{sdf_path}"'
             ],
             capture_output=True,
             text=True,
             timeout=10
         )
+
+        # NOTE: Do NOT delete the temp file immediately - Gazebo server reads it asynchronously!
+        # The gz service command returns as soon as the request is queued, but gz-server
+        # opens the file later. Deleting too early causes "Unable to read file" errors.
+        # Let the container's /tmp cleanup handle it (file is only ~4KB).
 
         if result.returncode == 0:
             print(f"[spawn-tb3] Successfully spawned {robot_name}")
@@ -192,6 +361,13 @@ def main():
     # Extra settle time
     print("[spawn-tb3] Waiting additional 5s for world to settle...")
     time.sleep(5)
+
+    # Add ground plane for collision support (hotel world's mesh collisions don't work)
+    if not spawn_ground_plane(args.world):
+        print("[spawn-tb3] WARNING: Failed to add ground plane - robot may fall through floor")
+        # Continue anyway in case floor collision works
+
+    time.sleep(2)  # Let ground plane settle
 
     # Spawn robot
     if not spawn_robot(args.name, args.x, args.y, args.yaw, args.world):

@@ -31,10 +31,14 @@ echo "[rmf-pod] Starting monotonic clock relays for Nav2 pods (${ROBOT_NAMES:-ro
 # backwards timestamps, and republish to robot_N/clock_mono. The Nav2 bridge
 # maps clock_mono -> /clock on each Nav2 pod, giving tf2 a monotonic clock that
 # never triggers "jump back in time" buffer clears.
-python3 - <<'PYEOF' &
+python3 -u - <<'PYEOF' &
+import sys
+print("[clock-relay] Script starting...", flush=True)
 import struct, threading, time
+print("[clock-relay] Importing zenoh...", flush=True)
 import zenoh
 
+print("[clock-relay] Creating Zenoh config...", flush=True)
 conf = zenoh.Config()
 conf.insert_json5("connect/endpoints", '["tcp/zenoh-router:7447"]')
 conf.insert_json5("mode", '"client"')
@@ -47,15 +51,17 @@ z = zenoh.open(conf)
 # for EACH robot (same clock, different destination keys so each Nav2 bridge receives it).
 
 last_ns = 0
+_msg_count = 0
 lock = threading.Lock()
 RESTART_THRESHOLD_NS = 10 * 1_000_000_000  # 10s: any backward jump > 10s = Gazebo restart
 # Publish filtered clock to clock_relay/clock_bridge — the clock-bridge sidecar
 # on each Nav2 pod (namespace "/clock_relay") subscribes to this and delivers
 # to local DDS /clock_bridge. nav2_relay.py then relays /clock_bridge -> /clock.
 pub1 = z.declare_publisher("clock_relay/clock_bridge")
+print("[clock-relay] Publisher declared for clock_relay/clock_bridge")
 
 def on_clock(sample):
-    global last_ns
+    global last_ns, _msg_count
     try:
         raw = bytes(sample.payload.to_bytes())
         if len(raw) < 12:
@@ -67,13 +73,17 @@ def on_clock(sample):
             if ns < last_ns:
                 if (last_ns - ns) > RESTART_THRESHOLD_NS:
                     # Large backward jump = Gazebo restart, reset filter
+                    print(f"[clock-relay] Gazebo restart detected, backward jump {(last_ns - ns)/1e9:.1f}s")
                     last_ns = 0
                 else:
                     return  # small jitter, filter out
             last_ns = ns
+            _msg_count += 1
+            if _msg_count % 100 == 0:
+                print(f"[clock-relay] Relayed {_msg_count} clock messages (sim time: {sec}.{nsec:09d})")
         pub1.put(raw)
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"[clock-relay] Error: {e}")
 
 # Gazebo bridge may publish clock under different keys depending on configuration:
 # - "robot_1/clock" (namespaced, when spawned with namespace=robot_1)
@@ -82,11 +92,21 @@ def on_clock(sample):
 import os as _os
 _robot_names = _os.environ.get('ROBOT_NAMES', 'robot_1 robot_2').split()
 _clock_keys  = [f'{r}/clock' for r in _robot_names] + ['clock']
+print(f"[clock-relay] Subscribing to Zenoh keys: {_clock_keys}")
 for key in _clock_keys:
     z.declare_subscriber(key, on_clock)
-print("[rmf-pod] Monotonic clock relay active: clock -> clock_relay/clock_bridge")
+    print(f"[clock-relay] Subscribed to Zenoh key: {key}")
+print("[clock-relay] Monotonic clock relay active: clock -> clock_relay/clock_bridge")
+with open('/tmp/clock_relay_status.txt', 'w') as f:
+    f.write(f"Clock relay started at {time.time()}\\n")
+    f.write(f"Subscribed to: {_clock_keys}\\n")
+_loop_count = 0
 while True:
     time.sleep(1)
+    _loop_count += 1
+    if _loop_count % 10 == 0:
+        with open('/tmp/clock_relay_status.txt', 'a') as f:
+            f.write(f"Loop {_loop_count}: received {_msg_count} messages\\n")
 PYEOF
 CLOCK_RELAY_PID=$!
 sleep 2
@@ -170,9 +190,10 @@ def on_clock(s):
     except Exception:
         pass
 
-for key in ["clock", "robot_1/clock", "robot_2/clock"]:
-    z.declare_subscriber(key, on_clock)
-sys.stderr.write("[d55-clock] Zenoh subscriber ready\n")
+# Subscribe to clock_relay/clock_bridge (the DDS relay topic that IS forwarded by Zenoh)
+# NOT "clock" which is hardcoded blocked by zenoh-bridge-ros2dds
+z.declare_subscriber("clock_relay/clock_bridge", on_clock)
+sys.stderr.write("[d55-clock] Zenoh subscriber ready (clock_relay/clock_bridge)\n")
 while True:
     time.sleep(1)
 D55_ZENOH_EOF
@@ -211,6 +232,79 @@ python3 /tmp/d55_zenoh_half.py > /tmp/d55clock &
 D55_ZENOH_PID=$!
 python3 /tmp/d55_ros_half.py < /tmp/d55clock &
 D55_ROS_PID=$!
+sleep 2
+
+# TF relay: republish /robot_N/tf to /tf with namespaced frame IDs.
+# Free Fleet adapter's tf2_ros.Buffer subscribes to /tf, but Zenoh bridge
+# forwards robot TF to /robot_N/tf. This relay merges them with proper namespacing.
+echo "[rmf-pod] Starting TF relay (/robot_N/tf -> /tf with namespaced frames)..."
+python3 - <<'TF_RELAY_EOF' &
+import rclpy
+from rclpy.node import Node
+from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy
+from tf2_msgs.msg import TFMessage
+import os
+
+class TFRelay(Node):
+    def __init__(self):
+        super().__init__('tf_relay')
+        robot_names = os.environ.get('ROBOT_NAMES', 'robot_1 robot_2').split()
+
+        # TF QoS profile
+        tf_qos = QoSProfile(
+            depth=100,
+            reliability=ReliabilityPolicy.RELIABLE,
+            history=HistoryPolicy.KEEP_LAST,
+            durability=DurabilityPolicy.VOLATILE,
+        )
+
+        # Publisher to /tf (what Free Fleet adapter subscribes to)
+        self.tf_pub = self.create_publisher(TFMessage, '/tf', tf_qos)
+
+        # Subscribe to each robot's namespaced TF topic
+        self.subs = []
+        for robot_name in robot_names:
+            sub = self.create_subscription(
+                TFMessage,
+                f'/{robot_name}/tf',
+                lambda msg, rname=robot_name: self.tf_callback(msg, rname),
+                tf_qos
+            )
+            self.subs.append(sub)
+            self.get_logger().info(f'Subscribed to /{robot_name}/tf')
+
+        self.get_logger().info(f'TF relay active for {len(robot_names)} robots')
+
+    def tf_callback(self, msg, robot_name):
+        # Add robot namespace to all frame IDs
+        relayed_msg = TFMessage()
+        for transform in msg.transforms:
+            t = transform  # copy
+            # Namespace both parent and child frames
+            if not transform.header.frame_id.startswith(f'{robot_name}/'):
+                t.header.frame_id = f'{robot_name}/{transform.header.frame_id}'
+            if not transform.child_frame_id.startswith(f'{robot_name}/'):
+                t.child_frame_id = f'{robot_name}/{transform.child_frame_id}'
+            relayed_msg.transforms.append(t)
+
+        # Publish to global /tf
+        self.tf_pub.publish(relayed_msg)
+
+def main():
+    rclpy.init()
+    node = TFRelay()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
+TF_RELAY_EOF
+TF_RELAY_PID=$!
 sleep 2
 
 echo "[rmf-pod] Starting rmf-web API server on port 8000..."
@@ -280,7 +374,8 @@ term_handler() {
   echo "[rmf-pod] Shutting down..."
   kill "${ADAPTER_PID:-}" "${DISPATCHER_PID:-}" "${SCHEDULE_PID:-}" \
        "${API_PID:-}" "${DASHBOARD_PID:-}" "${CLOCK_RELAY_PID:-}" \
-       "${D55_ZENOH_PID:-}" "${D55_ROS_PID:-}" "${CMDVEL_KEEP_PID:-}" 2>/dev/null || true
+       "${D55_ZENOH_PID:-}" "${D55_ROS_PID:-}" "${CMDVEL_KEEP_PID:-}" \
+       "${TF_RELAY_PID:-}" 2>/dev/null || true
   rm -f /tmp/d55clock /tmp/d55_zenoh_half.py /tmp/d55_ros_half.py
   pkill -P $$ 2>/dev/null || true
   wait "${ADAPTER_PID}" 2>/dev/null || true

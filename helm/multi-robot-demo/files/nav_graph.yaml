@@ -11,6 +11,7 @@
 building_name: hotel
 
 doors: {}
+
 lifts: {}
 
 levels:
@@ -132,11 +133,12 @@ levels:
 
 # Cross-level lift connections using DICTIONARY format
 # Format: {from: [level_name, vertex_index], to: [level_name, vertex_index]}
+# Duration is in seconds - short duration to minimize energy cost calculation
 lift_lanes:
   # Lift 1: Connects L1 cabin (index 8) and L2 cabin (index 6)
-  - {from: [L1, 8], to: [L2, 6], orientation: forward, lift_name: Lift1}
-  - {from: [L2, 6], to: [L1, 8], orientation: forward, lift_name: Lift1}
+  - {from: [L1, 8], to: [L2, 6], orientation: forward, lift_name: Lift1, duration: 5.0}
+  - {from: [L2, 6], to: [L1, 8], orientation: forward, lift_name: Lift1, duration: 5.0}
 
   # Lift 2: Connects L2 cabin (index 8) and L3 cabin (index 6)
-  - {from: [L2, 8], to: [L3, 6], orientation: forward, lift_name: Lift2}
-  - {from: [L3, 6], to: [L2, 8], orientation: forward, lift_name: Lift2}
+  - {from: [L2, 8], to: [L3, 6], orientation: forward, lift_name: Lift2, duration: 5.0}
+  - {from: [L3, 6], to: [L2, 8], orientation: forward, lift_name: Lift2, duration: 5.0}

@@ -14,11 +14,18 @@ hotel:
   launchArgs: ""
   resources:
     requests:
-      cpu: "4"
-      memory: "4Gi"
+      cpu: "2"
+      memory: "2Gi"
     limits:
       cpu: "8"
       memory: "8Gi"
+
+# Hybrid Nav2 toggle — enables Nav2 pods alongside hotel-sim.
+# When hotel.enabled=true AND hybridNav2.enabled=true, the chart deploys both
+# the hotel-sim pod (with slotcar RMF navigation) AND separate robot-nav pods
+# (with real Nav2 navigation). Used for multi-level Nav2+RMF integration demo.
+hybridNav2:
+  enabled: false
 
 # Container image — same image runs both gazebo and nav2 entrypoints
 image:
