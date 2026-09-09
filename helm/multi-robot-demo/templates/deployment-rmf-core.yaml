@@ -68,10 +68,6 @@ spec:
             - name: zenoh-config
               mountPath: /opt/ros2-demo/zenoh
               readOnly: true
-            - name: entrypoint-rmf-fixed
-              mountPath: /entrypoint-rmf.sh
-              subPath: entrypoint-rmf.sh
-              readOnly: true
           resources:
             requests:
               cpu: {{ .Values.rmf.resources.requests.cpu | quote }}
@@ -280,8 +276,4 @@ spec:
         - name: zenoh-config
           configMap:
             name: zenoh-bridge-config
-        - name: entrypoint-rmf-fixed
-          configMap:
-            name: entrypoint-rmf-fixed
-            defaultMode: 0755
 {{- end }}

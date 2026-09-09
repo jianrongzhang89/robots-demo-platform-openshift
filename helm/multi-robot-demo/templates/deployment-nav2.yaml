@@ -153,11 +153,9 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              if [ -f /usr/lib64/ros-jazzy/setup.bash ]; then
-                source /usr/lib64/ros-jazzy/setup.bash
-              fi
+              source /usr/lib64/ros-jazzy/setup.bash
               echo "[scan-rewriter] Starting scan frame_id rewriter"
-              exec python3 -u - <<'PYEOF'
+              python3 -u - <<'PYEOF'
               import rclpy
               import rclpy.parameter
               from rclpy.node import Node
@@ -221,11 +219,9 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              if [ -f /usr/lib64/ros-jazzy/setup.bash ]; then
-                source /usr/lib64/ros-jazzy/setup.bash
-              fi
+              source /usr/lib64/ros-jazzy/setup.bash
               echo "[odom-tf] Starting TF broadcaster on /tf topic"
-              exec python3 -u - <<'PYEOF'
+              python3 -u - <<'PYEOF'
               import rclpy
               import rclpy.parameter
               from rclpy.node import Node
