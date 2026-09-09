@@ -46,6 +46,37 @@ ros2 run robot_state_publisher robot_state_publisher \
   --ros-args -p robot_description:="${URDF}" &
 RSP_PID=$!
 
+# ────────────────────────────────────────────────────────────────────────────
+# CRITICAL FIX: Wait for TF frames to be available before launching Nav2
+# ────────────────────────────────────────────────────────────────────────────
+# Problem: Nav2 lifecycle manager tries to activate nodes immediately, but the
+# TF2 buffer needs ~10 seconds to fill. During this time, controller_server's
+# costmaps fail transform checks and crash on assertion failures, leaving
+# bt_navigator unable to activate.
+#
+# Solution: Wait for TF topic to be publishing, then add buffer time for TF2
+# to accumulate historical transforms before Nav2 launch.
+#
+# See: docs/nav2-bt-navigator-activation-issue.md
+echo "[nav2-pod/${ROBOT_NAME}] Waiting for TF frames to be available..."
+TF_WAIT_START=$(date +%s)
+for attempt in $(seq 1 30); do
+  if timeout 3 ros2 topic echo /tf --once 2>/dev/null | grep -q "frame_id"; then
+    TF_WAIT_ELAPSED=$(($(date +%s) - TF_WAIT_START))
+    echo "[nav2-pod/${ROBOT_NAME}] TF available after ${TF_WAIT_ELAPSED}s (attempt ${attempt}/30)"
+    break
+  fi
+  [ $attempt -eq 30 ] && echo "[nav2-pod/${ROBOT_NAME}] WARNING: TF not available after 30s, proceeding anyway..."
+  sleep 1
+done
+
+# Extra buffer for TF2 buffer to fill with historical transforms
+# TF2 buffer needs time to accumulate transforms before costmaps can query them
+echo "[nav2-pod/${ROBOT_NAME}] Waiting 5s for TF2 buffer to fill..."
+sleep 5
+echo "[nav2-pod/${ROBOT_NAME}] TF2 buffer ready, proceeding with Nav2 launch"
+# ────────────────────────────────────────────────────────────────────────────
+
 echo "[nav2-pod/${ROBOT_NAME}] Starting nav2 RMF relay (pub/sub bridge for navigate_to_pose)..."
 # Watchdog loop: restart relay if it exits unexpectedly.
 (while true; do
@@ -64,7 +95,7 @@ echo "[nav2-pod/${ROBOT_NAME}] Launching Nav2 bringup (no ROS namespace — isol
 # settings) rather than the stock nav2_bringup params (whose structure varies
 # across Nav2 versions). Use Python to substitute ${ROBOT_NAME} and apply
 # runtime overrides (RPP plugin, costmap tuning, bond_timeout, etc.).
-NAV2_PARAMS="${BRINGUP_DIR}/params/nav2_params.yaml"  # stock nav2_bringup params (un-namespaced frames)
+NAV2_PARAMS="/opt/ros2-demo/nav2/nav2_params.yaml"  # Custom params with scan_fixed topic
 CUSTOM_PARAMS="/tmp/nav2_params_${ROBOT_NAME}.yaml"
 if [ -f "${NAV2_PARAMS}" ]; then
   echo "[nav2-pod/${ROBOT_NAME}] Patching nav2 params from ${NAV2_PARAMS}..."
@@ -72,6 +103,19 @@ if [ -f "${NAV2_PARAMS}" ]; then
 import yaml, sys, os
 with open('${NAV2_PARAMS}') as f:
     p = yaml.safe_load(f) or {}
+
+# Substitute \${ROBOT_NAME} placeholders with actual robot name
+def substitute_vars(obj, robot_name):
+    if isinstance(obj, dict):
+        return {k: substitute_vars(v, robot_name) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [substitute_vars(item, robot_name) for item in obj]
+    elif isinstance(obj, str):
+        return obj.replace('\${ROBOT_NAME}', robot_name)
+    else:
+        return obj
+
+p = substitute_vars(p, '${ROBOT_NAME}')
 cs = p.setdefault('controller_server', {}).setdefault('ros__parameters', {})
 
 # ── Switch to Regulated Pure Pursuit (RPP) controller.
@@ -156,7 +200,7 @@ if _slam_mode == '1':
     slam['odom_frame']               = 'odom'
     slam['map_frame']                = 'map'
     slam['base_frame']               = 'base_footprint'
-    slam['scan_topic']               = '/scan'
+    slam['scan_topic']               = '/scan_fixed'
     slam['debug_logging']            = False
     slam['throttle_scans']           = 1
     slam['transform_publish_period'] = 0.02
@@ -373,7 +417,7 @@ else
       -p odom_frame:=odom \
       -p map_frame:=map \
       -p base_frame:=base_footprint \
-      -p scan_topic:=/scan \
+      -p scan_topic:=/scan_fixed \
       -p enable_interactive_mode:=false \
       -p tf_buffer_duration:=30.0 \
       -p transform_publish_period:=0.02 \
