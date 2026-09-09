@@ -26,9 +26,11 @@ RUN python3 /tmp/create_tb3_gz_model_simple.py /opt/gz-models/turtlebot3_waffle 
     && rm /tmp/create_tb3_gz_model_simple.py \
     && ls -la /opt/gz-models/turtlebot3_waffle/
 
-# --- Copy corrected entrypoint with sim_world fix ---
+# --- Copy all entrypoints for multi-pod deployment ---
 COPY entrypoints/entrypoint-hotel.sh /entrypoint-hotel.sh
-RUN chmod +x /entrypoint-hotel.sh
+COPY entrypoints/entrypoint-nav2.sh /entrypoint-nav2.sh
+COPY entrypoints/entrypoint-rmf.sh /entrypoint-rmf.sh
+RUN chmod +x /entrypoint-hotel.sh /entrypoint-nav2.sh /entrypoint-rmf.sh
 
 # --- Copy updated spawn script with embedded full SDF ---
 # Replaces base image version to avoid model:// resolution issues
