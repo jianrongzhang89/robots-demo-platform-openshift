@@ -153,7 +153,7 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              source /usr/lib64/ros-jazzy/setup.bash
+              source /opt/ros/jazzy/setup.bash
               echo "[scan-rewriter] Starting scan frame_id rewriter"
               python3 -u - <<'PYEOF'
               import rclpy
@@ -219,7 +219,7 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              source /usr/lib64/ros-jazzy/setup.bash
+              source /opt/ros/jazzy/setup.bash
               echo "[odom-tf] Starting TF broadcaster on /tf topic"
               python3 -u - <<'PYEOF'
               import rclpy
