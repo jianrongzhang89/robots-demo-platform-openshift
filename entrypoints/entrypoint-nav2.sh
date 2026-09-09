@@ -61,12 +61,15 @@ RSP_PID=$!
 echo "[nav2-pod/${ROBOT_NAME}] Waiting for TF frames to be available..."
 TF_WAIT_START=$(date +%s)
 for attempt in $(seq 1 30); do
-  if timeout 3 ros2 topic echo /tf --once 2>/dev/null | grep -q "frame_id"; then
+  # Check for /tf_static first (robot_state_publisher), then /tf (odom-tf-publisher sidecar)
+  if timeout 3 ros2 topic echo /tf_static --once 2>/dev/null | grep -q "frame_id"; then
     TF_WAIT_ELAPSED=$(($(date +%s) - TF_WAIT_START))
-    echo "[nav2-pod/${ROBOT_NAME}] TF available after ${TF_WAIT_ELAPSED}s (attempt ${attempt}/30)"
+    echo "[nav2-pod/${ROBOT_NAME}] TF static available after ${TF_WAIT_ELAPSED}s"
     break
   fi
-  [ $attempt -eq 30 ] && echo "[nav2-pod/${ROBOT_NAME}] WARNING: TF not available after 30s, proceeding anyway..."
+  if [ $attempt -eq 30 ]; then
+    echo "[nav2-pod/${ROBOT_NAME}] WARNING: TF not available after 30s, proceeding anyway..."
+  fi
   sleep 1
 done
 
