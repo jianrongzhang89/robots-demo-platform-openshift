@@ -32,6 +32,10 @@ COPY entrypoints/entrypoint-nav2.sh /entrypoint-nav2.sh
 COPY entrypoints/entrypoint-rmf.sh /entrypoint-rmf.sh
 RUN chmod +x /entrypoint-hotel.sh /entrypoint-nav2.sh /entrypoint-rmf.sh
 
+# --- Copy TurtleBot3 URDF for robot_state_publisher ---
+RUN mkdir -p /usr/lib64/ros-jazzy/share/nav2_minimal_tb3_sim/urdf
+COPY scripts/turtlebot3_waffle.urdf /usr/lib64/ros-jazzy/share/nav2_minimal_tb3_sim/urdf/turtlebot3_waffle.urdf
+
 # --- Copy updated spawn script with embedded full SDF ---
 # Replaces base image version to avoid model:// resolution issues
 COPY scripts/spawn_turtlebot3_hotel.py /opt/ros2-demo/scripts/spawn_turtlebot3_hotel.py
