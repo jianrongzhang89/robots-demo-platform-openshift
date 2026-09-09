@@ -1,0 +1,72 @@
+#!/usr/bin/env python3
+"""
+Broadcast TF transform from odometry messages.
+
+This node subscribes to /odom and publishes the odom->base_footprint
+transform to /tf, allowing Nav2 to use odometry for localization.
+"""
+
+import sys
+import rclpy
+from rclpy.node import Node
+from nav_msgs.msg import Odometry
+from tf2_ros import TransformBroadcaster
+from geometry_msgs.msg import TransformStamped
+
+
+class OdomTFBroadcaster(Node):
+    def __init__(self):
+        super().__init__('odom_tf_broadcaster')
+
+        self.tf_broadcaster = TransformBroadcaster(self)
+
+        self.subscription = self.create_subscription(
+            Odometry,
+            '/odom',
+            self.odom_callback,
+            10
+        )
+
+        self.get_logger().info('Odom TF broadcaster started - waiting for /odom messages')
+
+    def odom_callback(self, msg):
+        """Publish TF transform from odom message."""
+        t = TransformStamped()
+
+        t.header.stamp = msg.header.stamp
+        t.header.frame_id = 'odom'
+        t.child_frame_id = 'base_footprint'
+
+        t.transform.translation.x = msg.pose.pose.position.x
+        t.transform.translation.y = msg.pose.pose.position.y
+        t.transform.translation.z = msg.pose.pose.position.z
+
+        t.transform.rotation = msg.pose.pose.orientation
+
+        self.tf_broadcaster.sendTransform(t)
+
+
+def main(args=None):
+    print('[odom_tf] Starting odom TF broadcaster...', flush=True)
+    try:
+        rclpy.init(args=args)
+        print('[odom_tf] RCL initialized', flush=True)
+        node = OdomTFBroadcaster()
+        print('[odom_tf] Node created, spinning...', flush=True)
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        print('[odom_tf] Keyboard interrupt', flush=True)
+    except Exception as e:
+        print(f'[odom_tf] ERROR: {e}', flush=True)
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
+    finally:
+        if rclpy.ok():
+            node.destroy_node()
+            rclpy.shutdown()
+        print('[odom_tf] Exiting', flush=True)
+
+
+if __name__ == '__main__':
+    main()

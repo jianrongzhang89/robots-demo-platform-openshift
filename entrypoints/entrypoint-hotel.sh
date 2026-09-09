@@ -38,9 +38,10 @@ export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 export PYTHONFAULTHANDLER=1   # print Python stack on SIGSEGV
 export ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-0}"
 
-# CPU software rendering (no GPU on the demo nodes) → RTF ~= 0.5.
-export LIBGL_ALWAYS_SOFTWARE=1
-export GALLIUM_DRIVER=llvmpipe
+# GPU rendering required for gpu_lidar sensor
+# NOTE: Requires OpenShift nodes with GPU support
+# export LIBGL_ALWAYS_SOFTWARE=1
+# export GALLIUM_DRIVER=llvmpipe
 
 # Force Qt6 to use the X11 (xcb) platform plugin on Ubuntu 24.04.
 # Without this, Qt6 tries Wayland first; with no Wayland compositor in the
@@ -153,7 +154,7 @@ if [ "${SPAWN_TURTLEBOT3:-false}" = "true" ]; then
     --x "${SPAWN_X}" \
     --y "${SPAWN_Y}" \
     --yaw "${SPAWN_YAW}" \
-    --world hotel \
+    --world sim_world \
     --wait-timeout 180 &
   SPAWN_PID=$!
   echo "[hotel-pod] TurtleBot3 spawn initiated (PID: ${SPAWN_PID})"

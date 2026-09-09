@@ -29,6 +29,16 @@ spec:
           image: {{ .Values.hotel.image }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/entrypoint-hotel.sh"]
+          {{- if .Values.hybridNav2.enabled }}
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/bash
+                  - -c
+                  - |
+                    (/bin/bash /robot-spawn/spawn-robot.sh {{ (index .Values.robots 0).name }} {{ (index .Values.robots 0).initialPose.xPos }} {{ (index .Values.robots 0).initialPose.yPos }} {{ (index .Values.robots 0).initialPose.yaw }} &)
+          {{- end }}
           ports:
             - name: novnc
               containerPort: 6080
@@ -65,8 +75,11 @@ spec:
             # Use to strip RViz / toggle headless if the launch version supports it.
             - name: HOTEL_LAUNCH_ARGS
               value: {{ .Values.hotel.launchArgs | quote }}
-            # TurtleBot3 spawning (for Nav2 integration)
+            # Add our custom models to Gazebo resource path
+            - name: GZ_SIM_RESOURCE_PATH
+              value: "/opt/gz-models"
             {{- if .Values.hybridNav2.enabled }}
+            # Enable TurtleBot3 spawning for Nav2+RMF hybrid demo
             - name: SPAWN_TURTLEBOT3
               value: "true"
             - name: ROBOT_NAME
@@ -99,8 +112,121 @@ spec:
             periodSeconds: 30
             timeoutSeconds: 5
             failureThreshold: 10
+          {{- if .Values.hybridNav2.enabled }}
+          volumeMounts:
+            - name: robot-spawn
+              mountPath: /robot-spawn
+              readOnly: true
+          {{- end }}
 
         {{- if .Values.hybridNav2.enabled }}
+        # --- Sidecar: Gazebo-ROS2 bridge for robot sensors ---
+        # Bridges Gazebo topics to ROS2 topics for Nav2 integration
+        # --- Sidecar: Clock relay (DDS /clock → /clock_relay/clock_bridge) ---
+        # zenoh-bridge-ros2dds has hardcoded filtering that blocks /clock routes
+        # to prevent feedback loops. This sidecar republishes /clock to a non-blocked
+        # topic name that zenoh CAN forward to other pods.
+        - name: clock-relay
+          image: {{ .Values.hotel.image }}
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              export HOME=/tmp/ros-home
+              source /opt/ros/jazzy/setup.bash
+              sleep 35  # wait for gz-ros-bridge to start publishing /clock
+              exec python3 -u - <<'PYEOF'
+              import rclpy
+              from rclpy.node import Node
+              from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy
+              from rosgraph_msgs.msg import Clock
+
+              class ClockRelay(Node):
+                  def __init__(self):
+                      super().__init__('clock_relay_node')
+                      clock_qos = QoSProfile(depth=1, reliability=ReliabilityPolicy.RELIABLE,
+                                             history=HistoryPolicy.KEEP_LAST, durability=DurabilityPolicy.VOLATILE)
+                      self.sub = self.create_subscription(Clock, '/clock', self.clock_callback, clock_qos)
+                      self.pub = self.create_publisher(Clock, '/clock_relay/clock_bridge', clock_qos)
+                      self.count = 0
+                      self.get_logger().info('Clock relay: /clock → /clock_relay/clock_bridge')
+
+                  def clock_callback(self, msg):
+                      self.pub.publish(msg)
+                      self.count += 1
+                      if self.count % 100 == 0:
+                          sec = msg.clock.sec
+                          self.get_logger().info(f'Relayed {self.count} messages (sim time: {sec}s)')
+
+              def main():
+                  rclpy.init()
+                  node = ClockRelay()
+                  try:
+                      rclpy.spin(node)
+                  except KeyboardInterrupt:
+                      pass
+                  finally:
+                      node.destroy_node()
+                      rclpy.shutdown()
+
+              if __name__ == '__main__':
+                  main()
+              PYEOF
+          env:
+            - name: ROS_DOMAIN_ID
+              value: "0"
+            - name: ROS_DISTRO
+              value: jazzy
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+
+        - name: gz-ros-bridge
+          image: {{ .Values.hotel.image }}
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              export HOME=/tmp/ros-home
+              source /opt/ros/jazzy/setup.bash
+              source /opt/rmf_ros2_ws/install/setup.bash
+              source /opt/rmf_demos_ws/install/setup.bash
+
+              # Wait for Gazebo and robot to be ready
+              sleep 30
+
+              # Bridge robot topics from Gazebo to ROS2 using parameter_bridge
+              # Use BEST_EFFORT QoS for sensor topics to match Zenoh bridge expectations
+              # NOTE: /clock is bridged but zenoh will NOT forward it (hardcoded filter).
+              # The clock-relay sidecar republishes /clock → /clock_relay/clock_bridge.
+              exec ros2 run ros_gz_bridge parameter_bridge \
+                /model/{{ (index .Values.robots 0).name }}/cmd_vel@geometry_msgs/msg/Twist]gz.msgs.Twist \
+                /model/{{ (index .Values.robots 0).name }}/odometry@nav_msgs/msg/Odometry[gz.msgs.Odometry \
+                /scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan \
+                /imu@sensor_msgs/msg/Imu[gz.msgs.IMU \
+                /clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock \
+                --ros-args -r /model/{{ (index .Values.robots 0).name }}/cmd_vel:=/{{ (index .Values.robots 0).name }}/cmd_vel \
+                           -r /model/{{ (index .Values.robots 0).name }}/odometry:=/{{ (index .Values.robots 0).name }}/odom \
+                           -r /scan:=/{{ (index .Values.robots 0).name }}/scan \
+                           -r /imu:=/{{ (index .Values.robots 0).name }}/imu \
+                           -p qos_overrides./{{ (index .Values.robots 0).name }}/odom.publisher.reliability:=best_effort \
+                           -p qos_overrides./{{ (index .Values.robots 0).name }}/scan.publisher.reliability:=best_effort \
+                           -p qos_overrides./{{ (index .Values.robots 0).name }}/imu.publisher.reliability:=best_effort
+          env:
+            - name: ROS_DOMAIN_ID
+              value: "0"
+            - name: ROS_DISTRO
+              value: jazzy
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
         # --- Sidecar: Zenoh bridge for Gazebo topics ---
         # Publishes Gazebo topics to Zenoh for cross-pod federation
         - name: zenoh-bridge-gazebo
@@ -124,6 +250,12 @@ spec:
               cpu: {{ .Values.zenohResources.limits.cpu | quote }}
               memory: {{ .Values.zenohResources.limits.memory | quote }}
       volumes:
+        {{- if .Values.hybridNav2.enabled }}
+        - name: robot-spawn
+          configMap:
+            name: robot-spawn-config
+            defaultMode: 0755
+        {{- end }}
         - name: zenoh-config
           configMap:
             name: zenoh-bridge-config

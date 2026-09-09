@@ -18,12 +18,39 @@ ENV DEBIAN_FRONTEND=noninteractive \
 # We create our own TurtleBot3 model below with all necessary plugins
 
 # --- Create TurtleBot3 Waffle model for Gazebo Harmonic ---
-# We create our own minimal model with the exact plugins we need for Nav2
+# Uses simple geometry (boxes, cylinders) instead of external meshes
+# This makes the model self-contained and works without internet access
 RUN mkdir -p /opt/gz-models/turtlebot3_waffle
-COPY scripts/create_tb3_gz_model.py /tmp/create_tb3_gz_model.py
-RUN python3 /tmp/create_tb3_gz_model.py /opt/gz-models/turtlebot3_waffle \
-    && rm /tmp/create_tb3_gz_model.py \
+COPY scripts/create_tb3_gz_model_simple.py /tmp/create_tb3_gz_model_simple.py
+RUN python3 /tmp/create_tb3_gz_model_simple.py /opt/gz-models/turtlebot3_waffle \
+    && rm /tmp/create_tb3_gz_model_simple.py \
     && ls -la /opt/gz-models/turtlebot3_waffle/
+
+# --- Copy corrected entrypoint with sim_world fix ---
+COPY entrypoints/entrypoint-hotel.sh /entrypoint-hotel.sh
+RUN chmod +x /entrypoint-hotel.sh
+
+# --- Copy updated spawn script with embedded full SDF ---
+# Replaces base image version to avoid model:// resolution issues
+COPY scripts/spawn_turtlebot3_hotel.py /opt/ros2-demo/scripts/spawn_turtlebot3_hotel.py
+RUN chmod +x /opt/ros2-demo/scripts/spawn_turtlebot3_hotel.py
+
+# --- Patch hotel.world to add Sensors system for gpu_lidar ---
+# The upstream hotel.world lacks gz-sim-sensors-system, which gpu_lidar requires
+COPY scripts/patch_hotel_world.py /tmp/patch_hotel_world.py
+RUN python3 /tmp/patch_hotel_world.py \
+      /opt/rmf_demos_ws/install/share/rmf_demos_maps/maps/hotel/hotel.world \
+      /opt/rmf_demos_ws/install/share/rmf_demos_maps/maps/hotel/hotel.world \
+    && rm /tmp/patch_hotel_world.py
+
+# --- Patch simulation.launch.xml to add --headless-rendering for gpu_lidar ---
+# Sensors system plugin requires server-side rendering to be enabled
+# Patch the INSTALLED file (not source) since workspace isn't rebuilt
+COPY scripts/patch_simulation_launch.py /tmp/patch_simulation_launch.py
+RUN python3 /tmp/patch_simulation_launch.py \
+      /opt/rmf_demos_ws/install/share/rmf_demos_gz/simulation.launch.xml \
+      /opt/rmf_demos_ws/install/share/rmf_demos_gz/simulation.launch.xml \
+    && rm /tmp/patch_simulation_launch.py
 
 # --- Built-in fleet adapters will run but won't interfere ---
 # The slotcar adapters control their own robots (tinyBot, deliveryBot, cleanerBot)

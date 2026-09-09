@@ -68,6 +68,10 @@ spec:
             - name: zenoh-config
               mountPath: /opt/ros2-demo/zenoh
               readOnly: true
+            - name: entrypoint-rmf-fixed
+              mountPath: /entrypoint-rmf.sh
+              subPath: entrypoint-rmf.sh
+              readOnly: true
           resources:
             requests:
               cpu: {{ .Values.rmf.resources.requests.cpu | quote }}
@@ -75,7 +79,7 @@ spec:
             limits:
               cpu: {{ .Values.rmf.resources.limits.cpu | quote }}
               memory: {{ .Values.rmf.resources.limits.memory | quote }}
-          {{- if ne (.Values.rmf.readinessProbe.enabled | toString) "false" }}
+          {{- if ne ((.Values.rmf.readinessProbe).enabled | default true | toString) "false" }}
           readinessProbe:
             httpGet:
               path: /user
@@ -84,7 +88,7 @@ spec:
             periodSeconds: 15
             failureThreshold: 10
           {{- end }}
-          {{- if ne (.Values.rmf.livenessProbe.enabled | toString) "false" }}
+          {{- if ne ((.Values.rmf.livenessProbe).enabled | default true | toString) "false" }}
           livenessProbe:
             httpGet:
               path: /user
@@ -142,6 +146,133 @@ spec:
             limits:
               cpu: 200m
               memory: 128Mi
+
+        # --- Sidecar: TF Relay ---
+        # Republishes /robot_N/tf to /tf with namespaced frame IDs.
+        # Free Fleet adapter's tf2_ros.Buffer subscribes to /tf, but Zenoh bridge
+        # forwards robot TF to /robot_N/tf. This relay merges them with proper namespacing.
+        - name: tf-relay
+          image: {{ .Values.rmf.image }}
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              export HOME=/tmp
+              source /opt/ros/jazzy/setup.bash
+              exec python3 -u - <<'PYEOF'
+              import rclpy
+              from rclpy.node import Node
+              from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy
+              from tf2_msgs.msg import TFMessage
+              import os
+
+              class TFRelay(Node):
+                  def __init__(self):
+                      super().__init__('tf_relay')
+                      robot_names = os.environ.get('ROBOT_NAMES', 'robot_1 robot_2').split()
+
+                      # TF QoS profile
+                      tf_qos = QoSProfile(
+                          depth=100,
+                          reliability=ReliabilityPolicy.RELIABLE,
+                          history=HistoryPolicy.KEEP_LAST,
+                          durability=DurabilityPolicy.VOLATILE,
+                      )
+
+                      # Publishers to /tf and /tf_static (what Free Fleet adapter subscribes to)
+                      self.tf_pub = self.create_publisher(TFMessage, '/tf', tf_qos)
+
+                      tf_static_qos = QoSProfile(
+                          depth=100,
+                          reliability=ReliabilityPolicy.RELIABLE,
+                          history=HistoryPolicy.KEEP_LAST,
+                          durability=DurabilityPolicy.TRANSIENT_LOCAL,
+                      )
+                      self.tf_static_pub = self.create_publisher(TFMessage, '/tf_static', tf_static_qos)
+
+                      # Subscribe to each robot's namespaced TF topics (both /tf and /tf_static)
+                      self.subs = []
+                      for robot_name in robot_names:
+                          # Subscribe to dynamic TF
+                          sub_tf = self.create_subscription(
+                              TFMessage,
+                              f'/{robot_name}/tf',
+                              lambda msg, rname=robot_name: self.tf_callback(msg, rname),
+                              tf_qos
+                          )
+                          self.subs.append(sub_tf)
+                          self.get_logger().info(f'Subscribed to /{robot_name}/tf')
+
+                          # Subscribe to static TF
+                          sub_tf_static = self.create_subscription(
+                              TFMessage,
+                              f'/{robot_name}/tf_static',
+                              lambda msg, rname=robot_name: self.tf_static_callback(msg, rname),
+                              tf_static_qos
+                          )
+                          self.subs.append(sub_tf_static)
+                          self.get_logger().info(f'Subscribed to /{robot_name}/tf_static')
+
+                      self.get_logger().info(f'TF relay active for {len(robot_names)} robots')
+
+                  def tf_callback(self, msg, robot_name):
+                      # Add robot namespace to all frame IDs
+                      relayed_msg = TFMessage()
+                      for transform in msg.transforms:
+                          import copy
+                          t = copy.deepcopy(transform)
+                          # Always namespace both parent and child frames
+                          # Input from Nav2: map, odom, base_footprint, base_link, etc.
+                          # Output for Free Fleet: robot_N/map, robot_N/odom, robot_N/base_footprint, etc.
+                          t.header.frame_id = f'{robot_name}/{transform.header.frame_id}'
+                          t.child_frame_id = f'{robot_name}/{transform.child_frame_id}'
+                          relayed_msg.transforms.append(t)
+
+                      # Publish to global /tf
+                      self.tf_pub.publish(relayed_msg)
+
+                  def tf_static_callback(self, msg, robot_name):
+                      # Add robot namespace to all static frame IDs
+                      relayed_msg = TFMessage()
+                      for transform in msg.transforms:
+                          import copy
+                          t = copy.deepcopy(transform)
+                          t.header.frame_id = f'{robot_name}/{transform.header.frame_id}'
+                          t.child_frame_id = f'{robot_name}/{transform.child_frame_id}'
+                          relayed_msg.transforms.append(t)
+
+                      # Publish to global /tf_static
+                      self.tf_static_pub.publish(relayed_msg)
+
+              def main():
+                  rclpy.init()
+                  node = TFRelay()
+                  try:
+                      rclpy.spin(node)
+                  except KeyboardInterrupt:
+                      pass
+                  finally:
+                      node.destroy_node()
+                      rclpy.shutdown()
+
+              if __name__ == '__main__':
+                  main()
+              PYEOF
+          env:
+            - name: ROS_DOMAIN_ID
+              value: "55"
+            - name: ROS_DISTRO
+              value: jazzy
+            - name: ROBOT_NAMES
+              value: "{{ range .Values.robots }}{{ .name }} {{ end }}"
+            - name: HOME
+              value: /tmp
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
       volumes:
         - name: rmf-config
           configMap:
@@ -149,4 +280,8 @@ spec:
         - name: zenoh-config
           configMap:
             name: zenoh-bridge-config
+        - name: entrypoint-rmf-fixed
+          configMap:
+            name: entrypoint-rmf-fixed
+            defaultMode: 0755
 {{- end }}
