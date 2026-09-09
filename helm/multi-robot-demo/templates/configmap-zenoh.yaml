@@ -50,9 +50,13 @@ data:
       // RMF robot state bridge: subscribes to robot topics from Zenoh
       // (published by Nav2 pods on Domain 0) and delivers to Domain 55 (RMF).
       // This allows Free Fleet to receive amcl_pose, odom, battery_state, etc.
+      // Also publishes rmf_navigate_cmd from Domain 55 to Zenoh for Nav2 relay.
       plugins: {
         ros2dds: {
           allow: {
+            publishers: [
+              ".*/rmf_navigate_cmd"
+            ],
             subscribers: [
               ".*/(amcl_pose|odom|battery_state|scan|tf|tf_static|joint_states)"
             ]
@@ -113,11 +117,8 @@ data:
           reliable_routes_blocking: false,
           allow: {
             publishers: [
-              // tf_static omitted: static TF originates from Gazebo's robot_state_publisher,
-              // not from nav2 pods. Including it creates a feedback loop (nav bridge receives
-              // robot_1/tf_static from Zenoh, delivers to DDS /tf_static, then re-publishes
-              // it back to Zenoh as robot_1/tf_static, confusing the TRANSIENT_LOCAL cache).
-              ".*/(tf|battery_state|cmd_vel|amcl_pose|rmf_navigate_result|local_costmap/costmap|local_costmap/costmap_updates)"
+              // tf and tf_static: robot_state_publisher runs on Nav2 pod, must forward URDF TF
+              ".*/(tf|tf_static|battery_state|cmd_vel|amcl_pose|rmf_navigate_result|local_costmap/costmap|local_costmap/costmap_updates)"
             ],
             subscribers: [
               ".*/tf",
@@ -129,6 +130,7 @@ data:
               // clock omitted — handled by the dedicated clock-bridge sidecar
               // which subscribes to bare Zenoh "clock" without namespace prefix
               ".*/robot_description",
+              // rmf_navigate_cmd: RMF publishes to Zenoh, bridge subscribes and forwards to local ROS2 for nav2_relay
               ".*/rmf_navigate_cmd",
               // initialpose: allows the demo script to re-anchor AMCL after
               // multi-leg navigation causes drift, by publishing the correct

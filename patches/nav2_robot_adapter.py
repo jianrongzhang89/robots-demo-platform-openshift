@@ -16,6 +16,7 @@
 
 import importlib
 from typing import Annotated
+import uuid
 
 from free_fleet.convert import transform_stamped_to_ros2_msg
 from free_fleet.ros2_types import (
@@ -88,6 +89,59 @@ class Nav2TfHandler:
             _tf_callback
         )
 
+        # amcl_pose subscriber — map-frame position (reliable cross-pod pub/sub).
+        # Lesson from main branch: amcl_pose is the correct position source for
+        # cross-pod use. odom is in the odom frame (starts at 0,0 at boot, not map
+        # origin), so it gives wrong coordinates for robots spawned at non-origin
+        # positions (-2,-0.5) and (2,0.5). amcl_pose gives true map-frame x/y/yaw.
+        import threading as _threading, struct as _struct, math as _math, os as _os
+        self._odom_x = None
+        self._odom_y = None
+        self._odom_yaw = None
+
+        def _amcl_pose_cb(sample):
+            try:
+                raw = bytes(sample.payload.to_bytes())
+                # PoseWithCovarianceStamped CDR: 4-byte header + stamp (8 bytes) +
+                # frame_id string (4+N bytes) + alignment padding + position doubles.
+                # Scan for plausible map-frame position (tb3_sandbox bounds: ±6 m).
+                for offset in range(20, min(80, len(raw) - 55), 4):
+                    try:
+                        px, py, pz = _struct.unpack_from("<3d", raw, offset)
+                        if abs(px) < 6.0 and abs(py) < 6.0 and abs(pz) < 0.5:
+                            ox, oy, oz, ow = _struct.unpack_from("<4d", raw, offset + 24)
+                            # Planar robot: ox≈0, oy≈0; unit quaternion
+                            if abs(ox) < 0.1 and abs(oy) < 0.1 and abs(oz**2 + ow**2 - 1.0) < 0.1:
+                                self._odom_x = float(px)
+                                self._odom_y = float(py)
+                                self._odom_yaw = float(
+                                    _math.atan2(2*(ow*oz), 1 - 2*(oz**2)))
+                                return
+                    except Exception:
+                        continue
+            except Exception:
+                pass
+
+        self._odom_sub = self.zenoh_session.declare_subscriber(
+            namespacify("amcl_pose", self.robot_name),
+            _amcl_pose_cb
+        )
+        # Non-blocking: use env-var spawn position as the initial cache value.
+        # This eliminates the 90-second race against AMCL startup timing.
+        # ROBOT_N_INITIAL_X/Y/YAW must match the Gazebo spawn positions (set in Helm).
+        _robot_env = self.robot_name.upper().replace('-', '_')
+        _env_x   = float(_os.environ.get(f'{_robot_env}_INITIAL_X',   '0.0'))
+        _env_y   = float(_os.environ.get(f'{_robot_env}_INITIAL_Y',   '0.0'))
+        _env_yaw = float(_os.environ.get(f'{_robot_env}_INITIAL_YAW', '0.0'))
+        if self._odom_x is None:
+            self._odom_x   = _env_x
+            self._odom_y   = _env_y
+            self._odom_yaw = _env_yaw
+            self.node.get_logger().info(
+                f"[patch] Using env-var spawn for {self.robot_name}: "
+                f"({self._odom_x:.2f}, {self._odom_y:.2f}, yaw={self._odom_yaw:.3f})"
+            )
+
     def get_transform(self) -> TransformStamped | None:
         try:
             transform = self.tf_buffer.lookup_transform(
@@ -103,6 +157,110 @@ class Nav2TfHandler:
             )
         return None
 
+
+
+import struct as _psnstruct, time as _psntime, threading as _psnthread
+
+class _PubSubNavHandle:
+    """Navigation handle using pub/sub relay instead of broken action queryable."""
+
+    def __init__(self, robot_name, zenoh_session, node, x, y, yaw, execution=None):
+        self._robot_name = robot_name
+        self._node = node
+        self._x = x; self._y = y; self._yaw = yaw
+        self._goal_id = str(int(_psntime.time() * 1000000) % 10000000)
+        self._done = False
+        self._succeeded = False
+        self._finished_called = False  # guard: execution.finished() must fire exactly once
+        self._lock = _psnthread.Lock()
+        # execution.finished() signals the patrol task to advance to the next waypoint.
+        # Without this call, the patrol stays stuck at the current waypoint forever.
+        self._execution = execution
+
+        result_key = namespacify("rmf_navigate_result", robot_name)
+        self._result_sub = zenoh_session.declare_subscriber(result_key, self._on_result)
+        self._cmd_pub = zenoh_session.declare_publisher(namespacify("rmf_navigate_cmd", robot_name))
+
+    def _on_result(self, sample):
+        try:
+            raw = bytes(sample.payload.to_bytes())
+            if len(raw) < 9:
+                return
+            str_len = _psnstruct.unpack_from('<I', raw, 4)[0]
+            if len(raw) < 8 + str_len:
+                return
+            text = raw[8:8 + str_len - 1].decode('utf-8')
+            parts = text.split()
+            if len(parts) == 2 and parts[0] == self._goal_id:
+                with self._lock:
+                    self._succeeded = (parts[1] == 'OK')
+                    self._done = True
+        except Exception:
+            pass
+
+    @staticmethod
+    def _str_cdr(text):
+        data = text.encode('utf-8') + b'\x00'
+        return b'\x00\x01\x00\x00' + _psnstruct.pack('<I', len(data)) + data
+
+    def execute(self):
+        cmd = f"{self._goal_id} {self._x:.6f} {self._y:.6f} {self._yaw:.6f}"
+        encoded = self._str_cdr(cmd)
+        # Publish the goal command multiple times over 3 seconds.
+        # The Zenoh→DDS route for rmf_navigate_cmd may not be established
+        # immediately after creating a new publisher — retrying ensures delivery.
+        def _publish_loop():
+            for _ in range(4):
+                self._cmd_pub.put(encoded)
+                _psntime.sleep(0.8)
+                with self._lock:
+                    if self._done:
+                        break  # goal completed — stop re-publishing to avoid preempting next leg
+        _psnthread.Thread(target=_publish_loop, daemon=True).start()
+        self._node.get_logger().info(
+            f"[nav_relay] goal {self._goal_id}: ({self._x:.2f}, {self._y:.2f}, {self._yaw:.2f})"
+        )
+
+    def update(self, state):
+        with self._lock:
+            if self._done:
+                try:
+                    self._result_sub.undeclare()
+                except Exception:
+                    pass
+                if self._succeeded:
+                    # Call execution.finished() exactly once. The C++ fleet adapter
+                    # calls update() in a polling loop, so without the guard it would
+                    # call execution.finished() on every tick, advancing the patrol
+                    # multiple waypoints per navigation step.
+                    if self._execution is not None and not self._finished_called:
+                        self._finished_called = True
+                        try:
+                            self._execution.finished()
+                        except Exception:
+                            pass
+                    return (True, True)
+                raise RequestAborted(f"goal {self._goal_id} failed")
+        return (False, False)
+
+    def feedback(self, action, payload):
+        pass
+
+    def get_action_name(self):
+        return "navigate_to_pose"
+
+    def get_goal_id(self):
+        return self._goal_id
+
+    def get_activity(self):
+        return None
+
+    def stop(self):
+        try:
+            self._cmd_pub.put(self._str_cdr(f"{self._goal_id} CANCEL"))
+            self._result_sub.undeclare()
+        except Exception:
+            pass
 
 class Nav2RobotAdapter(RobotAdapter):
 
@@ -193,33 +351,30 @@ class Nav2RobotAdapter(RobotAdapter):
             namespacify('battery_state', name),
             _battery_state_callback
         )
+        self.battery_soc = 1.0  # sim robots have no battery topic
 
-        # Initialize robot
-        init_timeout_sec = self.robot_config_yaml.get('init_timeout_sec', 10)
+
+        # Initialize robot — use amcl_pose cache to avoid TF-dependent timeout
         self.node.get_logger().info(f'Initializing robot [{self.name}]...')
-        init_robot_pose = rclpy.Future()
-
-        def _get_init_pose():
-            robot_pose = self.get_pose()
-            if robot_pose is not None:
-                init_robot_pose.set_result(robot_pose)
-                init_robot_pose.done()
-
-        init_pose_timer = self.node.create_timer(1, _get_init_pose)
-        rclpy.spin_until_future_complete(
-            self.node, init_robot_pose, timeout_sec=init_timeout_sec
-        )
-
-        if init_robot_pose.result() is None:
-            error_message = \
-                f'Timeout trying to initialize robot [{self.name}]'
-            self.node.get_logger().error(error_message)
-            raise RuntimeError(error_message)
-
-        self.node.destroy_timer(init_pose_timer)
+        # Get initial pose from amcl_pose cache (populated by Nav2TfHandler.__init__)
+        import time as _init_time
+        _deadline = _init_time.monotonic() + 30.0
+        _init_pose = None
+        while _init_time.monotonic() < _deadline:
+            _init_pose = self.get_pose()
+            if _init_pose is not None:
+                break
+            _init_time.sleep(0.5)
+        if _init_pose is None:
+            # Last resort: use origin
+            self.node.get_logger().warn(
+                f'[patch] Could not get initial pose for {self.name}, using origin'
+            )
+            _init_pose = [0.0, 0.0, 0.0]
+        init_robot_pose_result = _init_pose
         state = rmf_easy.RobotState(
             self.get_map_name(),
-            init_robot_pose.result(),
+            init_robot_pose_result,
             self.get_battery_soc()
         )
 
@@ -1077,43 +1232,35 @@ class Nav2RobotAdapter(RobotAdapter):
             behavior_tree=''
         )
 
-        replies = self.zenoh_session.get(
-            namespacify('navigate_to_pose/_action/send_goal', self.name),
-            payload=req.serialize(),
-            # timeout=0.5
+        # Use pub/sub relay pattern instead of Zenoh queryable action
+        # (zenoh-bridge-ros2dds doesn't support action responses when both ends use the bridge)
+        goal_id_uuid = str(uuid.uuid4())
+        cmd_msg = f"{goal_id_uuid} {x} {y} {yaw}"
+
+        self.node.get_logger().info(
+            f'Publishing nav command via rmf_navigate_cmd: {cmd_msg}'
         )
 
-        for reply in replies:
-            try:
-                rep = NavigateToPose_SendGoal_Response.deserialize(
-                    reply.ok.payload.to_bytes())
-                if rep.accepted:
-                    self.node.get_logger().info(
-                        f'Navigation goal {nav_goal_id} accepted'
-                    )
-                    nav_handle.set_goal_id(nav_goal_id)
-                    return
+        # Publish to ROS2 topic so rmf-robot-bridge forwards it to Zenoh
+        # (Direct Zenoh publishing bypasses the bridge, preventing message delivery)
+        cmd_pub = getattr(self, '_rmf_nav_cmd_pub', None)
+        if cmd_pub is None:
+            from std_msgs.msg import String as StdMsgsString
+            self._rmf_nav_cmd_pub = self.node.create_publisher(
+                StdMsgsString,
+                namespacify("rmf_navigate_cmd", self.name),
+                10
+            )
+            cmd_pub = self._rmf_nav_cmd_pub
 
-                self.replan_counts += 1
-                self.node.get_logger().error(
-                    f'Navigation goal {nav_goal_id} was rejected, replan '
-                    f'count [{self.replan_counts}]'
-                )
-                if self.update_handle is None:
-                    error_message = \
-                        f'Failed to replan for robot {self.name}, robot ' \
-                        'adapter has not yet been initialized with a fleet ' \
-                        'update handle.'
-                    self.node.get_logger().error(error_message)
-                    return
-                self.update_handle.more().replan()
-                return
-            except Exception as e:
-                payload = reply.err.payload.to_string()
-                self.node.get_logger().error(
-                    f'Received (ERROR: {payload}: {type(e)}: {e})'
-                )
-                continue
+        ros_msg = StdMsgsString()
+        ros_msg.data = cmd_msg
+        cmd_pub.publish(ros_msg)
+
+        # In pub/sub pattern, goal tracking is handled via result topic subscription
+        # Do not call nav_handle.set_goal_id() - it expects action goal format
+        # The nav2_relay will execute the action and publish results back
+        return
 
     def navigate(
         self,

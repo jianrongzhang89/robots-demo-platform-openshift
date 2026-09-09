@@ -1,0 +1,93 @@
+# RMF Navigation Graph - Hotel Multi-Level (RMF Standard Format)
+# Based on official rmf_demos hotel nav graph structure
+
+building_name: hotel
+
+doors: {}
+
+# Lift definitions - physical properties
+lifts:
+  Lift1:
+    dims: [2.0, 2.0]
+    position: [52.5, 27.5, 0.0]
+
+levels:
+  # ========== Level 1 - Lobby ==========
+  L1:
+    elevation: 0.0
+    vertices:
+      # Main lobby waypoints
+      - [20.0, 30.0, {name: lobby_east, is_holding_point: true}]            # 0
+      - [10.0, 30.0, {name: lobby_west, is_holding_point: true}]            # 1
+      - [10.0, 15.0, {name: lobby_southwest, is_holding_point: true}]       # 2
+      - [35.0, 15.0, {name: lobby_southeast, is_holding_point: true}]       # 3
+      - [20.0, 25.0, {name: lobby_center, is_holding_point: true}]          # 4
+
+      # Charger waypoints
+      - [8.0, 35.0, {name: charger_1, is_charger: true, is_parking_spot: true}]  # 5
+      - [8.0, 32.0, {name: charger_2, is_charger: true, is_parking_spot: true}]  # 6
+
+      # Lift approach and cabin waypoints
+      - [48.0, 27.5, {name: lift1_approach_L1, is_holding_point: true}]     # 7
+      - [52.5, 27.5, {name: lift1_cabin_L1, lift: Lift1, lift_cabin: Lift1, is_holding_point: true}]  # 8
+
+    lanes:
+      # Lobby internal navigation
+      - [0, 4, {}]  # lobby_east <-> lobby_center
+      - [4, 0, {}]
+      - [1, 4, {}]  # lobby_west <-> lobby_center
+      - [4, 1, {}]
+      - [2, 4, {}]  # lobby_southwest <-> lobby_center
+      - [4, 2, {}]
+      - [3, 4, {}]  # lobby_southeast <-> lobby_center
+      - [4, 3, {}]
+
+      # Charger connections
+      - [1, 5, {}]  # lobby_west <-> charger_1
+      - [5, 1, {}]
+      - [1, 6, {}]  # lobby_west <-> charger_2
+      - [6, 1, {}]
+
+      # Lift access
+      - [4, 7, {}]  # lobby_center <-> lift_approach
+      - [7, 4, {}]
+      - [7, 8, {}]  # approach -> cabin
+      - [8, 7, {}]  # cabin -> approach
+
+  # ========== Level 2 - Rooms ==========
+  L2:
+    elevation: 4.0
+    vertices:
+      # L2 waypoints
+      - [70.0, 30.0, {name: L2_room1, is_holding_point: true}]              # 0
+      - [85.0, 30.0, {name: L2_room2, is_holding_point: true}]              # 1
+      - [70.0, 20.0, {name: L2_room3, is_holding_point: true}]              # 2
+      - [85.0, 20.0, {name: L2_room4, is_holding_point: true}]              # 3
+      - [78.0, 25.0, {name: L2_center, is_holding_point: true}]             # 4
+
+      # Lift 1 approach and cabin (MUST match L1 X,Y coordinates for vertical alignment)
+      - [48.0, 27.5, {name: lift1_approach_L2, is_holding_point: true}]     # 5
+      - [52.5, 27.5, {name: lift1_cabin_L2, lift: Lift1, lift_cabin: Lift1, is_holding_point: true}]  # 6
+
+    lanes:
+      # L2 internal navigation
+      - [0, 4, {}]  # room1 <-> center
+      - [4, 0, {}]
+      - [1, 4, {}]  # room2 <-> center
+      - [4, 1, {}]
+      - [2, 4, {}]  # room3 <-> center
+      - [4, 2, {}]
+      - [3, 4, {}]  # room4 <-> center
+      - [4, 3, {}]
+
+      # Lift 1 access
+      - [4, 5, {}]  # center <-> lift1_approach
+      - [5, 4, {}]
+      - [5, 6, {}]  # approach -> cabin
+      - [6, 5, {}]  # cabin -> approach
+
+# Lift lanes connecting L1 and L2 via Lift1
+# Dictionary format with explicit level names for cross-level routing
+lift_lanes:
+  - {from: [L1, 8], to: [L2, 6], orientation: forward, lift_name: Lift1, duration: 5.0}
+  - {from: [L2, 6], to: [L1, 8], orientation: forward, lift_name: Lift1, duration: 5.0}
