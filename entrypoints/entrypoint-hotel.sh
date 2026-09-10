@@ -24,8 +24,18 @@ mkdir -p "${HOME}" "${HOME}/.ros" "${HOME}/.config" "${HOME}/.gz"
 export ROS_HOME="${HOME}/.ros"
 export ROS_LOG_DIR="${HOME}/.ros/log"
 
-source /opt/ros/jazzy/setup.bash
-# Overlay A: rmf_ros2 (source-built librmf_fleet_adapter.so matching jazzy API)
+# Auto-detect ROS distro (use env var if set, otherwise find available distro)
+if [ -z "${ROS_DISTRO}" ]; then
+  for distro in lyrical jazzy humble; do
+    if [ -f "/opt/ros/${distro}/setup.bash" ]; then
+      export ROS_DISTRO="${distro}"
+      break
+    fi
+  done
+fi
+echo "[hotel-pod] Detected ROS distro: ${ROS_DISTRO}"
+source /opt/ros/${ROS_DISTRO}/setup.bash
+# Overlay A: rmf_ros2 (source-built librmf_fleet_adapter.so matching ROS2 API)
 if [ -f /opt/rmf_ros2_ws/install/setup.bash ]; then
   source /opt/rmf_ros2_ws/install/setup.bash
 fi
