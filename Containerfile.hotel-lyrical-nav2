@@ -1,0 +1,115 @@
+# ROS2 Lyrical + RMF Hotel + Nav2 + TurtleBot3
+#
+# DART 6.16.6 in Gazebo Jetty properly supports continuous joints!
+# NO physics engine patches needed - the bug is fixed upstream.
+#
+# Build:
+#   podman build --platform linux/amd64 \
+#     -t quay.io/jianrzha/ros2-rmf-hotel:lyrical-nav2-20260909 \
+#     -f Containerfile.hotel-lyrical-nav2 .
+
+FROM quay.io/jianrzha/ros2-rmf-hotel:lyrical-base
+
+ENV ROS_DISTRO=lyrical \
+    DEBIAN_FRONTEND=noninteractive
+
+# Install Nav2 for Lyrical
+RUN apt-get update && apt-get install -y \
+    ros-lyrical-navigation2 \
+    ros-lyrical-nav2-bringup \
+    ros-lyrical-slam-toolbox \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install RMF demos for Lyrical
+# Try apt first, fall back to source build if packages unavailable
+RUN apt-get update && \
+    (apt-get install -y \
+        ros-lyrical-rmf-demos \
+        ros-lyrical-rmf-demos-gz \
+        ros-lyrical-rmf-demos-maps \
+        ros-lyrical-rmf-task-ros2 \
+        ros-lyrical-rmf-fleet-adapter \
+    || echo "RMF packages not in apt, will build from source") \
+    && rm -rf /var/lib/apt/lists/*
+
+# Build RMF from source if packages not available
+RUN if [ ! -d "/opt/ros/lyrical/share/rmf_demos" ]; then \
+        echo "Building RMF from source..." && \
+        mkdir -p /opt/rmf_demos_ws/src && \
+        cd /opt/rmf_demos_ws/src && \
+        git clone https://github.com/open-rmf/rmf_demos.git -b main && \
+        cd /opt/rmf_demos_ws && \
+        . /opt/ros/lyrical/setup.bash && \
+        rosdep install --from-paths src --ignore-src -r -y && \
+        colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release; \
+    fi
+
+# Install additional tools
+RUN apt-get update && apt-get install -y \
+    python3-websockets \
+    python3-fastapi \
+    python3-uvicorn \
+    tigervnc-standalone-server \
+    tigervnc-xorg-extension \
+    xvfb \
+    openbox \
+    x11vnc \
+    websockify \
+    novnc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create demo directories
+RUN mkdir -p /opt/ros2-demo/scripts \
+    && mkdir -p /opt/ros2-demo/www
+
+# Copy all entrypoints
+COPY entrypoints/entrypoint-hotel.sh /entrypoint-hotel.sh
+COPY entrypoints/entrypoint-nav2.sh /entrypoint-nav2.sh
+COPY entrypoints/entrypoint-rmf.sh /entrypoint-rmf.sh
+COPY entrypoints/nav2_relay.py /nav2_relay.py
+RUN chmod +x /entrypoint-hotel.sh /entrypoint-nav2.sh /entrypoint-rmf.sh /nav2_relay.py
+
+# Copy TurtleBot3 URDF for robot_state_publisher
+RUN mkdir -p /usr/lib64/ros-lyrical/share/nav2_minimal_tb3_sim/urdf
+COPY scripts/turtlebot3_waffle.urdf /usr/lib64/ros-lyrical/share/nav2_minimal_tb3_sim/urdf/turtlebot3_waffle.urdf
+
+# Copy spawn script with continuous joints (DART 6.16.6 supports them!)
+COPY scripts/spawn_turtlebot3_hotel.py /opt/ros2-demo/scripts/spawn_turtlebot3_hotel.py
+RUN chmod +x /opt/ros2-demo/scripts/spawn_turtlebot3_hotel.py
+
+# Patch hotel.world to add Sensors system for gpu_lidar
+COPY scripts/patch_hotel_world.py /tmp/patch_hotel_world.py
+RUN python3 /tmp/patch_hotel_world.py \
+      /opt/rmf_demos_ws/install/share/rmf_demos_maps/maps/hotel/hotel.world \
+      /opt/rmf_demos_ws/install/share/rmf_demos_maps/maps/hotel/hotel.world \
+    && rm /tmp/patch_hotel_world.py
+
+# NO PHYSICS PATCH NEEDED!
+# DART 6.16.6 in Gazebo Jetty properly supports continuous joints.
+# The DOF=0 bug is fixed - no workaround required.
+
+# Pre-spawn TurtleBot3 robot in world file
+COPY scripts/patch_hotel_world_add_robot.py /tmp/patch_hotel_world_add_robot.py
+RUN python3 /tmp/patch_hotel_world_add_robot.py \
+    && rm /tmp/patch_hotel_world_add_robot.py
+
+# Patch simulation.launch.xml to add --headless-rendering for gpu_lidar
+COPY scripts/patch_simulation_launch.py /tmp/patch_simulation_launch.py
+RUN python3 /tmp/patch_simulation_launch.py \
+      /opt/rmf_demos_ws/install/share/rmf_demos_gz/simulation.launch.xml \
+      /opt/rmf_demos_ws/install/share/rmf_demos_gz/simulation.launch.xml \
+    && rm /tmp/patch_simulation_launch.py
+
+# Verify DART version one more time
+RUN echo "=== Final DART Version Check ===" && \
+    dpkg -l | grep dartsim && \
+    echo "=== Expected: DART 6.16.6 or higher ==="
+
+# OCI labels
+LABEL org.opencontainers.image.title="ROS2 Multi-Robot Demo — Hotel with TurtleBot3 + Nav2 (Lyrical)" \
+      org.opencontainers.image.description="Hotel world with TurtleBot3 Waffle for RMF+Nav2+Zenoh (ROS2 Lyrical + DART 6.16.6)" \
+      org.opencontainers.image.source="https://github.com/jianrongzhang89/robots-demo-platform-openshift" \
+      org.opencontainers.image.base.name="quay.io/jianrzha/ros2-rmf-hotel:lyrical-base" \
+      io.openshift.tags="ros2,lyrical,open-rmf,gazebo,jetty,hotel,turtlebot3,nav2,multi-level,dart-6.16.6"
+
+CMD ["/entrypoint-hotel.sh"]
