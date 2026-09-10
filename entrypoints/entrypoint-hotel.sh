@@ -138,12 +138,17 @@ ros2 run tf2_ros static_transform_publisher \
 # --- 6e. Fix Gazebo GUI RCL context crash ---
 # Remove problematic GUI plugins that try to access ROS2 before context is initialized.
 # The toggle_floors and toggle_charging plugins cause "failed to create guard condition"
-# RCL errors when Gazebo GUI loads. Patch the world file to comment them out.
+# RCL errors when Gazebo GUI loads. Copy world file to /tmp, patch it, and point
+# GZ_SIM_RESOURCE_PATH to the patched version.
 echo "[hotel-pod] Patching hotel.world to fix GUI plugin RCL crash..."
-HOTEL_WORLD=$(find /opt/rmf_demos_ws -name "hotel.world" -type f | head -1)
-if [ -n "${HOTEL_WORLD}" ] && [ -f "${HOTEL_WORLD}" ]; then
-  # Create backup
-  cp "${HOTEL_WORLD}" "${HOTEL_WORLD}.orig"
+HOTEL_WORLD_SRC=$(find /opt/rmf_demos_ws -name "hotel.world" -type f | head -1)
+if [ -n "${HOTEL_WORLD_SRC}" ] && [ -f "${HOTEL_WORLD_SRC}" ]; then
+  # Copy to writable location
+  mkdir -p /tmp/hotel_world_patched/maps/hotel
+  HOTEL_WORLD="/tmp/hotel_world_patched/maps/hotel/hotel.world"
+  cp "${HOTEL_WORLD_SRC}" "${HOTEL_WORLD}"
+  echo "[hotel-pod] Copied world file to ${HOTEL_WORLD}"
+
   # Use Python for reliable multi-line XML patching
   python3 - "${HOTEL_WORLD}" <<'PATCHEOF'
 import re, sys
@@ -171,6 +176,9 @@ with open(world_file, "w") as f:
 print(f"[patch] Disabled toggle_charging and toggle_floors plugins in {world_file}")
 PATCHEOF
   echo "[hotel-pod] GUI plugins patched successfully"
+  # Prepend patched world directory to GZ_SIM_RESOURCE_PATH so Gazebo finds it first
+  export GZ_SIM_RESOURCE_PATH="/tmp/hotel_world_patched:${GZ_SIM_RESOURCE_PATH}"
+  echo "[hotel-pod] Updated GZ_SIM_RESOURCE_PATH to use patched world"
 else
   echo "[hotel-pod] WARNING: hotel.world not found, GUI may crash"
 fi
