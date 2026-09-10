@@ -125,6 +125,46 @@ ros2 run tf2_ros static_transform_publisher \
     --frame-id map --child-frame-id rmf_building \
     --ros-args -p use_sim_time:=true &
 
+# --- 6e. Fix Gazebo GUI RCL context crash ---
+# Remove problematic GUI plugins that try to access ROS2 before context is initialized.
+# The toggle_floors and toggle_charging plugins cause "failed to create guard condition"
+# RCL errors when Gazebo GUI loads. Patch the world file to comment them out.
+echo "[hotel-pod] Patching hotel.world to fix GUI plugin RCL crash..."
+HOTEL_WORLD=$(find /opt/rmf_demos_ws -name "hotel.world" -type f | head -1)
+if [ -n "${HOTEL_WORLD}" ] && [ -f "${HOTEL_WORLD}" ]; then
+  # Create backup
+  cp "${HOTEL_WORLD}" "${HOTEL_WORLD}.orig"
+  # Use Python for reliable multi-line XML patching
+  python3 - "${HOTEL_WORLD}" <<'PATCHEOF'
+import re, sys
+world_file = sys.argv[1]
+with open(world_file, "r") as f:
+    content = f.read()
+
+# Remove toggle_charging plugin (single line)
+content = re.sub(
+    r'<plugin filename="toggle_charging"[^/]*/?>',
+    '<!-- DISABLED: RCL crash fix - <plugin filename="toggle_charging" .../> -->',
+    content
+)
+
+# Remove toggle_floors plugin (multi-line block)
+content = re.sub(
+    r'<plugin name="toggle_floors".*?</plugin>',
+    '<!-- DISABLED: RCL crash fix\n      <plugin name="toggle_floors">...</plugin>\n      -->',
+    content,
+    flags=re.DOTALL
+)
+
+with open(world_file, "w") as f:
+    f.write(content)
+print(f"[patch] Disabled toggle_charging and toggle_floors plugins in {world_file}")
+PATCHEOF
+  echo "[hotel-pod] GUI plugins patched successfully"
+else
+  echo "[hotel-pod] WARNING: hotel.world not found, GUI may crash"
+fi
+
 # --- 7. Launch the full hotel demo ---
 echo "[hotel-pod] Launching Open-RMF hotel demo:"
 echo "            ros2 launch ${HOTEL_LAUNCH_PKG} ${HOTEL_LAUNCH_FILE} ${HOTEL_LAUNCH_ARGS}"
@@ -132,32 +172,12 @@ echo "            ros2 launch ${HOTEL_LAUNCH_PKG} ${HOTEL_LAUNCH_FILE} ${HOTEL_L
 ros2 launch "${HOTEL_LAUNCH_PKG}" "${HOTEL_LAUNCH_FILE}" ${HOTEL_LAUNCH_ARGS} &
 LAUNCH_PID=$!
 
-# --- 7b. Spawn TurtleBot3 robots (if enabled) ---
-# For Nav2 integration, spawn TurtleBot3 Waffle instead of slotcar robots
+# --- 7b. TurtleBot3 robot pre-spawned in world file ---
+# NOTE: Robot is pre-spawned in hotel.world at build time
+# Using Bullet physics engine (DART 6.13.2 has continuous joint DOF=0 bug, TPE has no joint support)
 if [ "${SPAWN_TURTLEBOT3:-false}" = "true" ]; then
-  echo "[hotel-pod] TurtleBot3 spawning enabled"
-
-  # Single robot configuration
-  ROBOT_NAME="${ROBOT_NAME:-robot_1}"
-  SPAWN_X="${SPAWN_X:-10.0}"
-  SPAWN_Y="${SPAWN_Y:-30.0}"
-  SPAWN_YAW="${SPAWN_YAW:-0.0}"
-
-  # Wait for Gazebo to start before attempting spawn
-  # Hotel world takes 90-120s to fully initialize
-  echo "[hotel-pod] Waiting 120s for Gazebo hotel world to initialize..."
-  sleep 120
-
-  echo "[hotel-pod] Spawning ${ROBOT_NAME} at (${SPAWN_X}, ${SPAWN_Y}, yaw=${SPAWN_YAW})..."
-  python3 /opt/ros2-demo/scripts/spawn_turtlebot3_hotel.py \
-    --name "${ROBOT_NAME}" \
-    --x "${SPAWN_X}" \
-    --y "${SPAWN_Y}" \
-    --yaw "${SPAWN_YAW}" \
-    --world sim_world \
-    --wait-timeout 180 &
-  SPAWN_PID=$!
-  echo "[hotel-pod] TurtleBot3 spawn initiated (PID: ${SPAWN_PID})"
+  echo "[hotel-pod] TurtleBot3 robot_1 pre-spawned in world file at (10, 30)"
+  echo "[hotel-pod] Bullet-Featherstone physics + continuous wheel joints enabled"
 else
   echo "[hotel-pod] TurtleBot3 spawning disabled (using slotcar robots from launch file)"
 fi
