@@ -17,12 +17,13 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 # Build RMF from source if needed
+SHELL ["/bin/bash", "-c"]
 RUN if [ ! -d "/opt/ros/lyrical/share/rmf_demos" ]; then \
         mkdir -p /opt/rmf_demos_ws/src && \
         cd /opt/rmf_demos_ws/src && \
         git clone https://github.com/open-rmf/rmf_demos.git -b main && \
         cd /opt/rmf_demos_ws && \
-        . /opt/ros/lyrical/setup.bash && \
+        source /opt/ros/lyrical/setup.bash && \
         apt-get update && \
         rosdep install --from-paths src --ignore-src -r -y && \
         colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release && \
