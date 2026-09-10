@@ -47,12 +47,16 @@ COPY scripts/patch_hotel_world.py /tmp/
 COPY scripts/patch_hotel_world_add_robot.py /tmp/
 RUN chmod +x /entrypoint-hotel.sh /opt/ros2-demo/scripts/spawn_turtlebot3_hotel.py
 
-# Apply patches
-RUN python3 /tmp/patch_hotel_world.py \
-    /opt/rmf_demos_ws/install/share/rmf_demos_maps/maps/hotel/hotel.world \
-    /opt/rmf_demos_ws/install/share/rmf_demos_maps/maps/hotel/hotel.world \
-    && python3 /tmp/patch_hotel_world_add_robot.py \
-    && rm /tmp/*.py
+# Apply patches (find hotel.world in build or install directory)
+RUN HOTEL_WORLD=$(find /opt/rmf_demos_ws -name "hotel.world" -type f | head -1) && \
+    if [ -n "$HOTEL_WORLD" ]; then \
+        echo "Found hotel.world at: $HOTEL_WORLD" && \
+        python3 /tmp/patch_hotel_world.py "$HOTEL_WORLD" "$HOTEL_WORLD" && \
+        python3 /tmp/patch_hotel_world_add_robot.py; \
+    else \
+        echo "hotel.world not found, skipping patches"; \
+    fi && \
+    rm /tmp/*.py
 
 RUN mkdir -p /opt/ros2-demo/www
 
