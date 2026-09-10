@@ -19,14 +19,26 @@ RUN apt-get update && \
     || echo "RMF packages not available, will use source") \
     && rm -rf /var/lib/apt/lists/*
 
-# Build RMF from source if needed
+# Build RMF ros2 workspace (rmf_fleet_adapter and dependencies)
 SHELL ["/bin/bash", "-c"]
+RUN mkdir -p /opt/rmf_ros2_ws/src && \
+    cd /opt/rmf_ros2_ws/src && \
+    git clone https://github.com/open-rmf/rmf_ros2.git -b main && \
+    cd /opt/rmf_ros2_ws && \
+    source /opt/ros/lyrical/setup.bash && \
+    apt-get update && \
+    (rosdep install --from-paths src --ignore-src -r -y || echo "Some rosdeps failed, continuing...") && \
+    colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --continue-on-error && \
+    rm -rf /var/lib/apt/lists/*
+
+# Build RMF demos from source if needed
 RUN if [ ! -d "/opt/ros/lyrical/share/rmf_demos" ]; then \
         mkdir -p /opt/rmf_demos_ws/src && \
         cd /opt/rmf_demos_ws/src && \
         git clone https://github.com/open-rmf/rmf_demos.git -b main && \
         cd /opt/rmf_demos_ws && \
         source /opt/ros/lyrical/setup.bash && \
+        source /opt/rmf_ros2_ws/install/setup.bash && \
         apt-get update && \
         (rosdep install --from-paths src --ignore-src -r -y || echo "Some rosdeps failed, continuing...") && \
         colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --continue-on-error && \
