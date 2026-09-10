@@ -1,6 +1,4 @@
-# Free Fleet configuration for Hotel Multi-Level Demo (2.5D layout)
-# All three "floors" share the same map (horizontally arranged)
-
+# Extreme battery to bypass planner checks
 rmf_fleet:
   name: "turtlebot3"
   limits:
@@ -12,20 +10,20 @@ rmf_fleet:
   reversible: True
   battery_system:
     voltage: 12.0
-    capacity: 10000000000.0
+    capacity: 10000000.0
     charging_current: 5.0
   mechanical_system:
-    mass: 20.0
-    moment_of_inertia: 10.0
-    friction_coefficient: 0.1
+    mass: 1.0
+    moment_of_inertia: 1.0
+    friction_coefficient: 0.01
   ambient_system:
-    power: 5.0
+    power: 0.1
   tool_system:
     power: 0.0
-  recharge_threshold: 0.001
+  recharge_threshold: 0.01
   recharge_soc: 1.0
   publish_fleet_state: 10.0
-  account_for_battery_drain: True
+  account_for_battery_drain: False
   task_capabilities:
     loop: True
     delivery: True
@@ -46,18 +44,16 @@ rmf_fleet:
       maps:
         L1:
           map_url: "/opt/maps/hotel_L1.yaml"
-          # Where robot exits each lift on this level [x, y, yaw]
           lift_exit_poses:
             Lift1: [52.5, 27.5, 0.0]
-          # Where each lift cabin is on this level [x, y]
           lift_cabin_poses:
             Lift1: [52.5, 27.5]
         L2:
           map_url: "/opt/maps/hotel_L2.yaml"
           lift_exit_poses:
-            Lift1: [52.5, 27.5, 3.14159]  # Exit facing opposite direction (MUST match nav_graph lift_cabin coords)
+            Lift1: [52.5, 27.5, 3.14159]
           lift_cabin_poses:
-            Lift1: [52.5, 27.5]  # MUST match L1 cabin coords for vertical alignment
+            Lift1: [52.5, 27.5]
         L3:
           map_url: "/opt/maps/hotel_L3.yaml"
           lift_exit_poses:
@@ -67,9 +63,6 @@ rmf_fleet:
 
   robot_state_update_frequency: 10.0
 
-# Identity transform: RMF frame == Nav2 world frame
-# True multi-level structure: L1, L2, L3 at elevation 0 (2.5D horizontal layout)
-# Reference coordinates per level using actual waypoint positions from nav graph
 reference_coordinates:
   L1:
     rmf:   [[10.0, 15.0], [20.0, 15.0], [10.0, 30.0], [20.0, 30.0]]
