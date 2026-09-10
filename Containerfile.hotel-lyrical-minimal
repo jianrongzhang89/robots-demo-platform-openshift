@@ -7,8 +7,11 @@ FROM quay.io/jianrzha/ros2-rmf-hotel:lyrical-base
 ENV ROS_DISTRO=lyrical \
     DEBIAN_FRONTEND=noninteractive
 
-# Install RMF demos (try apt first, source build if unavailable)
+# Install RMF demos and CycloneDDS (try apt first, source build if unavailable)
 RUN apt-get update && \
+    apt-get install -y \
+        ros-lyrical-rmw-cyclonedds-cpp \
+        ros-lyrical-cyclonedds && \
     (apt-get install -y \
         ros-lyrical-rmf-demos \
         ros-lyrical-rmf-demos-gz \
@@ -42,10 +45,12 @@ RUN apt-get update && apt-get install -y \
 
 # Copy entrypoints and scripts
 COPY entrypoints/entrypoint-hotel.sh /entrypoint-hotel.sh
+COPY entrypoints/rmf_puppet_controller.py /entrypoints/rmf_puppet_controller.py
 COPY scripts/spawn_turtlebot3_hotel.py /opt/ros2-demo/scripts/
 COPY scripts/patch_hotel_world.py /tmp/
 COPY scripts/patch_hotel_world_add_robot.py /tmp/
-RUN chmod +x /entrypoint-hotel.sh /opt/ros2-demo/scripts/spawn_turtlebot3_hotel.py
+RUN chmod +x /entrypoint-hotel.sh /opt/ros2-demo/scripts/spawn_turtlebot3_hotel.py && \
+    mkdir -p /entrypoints
 
 # Apply patches (find hotel.world in build or install directory)
 # Note: Patches are optional - we can test DART 6.16.6 odometry without them
