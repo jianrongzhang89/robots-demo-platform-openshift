@@ -1,0 +1,66 @@
+# Minimal Lyrical image for odometry testing
+# Tests if DART 6.16.6 fixes the continuous joint bug
+# Without Nav2 (packages not yet available)
+
+FROM quay.io/jianrzha/ros2-rmf-hotel:lyrical-base
+
+ENV ROS_DISTRO=lyrical \
+    DEBIAN_FRONTEND=noninteractive
+
+# Install RMF demos (try apt first, source build if unavailable)
+RUN apt-get update && \
+    (apt-get install -y \
+        ros-lyrical-rmf-demos \
+        ros-lyrical-rmf-demos-gz \
+        ros-lyrical-rmf-demos-maps \
+    || echo "RMF packages not available, will use source") \
+    && rm -rf /var/lib/apt/lists/*
+
+# Build RMF from source if needed
+RUN if [ ! -d "/opt/ros/lyrical/share/rmf_demos" ]; then \
+        mkdir -p /opt/rmf_demos_ws/src && \
+        cd /opt/rmf_demos_ws/src && \
+        git clone https://github.com/open-rmf/rmf_demos.git -b main && \
+        cd /opt/rmf_demos_ws && \
+        . /opt/ros/lyrical/setup.bash && \
+        apt-get update && \
+        rosdep install --from-paths src --ignore-src -r -y && \
+        colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+        rm -rf /var/lib/apt/lists/*; \
+    fi
+
+# Install VNC tools
+RUN apt-get update && apt-get install -y \
+    tigervnc-standalone-server \
+    xvfb \
+    openbox \
+    x11vnc \
+    websockify \
+    novnc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy entrypoints and scripts
+COPY entrypoints/entrypoint-hotel.sh /entrypoint-hotel.sh
+COPY scripts/spawn_turtlebot3_hotel.py /opt/ros2-demo/scripts/
+COPY scripts/patch_hotel_world.py /tmp/
+COPY scripts/patch_hotel_world_add_robot.py /tmp/
+RUN chmod +x /entrypoint-hotel.sh /opt/ros2-demo/scripts/spawn_turtlebot3_hotel.py
+
+# Apply patches
+RUN python3 /tmp/patch_hotel_world.py \
+    /opt/rmf_demos_ws/install/share/rmf_demos_maps/maps/hotel/hotel.world \
+    /opt/rmf_demos_ws/install/share/rmf_demos_maps/maps/hotel/hotel.world \
+    && python3 /tmp/patch_hotel_world_add_robot.py \
+    && rm /tmp/*.py
+
+RUN mkdir -p /opt/ros2-demo/www
+
+# Verify DART 6.16.6 one final time
+RUN echo "=== DART Version Check ===" && \
+    dpkg -l | grep dartsim && \
+    echo "=== Expected: DART 6.16.6 ==="
+
+LABEL org.opencontainers.image.title="ROS2 Lyrical Minimal - Odometry Test" \
+      org.opencontainers.image.description="Hotel world with DART 6.16.6 (no Nav2) for odometry testing"
+
+CMD ["/entrypoint-hotel.sh"]
