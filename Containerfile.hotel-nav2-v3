@@ -14,8 +14,13 @@ FROM --platform=linux/amd64 quay.io/jianrzha/ros2-rmf-hotel:latest
 ENV DEBIAN_FRONTEND=noninteractive \
     ROS_DISTRO=jazzy
 
-# --- No additional packages needed ---
-# We create our own TurtleBot3 model below with all necessary plugins
+# --- Install Nav2 for TurtleBot3 navigation ---
+# Base image is Ubuntu 24.04, use apt
+# ros-jazzy-navigation2 metapackage includes all core Nav2 components
+RUN apt-get update && apt-get install -y \
+    ros-jazzy-navigation2 \
+    ros-jazzy-nav2-bringup \
+    && rm -rf /var/lib/apt/lists/*
 
 # --- Create TurtleBot3 Waffle model for Gazebo Harmonic ---
 # Uses simple geometry (boxes, cylinders) instead of external meshes
@@ -30,7 +35,8 @@ RUN python3 /tmp/create_tb3_gz_model_simple.py /opt/gz-models/turtlebot3_waffle 
 COPY entrypoints/entrypoint-hotel.sh /entrypoint-hotel.sh
 COPY entrypoints/entrypoint-nav2.sh /entrypoint-nav2.sh
 COPY entrypoints/entrypoint-rmf.sh /entrypoint-rmf.sh
-RUN chmod +x /entrypoint-hotel.sh /entrypoint-nav2.sh /entrypoint-rmf.sh
+COPY entrypoints/nav2_relay.py /nav2_relay.py
+RUN chmod +x /entrypoint-hotel.sh /entrypoint-nav2.sh /entrypoint-rmf.sh /nav2_relay.py
 
 # --- Copy TurtleBot3 URDF for robot_state_publisher ---
 RUN mkdir -p /usr/lib64/ros-jazzy/share/nav2_minimal_tb3_sim/urdf
@@ -41,6 +47,11 @@ COPY scripts/turtlebot3_waffle.urdf /usr/lib64/ros-jazzy/share/nav2_minimal_tb3_
 COPY scripts/spawn_turtlebot3_hotel.py /opt/ros2-demo/scripts/spawn_turtlebot3_hotel.py
 RUN chmod +x /opt/ros2-demo/scripts/spawn_turtlebot3_hotel.py
 
+# --- Copy DART physics patch script ---
+# ODE doesn't support continuous joints; DART does
+COPY scripts/patch_hotel_physics_dart.py /opt/ros2-demo/scripts/patch_hotel_physics_dart.py
+RUN chmod +x /opt/ros2-demo/scripts/patch_hotel_physics_dart.py
+
 # --- Patch hotel.world to add Sensors system for gpu_lidar ---
 # The upstream hotel.world lacks gz-sim-sensors-system, which gpu_lidar requires
 COPY scripts/patch_hotel_world.py /tmp/patch_hotel_world.py
@@ -48,6 +59,73 @@ RUN python3 /tmp/patch_hotel_world.py \
       /opt/rmf_demos_ws/install/share/rmf_demos_maps/maps/hotel/hotel.world \
       /opt/rmf_demos_ws/install/share/rmf_demos_maps/maps/hotel/hotel.world \
     && rm /tmp/patch_hotel_world.py
+
+# --- COMPLETE PATCH: GUI plugins, ODE physics (reverted), ground plane ---
+# This patches the INSTALLED world file at build time (not runtime)
+# Fixes:
+#   1. Remove toggle_charging/toggle_floors GUI plugins (RCL crash)
+#   2. Keep/revert to ODE physics (better default joint support than Bullet)
+#   3. Add ground plane collision (prevents robots falling through world)
+COPY scripts/patch_hotel_world_complete.py /tmp/patch_hotel_world_complete.py
+RUN python3 /tmp/patch_hotel_world_complete.py \
+      /opt/rmf_demos_ws/install/share/rmf_demos_maps/maps/hotel/hotel.world \
+    && rm /tmp/patch_hotel_world_complete.py
+
+# --- Switch back to ODE physics (Bullet joints not working) ---
+# After extensive testing, Bullet joints don't work with DiffDrive
+# ODE has better default joint support for differential drive robots
+COPY scripts/patch_physics_to_ode.py /tmp/patch_physics_to_ode.py
+RUN python3 /tmp/patch_physics_to_ode.py \
+      /opt/rmf_demos_ws/install/share/rmf_demos_maps/maps/hotel/hotel.world \
+    && rm /tmp/patch_physics_to_ode.py
+
+# --- Add TurtleBot3 robot directly to hotel.world (workaround for DART dynamic spawn bug) ---
+# DART physics has a bug where dynamically spawned models get all revolute/continuous joints
+# converted to FIXED (0 DOF). Pre-spawning the robot in the world file works around this.
+COPY scripts/patch_hotel_world_add_robot.py /tmp/patch_hotel_world_add_robot.py
+RUN python3 /tmp/patch_hotel_world_add_robot.py || echo "WARNING: Failed to pre-spawn robot"
+RUN rm /tmp/patch_hotel_world_add_robot.py
+
+# --- CRITICAL FIX #3: Remove <static>True</static> tag from robot_1 ---
+# ROOT CAUSE #3: robot_1 has <static>True</static> which PREVENTS PHYSICS MOVEMENT!
+# Static models are frozen - they cannot be moved by forces/torques
+# This is why DiffDrive plugin loads but robot doesn't move
+COPY scripts/patch_robot1_remove_static.py /tmp/patch_robot1_remove_static.py
+RUN python3 /tmp/patch_robot1_remove_static.py \
+      /opt/rmf_demos_ws/install/share/rmf_demos_maps/maps/hotel/hotel.world \
+    && rm /tmp/patch_robot1_remove_static.py
+
+# --- Scale robot_1 to 3x size and make it BRIGHT RED ---
+# Scales from ORIGINAL size (0.28m) to 3x (0.84m)
+# Previous script was looking for giant size and failed to match
+COPY scripts/patch_robot1_scale_3x.py /tmp/patch_robot1_scale_3x.py
+RUN python3 /tmp/patch_robot1_scale_3x.py \
+      /opt/rmf_demos_ws/install/share/rmf_demos_maps/maps/hotel/hotel.world \
+    && rm /tmp/patch_robot1_scale_3x.py
+
+# --- CRITICAL FIX: Move robot_1 to NEGATIVE Y coordinates ---
+# Investigation revealed cleaner robots are at Y=-32 (negative!)
+# All previous attempts used positive Y, putting robot in wrong area
+# Move to (20, -30, 0.1) to be near cleaners at (19-23, -32)
+COPY scripts/patch_robot1_position_negative_y.py /tmp/patch_robot1_position_negative_y.py
+RUN python3 /tmp/patch_robot1_position_negative_y.py \
+      /opt/rmf_demos_ws/install/share/rmf_demos_maps/maps/hotel/hotel.world \
+    && rm /tmp/patch_robot1_position_negative_y.py
+
+# --- CRITICAL FIX: Update DiffDrive plugin parameters for scaled robot ---
+# ROOT CAUSE: Robot scaled 3x but DiffDrive plugin still has original params!
+#   - wheel_radius: 0.033m (original) → 0.10m (actual)
+#   - wheel_separation: 0.287m → 0.288m (actual)
+# This mismatch breaks cmd_vel → wheel velocity conversion
+COPY scripts/patch_robot1_diffdrive_params.py /tmp/patch_robot1_diffdrive_params.py
+RUN python3 /tmp/patch_robot1_diffdrive_params.py \
+      /opt/rmf_demos_ws/install/share/rmf_demos_maps/maps/hotel/hotel.world \
+    && rm /tmp/patch_robot1_diffdrive_params.py
+
+# --- REMOVED: Bullet joints patch (was breaking ODE physics) ---
+# This patch forced joints to type="revolute" which is WRONG for wheels!
+# Wheels need type="continuous" (unlimited rotation), not revolute (limited)
+# Joint limits are already added in patch_hotel_world_add_robot.py
 
 # --- Patch simulation.launch.xml to add --headless-rendering for gpu_lidar ---
 # Sensors system plugin requires server-side rendering to be enabled

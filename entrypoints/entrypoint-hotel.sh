@@ -66,6 +66,11 @@ export QT_X11_NO_MITSHM=1
 #   rmf_demos_assets    — robot SDFs (TinyRobot, CleanerBotA, DeliveryRobot)
 export GZ_SIM_RESOURCE_PATH="/opt/gz-models:/opt/rmf_demos_ws/install/share/rmf_demos_assets/models"
 
+# CRITICAL FIX: Add gz-sim vendor plugins to plugin path
+# DiffDrive plugin is in /opt/ros/jazzy/opt/gz_sim_vendor/lib/gz-sim-8/plugins/
+# but setup.bash doesn't add this to GZ_SIM_SYSTEM_PLUGIN_PATH
+export GZ_SIM_SYSTEM_PLUGIN_PATH="${GZ_SIM_SYSTEM_PLUGIN_PATH}:/opt/ros/jazzy/opt/gz_sim_vendor/lib/gz-sim-8/plugins"
+
 WEB_PORT="${WEB_PORT:-8080}"
 VNC_PORT="${VNC_PORT:-5900}"
 NOVNC_PORT="${NOVNC_PORT:-6080}"
@@ -171,9 +176,46 @@ content = re.sub(
     flags=re.DOTALL
 )
 
+# Keep ODE physics (better default joint support than Bullet for continuous joints)
+# Bullet was attempted but continuous wheel joints don't work properly
+# content = re.sub(
+#     r'<physics\s+name="([^"]+)"\s+type="ode">',
+#     r'<physics name="\1" type="bullet">',
+#     content
+# )
+
+# Add ground plane model with collision if not present
+if 'name="ground_plane"' not in content:
+    ground_plane = '''
+    <!-- Ground plane for TurtleBot3 collision -->
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>1000 1000</size>
+            </plane>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>50</mu2>
+              </ode>
+            </friction>
+          </surface>
+        </collision>
+      </link>
+    </model>
+'''
+    # Insert before </world> closing tag
+    content = content.replace('</world>', ground_plane + '  </world>')
+
 with open(world_file, "w") as f:
     f.write(content)
-print(f"[patch] Disabled toggle_charging and toggle_floors plugins in {world_file}")
+print(f"[patch] Applied: GUI plugins disabled, Bullet physics, ground plane added")
 PATCHEOF
   echo "[hotel-pod] GUI plugins patched successfully"
   # Prepend patched world directory to GZ_SIM_RESOURCE_PATH so Gazebo finds it first
@@ -189,6 +231,20 @@ echo "            ros2 launch ${HOTEL_LAUNCH_PKG} ${HOTEL_LAUNCH_FILE} ${HOTEL_L
 # shellcheck disable=SC2086
 ros2 launch "${HOTEL_LAUNCH_PKG}" "${HOTEL_LAUNCH_FILE}" ${HOTEL_LAUNCH_ARGS} &
 LAUNCH_PID=$!
+
+# Wait for Gazebo to start
+sleep 10
+
+# --- 7a. Start ros_gz_bridge for robot_1 ---
+# DiffDrive plugin publishes/subscribes using /robot_1/* namespace (not /model/robot_1/*)
+# Bridge those Gazebo topics directly to ROS2
+echo "[hotel-pod] Starting ros_gz_bridge for robot_1..."
+ros2 run ros_gz_bridge parameter_bridge \
+  /robot_1/cmd_vel@geometry_msgs/msg/Twist]gz.msgs.Twist \
+  /robot_1/odometry@nav_msgs/msg/Odometry[gz.msgs.Odometry \
+  --ros-args \
+  -r /robot_1/odometry:=/robot_1/odom &
+ROBOT1_BRIDGE_PID=$!
 
 # --- 7b. TurtleBot3 robot pre-spawned in world file ---
 # NOTE: Robot is pre-spawned in hotel.world at build time
@@ -214,7 +270,7 @@ echo "=================================================="
 
 term_handler() {
   echo "[hotel-pod] Shutting down..."
-  kill "${LAUNCH_PID:-}" "${API_PID:-}" "${DASHBOARD_PID:-}" "${XVFB_PID:-}" 2>/dev/null || true
+  kill "${LAUNCH_PID:-}" "${ROBOT1_BRIDGE_PID:-}" "${API_PID:-}" "${DASHBOARD_PID:-}" "${XVFB_PID:-}" 2>/dev/null || true
   pkill -P $$ 2>/dev/null || true
   wait "${LAUNCH_PID}" 2>/dev/null || true
 }
