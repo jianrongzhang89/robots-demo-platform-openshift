@@ -335,8 +335,8 @@ TB3_WAFFLE_SDF = """<?xml version="1.0" ?>
       <axis>
         <xyz>0 1 0</xyz>
         <limit>
-          <lower>-1.79769e+308</lower>
-          <upper>1.79769e+308</upper>
+          <lower>-1e16</lower>
+          <upper>1e16</upper>
         </limit>
       </axis>
     </joint>
@@ -347,8 +347,8 @@ TB3_WAFFLE_SDF = """<?xml version="1.0" ?>
       <axis>
         <xyz>0 1 0</xyz>
         <limit>
-          <lower>-1.79769e+308</lower>
-          <upper>1.79769e+308</upper>
+          <lower>-1e16</lower>
+          <upper>1e16</upper>
         </limit>
       </axis>
     </joint>

@@ -83,6 +83,7 @@ echo "[nav2-pod/${ROBOT_NAME}] TF2 buffer ready, proceeding with Nav2 launch"
 echo "[nav2-pod/${ROBOT_NAME}] Starting nav2 RMF relay (pub/sub bridge for navigate_to_pose)..."
 # Watchdog loop: restart relay if it exits unexpectedly.
 (while true; do
+  source "${ROS_PREFIX}/setup.bash"
   python3 /nav2_relay.py 2>&1
   echo "[nav2-pod/${ROBOT_NAME}] nav2_relay.py exited (exit=$?), restarting in 3s..."
   sleep 3
@@ -355,13 +356,13 @@ elif [ "${LOCALIZATION_MODE}" = "amcl" ]; then
   # the particle filter has processed the pose and can publish map→odom TF.
   echo "[nav2-pod/${ROBOT_NAME}] Publishing AMCL initial pose and waiting for convergence..."
   for _try in $(seq 1 6); do
-    ros2 topic pub /initialpose geometry_msgs/msg/PoseWithCovarianceStamped \
+    timeout 20 ros2 topic pub /initialpose geometry_msgs/msg/PoseWithCovarianceStamped \
       "{header: {frame_id: 'map'}, pose: {pose: {position: {x: ${SPAWN_X}, y: ${SPAWN_Y}}, \
       orientation: {x: 0.0, y: 0.0, z: ${SLAM_QZ}, w: ${SLAM_QW}}}, \
       covariance: [0.10,0,0,0,0,0, 0,0.10,0,0,0,0, 0,0,0,0,0,0, \
       0,0,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0.05]}}" \
       --times 3 2>/dev/null || true
-    sleep 10
+    sleep 5
     AMCL_OK=$(timeout 3 ros2 topic echo /amcl_pose --once 2>/dev/null | grep -c "position" || echo 0)
     if [ "${AMCL_OK}" -ge 1 ]; then
       echo "[nav2-pod/${ROBOT_NAME}] AMCL converged (attempt ${_try}/6)"

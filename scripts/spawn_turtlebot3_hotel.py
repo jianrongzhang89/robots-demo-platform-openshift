@@ -49,7 +49,12 @@ TURTLEBOT3_WAFFLE_SDF_TEMPLATE = """<?xml version="1.0"?>
       </inertial>
       <collision name="left_wheel_collision">
         <geometry><cylinder><radius>0.033</radius><length>0.018</length></cylinder></geometry>
-        <surface><friction><ode><mu>100000</mu><mu2>100000</mu2></ode></friction></surface>
+        <surface>
+          <friction>
+            <ode><mu>100000</mu><mu2>100000</mu2></ode>
+            <bullet><friction>100000</friction><friction2>100000</friction2></bullet>
+          </friction>
+        </surface>
       </collision>
       <visual name="left_wheel_visual">
         <geometry><cylinder><radius>0.033</radius><length>0.018</length></cylinder></geometry>
@@ -63,7 +68,12 @@ TURTLEBOT3_WAFFLE_SDF_TEMPLATE = """<?xml version="1.0"?>
       </inertial>
       <collision name="right_wheel_collision">
         <geometry><cylinder><radius>0.033</radius><length>0.018</length></cylinder></geometry>
-        <surface><friction><ode><mu>100000</mu><mu2>100000</mu2></ode></friction></surface>
+        <surface>
+          <friction>
+            <ode><mu>100000</mu><mu2>100000</mu2></ode>
+            <bullet><friction>100000</friction><friction2>100000</friction2></bullet>
+          </friction>
+        </surface>
       </collision>
       <visual name="right_wheel_visual">
         <geometry><cylinder><radius>0.033</radius><length>0.018</length></cylinder></geometry>
@@ -100,8 +110,40 @@ TURTLEBOT3_WAFFLE_SDF_TEMPLATE = """<?xml version="1.0"?>
       </sensor>
     </link>
     <joint name="base_joint" type="fixed"><parent>base_footprint</parent><child>base_link</child></joint>
-    <joint name="left_wheel_joint" type="revolute"><parent>base_link</parent><child>wheel_left_link</child><axis><xyz>0 0 1</xyz></axis></joint>
-    <joint name="right_wheel_joint" type="revolute"><parent>base_link</parent><child>wheel_right_link</child><axis><xyz>0 0 1</xyz></axis></joint>
+    <joint name="left_wheel_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>wheel_left_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-10000000000000000</lower>
+          <upper>10000000000000000</upper>
+          <effort>-1</effort>
+          <velocity>-1</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.0</damping>
+          <friction>0.0</friction>
+        </dynamics>
+      </axis>
+    </joint>
+    <joint name="right_wheel_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>wheel_right_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-10000000000000000</lower>
+          <upper>10000000000000000</upper>
+          <effort>-1</effort>
+          <velocity>-1</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.0</damping>
+          <friction>0.0</friction>
+        </dynamics>
+      </axis>
+    </joint>
     <joint name="lidar_joint" type="fixed"><parent>base_link</parent><child>base_scan</child></joint>
     <joint name="imu_joint" type="fixed"><parent>base_link</parent><child>imu_link</child></joint>
     <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive">
@@ -167,6 +209,7 @@ def spawn_ground_plane(world_name='hotel'):
         <surface>
           <friction>
             <ode><mu>1.0</mu><mu2>1.0</mu2></ode>
+            <bullet><friction>1.0</friction><friction2>1.0</friction2></bullet>
           </friction>
         </surface>
       </collision>
