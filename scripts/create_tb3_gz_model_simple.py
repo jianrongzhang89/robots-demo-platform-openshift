@@ -99,8 +99,22 @@ def create_model(output_dir):
       </sensor>
     </link>
     <joint name="base_joint" type="fixed"><parent>base_footprint</parent><child>base_link</child></joint>
-    <joint name="left_wheel_joint" type="revolute"><parent>base_link</parent><child>wheel_left_link</child><axis><xyz>0 0 1</xyz></axis></joint>
-    <joint name="right_wheel_joint" type="revolute"><parent>base_link</parent><child>wheel_right_link</child><axis><xyz>0 0 1</xyz></axis></joint>
+    <joint name="left_wheel_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>wheel_left_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit><lower>-1e16</lower><upper>1e16</upper></limit>
+      </axis>
+    </joint>
+    <joint name="right_wheel_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>wheel_right_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit><lower>-1e16</lower><upper>1e16</upper></limit>
+      </axis>
+    </joint>
     <joint name="lidar_joint" type="fixed"><parent>base_link</parent><child>lidar_link</child></joint>
     <joint name="imu_joint" type="fixed"><parent>base_link</parent><child>imu_link</child></joint>
     <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive">

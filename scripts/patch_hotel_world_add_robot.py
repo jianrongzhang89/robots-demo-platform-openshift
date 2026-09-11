@@ -136,15 +136,33 @@ TURTLEBOT3_MODEL = """
       <parent>base_footprint</parent>
       <child>base_link</child>
     </joint>
-    <joint name="left_wheel_joint" type="continuous">
+    <joint name="left_wheel_joint" type="revolute">
       <parent>base_link</parent>
       <child>wheel_left_link</child>
-      <axis><xyz>0 0 1</xyz></axis>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e16</lower>
+          <upper>1e16</upper>
+          <effort>1000</effort>
+          <velocity>1000</velocity>
+        </limit>
+        <dynamics><friction>0.1</friction></dynamics>
+      </axis>
     </joint>
-    <joint name="right_wheel_joint" type="continuous">
+    <joint name="right_wheel_joint" type="revolute">
       <parent>base_link</parent>
       <child>wheel_right_link</child>
-      <axis><xyz>0 0 1</xyz></axis>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e16</lower>
+          <upper>1e16</upper>
+          <effort>1000</effort>
+          <velocity>1000</velocity>
+        </limit>
+        <dynamics><friction>0.1</friction></dynamics>
+      </axis>
     </joint>
     <joint name="lidar_joint" type="fixed">
       <parent>base_link</parent>
@@ -160,10 +178,11 @@ TURTLEBOT3_MODEL = """
       <wheel_separation>0.287</wheel_separation>
       <wheel_radius>0.033</wheel_radius>
       <odom_publish_frequency>50</odom_publish_frequency>
-      <topic>cmd_vel</topic>
-      <odom_topic>odometry</odom_topic>
+      <topic>/robot_1/cmd_vel</topic>
+      <odom_topic>/robot_1/odom</odom_topic>
       <frame_id>odom</frame_id>
       <child_frame_id>base_footprint</child_frame_id>
+      <tf_topic>/robot_1/tf</tf_topic>
     </plugin>
   </model>
 """
