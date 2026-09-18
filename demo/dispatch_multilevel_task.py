@@ -8,6 +8,7 @@ using lifts, demonstrating RMF's multi-level coordination capabilities.
 
 import rclpy
 from rclpy.node import Node
+from rclpy.parameter import Parameter
 from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy, HistoryPolicy
 from rmf_task_msgs.msg import ApiRequest, ApiResponse
 import json
@@ -18,6 +19,9 @@ import sys
 class MultiLevelTaskDispatcher(Node):
     def __init__(self):
         super().__init__('multilevel_task_dispatcher')
+        self.set_parameters([
+            Parameter('use_sim_time', Parameter.Type.BOOL, True)
+        ])
 
         # QoS profile for task API (TRANSIENT_LOCAL durability required)
         task_api_qos = QoSProfile(
@@ -60,41 +64,27 @@ class MultiLevelTaskDispatcher(Node):
         Submit a multi-level navigation task.
 
         Args:
-            start_waypoint: Starting waypoint (e.g., "lobby_east" on L1)
-            end_waypoint: Destination waypoint on another floor (e.g., "L2_room1")
+            start_waypoint: Starting waypoint (e.g., "lobby" on L1)
+            end_waypoint: Destination waypoint on another floor (e.g., "L3_room1")
             robot_name: Specific robot to assign (optional, e.g., "tinyBot_1")
         """
         request_id = f"multilevel_{int(time.time())}"
+        now = self.get_clock().now()
+        request_time_ms = now.nanoseconds // 1_000_000
 
-        # Build multi-level navigation task
-        # RMF will automatically plan the lift usage
+        # A delivery description lets RMF plan the lift route between places.
         task_description = {
-            "category": "compose",
-            "phases": [
-                {
-                    "activity": {
-                        "category": "go_to_place",
-                        "description": {
-                            "waypoint": start_waypoint
-                        }
-                    }
-                },
-                {
-                    "activity": {
-                        "category": "go_to_place",
-                        "description": {
-                            "waypoint": end_waypoint
-                        }
-                    }
-                }
-            ]
+            "category": "patrol",
+            "places": [start_waypoint, end_waypoint],
+            "rounds": 1
         }
 
         task_request = {
             "type": "dispatch_task_request",
             "request": {
-                "unix_millis_earliest_start_time": int(time.time() * 1000),
-                "category": "delivery",  # Use "delivery" category, fleet has this capability
+                "unix_millis_request_time": request_time_ms,
+                "unix_millis_earliest_start_time": request_time_ms,
+                "category": "patrol",
                 "description": task_description
             }
         }
@@ -127,15 +117,17 @@ def main(args=None):
     """Main function"""
 
     # Parse command line arguments
-    robot = "tinyBot_1" if len(sys.argv) <= 1 else sys.argv[1]
-    start = "lobby_east" if len(sys.argv) <= 2 else sys.argv[2]
-    destination = "L2_room1" if len(sys.argv) <= 3 else sys.argv[3]
+    robot = "robot_1" if len(sys.argv) <= 1 else sys.argv[1]
+    start = "lobby" if len(sys.argv) <= 2 else sys.argv[2]
+    destination = "L3_room1" if len(sys.argv) <= 3 else sys.argv[3]
 
     rclpy.init(args=args)
     dispatcher = MultiLevelTaskDispatcher()
 
-    # Give it a moment to initialize
-    time.sleep(1)
+    # Wait until the simulator clock is available before timestamping the task.
+    deadline = time.monotonic() + 10.0
+    while dispatcher.get_clock().now().nanoseconds == 0 and time.monotonic() < deadline:
+        rclpy.spin_once(dispatcher, timeout_sec=0.1)
 
     # Submit multi-level navigation task
     print("\n" + "="*70)
@@ -143,7 +135,7 @@ def main(args=None):
     print("="*70)
     print(f"Robot: {robot}")
     print(f"Start: {start} (L1)")
-    print(f"Destination: {destination} (L2)")
+    print(f"Destination: {destination} (multi-level)")
     print("")
     print("Expected behavior:")
     print("  1. Robot navigates to lift on L1")

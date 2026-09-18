@@ -7,7 +7,7 @@ STUBS = [
     "Sofa","StorageRack","Suitcase1","Suitcase2","Toilet","TrashBin",
     "VendingMachine","WoodenChair",
 ]
-BASE = "/opt/gz-models"
+BASE = os.environ.get("STUB_MODEL_BASE", "/opt/gz-models")
 for name in STUBS:
     d = os.path.join(BASE, name)
     os.makedirs(d, exist_ok=True)

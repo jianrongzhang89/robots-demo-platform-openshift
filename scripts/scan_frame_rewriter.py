@@ -2,8 +2,8 @@
 """
 Scan Frame ID Rewriter
 
-Subscribes to /scan with frame_id robot_1/base_scan/lidar
-Republishes to /scan_fixed with frame_id base_scan (will be namespaced to robot_1/scan_fixed)
+Subscribes to /robot_1/scan with frame_id robot_1/base_scan/lidar
+Republishes to /robot_1/scan_fixed with frame_id base_scan
 
 This is a workaround for Gazebo gpu_lidar auto-generating frame_id as model/link/sensor.
 """
@@ -30,14 +30,14 @@ class ScanFrameRewriter(Node):
         # Subscribe to original scan
         self.scan_sub = self.create_subscription(
             LaserScan,
-            '/scan',
+            '/robot_1/scan',
             self.scan_callback,
             scan_qos
         )
 
         # Publish to /scan (overwrites the original - this node processes first due to local DDS priority)
         # The scan is consumed locally by AMCL before Zenoh bridge forwards it
-        self.scan_pub = self.create_publisher(LaserScan, '/scan_fixed', scan_qos)
+        self.scan_pub = self.create_publisher(LaserScan, '/robot_1/scan_fixed', scan_qos)
 
         self.get_logger().info('Scan frame rewriter active: robot_1/base_scan/lidar → base_scan on /scan_fixed')
 

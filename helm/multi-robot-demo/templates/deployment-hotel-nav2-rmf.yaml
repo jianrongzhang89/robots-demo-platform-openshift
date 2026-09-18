@@ -1,0 +1,70 @@
+{{- if .Values.hotelNav2Rmf.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hotel-nav2-rmf
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: hotel-nav2-rmf
+    app.kubernetes.io/part-of: ros2-multi-robot-demo
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hotel-nav2-rmf
+  template:
+    metadata:
+      labels:
+        app: hotel-nav2-rmf
+        app.kubernetes.io/part-of: ros2-multi-robot-demo
+    spec:
+      serviceAccountName: ros2-demo
+      containers:
+        - name: hotel-nav2-rmf
+          image: {{ .Values.hotelNav2Rmf.image }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/entrypoint-hotel-nav2-rmf.sh"]
+          ports:
+            - name: novnc
+              containerPort: 6080
+              protocol: TCP
+          env:
+            - name: ROS_DISTRO
+              value: jazzy
+            - name: ROS_DOMAIN_ID
+              value: {{ .Values.hotelNav2Rmf.rosDomainId | quote }}
+            - name: RMW_IMPLEMENTATION
+              value: rmw_cyclonedds_cpp
+            - name: INITIAL_X
+              value: {{ .Values.hotelNav2Rmf.robot.initialX | quote }}
+            - name: INITIAL_Y
+              value: {{ .Values.hotelNav2Rmf.robot.initialY | quote }}
+            - name: INITIAL_YAW
+              value: {{ .Values.hotelNav2Rmf.robot.initialYaw | quote }}
+            - name: HOTEL_MAP_TEMPLATE
+              value: /opt/ros2-demo/maps/hotel_{level}.yaml
+            - name: RESOLUTION
+              value: {{ .Values.hotelNav2Rmf.resolution | quote }}
+          resources:
+            requests:
+              cpu: {{ .Values.hotelNav2Rmf.resources.requests.cpu | quote }}
+              memory: {{ .Values.hotelNav2Rmf.resources.requests.memory | quote }}
+            limits:
+              cpu: {{ .Values.hotelNav2Rmf.resources.limits.cpu | quote }}
+              memory: {{ .Values.hotelNav2Rmf.resources.limits.memory | quote }}
+          readinessProbe:
+            exec:
+              command: ["/bin/bash", "-c", "source /opt/ros/jazzy/setup.bash && ros2 service list | grep -qx /robot_1/map_server/load_map"]
+            initialDelaySeconds: 90
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 30
+          livenessProbe:
+            exec:
+              command: ["/bin/bash", "-c", "source /opt/ros/jazzy/setup.bash && ros2 topic list | grep -qx /clock"]
+            initialDelaySeconds: 180
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 10
+{{- end }}

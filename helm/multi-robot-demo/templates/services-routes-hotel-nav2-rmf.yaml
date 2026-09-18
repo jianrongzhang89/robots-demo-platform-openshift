@@ -1,0 +1,45 @@
+{{- if .Values.hotelNav2Rmf.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: hotel-nav2-rmf-novnc
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: hotel-nav2-rmf
+    app.kubernetes.io/part-of: ros2-multi-robot-demo
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  selector:
+    app: hotel-nav2-rmf
+  ports:
+    - name: novnc
+      port: 6080
+      targetPort: novnc
+      protocol: TCP
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: hotel-nav2-rmf-novnc
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: hotel-nav2-rmf
+    app.kubernetes.io/part-of: ros2-multi-robot-demo
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  annotations:
+    haproxy.router.openshift.io/timeout: 10m
+spec:
+  {{- if .Values.routes.novncHost }}
+  host: {{ .Values.routes.novncHost }}
+  {{- end }}
+  to:
+    kind: Service
+    name: hotel-nav2-rmf-novnc
+    weight: 100
+  port:
+    targetPort: novnc
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
+{{- end }}

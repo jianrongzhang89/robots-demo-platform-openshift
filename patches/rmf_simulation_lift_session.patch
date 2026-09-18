@@ -1,0 +1,21 @@
+diff --git a/rmf_building_sim_gz_plugins/src/lift.cpp b/rmf_building_sim_gz_plugins/src/lift.cpp
+index 790e489..c0ffee0 100644
+--- a/rmf_building_sim_gz_plugins/src/lift.cpp
++++ b/rmf_building_sim_gz_plugins/src/lift.cpp
+@@ -448,6 +448,16 @@ public:
+             cur_lift_cmd.request_type != msg->request_type ||
+             cur_lift_cmd.session_id != msg->session_id)
+             {
++              if (cur_lift_cmd.session_id.empty() &&
++                !msg->session_id.empty() &&
++                cur_lift_cmd.destination_floor == msg->destination_floor)
++              {
++                _last_lift_command[entity] = lift_command;
++                ecm->SetComponentData<components::LiftCmd>(
++                  entity, lift_command);
++                return;
++              }
++
+               gzwarn << "Discarding request to go to ["
+                      << msg->destination_floor
+                      << "] for [" << msg->session_id << "]. Lift ["

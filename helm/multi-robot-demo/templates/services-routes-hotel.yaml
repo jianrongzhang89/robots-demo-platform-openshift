@@ -1,4 +1,4 @@
-{{- if .Values.hotel.enabled }}
+{{- if and .Values.hotel.enabled (not .Values.hotelNav2Rmf.enabled) }}
 # Services + Routes for the Hotel World pod: noVNC (Gazebo GUI) and the
 # optional rmf-web dashboard.
 apiVersion: v1

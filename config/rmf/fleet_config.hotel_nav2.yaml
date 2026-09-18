@@ -1,0 +1,56 @@
+rmf_fleet:
+  name: hotel_nav2
+  limits:
+    linear: [0.5, 0.8]
+    angular: [0.8, 1.5]
+  profile:
+    footprint: 0.22
+    vicinity: 0.50
+  reversible: true
+  battery_system:
+    voltage: 12.0
+    capacity: 24.0
+    charging_current: 5.0
+  mechanical_system:
+    mass: 1.5
+    moment_of_inertia: 0.1
+    friction_coefficient: 0.22
+  ambient_system: {power: 20.0}
+  tool_system: {power: 0.0}
+  recharge_threshold: 0.05
+  recharge_soc: 1.0
+  account_for_battery_drain: false
+  publish_fleet_state: 10.0
+  task_capabilities:
+    loop: true
+    delivery: true
+  finishing_request: nothing
+  responsive_wait: false
+  robots:
+    robot_1:
+      charger: tinybot_charger
+      responsive_wait: false
+      navigation_stack: 2
+      init_timeout_sec: 30
+      service_call_timeout_sec: 10.0
+      initial_map: L1
+      map_frame: map
+      robot_frame: base_footprint
+      maps:
+        L1: {map_url: /opt/ros2-demo/maps/hotel_L1.yaml}
+        L2: {map_url: /opt/ros2-demo/maps/hotel_L2.yaml}
+        L3: {map_url: /opt/ros2-demo/maps/hotel_L3.yaml}
+  robot_state_update_frequency: 10.0
+
+# These four points are deliberately explicit. Replace them with the surveyed
+# values when the generated hotel maps are calibrated against the RMF graph.
+reference_coordinates:
+  L1:
+    rmf: [[0.0, 0.0], [10.0, 0.0], [0.0, 10.0], [10.0, 10.0]]
+    robot: [[0.0, 0.0], [10.0, 0.0], [0.0, 10.0], [10.0, 10.0]]
+  L2:
+    rmf: [[0.0, 0.0], [10.0, 0.0], [0.0, 10.0], [10.0, 10.0]]
+    robot: [[0.0, 0.0], [10.0, 0.0], [0.0, 10.0], [10.0, 10.0]]
+  L3:
+    rmf: [[0.0, 0.0], [10.0, 0.0], [0.0, 10.0], [10.0, 10.0]]
+    robot: [[0.0, 0.0], [10.0, 0.0], [0.0, 10.0], [10.0, 10.0]]

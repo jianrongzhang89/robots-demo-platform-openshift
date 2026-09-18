@@ -1,0 +1,30 @@
+# Simplified single-pod hotel baseline from
+# docs/openrmf-nav2-multilevel-simplified-architecture-proposal.md.
+# No Zenoh, bridge sidecar, domain split, Free Fleet, or 2.5D graph is enabled.
+
+namespace: ros2-rmf-hotel
+hotel:
+  enabled: false
+hybridNav2:
+  enabled: false
+hotelNav2Rmf:
+  enabled: true
+  image: quay.io/jianrzha/ros2-rmf-hotel-nav2-rmf:jazzy
+  resolution: "1600x900x24"
+  resources:
+    requests:
+      cpu: "4"
+      memory: 8Gi
+    limits:
+      cpu: "8"
+      memory: 12Gi
+  robot:
+    name: robot_1
+    initialMap: L1
+    initialX: 15.402
+    initialY: -31.594
+    initialYaw: 0.0
+  rosDomainId: "42"
+routes:
+  novncHost: ""
+  webHost: ""

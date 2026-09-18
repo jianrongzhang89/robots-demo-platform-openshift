@@ -1,4 +1,4 @@
-{{- if .Values.hybridNav2.enabled }}
+{{- if and .Values.hybridNav2.enabled (not .Values.hotelNav2Rmf.enabled) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:

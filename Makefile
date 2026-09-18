@@ -16,6 +16,8 @@ IMAGE_REF        := $(REGISTRY)/$(IMAGE):$(TAG)
 IMAGE_RMF_REF    := $(REGISTRY)/$(IMAGE_RMF):$(TAG)
 IMAGE_RMF_ML_REF := $(REGISTRY)/$(IMAGE_RMF):$(TAG_MULTILEVEL)
 IMAGE_HOTEL_REF  := $(REGISTRY)/$(IMAGE_HOTEL):$(TAG)
+IMAGE_HOTEL_NAV2_RMF_REF := $(REGISTRY)/ros2-rmf-hotel-nav2-rmf:jazzy
+HOTEL_NAV2_RMF_NS ?= ros2-rmf-hotel
 
 # Auto-detect podman (handles non-standard install paths like /opt/podman/bin)
 PODMAN     := $(shell which podman 2>/dev/null || echo /opt/podman/bin/podman)
@@ -83,6 +85,18 @@ push-hotel: ## Push the Hotel World image to the registry
 .PHONY: build-push-hotel
 build-push-hotel: build-hotel push-hotel ## Build and push the Hotel World image
 
+.PHONY: build-hotel-nav2-rmf
+build-hotel-nav2-rmf: ## Build the single-pod OpenRMF + Nav2 hotel baseline
+	$(PODMAN) build --platform linux/amd64 -t $(IMAGE_HOTEL_NAV2_RMF_REF) \
+	  -f Containerfile.hotel-nav2-rmf .
+
+.PHONY: push-hotel-nav2-rmf
+push-hotel-nav2-rmf: ## Push the single-pod OpenRMF + Nav2 hotel baseline
+	$(PODMAN) push $(IMAGE_HOTEL_NAV2_RMF_REF)
+
+.PHONY: build-push-hotel-nav2-rmf
+build-push-hotel-nav2-rmf: build-hotel-nav2-rmf push-hotel-nav2-rmf ## Build and push the simplified hotel baseline
+
 ##@ Deploy
 
 .PHONY: deploy
@@ -104,6 +118,17 @@ deploy-hotel: ## Deploy the Open-RMF Hotel World demo (single pod; use ROS_DEMO_
 	  --set namespace=$(NAMESPACE) \
 	  --set hotel.image=$(IMAGE_HOTEL_REF) \
 	  --wait --timeout 10m
+
+.PHONY: deploy-hotel-nav2-rmf
+deploy-hotel-nav2-rmf: ## Deploy the simplified single-pod OpenRMF + Nav2 hotel baseline
+	helm upgrade --install $(RELEASE) $(CHART) \
+	  --namespace $(HOTEL_NAV2_RMF_NS) \
+	  --create-namespace \
+	  -f $(CHART)/values.yaml \
+	  -f $(CHART)/values-hotel-nav2-rmf.yaml \
+	  --set namespace=$(HOTEL_NAV2_RMF_NS) \
+	  --set hotelNav2Rmf.image=$(IMAGE_HOTEL_NAV2_RMF_REF) \
+	  --wait --timeout 15m
 
 .PHONY: deploy-multilevel
 deploy-multilevel: ## Deploy RMF Multi-Level Navigation demo with Nav2 + Zenoh federation

@@ -1,4 +1,4 @@
-{{- if not .Values.hotel.enabled }}
+{{- if and (not .Values.hotel.enabled) (not .Values.hotelNav2Rmf.enabled) }}
 # ClusterIP Service — rmf-web API server (internal use by dashboard)
 apiVersion: v1
 kind: Service

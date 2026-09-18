@@ -1,4 +1,4 @@
-{{- if not .Values.hotel.enabled }}
+{{- if and (not .Values.hotel.enabled) (not .Values.hotelNav2Rmf.enabled) }}
 {{- $robots := .Values.robots -}}
 {{- $robotsEnv := "" -}}
 {{- range $robots -}}

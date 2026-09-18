@@ -27,6 +27,28 @@ hotel:
 hybridNav2:
   enabled: false
 
+# Simplified OpenRMF/Nav2 hotel baseline. This profile renders one pod with
+# Gazebo, Nav2, RMF supervisors, dispatcher, and the local EasyFullControl
+# backend. It is separate from the historical distributed Zenoh profile.
+hotelNav2Rmf:
+  enabled: false
+  image: quay.io/jianrzha/ros2-rmf-hotel-nav2-rmf:jazzy
+  resolution: "1600x900x24"
+  resources:
+    requests:
+      cpu: "8"
+      memory: 8Gi
+    limits:
+      cpu: "12"
+      memory: 12Gi
+  robot:
+    name: robot_1
+    initialMap: L1
+    initialX: 15.402
+    initialY: -31.594
+    initialYaw: 0.0
+  rosDomainId: "42"
+
 # Container image — same image runs both gazebo and nav2 entrypoints
 image:
   repository: quay.io/jianrzha/ros2-demo
