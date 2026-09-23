@@ -1,0 +1,55 @@
+diff --git a/src/plugins/camera_tracking/CameraTracking.cc b/src/plugins/camera_tracking/CameraTracking.cc
+--- a/src/plugins/camera_tracking/CameraTracking.cc
++++ b/src/plugins/camera_tracking/CameraTracking.cc
+@@ -16,5 +16,6 @@
+ 
+ #include <mutex>
+ #include <sstream>
+ #include <string>
++#include <cmath>
+ #include <optional>
+@@ -348,4 +349,44 @@ void CameraTrackingPrivate::OnRender()
+   if (!this->camera)
+     return;
+ 
++  // A lift transform can leave the render camera with a non-finite pose.
++  // Clear the controller state and restore a finite overhead pose so Ogre
++  // does not keep emitting invalid ray queries or blanking the GUI.
++  {
++    const auto pose = this->camera->WorldPose();
++    const auto finite = [](double value)
++    {
++      return std::isfinite(value);
++    };
++    const auto &position = pose.Pos();
++    const auto &rotation = pose.Rot();
++    if (!finite(position.X()) || !finite(position.Y()) ||
++        !finite(position.Z()) || !finite(rotation.X()) ||
++        !finite(rotation.Y()) || !finite(rotation.Z()) ||
++        !finite(rotation.W()) || position.Z() < -100.0)
++    {
++      math::Vector3d safePosition(0, 0, 5);
++      auto target = this->scene->NodeByName(this->selectedFollowTarget);
++      if (target)
++      {
++        const auto targetPosition = target->WorldPose().Pos();
++        if (finite(targetPosition.X()) && finite(targetPosition.Y()) &&
++            finite(targetPosition.Z()))
++        {
++          safePosition = targetPosition + math::Vector3d(0, 0, 5);
++        }
++      }
++      this->camera->SetFollowTarget(nullptr);
++      this->camera->SetTrackTarget(nullptr);
++      this->camera->SetWorldPose(math::Pose3d(
++          safePosition, math::Quaterniond(0, 1.57079632679, 0)));
++      this->selectedFollowTarget.clear();
++      this->selectedTrackTarget.clear();
++      this->selectedTargetWait = false;
++      this->trackMode = gz::msgs::CameraTrack::NONE;
++      this->newTrack = true;
++      return;
++    }
++  }
++
+   // Move To

@@ -120,6 +120,11 @@ global_costmap:
         map_subscribe_transient_local: true
       obstacle_layer:
         plugin: nav2_costmap_2d::ObstacleLayer
+        # The single simulated robot's LiDAR sees lift cabin structure as an
+        # obstacle while the managed doors are open. The static map contains
+        # the surveyed navigable corridor; keep live obstacle handling in the
+        # local costmap and collision monitor.
+        enabled: false
         observation_sources: scan
         scan:
           topic: scan_fixed
@@ -130,6 +135,10 @@ global_costmap:
           raytrace_max_range: 4.0
       inflation_layer:
         plugin: nav2_costmap_2d::InflationLayer
+        # Local costmap inflation remains enabled for collision avoidance. The
+        # generated static map already contains the robot-width corridors;
+        # global inflation expands nearby lift-shaft walls into those lanes.
+        enabled: false
         inflation_radius: 0.25
         cost_scaling_factor: 3.0
 

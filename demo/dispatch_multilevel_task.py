@@ -75,7 +75,7 @@ class MultiLevelTaskDispatcher(Node):
         # A delivery description lets RMF plan the lift route between places.
         task_description = {
             "category": "patrol",
-            "places": [start_waypoint, end_waypoint],
+            "places": [start_waypoint, end_waypoint, start_waypoint],
             "rounds": 1
         }
 
@@ -100,7 +100,8 @@ class MultiLevelTaskDispatcher(Node):
 
         self.get_logger().info('='*70)
         self.get_logger().info(f'🏨 MULTI-LEVEL NAVIGATION TASK')
-        self.get_logger().info(f'Route: {start_waypoint} → {end_waypoint}')
+        self.get_logger().info(
+            f'Route: {start_waypoint} → {end_waypoint} → {start_waypoint}')
         if robot_name:
             self.get_logger().info(f'Robot: {robot_name}')
         self.get_logger().info(f'Request ID: {request_id}')
@@ -119,7 +120,7 @@ def main(args=None):
     # Parse command line arguments
     robot = "robot_1" if len(sys.argv) <= 1 else sys.argv[1]
     start = "lobby" if len(sys.argv) <= 2 else sys.argv[2]
-    destination = "L3_room1" if len(sys.argv) <= 3 else sys.argv[3]
+    destination = "L3_middle_hallway" if len(sys.argv) <= 3 else sys.argv[3]
 
     rclpy.init(args=args)
     dispatcher = MultiLevelTaskDispatcher()
@@ -142,7 +143,8 @@ def main(args=None):
     print("  2. Robot requests and enters lift")
     print("  3. Lift travels to L2")
     print("  4. Robot exits lift on L2")
-    print("  5. Robot navigates to destination")
+    print("  5. Robot exits the lift on L3 and navigates to the destination")
+    print("  6. Robot returns to Lift2, travels down to L1, and returns to lobby")
     print("="*70 + "\n")
 
     request_id = dispatcher.submit_multilevel_task(start, destination, robot)

@@ -20,7 +20,7 @@ import rclpy
 from action_msgs.msg import GoalStatus
 from geometry_msgs.msg import PoseWithCovarianceStamped, Twist
 from nav2_msgs.action import NavigateToPose
-from nav2_msgs.srv import ClearEntireCostmap, LoadMap
+from nav2_msgs.srv import ClearEntireCostmap, LoadMap, ManageLifecycleNodes
 from nav_msgs.msg import OccupancyGrid, Odometry
 from rclpy.action import ActionClient
 from rclpy.callback_groups import ReentrantCallbackGroup
@@ -58,14 +58,19 @@ class LocalRobotBackend(Node):
         self.last_pose_time = 0.0
         self.velocity = [0.0, 0.0]
         self.map_received = threading.Event()
+        self.global_costmap_received = threading.Event()
         self.pose_received = threading.Event()
+        self._map_shape = None
         self._lock = threading.RLock()
         self._generation = 0
         self._active_goal = None
         self._active_execution = None
         self._active_target = None
         self._active_command_position = None
+        self._active_lift_exit = False
+        self._exit_lift_command = False
         self._navigation_retries = 0
+        self._hallway_dwell_generation = None
         self.update_handle = None
         self._activity = None
         self._map_switch_in_progress = False
@@ -83,6 +88,15 @@ class LocalRobotBackend(Node):
         self.create_subscription(
             OccupancyGrid, f"{prefix}/map", self._map_callback, qos,
             callback_group=self.callback_group)
+        costmap_qos = QoSProfile(
+            depth=1,
+            reliability=ReliabilityPolicy.RELIABLE,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+        )
+        self.create_subscription(
+            OccupancyGrid, f"{prefix}/global_costmap/costmap",
+            self._global_costmap_callback, costmap_qos,
+            callback_group=self.callback_group)
         self.initial_pose_pub = self.create_publisher(
             PoseWithCovarianceStamped, f"{prefix}/initialpose", qos)
         self.action_client = ActionClient(
@@ -90,6 +104,10 @@ class LocalRobotBackend(Node):
             callback_group=self.callback_group)
         self.load_map_client = self.create_client(
             LoadMap, f"{prefix}/map_server/load_map",
+            callback_group=self.callback_group)
+        self.navigation_lifecycle_client = self.create_client(
+            ManageLifecycleNodes,
+            f"{prefix}/lifecycle_manager_navigation/manage_nodes",
             callback_group=self.callback_group)
         self.clear_global_client = self.create_client(
             ClearEntireCostmap,
@@ -140,8 +158,13 @@ class LocalRobotBackend(Node):
             self.last_pose_time = time.monotonic()
             self.pose_received.set()
 
-    def _map_callback(self, _msg: OccupancyGrid) -> None:
+    def _map_callback(self, msg: OccupancyGrid) -> None:
+        self._map_shape = (msg.info.width, msg.info.height)
         self.map_received.set()
+
+    def _global_costmap_callback(self, msg: OccupancyGrid) -> None:
+        if self._map_shape == (msg.info.width, msg.info.height):
+            self.global_costmap_received.set()
 
     def _cancel_active(self) -> None:
         with self._lock:
@@ -173,14 +196,58 @@ class LocalRobotBackend(Node):
             return position
         with self._lock:
             current = list(self.pose)
-        dx = position[0] - current[0]
-        dy = position[1] - current[1]
-        distance = math.hypot(dx, dy)
-        if distance > 0.9:
-            offset = min(0.85, distance - 0.25)
-            position[0] -= dx / distance * offset
-            position[1] -= dy / distance * offset
+        # Lift waypoints are marked inside_lift for both cabin entry and exit.
+        # Do not pull an exit goal back into the cabin: an outward destination
+        # is farther from the cabin center than the robot's current pose.
+        cabin_center = (16.984098, -24.221069)
+        target_cabin_distance = math.hypot(
+            position[0] - cabin_center[0], position[1] - cabin_center[1])
+        current_cabin_distance = math.hypot(
+            current[0] - cabin_center[0], current[1] - cabin_center[1])
+        if self._exit_lift_command:
+            exit_points = {
+                "L1": (17.010633, -21.787325),
+                "L3": (14.157826, -21.651426),
+            }
+            exit_point = exit_points.get(destination.map)
+            if exit_point is not None:
+                dx = exit_point[0] - cabin_center[0]
+                dy = exit_point[1] - cabin_center[1]
+                distance = math.hypot(dx, dy)
+                position[0] = cabin_center[0] + dx / distance * 1.1
+                position[1] = cabin_center[1] + dy / distance * 1.1
+            self._exit_lift_command = False
+            return position
+        if target_cabin_distance >= current_cabin_distance:
+            if target_cabin_distance > 0.01:
+                position[0] += (position[0] - cabin_center[0]) / target_cabin_distance * 0.4
+                position[1] += (position[1] - cabin_center[1]) / target_cabin_distance * 0.4
+            return position
+        # Entry destinations are cabin-center waypoints. The lift-door
+        # collisions are removed from the prepared world, so stopping short
+        # of the center leaves the robot straddling the doorway.
         return position
+
+    @staticmethod
+    def _is_l3_hallway(destination) -> bool:
+        return (
+            destination.map == "L3" and
+            math.hypot(destination.position[0] - 14.157826,
+                       destination.position[1] + 21.651426) < 0.2)
+
+    def _hold_at_hallway(self, destination, execution, generation) -> bool:
+        if not self._is_l3_hallway(destination):
+            return True
+        with self._lock:
+            if self._hallway_dwell_generation == generation:
+                return True
+            self._hallway_dwell_generation = generation
+        self.get_logger().info(
+            "Holding at L3_middle_hallway for 10 seconds before returning")
+        time.sleep(10.0)
+        with self._lock:
+            return (generation == self._generation and
+                    execution is self._active_execution)
 
     def _goal_pose(self, destination) -> NavigateToPose.Goal:
         goal = NavigateToPose.Goal()
@@ -210,15 +277,28 @@ class LocalRobotBackend(Node):
                 self._generation += 1
                 generation = self._generation
                 old_execution = self._active_execution
-                if (old_execution is None or old_target is None or
+                new_target = (old_execution is None or old_target is None or
                         old_target.map != destination.map or
                         math.hypot(old_target.position[0] - destination.position[0],
-                                   old_target.position[1] - destination.position[1]) > 0.1):
+                                   old_target.position[1] - destination.position[1]) > 0.1)
+                if new_target:
                     self._navigation_retries = 0
                     self._active_command_position = self._entry_command_position(destination)
+                    self._active_lift_exit = False
                 self._active_execution = execution
                 self._active_target = destination
                 self._activity = execution.identifier
+                lift = destination.inside_lift
+                if callable(lift):
+                    lift = lift()
+                if new_target and lift is not None:
+                    cabin = (16.984098, -24.221069)
+                    current_distance = math.hypot(
+                        self.pose[0] - cabin[0], self.pose[1] - cabin[1])
+                    target_distance = math.hypot(
+                        destination.position[0] - cabin[0],
+                        destination.position[1] - cabin[1])
+                    self._active_lift_exit = target_distance >= current_distance
 
             if old_execution is not None:
                 self._cancel_active()
@@ -231,17 +311,9 @@ class LocalRobotBackend(Node):
             if callable(lift):
                 lift = lift()
             if lift is not None:
-                # The Gazebo lift cabin has a non-navigable collision threshold;
-                # RMF owns the lift transition once the robot reaches its approach.
-                self.get_logger().warning(
-                    f"Completing simulated lift entry for {destination.map}")
-                with self._lock:
-                    self._active_goal = None
-                    self._active_execution = None
-                    self._active_command_position = None
-                    self._activity = None
-                execution.finished()
-                return
+                self.get_logger().info(
+                    f"Navigating into lift {lift} on {destination.map}; "
+                    f"target={self._active_command_position}")
 
             if not self.action_client.wait_for_server(timeout_sec=10.0):
                 self._issue("navigation", "NavigateToPose action server is unavailable")
@@ -300,6 +372,8 @@ class LocalRobotBackend(Node):
                          yaw_ok and abs(velocity[0]) < 0.15 and
                          abs(velocity[1]) < 0.15)
             if at_target:
+                if not self._hold_at_hallway(destination, execution, generation):
+                    return
                 with self._lock:
                     if (generation != self._generation or
                             execution is not self._active_execution):
@@ -346,15 +420,13 @@ class LocalRobotBackend(Node):
         except Exception as exc:
             self._issue("navigation", f"result retrieval failed: {exc}")
             return
-        if status == GoalStatus.STATUS_SUCCEEDED:
-            with self._lock:
-                self._active_goal = None
-                self._active_execution = None
-                self._active_command_position = None
-                self._activity = None
-            execution.finished()
-            return
         at_destination = self._at_destination(destination)
+        with self._lock:
+            lift_exit = self._active_lift_exit
+            pose = list(self.pose)
+        if lift_exit and math.hypot(pose[0] - 16.984098,
+                                    pose[1] + 24.221069) > 0.9:
+            at_destination = True
         if not at_destination:
             with self._lock:
                 same_execution = self._active_execution is execution
@@ -383,10 +455,13 @@ class LocalRobotBackend(Node):
             self._issue("navigation", message)
             return
 
+        if not self._hold_at_hallway(destination, execution, generation):
+            return
         with self._lock:
             self._active_goal = None
             self._active_execution = None
             self._active_command_position = None
+            self._active_lift_exit = False
             self._activity = None
         execution.finished()
 
@@ -398,6 +473,7 @@ class LocalRobotBackend(Node):
                 self._generation += 1
                 self._active_execution = None
                 self._active_command_position = None
+                self._active_lift_exit = False
                 self._activity = None
             self._cancel_active()
             with self._lock:
@@ -451,6 +527,7 @@ class LocalRobotBackend(Node):
         with self._lock:
             self._generation += 1
             self._active_execution = None
+            self._active_lift_exit = False
             self._activity = execution.identifier
             self._map_switch_in_progress = True
         self._cancel_active()
@@ -460,6 +537,7 @@ class LocalRobotBackend(Node):
             if not self.load_map_client.wait_for_service(timeout_sec=5.0):
                 raise RuntimeError("map_server/load_map is unavailable")
             self.map_received.clear()
+            self.global_costmap_received.clear()
             self.pose_received.clear()
             request = LoadMap.Request()
             request.map_url = self._map_url(destination.map)
@@ -468,6 +546,22 @@ class LocalRobotBackend(Node):
                 raise RuntimeError(f"failed to load map for {destination.map}")
             if not self.map_received.wait(timeout=5.0):
                 raise RuntimeError("new occupancy map was not observed")
+            if not self.navigation_lifecycle_client.wait_for_service(timeout_sec=5.0):
+                raise RuntimeError("navigation lifecycle manager is unavailable")
+            reset = ManageLifecycleNodes.Request()
+            reset.command = ManageLifecycleNodes.Request.RESET
+            response = self._wait_future(
+                self.navigation_lifecycle_client.call_async(reset), 30.0)
+            if response is None or not response.success:
+                raise RuntimeError("failed to reset Nav2 navigation lifecycle")
+            startup = ManageLifecycleNodes.Request()
+            startup.command = ManageLifecycleNodes.Request.STARTUP
+            response = self._wait_future(
+                self.navigation_lifecycle_client.call_async(startup), 30.0)
+            if response is None or not response.success:
+                raise RuntimeError("failed to restart Nav2 navigation lifecycle")
+            if not self.global_costmap_received.wait(timeout=20.0):
+                raise RuntimeError("global costmap did not switch to the new map")
             self._publish_initial_pose(destination)
             for client in (self.clear_global_client, self.clear_local_client):
                 if client.wait_for_service(timeout_sec=3.0):
@@ -481,6 +575,12 @@ class LocalRobotBackend(Node):
                 self.current_map = destination.map
                 self._map_switch_in_progress = False
                 self._activity = None
+                self._exit_lift_command = True
+            # Let RMF observe the new floor and pose before the lift phase
+            # releases its localization execution and replans the exit.
+            self.get_logger().info(
+                f"Settling RMF state on {destination.map} before lift exit")
+            time.sleep(5.0)
             execution.finished()
         except Exception as exc:
             with self._lock:

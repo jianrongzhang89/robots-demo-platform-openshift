@@ -10,6 +10,10 @@ export ROS_LOG_DIR="${HOME}/.ros/log"
 export ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-42}"
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 export CYCLONEDDS_URI="${CYCLONEDDS_URI:-file:///opt/ros2-demo/config/cyclonedds.xml}"
+# Keep Gazebo Transport local to this single-container simulation. Without an
+# explicit address, discovery can crash during GUI startup in the pod network.
+export GZ_IP="${GZ_IP:-127.0.0.1}"
+export GZ_PARTITION="${GZ_PARTITION:-hotel_nav2_rmf}"
 source /opt/ros/jazzy/setup.bash
 source /opt/rmf_demos_ws/install/setup.bash
 set -u
@@ -46,7 +50,47 @@ websockify --web /usr/share/novnc "${NOVNC_PORT}" "localhost:${VNC_PORT}" >/tmp/
 pids+=("$!")
 
 echo "[hotel-nav2-rmf] Starting Gazebo Harmonic from ${WORLD}"
-gz sim --force-version 8 -r -v 2 "${WORLD}" &
+mkdir -p /tmp/gz-gui-logs
+gz sim --force-version 8 -r -s -v 2 "${WORLD}" >/tmp/gz-server.hotel-nav2-rmf.log 2>&1 &
+GZ_SERVER_PID=$!
+pids+=("${GZ_SERVER_PID}")
+sleep 3
+gz sim --force-version 8 -g -v 2 "${WORLD}" >/tmp/gz-gui.hotel-nav2-rmf.log 2>&1 &
+GZ_GUI_PID=$!
+pids+=("${GZ_GUI_PID}")
+(
+  for _attempt in $(seq 1 90); do
+    if gz service -i -s /gui/follow 2>/dev/null |
+        grep -q 'gz.msgs.StringMsg, gz.msgs.Boolean'; then
+      if gz service -s /gui/follow \
+          --reqtype gz.msgs.StringMsg --reptype gz.msgs.Boolean \
+          --timeout 3000 --req 'data: "robot_1"' 2>/dev/null |
+          grep -q 'data: true'; then
+        gz service -s /gui/follow/offset \
+          --reqtype gz.msgs.Vector3d --reptype gz.msgs.Boolean \
+          --timeout 3000 --req 'x: 0 y: 0 z: 5' >/dev/null 2>&1 || true
+        for _topic_attempt in $(seq 1 20); do
+          if gz topic -i -t /gui/track 2>/dev/null |
+              grep -q 'Subscribers'; then
+            break
+          fi
+          sleep 0.5
+        done
+        for _publish in $(seq 1 3); do
+          timeout 2 gz topic -t /gui/track -m gz.msgs.CameraTrack \
+            -p 'track_mode: FOLLOW_LOOK_AT follow_target: {name: "robot_1"} track_target: {name: "robot_1"} follow_offset: {x: 0 y: 0 z: 5} track_offset: {x: 0 y: 0 z: 0} follow_pgain: 0.02 track_pgain: 0.02' \
+            >/dev/null 2>&1 || true
+          sleep 0.5
+        done
+        echo "[hotel-nav2-rmf] Gazebo camera following robot_1"
+      fi
+      break
+    fi
+    sleep 1
+  done
+) &
+pids+=("$!")
+python3 /opt/ros2-demo/scripts/camera_follow_supervisor.py &
 pids+=("$!")
 
 wait_for_topic() {

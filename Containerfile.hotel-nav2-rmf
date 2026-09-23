@@ -26,6 +26,7 @@ RUN curl -fsSL https://packages.osrfoundation.org/gazebo.gpg \
     && rm -rf /var/lib/apt/lists/*
 
 COPY patches/rmf_simulation_lift_session.patch /tmp/rmf_simulation_lift_session.patch
+COPY patches/gz_gui_camera_tracking_recovery.patch /tmp/gz_gui_camera_tracking_recovery.patch
 RUN git clone https://github.com/open-rmf/rmf_simulation.git /tmp/rmf_simulation \
     && git -C /tmp/rmf_simulation checkout "${RMF_SIMULATION_COMMIT}" \
     && git -C /tmp/rmf_simulation apply /tmp/rmf_simulation_lift_session.patch \
@@ -38,7 +39,18 @@ RUN git clone https://github.com/open-rmf/rmf_simulation.git /tmp/rmf_simulation
     && cp /tmp/rmf-sim-install/lib/rmf_building_sim_gz_plugins/liblift.so \
          /opt/ros/jazzy/lib/rmf_building_sim_gz_plugins/liblift.so \
     && rm -rf /tmp/rmf_simulation /tmp/rmf-sim-build /tmp/rmf-sim-install \
-         /tmp/rmf-sim-log /tmp/rmf_simulation_lift_session.patch
+          /tmp/rmf-sim-log /tmp/rmf_simulation_lift_session.patch
+
+RUN git clone --depth 1 --branch gz-gui8 https://github.com/gazebosim/gz-gui.git /tmp/gz-gui \
+    && git -C /tmp/gz-gui apply /tmp/gz_gui_camera_tracking_recovery.patch \
+    && cmake -S /tmp/gz-gui -B /tmp/gz-gui-build \
+         -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF \
+         -DCMAKE_INSTALL_PREFIX=/tmp/gz-gui-install \
+    && cmake --build /tmp/gz-gui-build --target CameraTracking --parallel 2 \
+    && cp /tmp/gz-gui-build/lib/gz-gui-8/plugins/libCameraTracking.so \
+         /opt/ros/jazzy/opt/gz_gui_vendor/lib/gz-gui-8/plugins/libCameraTracking.so \
+    && rm -rf /tmp/gz-gui /tmp/gz-gui-build /tmp/gz-gui-install \
+         /tmp/gz_gui_camera_tracking_recovery.patch
 
 WORKDIR /opt/rmf_demos_ws
 RUN git clone https://github.com/open-rmf/rmf_demos.git src/rmf_demos \
@@ -54,21 +66,24 @@ RUN git clone https://github.com/open-rmf/rmf_demos.git src/rmf_demos \
 
 COPY scripts/prepare_hotel_baseline.py /tmp/prepare_hotel_baseline.py
 COPY scripts/patch_hotel_world_add_robot.py /tmp/patch_hotel_world_add_robot.py
+COPY scripts/patch_hotel_robot_physics.py /tmp/patch_hotel_robot_physics.py
 COPY scripts/hotel-build/create_stubs.py /tmp/create_hotel_stubs.py
 RUN mkdir -p /opt/ros2-demo/hotel-assets \
     && WORLD=$(find /opt/rmf_demos_ws -path '*/maps/hotel/hotel.world' -type f | head -1) \
     && BUILDING=$(find /opt/rmf_demos_ws -path '*/maps/hotel/hotel.building.yaml' -type f | head -1) \
     && GRAPH=$(find /opt/rmf_demos_ws -path '*/maps/hotel/nav_graphs/0.yaml' -type f | head -1) \
     && MAPS=$(dirname "${BUILDING}") \
-    && python3 /tmp/prepare_hotel_baseline.py \
+      && python3 /tmp/prepare_hotel_baseline.py \
          --building "${BUILDING}" --world "${WORLD}" \
          --maps "${MAPS}" \
          --nav-graph "${GRAPH}" --output /opt/ros2-demo/hotel-assets \
          --commit "${RMF_DEMOS_COMMIT}" \
-     && cp -a /opt/rmf_demos_ws/hotel-models /opt/ros2-demo/hotel-assets/models \
+      && cp -a /opt/rmf_demos_ws/hotel-models /opt/ros2-demo/hotel-assets/models \
+      && python3 /tmp/patch_hotel_robot_physics.py /opt/ros2-demo/hotel-assets/hotel.world \
      && STUB_MODEL_BASE=/opt/ros2-demo/hotel-assets/models python3 /tmp/create_hotel_stubs.py \
      && python3 -m py_compile /tmp/prepare_hotel_baseline.py \
-     && rm /tmp/prepare_hotel_baseline.py /tmp/patch_hotel_world_add_robot.py /tmp/create_hotel_stubs.py
+      && rm /tmp/prepare_hotel_baseline.py /tmp/patch_hotel_world_add_robot.py \
+           /tmp/patch_hotel_robot_physics.py /tmp/create_hotel_stubs.py
 
 COPY config/nav2 /opt/ros2-demo/config/nav2
 COPY config/cyclonedds/hotel-nav2-rmf.xml /opt/ros2-demo/config/cyclonedds.xml
@@ -77,6 +92,7 @@ COPY scripts/local_nav2_fleet_adapter.py /opt/ros2-demo/scripts/local_nav2_fleet
 COPY scripts/odom_tf_authority.py /opt/ros2-demo/scripts/odom_tf_authority.py
 COPY scripts/scan_frame_rewriter.py /opt/ros2-demo/scripts/scan_frame_rewriter.py
 COPY scripts/lift_request_relay.py /opt/ros2-demo/scripts/lift_request_relay.py
+COPY scripts/camera_follow_supervisor.py /opt/ros2-demo/scripts/camera_follow_supervisor.py
 COPY scripts/validate_hotel_baseline.py /opt/ros2-demo/scripts/validate_hotel_baseline.py
 COPY entrypoints/entrypoint-hotel-nav2-rmf.sh /entrypoint-hotel-nav2-rmf.sh
 COPY scripts/turtlebot3_waffle.urdf /opt/ros2-demo/robot/turtlebot3_waffle.urdf

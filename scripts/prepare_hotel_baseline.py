@@ -82,6 +82,15 @@ def prepare_world(source: Path, output: Path, x: float, y: float, yaw: float) ->
                     if collision in list(parent):
                         parent.remove(collision)
                         break
+        if model.get("name", "") in {"Lift1", "Lift2"}:
+            # The cabin's moving door leaves otherwise remain solid in Gazebo
+            # after RMF reports the door open, blocking robot entry and exit.
+            for collision in list(model.findall(".//collision")):
+                if collision.get("name", "").endswith("_door_collision"):
+                    for parent in model.iter():
+                        if collision in list(parent):
+                            parent.remove(collision)
+                            break
     if not world.findall("plugin[@name='gz::sim::systems::Sensors']"):
         sensors = ET.Element(
             "plugin",
@@ -95,6 +104,13 @@ def prepare_world(source: Path, output: Path, x: float, y: float, yaw: float) ->
     robot = ET.fromstring(TURTLEBOT3_MODEL)
     robot.find("pose").text = f"{x} {y} 0.1 0 0 {yaw}"
     world.insert(0, robot)
+    gui = world.find("gui")
+    if gui is not None:
+        for plugin in gui.findall("plugin"):
+            if plugin.get("filename") == "CameraTracking":
+                ET.SubElement(plugin, "follow_target").text = "robot_1"
+                ET.SubElement(plugin, "follow_offset").text = "-6 0 3"
+                break
     output.parent.mkdir(parents=True, exist_ok=True)
     tree.write(output, encoding="utf-8", xml_declaration=True)
 
@@ -128,15 +144,25 @@ def prepare_maps(map_dir: Path, nav_graph_path: Path, output_dir: Path,
         # a robot-width corridor because source drawings include closed door
         # leaves and wall pixels at otherwise valid graph waypoints.
         corridor_width = max(1, round(0.60 / resolution))
-        radius = corridor_width // 2
         for entry, exit_, _properties in graph_level["lanes"]:
+            entry_properties = vertices[entry][2] or {}
+            exit_properties = vertices[exit_][2] or {}
+            lift_lane = bool(
+                entry_properties.get("lift_cabin") or
+                exit_properties.get("lift_cabin"))
+            lane_width = max(
+                corridor_width,
+                round((2.0 if lift_lane else 0.60) / resolution))
             draw.line(
                 [pixel(vertices[entry]), pixel(vertices[exit_])],
                 fill=255,
-                width=corridor_width,
+                width=lane_width,
             )
         for vertex in vertices:
             x, y = pixel(vertex)
+            radius = corridor_width // 2
+            if (vertex[2] or {}).get("lift_cabin"):
+                radius = max(radius, round(1.0 / resolution))
             draw.ellipse(
                 (x - radius, y - radius, x + radius, y + radius),
                 fill=255,
@@ -179,7 +205,13 @@ def main() -> None:
     prepare_maps(args.maps, args.nav_graph, args.output / "maps", args.resolution)
     if not args.nav_graph.is_file():
         raise FileNotFoundError(f"generated RMF graph not found: {args.nav_graph}")
-    shutil.copy2(args.nav_graph, args.output / "nav_graph.yaml")
+    graph = yaml.safe_load(args.nav_graph.read_text())
+    # Give the L3 junction after the lift an explicit patrol place so a
+    # round-trip task visibly exits the lift before requesting the return.
+    hallway = graph["levels"]["L3"]["vertices"][2][2]
+    hallway["name"] = "L3_middle_hallway"
+    (args.output / "nav_graph.yaml").write_text(
+        yaml.safe_dump(graph, sort_keys=False))
     (args.output / "manifest.json").write_text(json.dumps({
         "rmf_demos_commit": args.commit,
         "robot": "robot_1",
