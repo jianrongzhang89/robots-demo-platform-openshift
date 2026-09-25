@@ -360,6 +360,7 @@ class LocalRobotBackend(Node):
                 self._generation += 1
                 generation = self._generation
                 old_execution = self._active_execution
+                exit_requested = self._exit_lift_command
                 new_target = (old_execution is None or old_target is None or
                         old_target.map != destination.map or
                         math.hypot(old_target.position[0] - destination.position[0],
@@ -367,14 +368,14 @@ class LocalRobotBackend(Node):
                 if new_target:
                     self._navigation_retries = 0
                     self._active_command_position = self._entry_command_position(destination)
-                    self._active_lift_exit = False
+                    self._active_lift_exit = exit_requested
                 self._active_execution = execution
                 self._active_target = destination
                 self._activity = execution.identifier
                 lift = destination.inside_lift
                 if callable(lift):
                     lift = lift()
-                if new_target and lift is not None:
+                if new_target and lift is not None and not exit_requested:
                     cabin = min(
                         ((16.984098, -24.221069), (16.170208, -23.481081)),
                         key=lambda center: math.hypot(
