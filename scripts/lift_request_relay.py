@@ -142,9 +142,8 @@ class LiftRequestRelay(Node):
             target_yaw = math.atan2(dy, dx)
             error = (target_yaw - self._physics_yaw + math.pi) % (2.0 * math.pi) - math.pi
             command.angular.z = max(-0.7, min(0.7, 1.5 * error))
-            if abs(error) <= 0.35:
-                command.angular.z = 0.0
-                command.linear.x = 0.08
+            if abs(error) <= 0.6:
+                command.linear.x = 0.04
             self._cmd_vel_pub.publish(command)
         else:
             self._cmd_vel_pub.publish(command)

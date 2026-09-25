@@ -15,6 +15,12 @@ def main() -> None:
             continue
         for collision in list(model.findall(".//collision")):
             if collision.get("name") == "floor_collision":
+                size = collision.find("./geometry/box/size")
+                if size is not None:
+                    values = size.text.split()
+                    if len(values) == 3:
+                        values[1] = "3.0"
+                        size.text = " ".join(values)
                 continue
             parent = next(
                 (element for element in model.iter()
