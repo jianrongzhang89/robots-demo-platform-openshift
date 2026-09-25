@@ -14,6 +14,22 @@ def main() -> None:
     robot = root.find(".//model[@name='robot_1']")
     if robot is None:
         raise RuntimeError("robot_1 model not found")
+    canonical = robot.find("canonical_link")
+    if canonical is None:
+        canonical = ET.Element("canonical_link")
+        robot.insert(1, canonical)
+    canonical.text = "base_link"
+    footprint_inertial = robot.find(".//link[@name='base_footprint']/inertial")
+    if footprint_inertial is not None:
+        mass = footprint_inertial.find("mass")
+        if mass is not None:
+            mass.text = "0.1"
+        inertia = footprint_inertial.find("inertia")
+        if inertia is not None:
+            for name in ("ixx", "iyy", "izz"):
+                value = inertia.find(name)
+                if value is not None:
+                    value.text = "0.001"
     changed = 0
     for friction in robot.findall(".//friction"):
         for element in friction.findall("./ode") + friction.findall("./bullet"):
@@ -23,7 +39,7 @@ def main() -> None:
                     value.text = "1.0"
                     changed += 1
     if changed == 0:
-        raise RuntimeError("no excessive robot wheel friction values found")
+        print("no excessive robot wheel friction values found")
     tree.write(path, encoding="utf-8", xml_declaration=True)
 
 

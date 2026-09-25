@@ -171,10 +171,21 @@ for endpoint in /robot_1/navigate_to_pose /robot_1/map_server/load_map; do
 done
 
 echo "[hotel-nav2-rmf] Seeding AMCL on the initial floor"
-ros2 topic pub /robot_1/initialpose geometry_msgs/msg/PoseWithCovarianceStamped \
-  "{header: {frame_id: map}, pose: {pose: {position: {x: ${INITIAL_X:-15.402}, y: ${INITIAL_Y:--31.594}}, orientation: {w: 1.0}}, covariance: [0.04,0,0,0,0,0, 0,0.04,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0.02]}}" \
-  --qos-reliability reliable --times 3 >/dev/null 2>&1 || true
-sleep 2
+for attempt in $(seq 1 30); do
+  ros2 topic pub /robot_1/initialpose geometry_msgs/msg/PoseWithCovarianceStamped \
+    "{header: {frame_id: map}, pose: {pose: {position: {x: ${INITIAL_X:-15.402}, y: ${INITIAL_Y:--31.594}}, orientation: {w: 1.0}}, covariance: [0.04,0,0,0,0,0, 0,0.04,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0.02]}}" \
+    --qos-reliability reliable --times 1 >/dev/null 2>&1 || true
+  sleep 1
+  if timeout 3 ros2 run tf2_ros tf2_echo map base_footprint \
+      --ros-args -r /tf:=/robot_1/tf -r /tf_static:=/robot_1/tf_static \
+      2>&1 | grep -q "Translation:"; then
+    echo "[hotel-nav2-rmf] AMCL map transform is available"
+    break
+  fi
+  if [ "${attempt}" -eq 30 ]; then
+    echo "[hotel-nav2-rmf] AMCL map transform not available yet; continuing startup" >&2
+  fi
+done
 
 echo "[hotel-nav2-rmf] Waiting for RMF schedule startup"
 for attempt in $(seq 1 60); do

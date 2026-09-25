@@ -19,6 +19,7 @@ from typing import Optional
 import rclpy
 from action_msgs.msg import GoalStatus
 from geometry_msgs.msg import PoseWithCovarianceStamped, Twist
+from std_msgs.msg import Bool
 from nav2_msgs.action import NavigateToPose
 from nav2_msgs.srv import ClearEntireCostmap, LoadMap, ManageLifecycleNodes
 from nav_msgs.msg import OccupancyGrid, Odometry
@@ -34,6 +35,7 @@ import rmf_adapter.easy_full_control as rmf_easy
 from rmf_adapter.robot_update_handle import Tier
 from tf2_msgs.msg import TFMessage
 from tf2_ros import Buffer
+from rmf_lift_msgs.msg import LiftState
 
 
 def yaw_from_quaternion(q) -> float:
@@ -74,6 +76,15 @@ class LocalRobotBackend(Node):
         self.update_handle = None
         self._activity = None
         self._map_switch_in_progress = False
+        self._lift_states = {}
+        self._physical_entry_execution = None
+        entry_qos = QoSProfile(
+            depth=1,
+            reliability=ReliabilityPolicy.RELIABLE,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+        )
+        self._entry_start_pub = self.create_publisher(
+            Bool, "/lift_entry_start", entry_qos)
         self._command_lock = threading.Lock()
         self.callback_group = ReentrantCallbackGroup()
 
@@ -134,6 +145,52 @@ class LocalRobotBackend(Node):
         self.create_subscription(
             TFMessage, f"{prefix}/tf_static", self._static_tf_callback,
             static_tf_qos, callback_group=self.callback_group)
+        self.create_subscription(
+            LiftState, "/lift_states", self._lift_state_callback, 10,
+            callback_group=self.callback_group)
+        self.create_subscription(
+            Bool, "/lift_entry_complete", self._physical_entry_callback,
+            entry_qos,
+            callback_group=self.callback_group)
+
+    def _lift_state_callback(self, message):
+        with self._lock:
+            self._lift_states[message.lift_name] = message
+
+    @staticmethod
+    def _is_physical_lift_entry(destination) -> bool:
+        x, y = destination.position[0], destination.position[1]
+        return (math.hypot(x - 16.984098, y + 24.221069) < 0.5 or
+                math.hypot(x - 16.170208, y + 23.481081) < 0.5)
+
+    def _physical_entry_callback(self, message):
+        if not message.data:
+            return
+        with self._lock:
+            execution = self._physical_entry_execution
+            self._physical_entry_execution = None
+            if execution is None:
+                return
+            self._active_execution = None
+            self._active_target = None
+            self._active_command_position = None
+            self._activity = None
+        execution.finished()
+
+    def _wait_for_lift_door(self, destination, lift) -> bool:
+        lift_name = getattr(lift, "name", None) or "Lift2"
+        deadline = time.monotonic() + 30.0
+        while time.monotonic() < deadline:
+            with self._lock:
+                state = self._lift_states.get(lift_name)
+            if (state is not None and
+                    state.current_floor == destination.map and
+                    state.door_state == LiftState.DOOR_OPEN and
+                    state.motion_state == LiftState.MOTION_STOPPED):
+                return True
+            time.sleep(0.1)
+        self._issue("lift", f"{lift_name} door did not fully open on {destination.map}")
+        return False
 
     def _tf_callback(self, msg: TFMessage) -> None:
         for transform in msg.transforms:
@@ -189,33 +246,52 @@ class LocalRobotBackend(Node):
 
     def _entry_command_position(self, destination):
         position = list(destination.position)
+        if (destination.map == "L1" and
+                math.hypot(position[0] - 17.010633,
+                           position[1] + 21.787325) < 0.3):
+            # RMF may tag this approach vertex as inside_lift. Handle it
+            # before lift classification so it cannot remain wall-adjacent.
+            return [16.984098, -21.500000, position[2]]
+        # The generated L1 approach vertex is too close to the shaft wall
+        # for the robot footprint. Recenter it on the doorway with margin.
+        if (destination.map == "L1" and
+                math.hypot(position[0] - 17.010633,
+                           position[1] + 21.787325) < 0.3):
+            position[0], position[1] = 16.984098, -21.500000
         lift = destination.inside_lift
         if callable(lift):
             lift = lift()
         if lift is None:
             return position
+        # Lift2's graph cabin waypoint is offset from the physical cabin
+        # model. Entry must target the model center so the lift request gate
+        # can verify that the robot is fully inside before motion starts.
+        if math.hypot(position[0] - 16.170208,
+                      position[1] + 23.481081) < 0.5:
+            position[0], position[1] = 16.984098, -24.221069
         with self._lock:
             current = list(self.pose)
         # Lift waypoints are marked inside_lift for both cabin entry and exit.
         # Do not pull an exit goal back into the cabin: an outward destination
         # is farther from the cabin center than the robot's current pose.
-        cabin_center = (16.984098, -24.221069)
+        cabin_center = min(
+            ((16.984098, -24.221069), (16.170208, -23.481081)),
+            key=lambda center: math.hypot(
+                position[0] - center[0], position[1] - center[1]))
         target_cabin_distance = math.hypot(
             position[0] - cabin_center[0], position[1] - cabin_center[1])
         current_cabin_distance = math.hypot(
             current[0] - cabin_center[0], current[1] - cabin_center[1])
         if self._exit_lift_command:
             exit_points = {
+                # These are outward approach points, not cabin centers. L3
+                # uses Lift2, whose cabin is at (16.1702, -23.4811).
                 "L1": (17.010633, -21.787325),
-                "L3": (14.157826, -21.651426),
+                "L3": (16.984098, -21.800000),
             }
             exit_point = exit_points.get(destination.map)
             if exit_point is not None:
-                dx = exit_point[0] - cabin_center[0]
-                dy = exit_point[1] - cabin_center[1]
-                distance = math.hypot(dx, dy)
-                position[0] = cabin_center[0] + dx / distance * 1.1
-                position[1] = cabin_center[1] + dy / distance * 1.1
+                position[0], position[1] = exit_point
             self._exit_lift_command = False
             return position
         if target_cabin_distance >= current_cabin_distance:
@@ -260,10 +336,17 @@ class LocalRobotBackend(Node):
             position = (self._active_command_position
                         if self._active_target is destination
                         else destination.position)
+            current = list(self.pose)
+            lift_exit = self._active_lift_exit
         goal.pose.pose.position.x = float(position[0])
         goal.pose.pose.position.y = float(position[1])
-        goal.pose.pose.orientation.z = math.sin(float(destination.position[2]) / 2.0)
-        goal.pose.pose.orientation.w = math.cos(float(destination.position[2]) / 2.0)
+        yaw = float(destination.position[2])
+        if destination.inside_lift is not None and not lift_exit:
+            # The map/odom pose can jump when RMF replans at a lift. Use the
+            # physical Lift2 door direction instead of that stale pose.
+            yaw = -math.pi / 2.0
+        goal.pose.pose.orientation.z = math.sin(yaw / 2.0)
+        goal.pose.pose.orientation.w = math.cos(yaw / 2.0)
         return goal
 
     def navigate(self, destination, execution) -> None:
@@ -292,7 +375,11 @@ class LocalRobotBackend(Node):
                 if callable(lift):
                     lift = lift()
                 if new_target and lift is not None:
-                    cabin = (16.984098, -24.221069)
+                    cabin = min(
+                        ((16.984098, -24.221069), (16.170208, -23.481081)),
+                        key=lambda center: math.hypot(
+                            destination.position[0] - center[0],
+                            destination.position[1] - center[1]))
                     current_distance = math.hypot(
                         self.pose[0] - cabin[0], self.pose[1] - cabin[1])
                     target_distance = math.hypot(
@@ -314,6 +401,19 @@ class LocalRobotBackend(Node):
                 self.get_logger().info(
                     f"Navigating into lift {lift} on {destination.map}; "
                     f"target={self._active_command_position}")
+                with self._lock:
+                    lift_exit = self._active_lift_exit
+                if not lift_exit and self._is_physical_lift_entry(destination):
+                    if not self._wait_for_lift_door(destination, lift):
+                        return
+                    with self._lock:
+                        self._physical_entry_execution = execution
+                    self._entry_start_pub.publish(Bool(data=True))
+                    self.get_logger().info(
+                        "Handing physical lift entry to Gazebo pose controller")
+                    return
+                if not lift_exit and not self._wait_for_lift_door(destination, lift):
+                    return
 
             if not self.action_client.wait_for_server(timeout_sec=10.0):
                 self._issue("navigation", "NavigateToPose action server is unavailable")
@@ -362,6 +462,7 @@ class LocalRobotBackend(Node):
                 lift = lift()
             with self._lock:
                 target = list(self._active_command_position or destination.position)
+                lift_exit = self._active_lift_exit
             tolerance = 0.25
             yaw_tolerance = 0.20 if lift is not None else 0.35
             yaw_ok = (angle_error(pose[2], target[2]) <= yaw_tolerance or
@@ -371,6 +472,10 @@ class LocalRobotBackend(Node):
                                     pose[1] - target[1]) <= tolerance and
                          yaw_ok and abs(velocity[0]) < 0.15 and
                          abs(velocity[1]) < 0.15)
+            if (lift_exit and
+                    math.hypot(pose[0] - 16.984098,
+                               pose[1] + 24.221069) < 1.8):
+                at_target = False
             if at_target:
                 if not self._hold_at_hallway(destination, execution, generation):
                     return
@@ -406,6 +511,13 @@ class LocalRobotBackend(Node):
             if (fresh and math.hypot(pose[0] - target[0], pose[1] - target[1]) <= position_tolerance
                     and yaw_ok
                     and abs(velocity[0]) < 0.15 and abs(velocity[1]) < 0.15):
+                with self._lock:
+                    lift_exit = self._active_lift_exit
+                if (lift_exit and
+                        math.hypot(pose[0] - 16.984098,
+                                   pose[1] + 24.221069) < 1.8):
+                    time.sleep(0.1)
+                    continue
                 return True
             time.sleep(0.05)
         return False
@@ -424,8 +536,14 @@ class LocalRobotBackend(Node):
         with self._lock:
             lift_exit = self._active_lift_exit
             pose = list(self.pose)
-        if lift_exit and math.hypot(pose[0] - 16.984098,
-                                    pose[1] + 24.221069) > 0.9:
+        lift = destination.inside_lift
+        if callable(lift):
+            lift = lift()
+        if (not lift_exit and lift is not None and destination.map == "L3" and
+                status in (GoalStatus.STATUS_SUCCEEDED,
+                           GoalStatus.STATUS_CANCELED) and
+                math.hypot(pose[0] - destination.position[0],
+                           pose[1] - destination.position[1]) <= 1.3):
             at_destination = True
         if not at_destination:
             with self._lock:

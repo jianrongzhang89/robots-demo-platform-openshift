@@ -1,0 +1,11 @@
+diff --git a/rmf_building_sim_gz_plugins/src/lift.cpp b/rmf_building_sim_gz_plugins/src/lift.cpp
+--- a/rmf_building_sim_gz_plugins/src/lift.cpp
++++ b/rmf_building_sim_gz_plugins/src/lift.cpp
+@@ -481,5 +481,5 @@ public:
+             auto target_velocity =
+               command_lift(entity, ecm, lift, dt, target_elevation, pose.Z());
+-            // Move payloads as well
+-            if (target_velocity != 0.0)
++            // Also clear the payload command when the cabin stops.
++            if (true)
+             {

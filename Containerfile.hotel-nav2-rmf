@@ -26,20 +26,23 @@ RUN curl -fsSL https://packages.osrfoundation.org/gazebo.gpg \
     && rm -rf /var/lib/apt/lists/*
 
 COPY patches/rmf_simulation_lift_session.patch /tmp/rmf_simulation_lift_session.patch
+COPY patches/rmf_simulation_lift_payload_velocity.patch /tmp/rmf_simulation_lift_payload_velocity.patch
 COPY patches/gz_gui_camera_tracking_recovery.patch /tmp/gz_gui_camera_tracking_recovery.patch
 RUN git clone https://github.com/open-rmf/rmf_simulation.git /tmp/rmf_simulation \
     && git -C /tmp/rmf_simulation checkout "${RMF_SIMULATION_COMMIT}" \
     && git -C /tmp/rmf_simulation apply /tmp/rmf_simulation_lift_session.patch \
+    && git -C /tmp/rmf_simulation apply /tmp/rmf_simulation_lift_payload_velocity.patch \
     && . /opt/ros/jazzy/setup.sh \
     && colcon build --base-paths /tmp/rmf_simulation \
          --build-base /tmp/rmf-sim-build --install-base /tmp/rmf-sim-install \
-         --log-base /tmp/rmf-sim-log \
          --packages-select rmf_building_sim_gz_plugins \
          --cmake-args -DCMAKE_BUILD_TYPE=Release \
-    && cp /tmp/rmf-sim-install/lib/rmf_building_sim_gz_plugins/liblift.so \
-         /opt/ros/jazzy/lib/rmf_building_sim_gz_plugins/liblift.so \
+    && find /tmp/rmf-sim-install /tmp/rmf-sim-build -name liblift.so -type f -exec cp {} \
+         /opt/ros/jazzy/lib/rmf_building_sim_gz_plugins/liblift.so \; -quit \
+    && test -f /opt/ros/jazzy/lib/rmf_building_sim_gz_plugins/liblift.so \
     && rm -rf /tmp/rmf_simulation /tmp/rmf-sim-build /tmp/rmf-sim-install \
-          /tmp/rmf-sim-log /tmp/rmf_simulation_lift_session.patch
+          /tmp/rmf-sim-log /tmp/rmf_simulation_lift_session.patch \
+          /tmp/rmf_simulation_lift_payload_velocity.patch
 
 RUN git clone --depth 1 --branch gz-gui8 https://github.com/gazebosim/gz-gui.git /tmp/gz-gui \
     && git -C /tmp/gz-gui apply /tmp/gz_gui_camera_tracking_recovery.patch \
@@ -47,8 +50,9 @@ RUN git clone --depth 1 --branch gz-gui8 https://github.com/gazebosim/gz-gui.git
          -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF \
          -DCMAKE_INSTALL_PREFIX=/tmp/gz-gui-install \
     && cmake --build /tmp/gz-gui-build --target CameraTracking --parallel 2 \
-    && cp /tmp/gz-gui-build/lib/gz-gui-8/plugins/libCameraTracking.so \
-         /opt/ros/jazzy/opt/gz_gui_vendor/lib/gz-gui-8/plugins/libCameraTracking.so \
+    && find /tmp/gz-gui-build -name libCameraTracking.so -type f -exec cp {} \
+         /opt/ros/jazzy/opt/gz_gui_vendor/lib/gz-gui-8/plugins/libCameraTracking.so \; -quit \
+    && test -f /opt/ros/jazzy/opt/gz_gui_vendor/lib/gz-gui-8/plugins/libCameraTracking.so \
     && rm -rf /tmp/gz-gui /tmp/gz-gui-build /tmp/gz-gui-install \
          /tmp/gz_gui_camera_tracking_recovery.patch
 
