@@ -17,7 +17,12 @@ IMAGE_RMF_REF    := $(REGISTRY)/$(IMAGE_RMF):$(TAG)
 IMAGE_RMF_ML_REF := $(REGISTRY)/$(IMAGE_RMF):$(TAG_MULTILEVEL)
 IMAGE_HOTEL_REF  := $(REGISTRY)/$(IMAGE_HOTEL):$(TAG)
 IMAGE_HOTEL_NAV2_RMF_REF := $(REGISTRY)/ros2-rmf-hotel-nav2-rmf:jazzy
+HOTEL_NAV2_RMF_TAG ?= canonical-20260925
+IMAGE_HOTEL_NAV2_RMF_CANONICAL_REF := $(REGISTRY)/ros2-rmf-hotel-nav2-rmf:$(HOTEL_NAV2_RMF_TAG)
 HOTEL_NAV2_RMF_NS ?= ros2-rmf-hotel
+HOTEL_NAV2_RMF_ROBOT ?= robot_1
+HOTEL_NAV2_RMF_START ?= lobby
+HOTEL_NAV2_RMF_DEST ?= L3_middle_hallway
 
 # Auto-detect podman (handles non-standard install paths like /opt/podman/bin)
 PODMAN     := $(shell which podman 2>/dev/null || echo /opt/podman/bin/podman)
@@ -96,6 +101,40 @@ push-hotel-nav2-rmf: ## Push the single-pod OpenRMF + Nav2 hotel baseline
 
 .PHONY: build-push-hotel-nav2-rmf
 build-push-hotel-nav2-rmf: build-hotel-nav2-rmf push-hotel-nav2-rmf ## Build and push the simplified hotel baseline
+
+.PHONY: build-hotel-nav2-rmf-canonical
+build-hotel-nav2-rmf-canonical: ## Build the immutable canonical hotel Nav2/RMF image
+	$(PODMAN) build --platform linux/amd64 -t $(IMAGE_HOTEL_NAV2_RMF_CANONICAL_REF) \
+	  -f Containerfile.hotel-nav2-rmf .
+
+.PHONY: push-hotel-nav2-rmf-canonical
+push-hotel-nav2-rmf-canonical: ## Push the immutable canonical hotel Nav2/RMF image
+	$(PODMAN) push $(IMAGE_HOTEL_NAV2_RMF_CANONICAL_REF)
+
+.PHONY: build-push-hotel-nav2-rmf-canonical
+build-push-hotel-nav2-rmf-canonical: build-hotel-nav2-rmf-canonical push-hotel-nav2-rmf-canonical ## Build and push the canonical hotel image
+
+.PHONY: deploy-hotel-nav2-rmf-canonical
+deploy-hotel-nav2-rmf-canonical: ## Deploy the canonical hotel Nav2/RMF image
+	helm upgrade --install $(RELEASE) $(CHART) \
+	  --namespace $(HOTEL_NAV2_RMF_NS) \
+	  --create-namespace \
+	  -f $(CHART)/values.yaml \
+	  -f $(CHART)/values-hotel-nav2-rmf.yaml \
+	  --set namespace=$(HOTEL_NAV2_RMF_NS) \
+	  --set hotelNav2Rmf.image=$(IMAGE_HOTEL_NAV2_RMF_CANONICAL_REF) \
+	  --wait --timeout 15m
+
+.PHONY: dispatch-hotel-nav2-rmf
+dispatch-hotel-nav2-rmf: ## Dispatch the current single-pod multilevel hotel route
+	@POD=$$(oc get pods -n $(HOTEL_NAV2_RMF_NS) -l app=hotel-nav2-rmf --field-selector=status.phase=Running -o jsonpath='{.items[0].metadata.name}'); \
+	test -n "$$POD" || { echo "ERROR: hotel-nav2-rmf pod not found"; exit 1; }; \
+	oc cp demo/dispatch_multilevel_task.py $(HOTEL_NAV2_RMF_NS)/$$POD:/tmp/dispatch_multilevel_task.py; \
+	oc exec -n $(HOTEL_NAV2_RMF_NS) $$POD -- bash -lc \
+	  'export PYTHONUNBUFFERED=1 HOME=/tmp/ros-home ROS_LOG_DIR=/tmp/ros-home/.ros/log; \
+	   source /opt/ros/jazzy/setup.bash; \
+	   source /opt/rmf_demos_ws/install/setup.bash; \
+	   python3 -u /tmp/dispatch_multilevel_task.py $(HOTEL_NAV2_RMF_ROBOT) $(HOTEL_NAV2_RMF_START) $(HOTEL_NAV2_RMF_DEST)'
 
 ##@ Deploy
 
