@@ -6,6 +6,106 @@
 
 ---
 
+## Current Single-Pod Demo
+
+The supported demo is the single-pod `hotel-nav2-rmf` deployment. The canonical
+image is built from `Containerfile.hotel-nav2-rmf` and contains Gazebo Harmonic,
+Nav2, RMF, the hotel world, and the lift-entry/exit runtime in one pod.
+
+### Architecture
+
+```text
+OpenShift namespace: ros2-rmf-hotel
+
+hotel-nav2-rmf pod
+  Gazebo server + GUI/noVNC
+    └─ hotel.world, robot_1, Lift1/Lift2
+  ros_gz_bridge
+    └─ /robot_1/odom, /robot_1/scan, /robot_1/cmd_vel
+  Nav2 + AMCL
+    └─ map->odom and navigation goals
+  Local RMF EasyFullControl adapter
+    └─ RMF traffic/task callbacks -> Nav2 goals
+  Lift request relay
+    └─ door-state, Gazebo-pose, and physical cabin-center gate
+  RMF schedule, blockade, dispatcher, and door/lift supervisors
+```
+
+The noVNC route is:
+
+```text
+https://hotel-nav2-rmf-novnc-ros2-rmf.apps.ai-dev02.kni.syseng.devcluster.openshift.com/vnc.html
+```
+
+### End-to-End Flow
+
+```text
+dispatch_multilevel_task.py
+  lobby (L1) -> L3_middle_hallway -> lobby
+        |
+        v
+RMF dispatcher queues patrol task
+        |
+        v
+EasyFullControl plans graph lanes and invokes the local adapter
+        |
+        +--> Nav2 navigates to the lift approach point
+        |
+        +--> Lift request relay waits for the lift door to be fully open
+        |
+        +--> Adapter hands cabin entry to the physical Gazebo controller
+        |      Nav2 does not compete for /robot_1/cmd_vel during entry
+        |
+        +--> Gazebo pose controller moves robot_1 to the physical cabin center
+        |      and publishes lift_entry_complete
+        |
+        +--> RMF receives entry completion and requests the destination floor
+        |
+        +--> Lift plugin moves the physical payload to the next floor
+        |
+        +--> AMCL localizes on the new floor and the adapter waits for settling
+        |
+        +--> Adapter sends an outward exit target at least 1.8 m from the cabin
+        |
+        +--> RMF continues to the hallway/destination
+        |
+        +--> The same gated flow handles the return trip to L1
+```
+
+### Build, Push, Deploy
+
+```bash
+make build-push-hotel-nav2-rmf-canonical \
+  HOTEL_NAV2_RMF_TAG=canonical-20260925
+make deploy-hotel-nav2-rmf-canonical \
+  HOTEL_NAV2_RMF_TAG=canonical-20260925
+```
+
+The canonical Dockerfile applies the RMF lift patches, camera recovery patch,
+robot physics patch, lift wall/floor collision patch, Nav2 configuration, and
+all adapter/relay/entrypoint scripts.
+
+### Run the Demo
+
+```bash
+make dispatch-hotel-nav2-rmf \
+  HOTEL_NAV2_RMF_NS=ros2-rmf-hotel \
+  HOTEL_NAV2_RMF_ROBOT=robot_1 \
+  HOTEL_NAV2_RMF_START=lobby \
+  HOTEL_NAV2_RMF_DEST=L3_middle_hallway
+```
+
+Monitor the backend with:
+
+```bash
+oc logs -n ros2-rmf-hotel -f deployment/hotel-nav2-rmf
+oc exec -n ros2-rmf-hotel deploy/hotel-nav2-rmf -- \
+  bash -lc 'source /opt/ros/jazzy/setup.bash; ros2 topic echo /lift_states'
+```
+
+The remainder of this document records the earlier multi-pod implementation
+and is retained as historical context.
+
 ## Executive Summary
 
 **Multi-level navigation capability has been successfully implemented and demonstrated.** The complete system infrastructure is deployed and operational, with cross-level task submission verified working end-to-end.
