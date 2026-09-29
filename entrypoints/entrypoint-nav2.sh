@@ -169,7 +169,18 @@ cmon = p.setdefault('collision_monitor', {}).setdefault('ros__parameters', {})
 _loc_mode = os.environ.get('LOCALIZATION_MODE', 'slam_toolbox')
 _footprint_enabled = os.environ.get('ENABLE_FOOTPRINT_APPROACH', '').lower()
 _disable_footprint = (_loc_mode == 'amcl') or (_footprint_enabled == 'false')
-if _disable_footprint:
+if os.environ.get('FEDERATED_NAV2', '0') == '1':
+    # The federated role has no local collision-monitor ownership. Keep the
+    # canonical hotel navigation path, while avoiding a duplicate lifecycle
+    # process that can abort the Nav2 action server across pod boundaries.
+    cmon['enabled'] = False
+    lm_nav = p.setdefault('lifecycle_manager_navigation', {}).setdefault('ros__parameters', {})
+    lm_nav['node_names'] = [
+        'controller_server', 'smoother_server', 'planner_server',
+        'route_server', 'behavior_server', 'bt_navigator',
+        'waypoint_follower', 'velocity_smoother',
+    ]
+elif _disable_footprint:
     # Disable FootprintApproach in narrow-corridor environments (house, AMCL mode).
     # House corridors (0.7-1.0m) and doorways cause the approach polygon to
     # constantly trigger on walls, zeroing cmd_vel and preventing navigation.
@@ -236,7 +247,8 @@ else:
 # at a tiny fraction of max_vel_x. The w_recovery variant computes path once
 # and follows it — sufficient for obstacle-free outer corridors at y=±1.8.
 bt_nav = p.setdefault('bt_navigator', {}).setdefault('ros__parameters', {})
-share = '/usr/lib64/ros-jazzy/share/nav2_bt_navigator/behavior_trees'
+share = os.path.join(os.environ.get('ROS_PREFIX', '/opt/ros/jazzy'),
+                     'share/nav2_bt_navigator/behavior_trees')
 bt_nav['default_nav_to_pose_bt_xml'] = f'{share}/navigate_w_replanning_only_if_path_becomes_invalid.xml'
 # Use the same BT for navigate_through_poses to avoid dependency on behavior_server
 # (navigate_through_poses_w_replanning_and_recovery.xml requires spin action server
@@ -534,13 +546,14 @@ print(f'{math.sqrt(x**2+y**2):.3f}|{x:.3f}|{y:.3f}')
 fi
 NAV2_PID=$!
 
-# odom→base_footprint TF broadcaster
+# odom→base_footprint TF broadcaster. Canonical federated mode starts this
+# before Nav2 in a sidecar so AMCL and costmaps never see an empty TF cache.
 # The ros_gz_bridge in Gazebo publishes the DiffDrive odom TF to /robot_N/tf,
 # but a QoS mismatch between the ros_gz_bridge DDS publisher and the Zenoh
 # bridge DDS subscriber prevents it from reaching this pod. Without this TF,
 # AMCL cannot publish map→odom and the global_costmap activation times out.
-# This broadcaster derives the same TF from /odom (which flows correctly via
-# Zenoh) and runs in a restart loop to survive any crashes.
+# This legacy inline broadcaster remains for the original generic deployment.
+if [ "${FEDERATED_NAV2:-0}" != "1" ]; then
 cat > /tmp/odom_tf_broadcaster.py << 'ODOM_TF_EOF'
 import rclpy
 from rclpy.node import Node
@@ -571,6 +584,7 @@ rclpy.spin(OdomTfBroadcaster())
 ODOM_TF_EOF
 while true; do python3 /tmp/odom_tf_broadcaster.py 2>/dev/null || true; sleep 2; done &
 echo "[nav2-pod/${ROBOT_NAME}] odom->base_footprint TF broadcaster started"
+fi
 
 # Costmap clearing service — subscribes to Zenoh robot_N/clear_costmaps and
 # calls /global_costmap/clear_entirely_global_costmap and the local equivalent.

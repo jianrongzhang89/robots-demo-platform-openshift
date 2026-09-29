@@ -61,9 +61,14 @@ RUN git clone --depth 1 https://github.com/open-rmf/free_fleet.git src/free_flee
          's/namespacify(self\.robot_frame, self\.robot_name)/self.robot_frame/g' \
          "${ADAPTER}" "${ADAPTER2}" \
     && echo "Patched namespacify calls — adapter uses map_frame/robot_frame directly" \
-    && python3 /patch_adapter.py "${ADAPTER}" \
-    && python3 /patch_adapter.py "${ADAPTER2}" \
-    && echo "Patched both adapter paths"
+     && python3 /patch_adapter.py "${ADAPTER}" \
+     && python3 /patch_adapter.py "${ADAPTER2}" \
+     && echo "Patched both adapter paths"
+
+# Install the maintained multi-level hotel adapter after the generic patches.
+COPY patches/nav2_robot_adapter.py /opt/free_fleet/install/free_fleet_adapter/lib/python3.12/site-packages/free_fleet_adapter/nav2_robot_adapter.py
+COPY patches/nav2_robot_adapter.py /opt/free_fleet/install/free_fleet_adapter/lib/free_fleet_adapter/nav2_robot_adapter.py
+
 
 # Build rmf-web API server (no React dashboard — avoids pnpm OOM in 6GB VM)
 WORKDIR /opt/rmf-web
@@ -77,7 +82,8 @@ RUN git clone --depth 1 -b jazzy https://github.com/open-rmf/rmf-web.git . \
     && sed -i \
          's/user_dep = authenticator.fastapi_dep()/async def _demo_user():\n    return type("U", (), {"username": "admin", "is_admin": True})()\nuser_dep = _demo_user/' \
          api_server/authenticator.py \
-    && rm -rf /opt/rmf-web/.git \
+     && sed -i '/_enable_global_fallback/d' api_server/app.py \
+     && rm -rf /opt/rmf-web/.git \
     && echo "Dashboard will be injected at /dashboard route via entrypoint"
 
 # Runtime dirs

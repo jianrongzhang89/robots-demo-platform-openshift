@@ -1,0 +1,37 @@
+# Federated Nav2 robot autonomy role.
+#
+# The shared base is the canonical single-pod image. This preserves the exact
+# canonical Nav2 packages, hotel maps, robot URDF, and runtime assets while
+# selecting only the Nav2 entrypoint for this pod.
+
+ARG HOTEL_BASE_IMAGE=quay.io/jianrzha/ros2-rmf-hotel-nav2-rmf:canonical-20260925
+FROM --platform=linux/amd64 ${HOTEL_BASE_IMAGE}
+
+# The federated Nav2 entrypoint's cmd_vel keepalive publishes directly to the
+# Zenoh router, matching the proven single-pod navigation command path.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3-pip \
+    && pip3 install --break-system-packages eclipse-zenoh==1.5.0 \
+    && rm -rf /var/lib/apt/lists/*
+
+# The distributed Nav2 entrypoint uses these legacy paths; populate them from
+# the canonical image's layout without changing the canonical assets.
+COPY config/nav2 /opt/ros2-demo/nav2
+RUN mkdir -p /usr/lib64/ros-jazzy/share/nav2_minimal_tb3_sim/urdf \
+    && cp /opt/ros2-demo/nav2/hotel_nav2_params.yaml /opt/ros2-demo/nav2/nav2_params.yaml \
+    && cp /opt/ros2-demo/robot/turtlebot3_waffle.urdf \
+       /usr/lib64/ros-jazzy/share/nav2_minimal_tb3_sim/urdf/turtlebot3_waffle.urdf
+COPY entrypoints/entrypoint-nav2.sh /entrypoint-nav2.sh
+COPY entrypoints/entrypoint-nav2-federated.sh /entrypoint-nav2-federated.sh
+COPY entrypoints/nav2_relay.py /nav2_relay.py
+COPY scripts/scan_frame_rewriter.py /opt/ros2-demo/scripts/scan_frame_rewriter.py
+COPY scripts/federated_odom_tf.py /opt/ros2-demo/scripts/federated_odom_tf.py
+COPY scripts/federated_odom_relay.py /opt/ros2-demo/scripts/federated_odom_relay.py
+COPY scripts/federated_pose_relay.py /opt/ros2-demo/scripts/federated_pose_relay.py
+RUN chmod +x /entrypoint-nav2.sh /entrypoint-nav2-federated.sh /nav2_relay.py \
+    /opt/ros2-demo/scripts/federated_odom_relay.py
+
+LABEL org.opencontainers.image.title="ROS2 RMF Hotel — Nav2 role" \
+      org.opencontainers.image.description="Federated Nav2 robot autonomy runtime"
+
+CMD ["/entrypoint-nav2.sh"]

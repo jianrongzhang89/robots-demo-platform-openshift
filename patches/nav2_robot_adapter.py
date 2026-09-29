@@ -104,11 +104,12 @@ class Nav2TfHandler:
                 raw = bytes(sample.payload.to_bytes())
                 # PoseWithCovarianceStamped CDR: 4-byte header + stamp (8 bytes) +
                 # frame_id string (4+N bytes) + alignment padding + position doubles.
-                # Scan for plausible map-frame position (tb3_sandbox bounds: ±6 m).
+                        # Accept hotel map coordinates as well as tb3_sandbox.
+                        # The canonical hotel spans roughly x=[0, 165], y=[-42, 0].
                 for offset in range(20, min(80, len(raw) - 55), 4):
                     try:
                         px, py, pz = _struct.unpack_from("<3d", raw, offset)
-                        if abs(px) < 6.0 and abs(py) < 6.0 and abs(pz) < 0.5:
+                        if abs(px) < 250.0 and abs(py) < 100.0 and abs(pz) < 0.5:
                             ox, oy, oz, ow = _struct.unpack_from("<4d", raw, offset + 24)
                             # Planar robot: ox≈0, oy≈0; unit quaternion
                             if abs(ox) < 0.1 and abs(oy) < 0.1 and abs(oz**2 + ow**2 - 1.0) < 0.1:
@@ -480,6 +481,11 @@ class Nav2RobotAdapter(RobotAdapter):
     def get_pose(self) -> Annotated[list[float], 3] | None:
         transform = self.tf_handler.get_transform()
         if transform is None:
+            cached_x = self.tf_handler._odom_x
+            cached_y = self.tf_handler._odom_y
+            cached_yaw = self.tf_handler._odom_yaw
+            if cached_x is not None and cached_y is not None and cached_yaw is not None:
+                return [cached_x, cached_y, cached_yaw]
             error_message = \
                 f'Failed to update robot [{self.name}]: Unable to get ' \
                 f'transform between {self.robot_frame} and {self.map_frame}'
@@ -997,6 +1003,36 @@ class Nav2RobotAdapter(RobotAdapter):
             self.target_level = None
 
     def _is_navigation_done(self, nav_handle: ExecutionHandle) -> bool:
+        rmf_goal_id = getattr(nav_handle, '_rmf_goal_id', None)
+        if rmf_goal_id is not None:
+            result = getattr(nav_handle, '_rmf_result', None)
+            if result is None:
+                return False
+            result_sub = getattr(nav_handle, '_rmf_result_sub', None)
+            if result_sub is not None:
+                try:
+                    if hasattr(result_sub, 'undeclare'):
+                        result_sub.undeclare()
+                    else:
+                        self.node.destroy_subscription(result_sub)
+                except Exception:
+                    pass
+                nav_handle._rmf_result_sub = None
+            nav_handle._rmf_goal_id = None
+            if result:
+                self.node.get_logger().info(
+                    f'RMF navigation goal {rmf_goal_id} reached'
+                )
+                return True
+            self.replan_counts += 1
+            self.node.get_logger().error(
+                f'RMF navigation goal {rmf_goal_id} failed, replan count '
+                f'[{self.replan_counts}]'
+            )
+            if self.update_handle is not None:
+                self.update_handle.more().replan()
+            return False
+
         if nav_handle.goal_id is None:
             return True
 
@@ -1093,13 +1129,34 @@ class Nav2RobotAdapter(RobotAdapter):
         exec_handle = self.exec_handle
         if exec_handle:
             # Handle navigation
-            if exec_handle.execution and exec_handle.goal_id and \
+            if exec_handle.execution and (
+                    exec_handle.goal_id or
+                    getattr(exec_handle, '_rmf_goal_id', None)) and \
                     self._is_navigation_done(exec_handle):
                 # TODO(ac): Refactor this check as as self._is_navigation_done
                 # takes a while and the execution may have become None due to
                 # task cancellation.
-                exec_handle.execution.finished()
+                import threading as _completion_threading
+                completed_execution = exec_handle.execution
                 exec_handle.execution = None
+                self.node.get_logger().info(
+                    f'Finishing navigation execution for [{self.name}]'
+                )
+                def _finish_execution():
+                    try:
+                        completed_execution.finished()
+                        self.node.get_logger().info(
+                            f'Navigation execution finished for [{self.name}]'
+                        )
+                    except Exception as error:
+                        self.node.get_logger().error(
+                            f'Navigation execution completion failed: {error}'
+                        )
+
+                _completion_threading.Thread(
+                    target=_finish_execution,
+                    daemon=True
+                ).start()
                 # TODO(ac): use an enum to record what type of execution it is,
                 # whether navigation or custom executions
                 self.replan_counts = 0
@@ -1237,6 +1294,48 @@ class Nav2RobotAdapter(RobotAdapter):
         goal_id_uuid = str(uuid.uuid4())
         cmd_msg = f"{goal_id_uuid} {x} {y} {yaw}"
 
+        nav_handle._rmf_goal_id = goal_id_uuid
+        nav_handle._rmf_result = None
+        nav_handle._rmf_finished_called = False
+        # ExecutionHandle starts locked and releases only through set_goal_id()
+        # or set_action(). The ROS relay uses its own UUID, but it still needs
+        # to release that mutex so RMF can process execution.finished().
+        nav_handle.set_goal_id(goal_id_uuid)
+
+        def _result_callback(sample):
+            try:
+                raw = sample.payload.to_bytes()
+                if len(raw) < 8:
+                    return
+                import struct
+                string_length = struct.unpack_from('<I', raw, 4)[0]
+                text = raw[8:8 + string_length - 1].decode('utf-8')
+                result_parts = text.split()
+                if len(result_parts) == 2 and result_parts[0] == goal_id_uuid:
+                    nav_handle._rmf_result = result_parts[1] == 'OK'
+            except Exception as error:
+                self.node.get_logger().debug(
+                    f'Failed to decode RMF navigation result: {error}'
+                )
+
+        from std_msgs.msg import String as StdMsgsString
+
+        def _ros_result_callback(message):
+            result_parts = message.data.split()
+            if len(result_parts) == 2 and result_parts[0] == goal_id_uuid:
+                nav_handle._rmf_result = result_parts[1] == 'OK'
+                self.node.get_logger().info(
+                    f'RMF navigation result received for {goal_id_uuid}: '
+                    f'{"OK" if nav_handle._rmf_result else "FAILED"}'
+                )
+
+        nav_handle._rmf_result_sub = self.node.create_subscription(
+            StdMsgsString,
+            f'/{self.name}/rmf_navigate_result',
+            _ros_result_callback,
+            10
+        )
+
         self.node.get_logger().info(
             f'Publishing nav command via rmf_navigate_cmd: {cmd_msg}'
         )
@@ -1257,9 +1356,8 @@ class Nav2RobotAdapter(RobotAdapter):
         ros_msg.data = cmd_msg
         cmd_pub.publish(ros_msg)
 
-        # In pub/sub pattern, goal tracking is handled via result topic subscription
-        # Do not call nav_handle.set_goal_id() - it expects action goal format
-        # The nav2_relay will execute the action and publish results back
+        # Result tracking is handled by _is_navigation_done through the relay's
+        # RMF result topic. Do not set the ROS action goal_id here.
         return
 
     def navigate(

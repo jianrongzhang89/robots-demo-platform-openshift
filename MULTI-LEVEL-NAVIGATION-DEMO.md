@@ -106,6 +106,69 @@ oc exec -n ros2-rmf-hotel deploy/hotel-nav2-rmf -- \
 The remainder of this document records the earlier multi-pod implementation
 and is retained as historical context.
 
+## Federated Multi-Pod Architecture
+
+The repository also contains an isolated multi-pod deployment path in
+`values-hotel-nav2.yaml`. It does not replace or modify the single-pod
+navigation logic. It separates transport and process ownership as follows:
+
+```text
+hotel-sim pod
+  Gazebo + hotel world + robot spawn + building/lift/door services
+  Zenoh ROS2 bridge
+       |
+       v
+zenoh-router pod :7447
+       ^                    ^
+       |                    |
+robot-nav-robot-1 pod      rmf-core pod
+  Nav2 + localization       RMF traffic/task services
+  Zenoh ROS2 bridge         Free Fleet + Zenoh bridge
+```
+
+The pods use separate ROS 2 domains and Zenoh bridges to federate only the
+required topics/actions. Gazebo remains authoritative for simulation state;
+Nav2 owns robot autonomy; RMF owns fleet/task coordination; Zenoh provides the
+cross-pod transport. Existing `local_nav2_fleet_adapter.py`, lift relay, and
+single-pod entrypoint behavior are not changed by this deployment mode.
+
+The container roles are split as follows:
+
+```text
+Containerfile.hotel-sim  <- canonical hotel Nav2/RMF image
+Containerfile.nav2       <- canonical hotel Nav2/RMF image
+Containerfile.rmf        <- dedicated RMF image
+Zenoh upstream images    <- router and ROS 2 DDS bridge
+```
+
+The canonical hotel Nav2/RMF image intentionally remains unchanged. The role
+images preserve its `hotel-assets`, blue `robot_1`, URDF, Nav2 packages, and
+lift/door/physics fixes. The federated hotel image uses
+`entrypoint-hotel-sim-federated.sh`, which starts only canonical Gazebo,
+robot-state publication, sensor bridging, and TF support; Nav2 and RMF remain
+in their separate pods.
+
+### Federated Deployment
+
+Build the federated image roles, then deploy the existing federated values:
+
+```bash
+make build-push-hotel-nav2-federated
+make deploy-hotel-nav2-federated \
+  HOTEL_NAV2_RMF_NS=ros2-rmf-hotel
+```
+
+The federated target uses `values-hotel-nav2.yaml`, which enables `hybridNav2`,
+disables `hotelNav2Rmf`, enables `rmf`, and enables the Zenoh router. The
+single-pod deployment remains available through `make deploy-hotel-nav2-rmf`.
+
+Verify the four core workloads:
+
+```bash
+oc get pods -n ros2-rmf-hotel
+# hotel-sim, robot-nav-robot-1, rmf-core, zenoh-router
+```
+
 ## Executive Summary
 
 **Multi-level navigation capability has been successfully implemented and demonstrated.** The complete system infrastructure is deployed and operational, with cross-level task submission verified working end-to-end.

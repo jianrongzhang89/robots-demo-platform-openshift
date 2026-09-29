@@ -23,7 +23,8 @@ class OdomTfAuthority(Node):
         self._initial_x = float(os.environ.get("INITIAL_X", "15.402"))
         self._initial_y = float(os.environ.get("INITIAL_Y", "-31.594"))
         self._broadcaster = TransformBroadcaster(self)
-        self.create_subscription(Odometry, "/robot_1/odom", self._odom, 10)
+        odom_topic = os.environ.get("ODOM_TOPIC", "/robot_1/odom")
+        self.create_subscription(Odometry, odom_topic, self._odom, 10)
         self.create_timer(0.02, self._publish)
 
     def _odom(self, message):

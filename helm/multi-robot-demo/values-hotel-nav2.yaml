@@ -29,6 +29,7 @@ hybridNav2:
 # --- Hotel World Configuration ---
 hotel:
   enabled: true
+  canonicalFederated: true
   image: quay.io/jianrzha/ros2-rmf-hotel:nav2-v3
   resolution: "1600x900x24"
   launchArgs: ""  # Could add headless:=true if needed
@@ -45,8 +46,8 @@ hotel:
 robots:
   - name: robot_1
     initialPose:
-      xPos: 10.0   # lobby_west area on L1
-      yPos: 30.0
+      xPos: 15.402   # Canonical robot_1 spawn in hotel-assets/hotel.world
+      yPos: -31.594
       yaw: 0.0
 
 # --- Gazebo Configuration ---
@@ -57,10 +58,13 @@ gazebo:
 # --- Nav2 Configuration ---
 nav2:
   localizationMode: "amcl"  # AMCL for multi-level
+  directOdomRelay: false
+  directClockRelay: false
+  localizationMap: /opt/ros2-demo/maps/hotel_L1.yaml  # Canonical hotel map
   enableMultilevel: true     # Enable multi-map server mode
   initialLevel: L1           # Start on level 1
-  mapOffsetX: 0.0            # Identity transform (RMF frame = Nav2 frame)
-  mapOffsetY: 0.0
+  mapOffsetX: "0.0"           # Identity transform (RMF frame = Nav2 frame)
+  mapOffsetY: "0.0"
   resources:
     requests:
       cpu: "1"

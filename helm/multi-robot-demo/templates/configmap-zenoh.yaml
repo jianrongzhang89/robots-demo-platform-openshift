@@ -8,6 +8,21 @@ metadata:
     app.kubernetes.io/part-of: ros2-multi-robot-demo
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 data:
+  cyclonedds.xml: |-
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <CycloneDDS xmlns="https://cdds.io/config">
+      <Domain id="any">
+        <General>
+          <Interfaces>
+            <NetworkInterface name="lo" />
+          </Interfaces>
+          <AllowMulticast>false</AllowMulticast>
+        </General>
+        <Discovery>
+          <ParticipantIndex>auto</ParticipantIndex>
+        </Discovery>
+      </Domain>
+    </CycloneDDS>
   zenoh-router.json5: |-
 {{ .Files.Get "files/zenoh-router.json5" | indent 4 }}
   gazebo-bridge.json5: |-
@@ -58,7 +73,7 @@ data:
               ".*/rmf_navigate_cmd"
             ],
             subscribers: [
-              ".*/(amcl_pose|odom|battery_state|scan|tf|tf_static|joint_states)"
+               ".*/(amcl_pose|odom|battery_state|scan|tf|tf_static|joint_states|rmf_navigate_result)"
             ]
           }
         }
@@ -100,6 +115,10 @@ data:
       },
       scouting: { multicast: { enabled: false } }
     }
+  federated_odom_relay.py: |-
+{{ .Files.Get "files/federated_odom_relay.py" | indent 4 }}
+  federated_clock_relay.py: |-
+{{ .Files.Get "files/federated_clock_relay.py" | indent 4 }}
   # Per-robot Nav2 bridge configs — each adds a namespace prefix so the bridge
   # routes bare /tf as robot_N/tf (what free_fleet_adapter subscribes to).
   # publishers:  local DDS topics that go OUT to Zenoh (Nav2 → router)
@@ -124,7 +143,9 @@ data:
               ".*/tf",
               ".*/tf_static",
               ".*/scan",
+{{- if not $.Values.nav2.directOdomRelay }}
               ".*/odom",
+{{- end }}
               ".*/imu",
               ".*/joint_states",
               // clock omitted — handled by the dedicated clock-bridge sidecar

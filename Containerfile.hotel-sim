@@ -1,0 +1,17 @@
+# Federated hotel simulation role.
+#
+# The shared base is the canonical single-pod image. Keeping that base
+# unchanged preserves the canonical hotel assets, robot model, Gazebo plugins,
+# lift/door fixes, and runtime libraries. This image only adds the federated
+# Gazebo entrypoint.
+
+ARG HOTEL_BASE_IMAGE=quay.io/jianrzha/ros2-rmf-hotel-nav2-rmf:canonical-20260925
+FROM --platform=linux/amd64 ${HOTEL_BASE_IMAGE}
+
+COPY entrypoints/entrypoint-hotel-sim-federated.sh /entrypoint-hotel-sim-federated.sh
+RUN chmod +x /entrypoint-hotel-sim-federated.sh
+
+LABEL org.opencontainers.image.title="ROS2 RMF Hotel — Gazebo simulation role" \
+      org.opencontainers.image.description="Federated hotel world and Gazebo simulation runtime"
+
+CMD ["/entrypoint-hotel-sim-federated.sh"]

@@ -20,6 +20,25 @@ spec:
         app.kubernetes.io/part-of: ros2-multi-robot-demo
     spec:
       serviceAccountName: ros2-demo
+      {{- if .Values.hotel.canonicalFederated }}
+      initContainers:
+        - name: canonical-rmf-assets
+          image: {{ .Values.hotel.image }}
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              set -e
+              mkdir -p /canonical-rmf/maps
+              cp /opt/ros2-demo/rmf/nav_graph.yaml /canonical-rmf/nav_graph.yaml
+              cp /opt/ros2-demo/rmf/fleet_config.yaml /tmp/fleet_config.yaml
+              cp /opt/ros2-demo/maps/hotel_*.yaml /canonical-rmf/maps/
+              sed -i 's#/opt/ros2-demo/maps#/canonical-rmf/maps#g; /    delivery: true/a\    patrol: true' \
+                /tmp/fleet_config.yaml
+              cp /tmp/fleet_config.yaml /canonical-rmf/fleet_config.yaml
+          volumeMounts:
+            - name: canonical-rmf-assets
+              mountPath: /canonical-rmf
+      {{- end }}
       containers:
         - name: rmf-core
           image: {{ .Values.rmf.image }}
@@ -41,9 +60,9 @@ spec:
             - name: RMW_IMPLEMENTATION
               value: rmw_cyclonedds_cpp
             - name: FLEET_CONFIG
-              value: {{ .Values.rmf.fleetConfig | default "/opt/ros2-demo/rmf/fleet_config.yaml" }}
+              value: {{ if .Values.hotel.canonicalFederated }}/canonical-rmf/fleet_config.yaml{{ else }}{{ .Values.rmf.fleetConfig | default "/opt/ros2-demo/rmf/fleet_config.yaml" }}{{ end }}
             - name: NAV_GRAPH
-              value: {{ .Values.rmf.navGraphPath | default "/opt/ros2-demo/rmf/nav_graph.yaml" }}
+              value: {{ if .Values.hotel.canonicalFederated }}/canonical-rmf/nav_graph.yaml{{ else }}{{ .Values.rmf.navGraphPath | default "/opt/ros2-demo/rmf/nav_graph.yaml" }}{{ end }}
             - name: SERVER_URI
               value: {{ if .Values.rmf.serverUri }}{{ .Values.rmf.serverUri | quote }}{{ else }}""{{ end }}
             # Space-separated robot names — used by entrypoint-rmf.sh for clock
@@ -68,6 +87,11 @@ spec:
             - name: zenoh-config
               mountPath: /opt/ros2-demo/zenoh
               readOnly: true
+            {{- if .Values.hotel.canonicalFederated }}
+            - name: canonical-rmf-assets
+              mountPath: /canonical-rmf
+              readOnly: true
+            {{- end }}
           resources:
             requests:
               cpu: {{ .Values.rmf.resources.requests.cpu | quote }}
@@ -75,7 +99,7 @@ spec:
             limits:
               cpu: {{ .Values.rmf.resources.limits.cpu | quote }}
               memory: {{ .Values.rmf.resources.limits.memory | quote }}
-          {{- if ne ((.Values.rmf.readinessProbe).enabled | default true | toString) "false" }}
+          {{- if or (not (hasKey .Values.rmf "readinessProbe")) (not (hasKey .Values.rmf.readinessProbe "enabled")) .Values.rmf.readinessProbe.enabled }}
           readinessProbe:
             httpGet:
               path: /user
@@ -84,7 +108,7 @@ spec:
             periodSeconds: 15
             failureThreshold: 10
           {{- end }}
-          {{- if ne ((.Values.rmf.livenessProbe).enabled | default true | toString) "false" }}
+          {{- if or (not (hasKey .Values.rmf "livenessProbe")) (not (hasKey .Values.rmf.livenessProbe "enabled")) .Values.rmf.livenessProbe.enabled }}
           livenessProbe:
             httpGet:
               path: /user
@@ -276,4 +300,8 @@ spec:
         - name: zenoh-config
           configMap:
             name: zenoh-bridge-config
+        {{- if .Values.hotel.canonicalFederated }}
+        - name: canonical-rmf-assets
+          emptyDir: {}
+        {{- end }}
 {{- end }}

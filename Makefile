@@ -16,6 +16,9 @@ IMAGE_REF        := $(REGISTRY)/$(IMAGE):$(TAG)
 IMAGE_RMF_REF    := $(REGISTRY)/$(IMAGE_RMF):$(TAG)
 IMAGE_RMF_ML_REF := $(REGISTRY)/$(IMAGE_RMF):$(TAG_MULTILEVEL)
 IMAGE_HOTEL_REF  := $(REGISTRY)/$(IMAGE_HOTEL):$(TAG)
+IMAGE_HOTEL_FED_BASE_REF = $(REGISTRY)/ros2-rmf-hotel-nav2-rmf:$(HOTEL_NAV2_RMF_TAG)
+IMAGE_HOTEL_SIM_REF := $(REGISTRY)/ros2-rmf-hotel-sim:$(TAG)
+IMAGE_NAV2_REF := $(REGISTRY)/ros2-rmf-nav2:$(TAG)
 IMAGE_HOTEL_NAV2_RMF_REF := $(REGISTRY)/ros2-rmf-hotel-nav2-rmf:jazzy
 HOTEL_NAV2_RMF_TAG ?= canonical-20260925
 IMAGE_HOTEL_NAV2_RMF_CANONICAL_REF := $(REGISTRY)/ros2-rmf-hotel-nav2-rmf:$(HOTEL_NAV2_RMF_TAG)
@@ -89,6 +92,38 @@ push-hotel: ## Push the Hotel World image to the registry
 
 .PHONY: build-push-hotel
 build-push-hotel: build-hotel push-hotel ## Build and push the Hotel World image
+
+.PHONY: build-hotel-federated-base
+build-hotel-federated-base: build-push-hotel-nav2-rmf-canonical ## Build and push the canonical base used by federated roles
+
+.PHONY: build-hotel-sim
+build-hotel-sim: ## Build the federated Gazebo hotel simulation image
+	$(PODMAN) build --platform linux/amd64 -t $(IMAGE_HOTEL_SIM_REF) \
+	  --build-arg HOTEL_BASE_IMAGE=$(IMAGE_HOTEL_FED_BASE_REF) \
+	  -f Containerfile.hotel-sim .
+
+.PHONY: push-hotel-sim
+push-hotel-sim: ## Push the federated Gazebo hotel simulation image
+	$(PODMAN) push $(IMAGE_HOTEL_SIM_REF)
+
+.PHONY: build-push-hotel-sim
+build-push-hotel-sim: build-hotel-sim push-hotel-sim ## Build and push the federated Gazebo image
+
+.PHONY: build-nav2
+build-nav2: ## Build the federated Nav2 robot autonomy image
+	$(PODMAN) build --platform linux/amd64 -t $(IMAGE_NAV2_REF) \
+	  --build-arg HOTEL_BASE_IMAGE=$(IMAGE_HOTEL_FED_BASE_REF) \
+	  -f Containerfile.nav2 .
+
+.PHONY: push-nav2
+push-nav2: ## Push the federated Nav2 robot autonomy image
+	$(PODMAN) push $(IMAGE_NAV2_REF)
+
+.PHONY: build-push-nav2
+build-push-nav2: build-nav2 push-nav2 ## Build and push the federated Nav2 image
+
+.PHONY: build-push-hotel-nav2-federated
+build-push-hotel-nav2-federated: build-hotel-federated-base build-push-hotel-sim build-push-nav2 build-push-rmf ## Build and push all federated runtime images
 
 .PHONY: build-hotel-nav2-rmf
 build-hotel-nav2-rmf: ## Build the single-pod OpenRMF + Nav2 hotel baseline
@@ -169,6 +204,20 @@ deploy-hotel-nav2-rmf: ## Deploy the simplified single-pod OpenRMF + Nav2 hotel 
 	  --set hotelNav2Rmf.image=$(IMAGE_HOTEL_NAV2_RMF_REF) \
 	  --wait --timeout 15m
 
+.PHONY: deploy-hotel-nav2-federated
+deploy-hotel-nav2-federated: ## Deploy the multi-pod Gazebo/Nav2/RMF/Zenoh hotel architecture
+	helm upgrade --install $(RELEASE) $(CHART) \
+	  --namespace $(HOTEL_NAV2_RMF_NS) \
+	  --create-namespace \
+	  -f $(CHART)/values.yaml \
+	  -f $(CHART)/values-hotel-nav2.yaml \
+	  --set namespace=$(HOTEL_NAV2_RMF_NS) \
+	  --set image.repository=$(REGISTRY)/ros2-rmf-nav2 \
+	  --set image.tag=$(TAG) \
+	  --set hotel.image=$(IMAGE_HOTEL_SIM_REF) \
+	  --set rmf.image=$(IMAGE_RMF_REF) \
+	  --wait --timeout 15m
+
 .PHONY: deploy-multilevel
 deploy-multilevel: ## Deploy RMF Multi-Level Navigation demo with Nav2 + Zenoh federation
 	helm upgrade --install $(RELEASE) $(CHART) \
@@ -194,6 +243,40 @@ restart: ## Rolling restart of all demo pods (Gazebo first, then nav2 + rmf-core
 	  oc rollout restart $$d -n $(NAMESPACE); \
 	done
 	oc rollout restart deployment/rmf-core -n $(NAMESPACE)
+
+.PHONY: restart-hotel-nav2-federated
+restart-hotel-nav2-federated: ## Restart federated hotel pods in dependency order and wait for fleet registration
+	@NS=$(HOTEL_NAV2_RMF_NS); \
+	 echo "Step 1: Restarting Zenoh router..."; \
+	 oc rollout restart deployment/zenoh-router -n $$NS; \
+	 oc rollout status deployment/zenoh-router -n $$NS --timeout=5m; \
+	 echo "Step 2: Restarting hotel simulation..."; \
+	 oc rollout restart deployment/hotel-sim -n $$NS; \
+	 oc rollout status deployment/hotel-sim -n $$NS --timeout=10m; \
+	 echo "Step 3: Restarting Nav2 clock subscriber before RMF clock publisher..."; \
+	 oc rollout restart deployment/robot-nav-robot-1 -n $$NS; \
+	 oc rollout status deployment/robot-nav-robot-1 -n $$NS --timeout=10m; \
+	 echo "Step 4: Restarting RMF core and its native clock publisher..."; \
+	 oc rollout restart deployment/rmf-core -n $$NS; \
+	 oc rollout status deployment/rmf-core -n $$NS --timeout=10m; \
+	 echo "Step 5: Waiting for RMF readiness and fleet registration..."; \
+	 for i in $$(seq 1 90); do \
+	   POD=""; \
+	   for CANDIDATE in $$(oc get pods -n $$NS -l app=rmf-core -o name 2>/dev/null); do \
+	     DELETING=$$(oc get $$CANDIDATE -n $$NS -o jsonpath='{.metadata.deletionTimestamp}' 2>/dev/null); \
+	     PHASE=$$(oc get $$CANDIDATE -n $$NS -o jsonpath='{.status.phase}' 2>/dev/null); \
+	     if test "$$PHASE" = Running && test -z "$$DELETING"; then POD=$${CANDIDATE#pod/}; break; fi; \
+	   done; \
+	   if test -n "$$POD"; then \
+	     LOGS=$$(oc logs -n $$NS $$POD -c rmf-core 2>/dev/null); \
+	     if printf "%s\n" "$$LOGS" | grep -q "Finished configuring Easy Full Control adapter" && \
+	        printf "%s\n" "$$LOGS" | grep -q "Successfully added robot"; then \
+	       echo "RMF adapter ready and registered robot_1"; exit 0; \
+	     fi; \
+	   fi; \
+	   sleep 2; \
+	 done; \
+	 echo "ERROR: RMF did not register robot_1 within 180 seconds" >&2; exit 1
 
 ##@ Helm
 

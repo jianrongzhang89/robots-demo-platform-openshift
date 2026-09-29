@@ -9,6 +9,7 @@ This is a workaround for Gazebo gpu_lidar auto-generating frame_id as model/link
 """
 import rclpy
 import rclpy.parameter
+import os
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy
 from sensor_msgs.msg import LaserScan
@@ -27,21 +28,34 @@ class ScanFrameRewriter(Node):
             durability=DurabilityPolicy.VOLATILE,
         )
 
+        self.input_topic = os.environ.get('SCAN_INPUT_TOPIC', '/robot_1/scan')
+        self.output_topic = os.environ.get('SCAN_OUTPUT_TOPIC', '/robot_1/scan_fixed')
+        self._last_stamp_ns = 0
+
         # Subscribe to original scan
         self.scan_sub = self.create_subscription(
             LaserScan,
-            '/robot_1/scan',
+            self.input_topic,
             self.scan_callback,
             scan_qos
         )
 
         # Publish to /scan (overwrites the original - this node processes first due to local DDS priority)
         # The scan is consumed locally by AMCL before Zenoh bridge forwards it
-        self.scan_pub = self.create_publisher(LaserScan, '/robot_1/scan_fixed', scan_qos)
-
-        self.get_logger().info('Scan frame rewriter active: robot_1/base_scan/lidar → base_scan on /scan_fixed')
+        self.scan_pub = self.create_publisher(LaserScan, self.output_topic, scan_qos)
+        self.get_logger().info(
+            f'Scan frame rewriter active: {self.input_topic} -> {self.output_topic}')
 
     def scan_callback(self, msg):
+        stamp_ns = msg.header.stamp.sec * 1_000_000_000 + msg.header.stamp.nanosec
+        if stamp_ns < self._last_stamp_ns:
+            if self._last_stamp_ns - stamp_ns <= 30 * 1_000_000_000:
+                return
+            # Gazebo restarted; accept the new clock epoch.
+            self._last_stamp_ns = 0
+        if stamp_ns <= self._last_stamp_ns:
+            return
+        self._last_stamp_ns = stamp_ns
         # Check if frame_id needs rewriting
         if msg.header.frame_id == 'robot_1/base_scan/lidar':
             # Create a copy and rewrite frame_id

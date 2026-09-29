@@ -52,8 +52,10 @@ RECENT_SENT_WINDOW = 25.0  # s — ignore retries of same dest within 25s of sen
 # slam_toolbox localization: map frame = posegraph frame (origin = robot spawn).
 # Goals from RMF are in world frame; Nav2 needs map frame = world - spawn offset.
 import os as _os
-_MAP_OFFSET_X = float(_os.environ.get("INITIAL_X", "0.0"))
-_MAP_OFFSET_Y = float(_os.environ.get("INITIAL_Y", "0.0"))
+_MAP_OFFSET_X = float(_os.environ.get(
+    "MAP_OFFSET_X", _os.environ.get("INITIAL_X", "0.0")))
+_MAP_OFFSET_Y = float(_os.environ.get(
+    "MAP_OFFSET_Y", _os.environ.get("INITIAL_Y", "0.0")))
 
 NAV_ACTION = "navigate_to_pose"
 
@@ -450,7 +452,16 @@ class NavRelay(Node):
                 self._last_ok_time = now
         msg = String()
         msg.data = f"{rmf_id} {'OK' if success else 'FAILED'}"
-        self._result_pub.publish(msg)
+
+        # Allow the bridge DDS reader and RMF-side result subscriber to finish
+        # discovery before the one-shot result would otherwise be lost.
+        def _publish_result_retries():
+            import time as _time
+            for _ in range(6):
+                self._result_pub.publish(msg)
+                _time.sleep(0.5)
+
+        threading.Thread(target=_publish_result_retries, daemon=True).start()
         self.get_logger().info(f"[nav_relay] result: {msg.data}")
 
 

@@ -28,8 +28,12 @@ spec:
         - name: hotel
           image: {{ .Values.hotel.image }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ["/entrypoint-hotel.sh"]
           {{- if .Values.hybridNav2.enabled }}
+          command: ["/entrypoint-hotel-sim-federated.sh"]
+          {{- else }}
+          command: ["/entrypoint-hotel.sh"]
+          {{- end }}
+          {{- if and .Values.hybridNav2.enabled (not .Values.hotel.canonicalFederated) }}
           lifecycle:
             postStart:
               exec:
@@ -112,7 +116,7 @@ spec:
             periodSeconds: 30
             timeoutSeconds: 5
             failureThreshold: 10
-          {{- if .Values.hybridNav2.enabled }}
+          {{- if and .Values.hybridNav2.enabled (not .Values.hotel.canonicalFederated) }}
           volumeMounts:
             - name: robot-spawn
               mountPath: /robot-spawn
@@ -176,6 +180,15 @@ spec:
               value: "0"
             - name: ROS_DISTRO
               value: jazzy
+            - name: RMW_IMPLEMENTATION
+              value: rmw_cyclonedds_cpp
+            - name: CYCLONEDDS_URI
+              value: file:///zenoh-config/cyclonedds.xml
+          volumeMounts:
+            - name: zenoh-config
+              mountPath: /zenoh-config/cyclonedds.xml
+              subPath: cyclonedds.xml
+              readOnly: true
           resources:
             requests:
               cpu: 50m
@@ -184,6 +197,7 @@ spec:
               cpu: 100m
               memory: 128Mi
 
+        {{- if not .Values.hotel.canonicalFederated }}
         - name: gz-ros-bridge
           image: {{ .Values.hotel.image }}
           command: ["/bin/bash", "-c"]
@@ -229,6 +243,7 @@ spec:
 
         # --- Sidecar: Zenoh bridge for Gazebo topics ---
         # Publishes Gazebo topics to Zenoh for cross-pod federation
+        {{- end }}
         - name: zenoh-bridge-gazebo
           image: {{ .Values.zenohBridge.image }}
           args: ["-c", "/zenoh-config/gazebo-bridge.json5"]
@@ -237,10 +252,18 @@ spec:
               value: "0"
             - name: ROS_DISTRO
               value: jazzy
+            - name: RMW_IMPLEMENTATION
+              value: rmw_cyclonedds_cpp
+            - name: CYCLONEDDS_URI
+              value: file:///zenoh-config/cyclonedds.xml
           volumeMounts:
             - name: zenoh-config
               mountPath: /zenoh-config/gazebo-bridge.json5
               subPath: gazebo-bridge.json5
+              readOnly: true
+            - name: zenoh-config
+              mountPath: /zenoh-config/cyclonedds.xml
+              subPath: cyclonedds.xml
               readOnly: true
           resources:
             requests:
@@ -250,7 +273,7 @@ spec:
               cpu: {{ .Values.zenohResources.limits.cpu | quote }}
               memory: {{ .Values.zenohResources.limits.memory | quote }}
       volumes:
-        {{- if .Values.hybridNav2.enabled }}
+        {{- if and .Values.hybridNav2.enabled (not .Values.hotel.canonicalFederated) }}
         - name: robot-spawn
           configMap:
             name: robot-spawn-config

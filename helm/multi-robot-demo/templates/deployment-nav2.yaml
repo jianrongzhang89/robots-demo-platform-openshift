@@ -28,7 +28,11 @@ spec:
         - name: nav2
           image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
           imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          {{- if $.Values.hotel.canonicalFederated }}
+          command: ["/entrypoint-nav2-federated.sh"]
+          {{- else }}
           command: ["/entrypoint-nav2.sh"]
+          {{- end }}
           env:
             - name: ROBOT_NAME
               value: {{ .name | quote }}
@@ -38,12 +42,20 @@ spec:
               value: {{ $.Values.nav2.mapOffsetY | default .initialPose.yPos | quote }}
             - name: INITIAL_YAW
               value: {{ .initialPose.yaw | quote }}
+            - name: MAP_OFFSET_X
+              value: {{ $.Values.nav2.mapOffsetX | default "0.0" | quote }}
+            - name: MAP_OFFSET_Y
+              value: {{ $.Values.nav2.mapOffsetY | default "0.0" | quote }}
             - name: TURTLEBOT3_MODEL
               value: waffle
             - name: ROS_DISTRO
               value: jazzy
             - name: ROS_DOMAIN_ID
               value: "0"
+            - name: RMW_IMPLEMENTATION
+              value: rmw_cyclonedds_cpp
+            - name: CYCLONEDDS_URI
+              value: file:///opt/ros2-demo/config/cyclonedds.xml
             - name: LOCALIZATION_MODE
               value: {{ $.Values.nav2.localizationMode | default "slam_toolbox" | quote }}
             - name: LOCALIZATION_MAP
@@ -59,6 +71,10 @@ spec:
               value: {{ .initialPose.xPos | quote }}
             - name: SPAWN_Y
               value: {{ .initialPose.yPos | quote }}
+            - name: ODOM_TOPIC
+              value: "/odom"
+            - name: FEDERATED_NAV2
+              value: "1"
           resources:
             requests:
               cpu: {{ $.Values.nav2.resources.requests.cpu | quote }}
@@ -66,6 +82,174 @@ spec:
             limits:
               cpu: {{ $.Values.nav2.resources.limits.cpu | quote }}
               memory: {{ $.Values.nav2.resources.limits.memory | quote }}
+
+        # --- Sidecar: RMF command/action relay ---
+        # Keep the relay process independent from the long-running Nav2
+        # entrypoint so RMF commands remain available during Nav2 restarts.
+        - name: nav2-rmf-relay
+          image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          command: ["/bin/bash", "-lc"]
+          args:
+            - |
+              export HOME=/tmp/ros-home ROS_LOG_DIR=/tmp/ros-home/.ros/log
+              mkdir -p /tmp/ros-home/.ros/log
+              source /opt/ros/jazzy/setup.bash
+              exec python3 -u /nav2_relay.py
+          env:
+            - name: ROS_DISTRO
+              value: jazzy
+            - name: ROS_DOMAIN_ID
+              value: "0"
+            - name: RMW_IMPLEMENTATION
+              value: rmw_cyclonedds_cpp
+            - name: CYCLONEDDS_URI
+              value: file:///opt/ros2-demo/config/cyclonedds.xml
+            - name: ROBOT_NAME
+              value: {{ .name | quote }}
+            - name: INITIAL_X
+              value: {{ .initialPose.xPos | quote }}
+            - name: INITIAL_Y
+              value: {{ .initialPose.yPos | quote }}
+            - name: INITIAL_YAW
+              value: {{ .initialPose.yaw | quote }}
+            - name: MAP_OFFSET_X
+              value: {{ $.Values.nav2.mapOffsetX | default "0.0" | quote }}
+            - name: MAP_OFFSET_Y
+              value: {{ $.Values.nav2.mapOffsetY | default "0.0" | quote }}
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+
+        # --- Sidecar: canonical odom TF authority ---
+        - name: nav2-odom-tf
+          image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          command: ["/bin/bash", "-lc"]
+          args:
+            - |
+              export HOME=/tmp/ros-home ROS_LOG_DIR=/tmp/ros-home/.ros/log
+              mkdir -p /tmp/ros-home/.ros/log
+              source /opt/ros/jazzy/setup.bash
+              exec python3 -u /opt/ros2-demo/scripts/federated_odom_tf.py
+          env:
+            - name: ROS_DISTRO
+              value: jazzy
+            - name: ROS_DOMAIN_ID
+              value: "0"
+            - name: RMW_IMPLEMENTATION
+              value: rmw_cyclonedds_cpp
+            - name: CYCLONEDDS_URI
+              value: file:///opt/ros2-demo/config/cyclonedds.xml
+            - name: INITIAL_X
+              value: {{ .initialPose.xPos | quote }}
+            - name: INITIAL_Y
+              value: {{ .initialPose.yPos | quote }}
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+
+        {{- if $.Values.nav2.directOdomRelay }}
+        # The ros2dds odom route is disabled in this mode. This relay is a
+        # federation-only fallback for the bridge data-plane issue.
+        - name: nav2-odom-relay
+          image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          command: ["/bin/bash", "-lc"]
+          args:
+            - |
+              export HOME=/tmp/ros-home ROS_LOG_DIR=/tmp/ros-home/.ros/log
+              mkdir -p /tmp/ros-home/.ros/log
+              source /opt/ros/jazzy/setup.bash
+              exec python3 -u /zenoh-config/federated_odom_relay.py
+          env:
+            - name: ROS_DISTRO
+              value: jazzy
+            - name: ROS_DOMAIN_ID
+              value: "0"
+            - name: RMW_IMPLEMENTATION
+              value: rmw_cyclonedds_cpp
+            - name: CYCLONEDDS_URI
+              value: file:///opt/ros2-demo/config/cyclonedds.xml
+            - name: ROBOT_NAME
+              value: {{ .name | quote }}
+          volumeMounts:
+            - name: zenoh-config
+              mountPath: /zenoh-config/federated_odom_relay.py
+              subPath: federated_odom_relay.py
+              readOnly: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+        {{- end }}
+
+        # --- Sidecar: canonical scan frame correction ---
+        - name: nav2-scan-frame-rewriter
+          image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          command: ["/bin/bash", "-lc"]
+          args:
+            - |
+              export HOME=/tmp/ros-home ROS_LOG_DIR=/tmp/ros-home/.ros/log
+              mkdir -p /tmp/ros-home/.ros/log
+              source /opt/ros/jazzy/setup.bash
+              exec python3 -u /opt/ros2-demo/scripts/scan_frame_rewriter.py
+          env:
+            - name: ROS_DISTRO
+              value: jazzy
+            - name: ROS_DOMAIN_ID
+              value: "0"
+            - name: RMW_IMPLEMENTATION
+              value: rmw_cyclonedds_cpp
+            - name: CYCLONEDDS_URI
+              value: file:///opt/ros2-demo/config/cyclonedds.xml
+            - name: SCAN_INPUT_TOPIC
+              value: "/scan"
+            - name: SCAN_OUTPUT_TOPIC
+              value: "/scan_fixed"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+
+        # --- Sidecar: continuous canonical map-frame pose for RMF ---
+        - name: nav2-pose-relay
+          image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          command: ["/bin/bash", "-lc"]
+          args:
+            - |
+              export HOME=/tmp/ros-home ROS_LOG_DIR=/tmp/ros-home/.ros/log
+              mkdir -p /tmp/ros-home/.ros/log
+              source /opt/ros/jazzy/setup.bash
+              exec python3 -u /opt/ros2-demo/scripts/federated_pose_relay.py
+          env:
+            - name: ROS_DISTRO
+              value: jazzy
+            - name: ROS_DOMAIN_ID
+              value: "0"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
 
         # --- Sidecar: zenoh-bridge-ros2dds with per-robot namespace ---
         # The namespace prefix makes bare /tf appear as robot_N/tf over Zenoh,
@@ -78,10 +262,18 @@ spec:
               value: "0"
             - name: ROS_DISTRO
               value: jazzy
+            - name: RMW_IMPLEMENTATION
+              value: rmw_cyclonedds_cpp
+            - name: CYCLONEDDS_URI
+              value: file:///zenoh-config/cyclonedds.xml
           volumeMounts:
             - name: zenoh-config
               mountPath: /zenoh-config/nav2-bridge.json5
               subPath: nav2-bridge-{{ .name }}.json5
+              readOnly: true
+            - name: zenoh-config
+              mountPath: /zenoh-config/cyclonedds.xml
+              subPath: cyclonedds.xml
               readOnly: true
           resources:
             requests:
@@ -91,6 +283,7 @@ spec:
               cpu: {{ $.Values.zenohResources.limits.cpu | quote }}
               memory: {{ $.Values.zenohResources.limits.memory | quote }}
 
+        {{- if not $.Values.nav2.directClockRelay }}
         # --- Sidecar: clock-only bridge (no namespace) ---
         # Subscribes to Zenoh bare "clock" -> delivers to local /clock.
         # The main bridge uses namespace /robot_N so it maps robot_N/X -> /X,
@@ -104,10 +297,18 @@ spec:
               value: "0"
             - name: ROS_DISTRO
               value: jazzy
+            - name: RMW_IMPLEMENTATION
+              value: rmw_cyclonedds_cpp
+            - name: CYCLONEDDS_URI
+              value: file:///zenoh-config/cyclonedds.xml
           volumeMounts:
             - name: zenoh-config
               mountPath: /zenoh-config/clock-bridge.json5
               subPath: clock-bridge.json5
+              readOnly: true
+            - name: zenoh-config
+              mountPath: /zenoh-config/cyclonedds.xml
+              subPath: cyclonedds.xml
               readOnly: true
           resources:
             requests:
@@ -116,6 +317,36 @@ spec:
             limits:
               cpu: 500m
               memory: 256Mi
+        {{- else }}
+        - name: nav2-clock-relay
+          image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
+          command: ["/bin/bash", "-lc"]
+          args:
+            - |
+              export HOME=/tmp/ros-home ROS_LOG_DIR=/tmp/ros-home/.ros/log
+              mkdir -p /tmp/ros-home/.ros/log
+              source /opt/ros/jazzy/setup.bash
+              exec python3 -u /zenoh-config/federated_clock_relay.py
+          env:
+            - name: ROS_DOMAIN_ID
+              value: "0"
+            - name: RMW_IMPLEMENTATION
+              value: rmw_cyclonedds_cpp
+            - name: CYCLONEDDS_URI
+              value: file:///opt/ros2-demo/config/cyclonedds.xml
+          volumeMounts:
+            - name: zenoh-config
+              mountPath: /zenoh-config/federated_clock_relay.py
+              subPath: federated_clock_relay.py
+              readOnly: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+        {{- end }}
 
         # --- Sidecar: cmd_vel Zenoh keepalive (no namespace) ---
         # Subscribes to exact Zenoh keys robot_1/cmd_vel and robot_2/cmd_vel,
@@ -132,10 +363,18 @@ spec:
               value: "0"
             - name: ROS_DISTRO
               value: jazzy
+            - name: RMW_IMPLEMENTATION
+              value: rmw_cyclonedds_cpp
+            - name: CYCLONEDDS_URI
+              value: file:///zenoh-config/cyclonedds.xml
           volumeMounts:
             - name: zenoh-config
               mountPath: /zenoh-config/cmd-vel-keepalive.json5
               subPath: cmd-vel-keepalive.json5
+              readOnly: true
+            - name: zenoh-config
+              mountPath: /zenoh-config/cyclonedds.xml
+              subPath: cyclonedds.xml
               readOnly: true
           resources:
             requests:
@@ -145,6 +384,7 @@ spec:
               cpu: 200m
               memory: 128Mi
 
+        {{- if not $.Values.hotel.canonicalFederated }}
         # --- Sidecar: Scan Frame ID Rewriter ---
         # Gazebo gpu_lidar auto-generates frame_id as model/link/sensor (robot_1/base_scan/lidar)
         # but TF tree only has robot_1/base_scan. This rewrites scan frame_id to base_scan.
@@ -279,6 +519,7 @@ spec:
               cpu: 100m
               memory: 128Mi
 
+        {{- end }}
       volumes:
         - name: zenoh-config
           configMap:

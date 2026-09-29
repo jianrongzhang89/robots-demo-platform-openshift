@@ -52,6 +52,7 @@ z = zenoh.open(conf)
 
 last_ns = 0
 _msg_count = 0
+_last_emit = 0.0
 lock = threading.Lock()
 RESTART_THRESHOLD_NS = 10 * 1_000_000_000  # 10s: any backward jump > 10s = Gazebo restart
 # Publish filtered clock to clock_relay/clock_bridge — the clock-bridge sidecar
@@ -61,7 +62,7 @@ pub1 = z.declare_publisher("clock_relay/clock_bridge")
 print("[clock-relay] Publisher declared for clock_relay/clock_bridge")
 
 def on_clock(sample):
-    global last_ns, _msg_count
+    global last_ns, _msg_count, _last_emit
     try:
         raw = bytes(sample.payload.to_bytes())
         if len(raw) < 12:
@@ -69,6 +70,9 @@ def on_clock(sample):
         sec  = struct.unpack_from('<i', raw, 4)[0]
         nsec = struct.unpack_from('<I', raw, 8)[0]
         ns = sec * 1_000_000_000 + nsec
+        now = time.monotonic()
+        if now - _last_emit < 0.02:
+            return
         with lock:
             if ns < last_ns:
                 if (last_ns - ns) > RESTART_THRESHOLD_NS:
@@ -78,6 +82,7 @@ def on_clock(sample):
                 else:
                     return  # small jitter, filter out
             last_ns = ns
+            _last_emit = now
             _msg_count += 1
             if _msg_count % 100 == 0:
                 print(f"[clock-relay] Relayed {_msg_count} clock messages (sim time: {sec}.{nsec:09d})")
@@ -93,8 +98,9 @@ import os as _os
 _robot_names = _os.environ.get('ROBOT_NAMES', 'robot_1 robot_2').split()
 _clock_keys  = [f'{r}/clock' for r in _robot_names] + ['clock']
 print(f"[clock-relay] Subscribing to Zenoh keys: {_clock_keys}")
+_clock_subscribers = []
 for key in _clock_keys:
-    z.declare_subscriber(key, on_clock)
+    _clock_subscribers.append(z.declare_subscriber(key, on_clock))
     print(f"[clock-relay] Subscribed to Zenoh key: {key}")
 print("[clock-relay] Monotonic clock relay active: clock -> clock_relay/clock_bridge")
 with open('/tmp/clock_relay_status.txt', 'w') as f:
@@ -192,7 +198,7 @@ def on_clock(s):
 
 # Subscribe to clock_relay/clock_bridge (the DDS relay topic that IS forwarded by Zenoh)
 # NOT "clock" which is hardcoded blocked by zenoh-bridge-ros2dds
-z.declare_subscriber("clock_relay/clock_bridge", on_clock)
+clock_subscriber = z.declare_subscriber("clock_relay/clock_bridge", on_clock)
 sys.stderr.write("[d55-clock] Zenoh subscriber ready (clock_relay/clock_bridge)\n")
 while True:
     time.sleep(1)

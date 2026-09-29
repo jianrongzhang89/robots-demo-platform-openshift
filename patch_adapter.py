@@ -31,37 +31,55 @@ NEW_TF_SUB = '''        self.tf_sub = self.zenoh_session.declare_subscriber(
         # cross-pod use. odom is in the odom frame (starts at 0,0 at boot, not map
         # origin), so it gives wrong coordinates for robots spawned at non-origin
         # positions (-2,-0.5) and (2,0.5). amcl_pose gives true map-frame x/y/yaw.
-        import threading as _threading, struct as _struct, math as _math, os as _os
+        import threading as _threading, math as _math, os as _os
+        from rclpy.serialization import deserialize_message as _deserialize_message
+        from geometry_msgs.msg import PoseWithCovarianceStamped as _PoseWithCovarianceStamped
         self._odom_x = None
         self._odom_y = None
         self._odom_yaw = None
+        self._pose_update_logged = False
 
         def _amcl_pose_cb(sample):
             try:
-                raw = bytes(sample.payload.to_bytes())
-                # PoseWithCovarianceStamped CDR: 4-byte header + stamp (8 bytes) +
-                # frame_id string (4+N bytes) + alignment padding + position doubles.
-                # Scan for plausible map-frame position (tb3_sandbox bounds: ±6 m).
-                for offset in range(20, min(80, len(raw) - 55), 4):
-                    try:
-                        px, py, pz = _struct.unpack_from("<3d", raw, offset)
-                        if abs(px) < 6.0 and abs(py) < 6.0 and abs(pz) < 0.5:
-                            ox, oy, oz, ow = _struct.unpack_from("<4d", raw, offset + 24)
-                            # Planar robot: ox≈0, oy≈0; unit quaternion
-                            if abs(ox) < 0.1 and abs(oy) < 0.1 and abs(oz**2 + ow**2 - 1.0) < 0.1:
-                                self._odom_x = float(px)
-                                self._odom_y = float(py)
-                                self._odom_yaw = float(
-                                    _math.atan2(2*(ow*oz), 1 - 2*(oz**2)))
-                                return
-                    except Exception:
-                        continue
+                msg = _deserialize_message(
+                    bytes(sample.payload.to_bytes()), _PoseWithCovarianceStamped)
+                px = msg.pose.pose.position.x
+                py = msg.pose.pose.position.y
+                q = msg.pose.pose.orientation
+                self._odom_x = float(px)
+                self._odom_y = float(py)
+                self._odom_yaw = float(_math.atan2(2*(q.w*q.z), 1 - 2*(q.z**2)))
+                if not self._pose_update_logged:
+                    self.node.get_logger().info(
+                        f"[patch] AMCL pose update for {self.robot_name}: "
+                        f"({self._odom_x:.2f}, {self._odom_y:.2f}, yaw={self._odom_yaw:.3f})")
+                    self._pose_update_logged = True
             except Exception:
                 pass
 
         self._odom_sub = self.zenoh_session.declare_subscriber(
             namespacify("amcl_pose", self.robot_name),
             _amcl_pose_cb
+        )
+        # Federation fallback: the RMF pod's ROS/Zenoh bridge delivers the
+        # same pose into Domain 55. Keep this subscription in addition to the
+        # direct Zenoh path so pose updates survive bridge route churn.
+        from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
+        _pose_qos = QoSProfile(
+            depth=10,
+            reliability=ReliabilityPolicy.RELIABLE,
+            history=HistoryPolicy.KEEP_LAST,
+        )
+        def _ros_amcl_pose_cb(msg):
+            q = msg.pose.pose.orientation
+            self._odom_x = float(msg.pose.pose.position.x)
+            self._odom_y = float(msg.pose.pose.position.y)
+            self._odom_yaw = float(_math.atan2(2*(q.w*q.z), 1 - 2*(q.z**2)))
+        self._ros_amcl_sub = self.node.create_subscription(
+            _PoseWithCovarianceStamped,
+            f'/{self.robot_name}/amcl_pose',
+            _ros_amcl_pose_cb,
+            _pose_qos,
         )
         # Non-blocking: use env-var spawn position as the initial cache value.
         # This eliminates the 90-second race against AMCL startup timing.
@@ -97,6 +115,19 @@ OLD_GET_TRANSFORM = '''    def get_transform(self) -> TransformStamped | None:
             )'''
 
 NEW_GET_TRANSFORM = '''    def get_transform(self) -> TransformStamped | None:
+        # AMCL is the authoritative map-frame pose for the hotel federation.
+        # Prefer its cache over a stale/partially namespaced TF tree.
+        if self._odom_x is not None:
+            import math
+            t = TransformStamped()
+            t.header.frame_id = self.map_frame
+            t.child_frame_id = self.robot_frame
+            t.transform.translation.x = self._odom_x
+            t.transform.translation.y = self._odom_y
+            half = self._odom_yaw / 2.0
+            t.transform.rotation.z = math.sin(half)
+            t.transform.rotation.w = math.cos(half)
+            return t
         try:
             transform = self.tf_buffer.lookup_transform(
                 self.map_frame,
@@ -227,9 +258,18 @@ class _PubSubNavHandle:
             text = raw[8:8 + str_len - 1].decode('utf-8')
             parts = text.split()
             if len(parts) == 2 and parts[0] == self._goal_id:
+                should_finish = False
                 with self._lock:
                     self._succeeded = (parts[1] == 'OK')
                     self._done = True
+                    if self._succeeded and self._execution is not None and not self._finished_called:
+                        self._finished_called = True
+                        should_finish = True
+                if should_finish:
+                    try:
+                        self._execution.finished()
+                    except Exception:
+                        pass
         except Exception:
             pass
 
