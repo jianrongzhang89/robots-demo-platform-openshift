@@ -103,8 +103,8 @@ oc exec -n ros2-rmf-hotel deploy/hotel-nav2-rmf -- \
   bash -lc 'source /opt/ros/jazzy/setup.bash; ros2 topic echo /lift_states'
 ```
 
-The remainder of this document records the earlier multi-pod implementation
-and is retained as historical context.
+The federated multi-pod demo below is also supported. The single-pod demo
+remains useful for baseline testing and is not replaced by the federated path.
 
 ## Federated Multi-Pod Architecture
 
@@ -141,20 +141,35 @@ Containerfile.rmf        <- dedicated RMF image
 Zenoh upstream images    <- router and ROS 2 DDS bridge
 ```
 
-The canonical hotel Nav2/RMF image intentionally remains unchanged. The role
-images preserve its `hotel-assets`, blue `robot_1`, URDF, Nav2 packages, and
-lift/door/physics fixes. The federated hotel image uses
+The role images preserve the canonical `hotel-assets`, blue `robot_1`, URDF,
+Nav2 packages, and lift/door/physics fixes. The federated hotel image uses
 `entrypoint-hotel-sim-federated.sh`, which starts only canonical Gazebo,
 robot-state publication, sensor bridging, and TF support; Nav2 and RMF remain
 in their separate pods.
 
 ### Federated Deployment
 
-Build the federated image roles, then deploy the existing federated values:
+The active federated demo uses separate ROS 2 domains. RMF is built inside
+OpenShift from `Containerfile.rmf`; Nav2 and the hotel simulation are built for
+`linux/amd64` and pushed to the configured Quay registry.
+
+Build all federated image roles:
 
 ```bash
-make build-push-hotel-nav2-federated
-make deploy-hotel-nav2-federated \
+REGISTRY=quay.io/jianrzha make build-push-hotel-nav2-federated
+```
+
+The RMF cluster build creates or updates the `rmf-image` ImageStream and
+Binary `BuildConfig` in `ros2-rmf-hotel`. To build only RMF in OpenShift:
+
+```bash
+make build-rmf-cluster
+```
+
+Deploy with the in-cluster RMF image:
+
+```bash
+REGISTRY=quay.io/jianrzha make deploy-hotel-nav2-federated-cluster-rmf \
   HOTEL_NAV2_RMF_NS=ros2-rmf-hotel
 ```
 
@@ -167,6 +182,71 @@ Verify the four core workloads:
 ```bash
 oc get pods -n ros2-rmf-hotel
 # hotel-sim, robot-nav-robot-1, rmf-core, zenoh-router
+```
+
+The supported restart order waits for each dependency and confirms fleet
+registration before dispatch:
+
+```bash
+make restart-hotel-nav2-federated
+```
+
+This restarts Zenoh, hotel simulation, Nav2, and RMF in that order. The RMF
+container must report `RMF adapter ready and registered robot_1` before sending
+a task.
+
+### Federated Demo Route
+
+The default federated route starts and ends at the L1 lobby, visits the L3
+middle hallway, and uses Lift2 for both level transitions:
+
+```text
+L1 lobby -> L3_middle_hallway -> Lift2 down -> L1 lobby
+```
+
+Dispatch it through the RMF core container:
+
+```bash
+make dispatch-hotel ROS_DEMO_NS=ros2-rmf-hotel
+```
+
+Equivalent explicit route:
+
+```bash
+make dispatch-hotel \
+  ROS_DEMO_NS=ros2-rmf-hotel \
+  HOTEL_WAYPOINTS="lobby L3_middle_hallway lobby" \
+  HOTEL_LOOPS=1
+```
+
+The federated flow is:
+
+```text
+RMF dispatcher
+  -> Free Fleet adapter in rmf-core
+  -> Zenoh rmf_navigate_cmd route
+  -> Nav2 action relay
+  -> Gazebo robot_1
+```
+
+On the outbound leg, the adapter requests Lift2, switches Nav2 from the L1
+map to L3, reinitializes AMCL, and navigates to `L3_middle_hallway`. On the
+return leg it requests Lift2 at L3, switches back to L1, releases the lift
+session, and navigates to `lobby`.
+
+Useful live checks:
+
+```bash
+oc logs -n ros2-rmf-hotel -f deployment/rmf-core -c rmf-core
+oc logs -n ros2-rmf-hotel -f deployment/robot-nav-robot-1 -c nav2-rmf-relay
+oc get pods -n ros2-rmf-hotel
+```
+
+The noVNC route can be discovered from the cluster instead of hard-coding a
+host name:
+
+```bash
+oc get route -n ros2-rmf-hotel
 ```
 
 ## Executive Summary

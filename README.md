@@ -8,6 +8,70 @@ demonstrating [Open-RMF](https://www.open-rmf.org/) fleet management and
 
 ---
 
+## Hotel Multi-Level Navigation Demos
+
+The repository includes two supported Open-RMF hotel navigation deployments.
+Both demonstrate `robot_1` traveling between L1 and L3 through Lift2. Detailed
+architecture and troubleshooting notes are in
+[`MULTI-LEVEL-NAVIGATION-DEMO.md`](MULTI-LEVEL-NAVIGATION-DEMO.md).
+
+### Single-Pod Demo
+
+The single-pod deployment runs Gazebo, Nav2, RMF, and the lift/door runtime in
+one `hotel-nav2-rmf` pod. It is the simplest baseline for validating the hotel
+world and multi-level navigation.
+
+```bash
+make build-push-hotel-nav2-rmf-canonical \
+  HOTEL_NAV2_RMF_TAG=canonical-20260925
+make deploy-hotel-nav2-rmf-canonical \
+  HOTEL_NAV2_RMF_NS=ros2-rmf-hotel \
+  HOTEL_NAV2_RMF_TAG=canonical-20260925
+make dispatch-hotel-nav2-rmf \
+  HOTEL_NAV2_RMF_NS=ros2-rmf-hotel \
+  HOTEL_NAV2_RMF_START=lobby \
+  HOTEL_NAV2_RMF_DEST=L3_middle_hallway
+```
+
+### Zenoh-Federated Demo
+
+The federated deployment separates the roles into four workloads:
+
+```text
+hotel-sim -> Gazebo and robot sensors/actuation
+robot-nav-robot-1 -> Nav2, AMCL, and map switching
+rmf-core -> RMF scheduler, Free Fleet adapter, lifts, and doors
+zenoh-router -> cross-pod ROS 2 transport
+```
+
+RMF is built inside OpenShift from `Containerfile.rmf`; the Nav2 and hotel
+images are pushed to Quay. The federated route starts and ends at the L1 lobby
+and visits the L3 middle hallway:
+
+```text
+lobby -> L3_middle_hallway -> lobby
+```
+
+```bash
+REGISTRY=quay.io/jianrzha make build-push-hotel-nav2-federated
+REGISTRY=quay.io/jianrzha make deploy-hotel-nav2-federated-cluster-rmf \
+  HOTEL_NAV2_RMF_NS=ros2-rmf-hotel
+make restart-hotel-nav2-federated
+make dispatch-hotel ROS_DEMO_NS=ros2-rmf-hotel
+```
+
+Always restart before a new run so the Gazebo clock, Nav2 TF buffers, and RMF
+registration start cleanly. The restart target waits for
+`RMF adapter ready and registered robot_1` before returning.
+
+Check the federated workloads and logs with:
+
+```bash
+oc get pods -n ros2-rmf-hotel
+oc logs -n ros2-rmf-hotel -f deployment/rmf-core -c rmf-core
+oc get route -n ros2-rmf-hotel
+```
+
 ## What the Demo Shows
 
 Two complementary robotics layers operating simultaneously:
