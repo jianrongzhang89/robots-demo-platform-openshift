@@ -1,0 +1,26 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: rmf-image
+  labels:
+    app.kubernetes.io/part-of: ros2-multi-robot-demo
+spec: {}
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: rmf-image
+  labels:
+    app.kubernetes.io/part-of: ros2-multi-robot-demo
+spec:
+  runPolicy: SerialLatestOnly
+  source:
+    type: Binary
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Containerfile.rmf
+  output:
+    to:
+      kind: ImageStreamTag
+      name: rmf-image:latest

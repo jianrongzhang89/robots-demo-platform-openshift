@@ -23,6 +23,7 @@ IMAGE_HOTEL_NAV2_RMF_REF := $(REGISTRY)/ros2-rmf-hotel-nav2-rmf:jazzy
 HOTEL_NAV2_RMF_TAG ?= canonical-20260925
 IMAGE_HOTEL_NAV2_RMF_CANONICAL_REF := $(REGISTRY)/ros2-rmf-hotel-nav2-rmf:$(HOTEL_NAV2_RMF_TAG)
 HOTEL_NAV2_RMF_NS ?= ros2-rmf-hotel
+OPENSHIFT_RMF_IMAGE ?= image-registry.openshift-image-registry.svc:5000/$(HOTEL_NAV2_RMF_NS)/rmf-image:latest
 HOTEL_NAV2_RMF_ROBOT ?= robot_1
 HOTEL_NAV2_RMF_START ?= lobby
 HOTEL_NAV2_RMF_DEST ?= L3_middle_hallway
@@ -70,6 +71,14 @@ push-rmf: ## Push the RMF image to the registry
 
 .PHONY: build-push-rmf
 build-push-rmf: build-rmf push-rmf ## Build and push the RMF image
+
+.PHONY: build-rmf-cluster
+build-rmf-cluster: ## Build the RMF image inside OpenShift from Containerfile.rmf
+	oc apply -n $(HOTEL_NAV2_RMF_NS) -f openshift/rmf-buildconfig.yaml
+	oc start-build rmf-image -n $(HOTEL_NAV2_RMF_NS) --from-dir=. --follow
+
+.PHONY: build-push-rmf-cluster
+build-push-rmf-cluster: build-rmf-cluster ## Build the RMF image inside OpenShift
 
 .PHONY: build-rmf-multilevel
 build-rmf-multilevel: ## Build the RMF Multi-Level Navigation image with baked-in config
@@ -123,7 +132,7 @@ push-nav2: ## Push the federated Nav2 robot autonomy image
 build-push-nav2: build-nav2 push-nav2 ## Build and push the federated Nav2 image
 
 .PHONY: build-push-hotel-nav2-federated
-build-push-hotel-nav2-federated: build-hotel-federated-base build-push-hotel-sim build-push-nav2 build-push-rmf ## Build and push all federated runtime images
+build-push-hotel-nav2-federated: build-hotel-federated-base build-push-hotel-sim build-push-nav2 build-push-rmf-cluster ## Build all federated runtime images, with RMF built inside OpenShift
 
 .PHONY: build-hotel-nav2-rmf
 build-hotel-nav2-rmf: ## Build the single-pod OpenRMF + Nav2 hotel baseline
@@ -216,6 +225,20 @@ deploy-hotel-nav2-federated: ## Deploy the multi-pod Gazebo/Nav2/RMF/Zenoh hotel
 	  --set image.tag=$(TAG) \
 	  --set hotel.image=$(IMAGE_HOTEL_SIM_REF) \
 	  --set rmf.image=$(IMAGE_RMF_REF) \
+	  --wait --timeout 15m
+
+.PHONY: deploy-hotel-nav2-federated-cluster-rmf
+deploy-hotel-nav2-federated-cluster-rmf: ## Deploy federated hotel with RMF built inside OpenShift
+	helm upgrade --install $(RELEASE) $(CHART) \
+	  --namespace $(HOTEL_NAV2_RMF_NS) \
+	  --create-namespace \
+	  -f $(CHART)/values.yaml \
+	  -f $(CHART)/values-hotel-nav2.yaml \
+	  --set namespace=$(HOTEL_NAV2_RMF_NS) \
+	  --set image.repository=$(REGISTRY)/ros2-rmf-nav2 \
+	  --set image.tag=$(TAG) \
+	  --set hotel.image=$(IMAGE_HOTEL_SIM_REF) \
+	  --set rmf.image=$(OPENSHIFT_RMF_IMAGE) \
 	  --wait --timeout 15m
 
 .PHONY: deploy-multilevel
@@ -512,8 +535,8 @@ dispatch-house-patrol: ## House demo: robot_1 left corridor, robot_2 right corri
 # Waypoint names come from the source-built rmf_demos_maps hotel nav graphs;
 # confirm them with:  oc exec ... -- ros2 run rmf_demos_tasks dispatch_patrol -h
 # and by inspecting the generated nav_graphs. Override with:
-#   make dispatch-hotel HOTEL_WAYPOINTS="L1_n1 L3_room1" HOTEL_LOOPS=1
-HOTEL_WAYPOINTS ?= L3_room1 L3_room1
+#   make dispatch-hotel HOTEL_WAYPOINTS="lobby L3_middle_hallway lobby" HOTEL_LOOPS=1
+HOTEL_WAYPOINTS ?= lobby L3_middle_hallway lobby
 HOTEL_LOOPS     ?= 1
 
 .PHONY: dispatch-multilevel
@@ -532,10 +555,10 @@ dispatch-multilevel: ## Multi-level Nav2 demo: tinyBot_1 navigates from L1 lobby
 dispatch-hotel: ## Hotel demo: dispatch a multi-level patrol (lobby → level-3 room via lift)
 	@echo "=== Open-RMF Hotel World dispatch ==="
 	@echo " Waypoints: $(HOTEL_WAYPOINTS)   loops: $(HOTEL_LOOPS)"
-	@POD=$$(oc get pod -n $(NAMESPACE) -l app=hotel-sim -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
-	test -n "$$POD" || { echo "ERROR: hotel-sim pod not found in namespace '$(NAMESPACE)'"; exit 1; }; \
-	echo "[RMF] Dispatching patrol on pod $$POD ..."; \
-	oc exec -n $(NAMESPACE) $$POD -c hotel -- bash -c \
+	@POD=$$(oc get pod -n $(HOTEL_NAV2_RMF_NS) -l app=rmf-core -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
+	 test -n "$$POD" || { echo "ERROR: rmf-core pod not found in namespace '$(HOTEL_NAV2_RMF_NS)'"; exit 1; }; \
+	 echo "[RMF] Dispatching patrol on pod $$POD ..."; \
+	 oc exec -n $(HOTEL_NAV2_RMF_NS) $$POD -c rmf-core -- bash -c \
 	  'export HOME=/tmp/ros-home; source /opt/ros/jazzy/setup.bash; \
 	   source /opt/rmf_demos_ws/install/setup.bash 2>/dev/null || true; \
 	   ros2 run rmf_demos_tasks dispatch_patrol \
