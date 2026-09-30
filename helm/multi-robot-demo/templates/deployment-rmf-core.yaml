@@ -29,7 +29,8 @@ spec:
             - |
               set -e
               mkdir -p /canonical-rmf/maps
-              cp /opt/ros2-demo/rmf/nav_graph.yaml /canonical-rmf/nav_graph.yaml
+               cp /opt/ros2-demo/rmf/nav_graph.yaml /canonical-rmf/nav_graph.yaml
+               cp /opt/ros2-demo/hotel-assets/hotel.building.yaml /canonical-rmf/hotel.building.yaml
               cp /opt/ros2-demo/rmf/fleet_config.yaml /tmp/fleet_config.yaml
               cp /opt/ros2-demo/maps/hotel_*.yaml /canonical-rmf/maps/
               sed -i 's#/opt/ros2-demo/maps#/canonical-rmf/maps#g; /    delivery: true/a\    patrol: true' \
@@ -63,6 +64,8 @@ spec:
               value: {{ if .Values.hotel.canonicalFederated }}/canonical-rmf/fleet_config.yaml{{ else }}{{ .Values.rmf.fleetConfig | default "/opt/ros2-demo/rmf/fleet_config.yaml" }}{{ end }}
             - name: NAV_GRAPH
               value: {{ if .Values.hotel.canonicalFederated }}/canonical-rmf/nav_graph.yaml{{ else }}{{ .Values.rmf.navGraphPath | default "/opt/ros2-demo/rmf/nav_graph.yaml" }}{{ end }}
+            - name: BUILDING_CONFIG
+              value: {{ if .Values.hotel.canonicalFederated }}/canonical-rmf/hotel.building.yaml{{ else }}/opt/ros2-demo/hotel-assets/hotel.building.yaml{{ end }}
             - name: SERVER_URI
               value: {{ if .Values.rmf.serverUri }}{{ .Values.rmf.serverUri | quote }}{{ else }}""{{ end }}
             # Space-separated robot names — used by entrypoint-rmf.sh for clock

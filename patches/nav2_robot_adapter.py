@@ -46,9 +46,13 @@ from free_fleet_adapter.action import (
 from free_fleet_adapter.robot_adapter import ExecutionHandle, RobotAdapter
 
 from geometry_msgs.msg import TransformStamped, PoseWithCovarianceStamped
+from nav_msgs.msg import Odometry
+from nav2_msgs.srv import LoadMap
+from rmf_lift_msgs.msg import LiftRequest, LiftState
 from lifecycle_msgs.srv import ChangeState
 import numpy as np
 import rclpy
+from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
 import rmf_adapter.easy_full_control as rmf_easy
 from rmf_adapter.robot_update_handle import ActivityIdentifier, Tier
 from tf_transformations import euler_from_quaternion, quaternion_from_euler
@@ -284,6 +288,14 @@ class Nav2RobotAdapter(RobotAdapter):
         self.zenoh_session = zenoh_session
         self.fleet_config = fleet_config
         self.tf_buffer = tf_buffer
+        self._latest_odom = None
+        initial_prefix = name.upper().replace('-', '_')
+        self._robot_initial_x = float(
+            __import__('os').environ.get(f'{initial_prefix}_INITIAL_X', '0.0'))
+        self._robot_initial_y = float(
+            __import__('os').environ.get(f'{initial_prefix}_INITIAL_Y', '0.0'))
+        self._odom_sub_ros = self.node.create_subscription(
+            Odometry, f'/{name}/odom', self._on_odom, 10)
 
         self.exec_handle: ExecutionHandle | None = None
         self.map_name = self.robot_config_yaml['initial_map']
@@ -318,9 +330,12 @@ class Nav2RobotAdapter(RobotAdapter):
 
         # Service clients and publishers for map switching (lazy init)
         self.lifecycle_clients = {}
+        self.map_load_client = None
         self.amcl_initial_pose_pub = None
         self.lift_state_sub = None
         self.lift_request_pub = None
+        if self.level_maps:
+            self._setup_map_switching_infrastructure()
 
         # TODO(ac): Only use full battery if sim is indicated
         self.battery_soc = 1.0
@@ -481,6 +496,16 @@ class Nav2RobotAdapter(RobotAdapter):
     def get_pose(self) -> Annotated[list[float], 3] | None:
         transform = self.tf_handler.get_transform()
         if transform is None:
+            if self._latest_odom is not None:
+                pose = self._latest_odom.pose.pose
+                orientation = euler_from_quaternion([
+                    pose.orientation.x, pose.orientation.y,
+                    pose.orientation.z, pose.orientation.w])
+                return [
+                    self._robot_initial_x + pose.position.x,
+                    self._robot_initial_y + pose.position.y,
+                    orientation[2]
+                ]
             cached_x = self.tf_handler._odom_x
             cached_y = self.tf_handler._odom_y
             cached_yaw = self.tf_handler._odom_yaw
@@ -505,6 +530,9 @@ class Nav2RobotAdapter(RobotAdapter):
         ]
         return robot_pose
 
+    def _on_odom(self, message: Odometry):
+        self._latest_odom = message
+
     def _setup_map_switching_infrastructure(self):
         """
         Initialize service clients and subscriptions for map switching.
@@ -527,6 +555,8 @@ class Nav2RobotAdapter(RobotAdapter):
             f'/{self.name}/initialpose',
             10
         )
+        self.map_load_client = self.node.create_client(
+            LoadMap, '/map_server/load_map')
 
         # Note: Lift state subscription and request publisher would be added here
         # when RMF lift integration is ready (requires rmf_lift_msgs)
@@ -535,6 +565,25 @@ class Nav2RobotAdapter(RobotAdapter):
         self.node.get_logger().info(
             f'Map-switching infrastructure initialized for [{self.name}]'
         )
+
+        lift_request_qos = QoSProfile(
+            depth=100,
+            reliability=ReliabilityPolicy.RELIABLE,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+        )
+        lift_state_qos = QoSProfile(
+            depth=100,
+            reliability=ReliabilityPolicy.RELIABLE,
+            durability=DurabilityPolicy.VOLATILE,
+        )
+        self.lift_request_pub = self.node.create_publisher(
+            LiftRequest, '/lift_requests', lift_request_qos)
+        self.lift_state_sub = self.node.create_subscription(
+            LiftState, '/lift_states',
+            lambda message: self.lift_states.__setitem__(message.lift_name, message),
+            lift_state_qos)
+        self.node.get_logger().info(
+            f'Lift request/state bridge initialized for [{self.name}]')
 
     def switch_map(self, new_level: str) -> bool:
         """
@@ -571,20 +620,29 @@ class Nav2RobotAdapter(RobotAdapter):
             f'Switching map: {old_level} → {new_level}'
         )
 
-        # Step 1: Deactivate old map server
-        if not self._change_map_server_state(old_level, 'deactivate'):
+        map_url = self.level_maps[new_level].get('map_url', '')
+        if not map_url or self.map_load_client is None:
             self.node.get_logger().error(
-                f'Failed to deactivate map_server_{old_level}'
-            )
+                f'No map URL or /map_server/load_map client for {new_level}')
             return False
-
-        # Step 2: Activate new map server
-        if not self._change_map_server_state(new_level, 'activate'):
-            self.node.get_logger().error(
-                f'Failed to activate map_server_{new_level}'
-            )
-            # Try to reactivate old map server
-            self._change_map_server_state(old_level, 'activate')
+        import threading
+        completed = threading.Event()
+        result = {'ok': False}
+        result_sub = self.zenoh_session.declare_subscriber(
+            namespacify('map_switch_result', self.name),
+            lambda sample: (
+                result.update(ok=sample.payload.to_string().split()[1] == 'OK'),
+                completed.set()))
+        request_pub = self.zenoh_session.declare_publisher(
+            namespacify('map_switch', self.name))
+        request_pub.put(f'{new_level} {map_url}')
+        if not completed.wait(timeout=40.0):
+            self.node.get_logger().error(f'Timed out loading map {map_url}')
+            return False
+        result_sub.undeclare()
+        request_pub.undeclare()
+        if not result['ok']:
+            self.node.get_logger().error(f'Failed to load map {map_url}')
             return False
 
         # Step 3: Update state
@@ -773,6 +831,8 @@ class Nav2RobotAdapter(RobotAdapter):
         lift_connections = {
             ('L1', 'L2'): 'Lift1',
             ('L2', 'L1'): 'Lift1',
+            ('L1', 'L3'): 'Lift2',
+            ('L3', 'L1'): 'Lift2',
             ('L2', 'L3'): 'Lift2',
             ('L3', 'L2'): 'Lift2',
         }
@@ -808,12 +868,14 @@ class Nav2RobotAdapter(RobotAdapter):
         Returns:
             True if arrived, False on timeout
         """
-        # TODO: Implement when rmf_lift_msgs available
-        # For now, return True immediately (assumes lift is ready)
-        self.node.get_logger().info(
-            f'[STUB] Waiting for {lift_name} arrival at {floor}'
-        )
-        return True
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            state = self.lift_states.get(lift_name)
+            if state and state.current_floor == floor and state.motion_state == LiftState.MOTION_STOPPED:
+                return True
+            time.sleep(0.1)
+        self.node.get_logger().error(f'Lift {lift_name} did not arrive at {floor}')
+        return False
 
     def wait_for_lift_doors(
         self,
@@ -832,11 +894,15 @@ class Nav2RobotAdapter(RobotAdapter):
         Returns:
             True if reached state, False on timeout
         """
-        # TODO: Implement when rmf_lift_msgs available
-        self.node.get_logger().info(
-            f'[STUB] Waiting for {lift_name} doors to be {state}'
-        )
-        return True
+        expected = LiftState.DOOR_OPEN if state == 'OPEN' else LiftState.DOOR_CLOSED
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            current = self.lift_states.get(lift_name)
+            if current and current.door_state == expected:
+                return True
+            time.sleep(0.1)
+        self.node.get_logger().error(f'Lift {lift_name} doors did not reach {state}')
+        return False
 
     def wait_for_lift_travel(
         self,
@@ -855,11 +921,7 @@ class Nav2RobotAdapter(RobotAdapter):
         Returns:
             True if reached destination, False on timeout
         """
-        # TODO: Implement when rmf_lift_msgs available
-        self.node.get_logger().info(
-            f'[STUB] Waiting for {lift_name} to reach {destination_floor}'
-        )
-        return True
+        return self.wait_for_lift_arrival(lift_name, destination_floor, timeout)
 
     def request_lift_travel(self, lift_name: str, destination_floor: str):
         """
@@ -869,10 +931,18 @@ class Nav2RobotAdapter(RobotAdapter):
             lift_name: Lift name
             destination_floor: Target floor/level
         """
-        # TODO: Implement when rmf_lift_msgs available
+        if self.lift_request_pub is None:
+            self._setup_map_switching_infrastructure()
+        request = LiftRequest()
+        request.lift_name = lift_name
+        request.destination_floor = destination_floor
+        request.request_type = LiftRequest.REQUEST_AGV_MODE
+        request.door_state = LiftRequest.DOOR_OPEN
+        request.session_id = f'{self.name}_{int(time.time() * 1000)}'
+        self.lift_request_pub.publish(request)
         self.node.get_logger().info(
-            f'[STUB] Requesting {lift_name} to {destination_floor}'
-        )
+            f'Requested {lift_name} to {destination_floor} '
+            f'(session={request.session_id})')
 
     def execute_level_transition(
         self,
@@ -911,6 +981,23 @@ class Nav2RobotAdapter(RobotAdapter):
                 f'Starting level transition: {from_level} → {to_level} '
                 f'via {lift_name}'
             )
+
+            # EasyFullControl owns the lift session and may have already
+            # transported the cabin before this adapter callback runs. Do not
+            # restart a second lift workflow and wait for the cabin to return.
+            current_state = self.lift_states.get(lift_name)
+            if (current_state and
+                    current_state.current_floor == to_level and
+                    current_state.door_state == LiftState.DOOR_OPEN):
+                self.node.get_logger().info(
+                    f'{lift_name} is already at {to_level} with doors open; '
+                    'continuing with map/localization handoff')
+                if not self.switch_map(to_level):
+                    return False
+                exit_pose = self.get_lift_exit_pose(to_level, lift_name)
+                self.reinitialize_amcl(exit_pose)
+                self.current_level = to_level
+                return True
 
             # Step 1: Wait for lift arrival at current floor
             self.node.get_logger().info(

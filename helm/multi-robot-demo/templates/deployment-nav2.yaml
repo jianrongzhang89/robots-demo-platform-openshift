@@ -157,6 +157,37 @@ spec:
               cpu: 200m
               memory: 128Mi
 
+        - name: nav2-map-relay
+          image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
+          command: ["/bin/bash", "-lc"]
+          args:
+            - |
+              export HOME=/tmp/ros-home ROS_LOG_DIR=/tmp/ros-home/.ros/log
+              mkdir -p /tmp/ros-home/.ros/log
+              source /opt/ros/jazzy/setup.bash
+              exec python3 -u /zenoh-config/federated_map_relay.py
+          env:
+            - name: ROS_DOMAIN_ID
+              value: "0"
+            - name: RMW_IMPLEMENTATION
+              value: rmw_cyclonedds_cpp
+            - name: CYCLONEDDS_URI
+              value: file:///opt/ros2-demo/config/cyclonedds.xml
+            - name: ROBOT_NAME
+              value: {{ .name | quote }}
+          volumeMounts:
+            - name: zenoh-config
+              mountPath: /zenoh-config/federated_map_relay.py
+              subPath: federated_map_relay.py
+              readOnly: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+
         {{- if $.Values.nav2.directOdomRelay }}
         # The ros2dds odom route is disabled in this mode. This relay is a
         # federation-only fallback for the bridge data-plane issue.

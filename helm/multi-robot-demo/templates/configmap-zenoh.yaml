@@ -70,10 +70,10 @@ data:
         ros2dds: {
           allow: {
             publishers: [
-              ".*/rmf_navigate_cmd"
+              ".*/(rmf_navigate_cmd|lift_requests|door_requests)"
             ],
             subscribers: [
-               ".*/(amcl_pose|odom|battery_state|scan|tf|tf_static|joint_states|rmf_navigate_result)"
+               ".*/(amcl_pose|odom|battery_state|scan|tf|tf_static|joint_states|rmf_navigate_result|lift_states|door_states)"
             ]
           }
         }
@@ -119,6 +119,8 @@ data:
 {{ .Files.Get "files/federated_odom_relay.py" | indent 4 }}
   federated_clock_relay.py: |-
 {{ .Files.Get "files/federated_clock_relay.py" | indent 4 }}
+  federated_map_relay.py: |-
+{{ .Files.Get "files/federated_map_relay.py" | indent 4 }}
   # Per-robot Nav2 bridge configs — each adds a namespace prefix so the bridge
   # routes bare /tf as robot_N/tf (what free_fleet_adapter subscribes to).
   # publishers:  local DDS topics that go OUT to Zenoh (Nav2 → router)
@@ -137,7 +139,7 @@ data:
           allow: {
             publishers: [
               // tf and tf_static: robot_state_publisher runs on Nav2 pod, must forward URDF TF
-              ".*/(tf|tf_static|battery_state|cmd_vel|amcl_pose|rmf_navigate_result|local_costmap/costmap|local_costmap/costmap_updates)"
+               ".*/(tf|tf_static|battery_state|cmd_vel|amcl_pose|rmf_navigate_result|lift_requests|door_requests|local_costmap/costmap|local_costmap/costmap_updates)"
             ],
             subscribers: [
               ".*/tf",
@@ -152,7 +154,7 @@ data:
               // which subscribes to bare Zenoh "clock" without namespace prefix
               ".*/robot_description",
               // rmf_navigate_cmd: RMF publishes to Zenoh, bridge subscribes and forwards to local ROS2 for nav2_relay
-              ".*/rmf_navigate_cmd",
+               ".*/(rmf_navigate_cmd|lift_requests|door_requests)",
               // initialpose: allows the demo script to re-anchor AMCL after
               // multi-leg navigation causes drift, by publishing the correct
               // pose from the rmf-core pod directly to each nav2 pod's AMCL.

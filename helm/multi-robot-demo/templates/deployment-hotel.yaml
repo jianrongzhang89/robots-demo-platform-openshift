@@ -176,6 +176,10 @@ spec:
                   main()
               PYEOF
           env:
+            - name: HOME
+              value: /tmp/ros-home
+            - name: ROS_LOG_DIR
+              value: /tmp/ros-home/.ros/log
             - name: ROS_DOMAIN_ID
               value: "0"
             - name: ROS_DISTRO
@@ -229,6 +233,10 @@ spec:
                            -p qos_overrides./{{ (index .Values.robots 0).name }}/scan.publisher.reliability:=best_effort \
                            -p qos_overrides./{{ (index .Values.robots 0).name }}/imu.publisher.reliability:=best_effort
           env:
+            - name: HOME
+              value: /tmp/ros-home
+            - name: ROS_LOG_DIR
+              value: /tmp/ros-home/.ros/log
             - name: ROS_DOMAIN_ID
               value: "0"
             - name: ROS_DISTRO
@@ -272,6 +280,36 @@ spec:
             limits:
               cpu: {{ .Values.zenohResources.limits.cpu | quote }}
               memory: {{ .Values.zenohResources.limits.memory | quote }}
+        - name: door-supervisor
+          image: {{ .Values.rmf.image }}
+          command: ["/bin/bash", "-lc"]
+          args:
+            - |
+              source /opt/ros/jazzy/setup.bash
+              exec ros2 run rmf_fleet_adapter door_supervisor --ros-args -p use_sim_time:=true
+          env:
+            - name: HOME
+              value: /tmp/ros-home
+            - name: ROS_LOG_DIR
+              value: /tmp/ros-home/.ros/log
+            - name: ROS_DOMAIN_ID
+              value: "0"
+            - name: RMW_IMPLEMENTATION
+              value: rmw_cyclonedds_cpp
+            - name: CYCLONEDDS_URI
+              value: file:///zenoh-config/cyclonedds.xml
+          volumeMounts:
+            - name: zenoh-config
+              mountPath: /zenoh-config/cyclonedds.xml
+              subPath: cyclonedds.xml
+              readOnly: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
       volumes:
         {{- if and .Values.hybridNav2.enabled (not .Values.hotel.canonicalFederated) }}
         - name: robot-spawn

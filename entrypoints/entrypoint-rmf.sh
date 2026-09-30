@@ -334,9 +334,29 @@ DASHBOARD_PID=$!
 # (fake CDR relay caused pycdr2 struct.error crashes in _battery_state_callback)
 
 echo "[rmf-pod] Launching RMF traffic schedule..."
-ros2 run rmf_traffic_ros2 rmf_traffic_schedule &
+ros2 run rmf_traffic_ros2 rmf_traffic_schedule --ros-args -p use_sim_time:=true &
 SCHEDULE_PID=$!
 sleep 3
+
+echo "[rmf-pod] Launching RMF traffic blockade..."
+ros2 run rmf_traffic_ros2 rmf_traffic_blockade --ros-args -p use_sim_time:=true &
+BLOCKADE_PID=$!
+
+echo "[rmf-pod] Launching RMF-domain lift and door supervisors..."
+ros2 run rmf_fleet_adapter lift_supervisor --ros-args -p use_sim_time:=true &
+LIFT_SUPERVISOR_PID=$!
+ros2 run rmf_fleet_adapter door_supervisor --ros-args -p use_sim_time:=true &
+DOOR_SUPERVISOR_PID=$!
+
+if [ -f "${BUILDING_CONFIG:-}" ]; then
+  echo "[rmf-pod] Launching building map server from ${BUILDING_CONFIG}..."
+  ros2 run rmf_building_map_tools building_map_server "${BUILDING_CONFIG}" \
+    --ros-args -p use_sim_time:=true &
+  BUILDING_MAP_PID=$!
+else
+  echo "[rmf-pod] WARN: BUILDING_CONFIG not found; lift/door map services unavailable"
+  BUILDING_MAP_PID=""
+fi
 
 echo "[rmf-pod] Launching RMF task dispatcher..."
 ros2 run rmf_task_ros2 rmf_task_dispatcher &
@@ -379,6 +399,8 @@ echo "=================================================="
 term_handler() {
   echo "[rmf-pod] Shutting down..."
   kill "${ADAPTER_PID:-}" "${DISPATCHER_PID:-}" "${SCHEDULE_PID:-}" \
+       "${BLOCKADE_PID:-}" "${BUILDING_MAP_PID:-}" \
+       "${LIFT_SUPERVISOR_PID:-}" "${DOOR_SUPERVISOR_PID:-}" \
        "${API_PID:-}" "${DASHBOARD_PID:-}" "${CLOCK_RELAY_PID:-}" \
        "${D55_ZENOH_PID:-}" "${D55_ROS_PID:-}" "${CMDVEL_KEEP_PID:-}" \
        "${TF_RELAY_PID:-}" 2>/dev/null || true

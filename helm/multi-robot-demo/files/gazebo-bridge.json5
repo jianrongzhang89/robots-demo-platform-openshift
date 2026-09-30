@@ -9,7 +9,7 @@
       // message duplication that overflows the Zenoh router queue).
       allow: {
         publishers: [".*"],          // allow all DDS→Zenoh routes (sensor data, clock, TF, etc.)
-        subscribers: [".*/cmd_vel"]  // Zenoh→DDS only for velocity commands; prevents feedback loops on clock/sensors
+       subscribers: [".*/(cmd_vel|lift_requests|door_requests)"]  // Control topics only; sensor/clock routes remain one-way
       }
     }
   },
