@@ -26,10 +26,15 @@ hotel-nav2-rmf pod
     └─ map->odom and navigation goals
   Local RMF EasyFullControl adapter
     └─ RMF traffic/task callbacks -> Nav2 goals
-  Lift request relay
-    └─ door-state, Gazebo-pose, and physical cabin-center gate
+  Lift request relay and lift-entry controller
+    └─ adapter requests -> lift/door state -> physical cabin entry
   RMF schedule, blockade, dispatcher, and door/lift supervisors
 ```
+
+All processes share the pod's local ROS 2 graph. The local
+`local_nav2_fleet_adapter.py` integrates RMF's EasyFullControl callbacks with
+Nav2, while `lift_request_relay.py` validates lift state and gates physical
+entry. There is no Zenoh router or cross-pod transport in this mode.
 
 The noVNC route is:
 
@@ -114,23 +119,29 @@ navigation logic. It separates transport and process ownership as follows:
 
 ```text
 hotel-sim pod
-  Gazebo + hotel world + robot spawn + building/lift/door services
-  Zenoh ROS2 bridge
-       |
-       v
+  Gazebo + hotel world + robot in the canonical world
+  ROS-Gazebo bridge + Zenoh ROS 2 bridge
+        |
+        v
 zenoh-router pod :7447
        ^                    ^
        |                    |
 robot-nav-robot-1 pod      rmf-core pod
-  Nav2 + localization       RMF traffic/task services
-  Zenoh ROS2 bridge         Free Fleet + Zenoh bridge
+  Nav2 + AMCL + TF          RMF traffic/task services
+  Nav2-side relays          Free Fleet + domain-55 Zenoh bridges
 ```
 
-The pods use separate ROS 2 domains and Zenoh bridges to federate only the
-required topics/actions. Gazebo remains authoritative for simulation state;
-Nav2 owns robot autonomy; RMF owns fleet/task coordination; Zenoh provides the
-cross-pod transport. Existing `local_nav2_fleet_adapter.py`, lift relay, and
-single-pod entrypoint behavior are not changed by this deployment mode.
+The federated deployment uses ROS 2 domain `0` for the hotel and Nav2 pods and
+ROS 2 domain `55` for the RMF core pod. Zenoh bridges the two domains through
+the router and forwards only the required topics, services, and actions.
+Gazebo remains authoritative for simulation state and lift/door services; Nav2
+owns robot autonomy and localization; RMF owns fleet/task coordination; Zenoh
+provides the cross-pod transport.
+
+The federated mode does not run the single-pod `local_nav2_fleet_adapter.py` or
+the single-pod lift relay. Instead, `rmf-core` runs Free Fleet with the patched
+`nav2_robot_adapter.py` from `Containerfile.rmf`. Nav2-side relay processes
+handle RMF navigation commands, pose/result topics, TF, clock, and map data.
 
 The container roles are split as follows:
 
@@ -144,8 +155,9 @@ Zenoh upstream images    <- router and ROS 2 DDS bridge
 The role images preserve the canonical `hotel-assets`, blue `robot_1`, URDF,
 Nav2 packages, and lift/door/physics fixes. The federated hotel image uses
 `entrypoint-hotel-sim-federated.sh`, which starts only canonical Gazebo,
-robot-state publication, sensor bridging, and TF support; Nav2 and RMF remain
-in their separate pods.
+GUI/camera supervision, and ROS-Gazebo sensor/actuation bridging. Nav2 starts
+the robot state publisher, localization, and navigation stack in its own pod;
+RMF remains in `rmf-core`.
 
 ### Federated Deployment
 
@@ -224,8 +236,11 @@ The federated flow is:
 ```text
 RMF dispatcher
   -> Free Fleet adapter in rmf-core
-  -> Zenoh rmf_navigate_cmd route
-  -> Nav2 action relay
+  -> domain-55 RMF Zenoh bridge
+  -> Zenoh router
+  -> domain-0 Nav2 Zenoh bridge
+  -> nav2_relay.py / Nav2 NavigateToPose action
+  -> ROS-Gazebo bridge
   -> Gazebo robot_1
 ```
 
@@ -233,6 +248,57 @@ On the outbound leg, the adapter requests Lift2, switches Nav2 from the L1
 map to L3, reinitializes AMCL, and navigates to `L3_middle_hallway`. On the
 return leg it requests Lift2 at L3, switches back to L1, releases the lift
 session, and navigates to `lobby`.
+
+## Open-RMF and Nav2 Coordination
+
+Open-RMF and Nav2 have separate responsibilities. RMF plans the route, owns
+fleet state and task execution, reserves traffic lanes, and coordinates lift
+usage. Nav2 plans and executes collision-aware motion on the currently active
+floor map. Gazebo executes the simulated robot actuation and publishes the
+sensor, odometry, and lift/door state.
+
+### Single-Pod Coordination
+
+```text
+RMF dispatcher / traffic schedule
+  -> local EasyFullControl adapter
+  -> Nav2 NavigateToPose action
+  -> Gazebo robot
+  -> odometry, AMCL pose, and navigation result
+  -> local adapter -> RMF
+```
+
+For a floor transition, the adapter navigates to the lift approach/cabin
+waypoint, publishes a lift request, and waits for the lift and door state. The
+lift-entry controller moves the robot into the physical cabin and reports entry
+completion. After the lift reaches the destination floor, the adapter switches
+the active Nav2 map, reinitializes AMCL, waits for localization to settle, and
+sends an exit goal. RMF then continues routing to the next waypoint.
+
+### Federated Coordination
+
+```text
+RMF domain 55
+  Free Fleet / patched nav2_robot_adapter.py
+    -> rmf_navigate_cmd via Zenoh
+    -> domain 0 Nav2 relay
+    -> NavigateToPose
+
+domain 0 Nav2 / hotel
+  Nav2 pose, TF, result, lift and door topics
+    -> Zenoh router
+    -> RMF bridge on domain 55
+    -> Free Fleet adapter
+```
+
+The federated adapter publishes navigation commands on the per-robot
+`rmf_navigate_cmd` route. The Nav2-side relay converts each command into a
+`NavigateToPose` goal and publishes the result back through Zenoh. Pose, odom,
+TF, clock, lift, and door topics are relayed in the opposite direction so RMF
+can maintain robot state and coordinate traffic and lifts. Map switching is
+performed by the patched Free Fleet Nav2 adapter: it requests the lift through
+the federated lift topics, changes the active floor map, reinitializes AMCL,
+and resumes Nav2 navigation after the destination-floor state is available.
 
 Useful live checks:
 
