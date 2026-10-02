@@ -300,6 +300,112 @@ performed by the patched Free Fleet Nav2 adapter: it requests the lift through
 the federated lift topics, changes the active floor map, reinitializes AMCL,
 and resumes Nav2 navigation after the destination-floor state is available.
 
+## Free Fleet Adapter and Multi-Level Extension
+
+Free Fleet is the RMF-side integration layer for the federated demo. It
+registers `robot_1`, reports its pose and current map to RMF, receives task and
+traffic-schedule routes, sends navigation requests, and reports navigation
+completion or failure. It does not perform local obstacle avoidance; Nav2
+plans and controls the robot, while Gazebo executes the resulting `/cmd_vel`.
+
+The single-pod deployment uses the local
+`scripts/local_nav2_fleet_adapter.py`. The federated deployment runs Free Fleet
+in `rmf-core` and installs the enhanced
+`patches/nav2_robot_adapter.py` into the Free Fleet image built from
+`Containerfile.rmf`.
+
+### Normal Navigation
+
+```text
+RMF task dispatcher and traffic schedule
+  -> Free Fleet robot adapter
+  -> rmf_navigate_cmd
+  -> Zenoh bridges and router (federated mode)
+  -> Nav2 relay
+  -> NavigateToPose
+  -> Gazebo robot
+  -> pose and navigation result feedback
+  -> Free Fleet -> RMF
+```
+
+In single-pod mode the same coordination happens over the local ROS 2 graph,
+without the Zenoh router and cross-pod relays.
+
+### Multi-Level Adapter Workflow
+
+Stock Free Fleet assumes that a robot operates on one active map. The enhanced
+adapter adds level state and handles a cross-level goal when RMF supplies a
+destination whose `map_name` differs from `current_level`:
+
+1. Read the configured level maps, map paths, lift cabin poses, and lift exit
+   poses from the robot fleet configuration.
+2. Detect that the RMF destination is on another level.
+3. Select a lift connecting the current and target levels.
+4. Let RMF route the robot to the lift approach and cabin waypoint.
+5. Wait for lift arrival and open doors, then verify that the robot has entered
+   the physical cabin.
+6. Request lift travel and wait for the destination-floor lift state.
+7. Load the destination Nav2 map through the map-switch relay.
+8. Reinitialize AMCL at the configured destination lift exit pose.
+9. Wait for the destination doors and continue with the original Nav2 goal.
+10. Report failure to RMF and request a replan if any transition stage times
+    out or fails.
+
+The implementation is in `patches/nav2_robot_adapter.py`. The lift mapping is
+currently explicit in `find_lift_between_levels()` rather than being parsed
+dynamically from the RMF graph. In the federated mode,
+`federated_map_relay.py` converts the adapter's `map_switch` Zenoh request into
+Nav2's `/map_server/load_map` service call and returns a success or failure
+result.
+
+### Major Implementation Fixes
+
+The following issues had to be resolved to make the adapter and multi-level
+demo work reliably:
+
+- **Robot registration and pose initialization:** Free Fleet initially waited
+  for AMCL pose data while Nav2 and TF were still starting. The adapter now
+  uses map-frame AMCL pose, configured spawn coordinates as an initial fallback,
+  and cached pose data when TF is temporarily unavailable.
+- **Incorrect odometry frame:** Raw odometry starts at the odometry origin and
+  is not sufficient for robots spawned at non-origin map coordinates. AMCL pose
+  is used as the authoritative RMF map-frame position.
+- **Zenoh route creation:** Direct Python Zenoh publication did not reliably
+  create the ROS 2 DDS bridge route. The navigation path was changed to expose
+  ROS 2 entities for `zenoh-bridge-ros2dds`, with an explicit pub/sub relay for
+  navigation commands and results.
+- **Action transport and completion:** Bridged Nav2 action queryables were
+  unreliable across the two ROS 2 domains. The relay now uses goal IDs and
+  explicit result messages, retries initial command publication, and calls RMF
+  execution completion exactly once.
+- **Goal ID serialization:** Navigation command IDs were changed to UUID-based
+  identifiers with compatible string/CDR payload handling so commands and
+  results can be matched across the federation.
+- **Nav2 lifecycle startup:** Nav2 could activate before the TF tree was ready,
+  causing controller-server failures and an inactive `bt_navigator`. Startup
+  now waits for TF data and allows the buffer to settle before navigation
+  activation.
+- **Clock and stale TF data:** Separate clock relays were required for the RMF
+  domain and Nav2 domain. Monotonic clock filtering and ordered restarts prevent
+  simulator clock resets from leaving stale TF data in the buffers.
+- **RMF lift-lane configuration:** The original lift-lane format did not
+  identify source and destination levels, so RMF could not plan cross-floor
+  routes and produced misleading planning errors. Explicit level-to-level lift
+  entries were added.
+- **Lift ownership and duplicate requests:** RMF EasyFullControl may already
+  have moved the lift before the adapter transition callback runs. The adapter
+  now detects an already-arrived lift, avoids starting a duplicate workflow,
+  and continues with the map and localization handoff.
+- **Lift state and physical entry:** Lift-state QoS, stale sessions, duplicate
+  requests, and false cabin-entry detection caused transition failures. Reliable
+  state subscriptions, session filtering, cabin-position checks, door checks,
+  and destination-floor settling were added.
+- **Simulation-only battery state:** The simulated TurtleBot does not publish
+  a usable battery topic, so the adapter initializes the robot with a full
+  battery state and disables battery drain for planning.
+- **Competing fleet control:** Built-in hotel slotcar adapters were disabled in
+  hybrid mode so Free Fleet and Nav2 are the only control path for `robot_1`.
+
 Useful live checks:
 
 ```bash
