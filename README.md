@@ -12,6 +12,10 @@ See [OpenShift AI for Robotics: Research, Customer Use Cases, and Demo Proposal]
 for a sourced investigation of fleet copilots, inspection, predictive operations,
 robot AI lifecycle management, and customer-facing demonstrations using this platform.
 
+For the first use case, see [U1 Fleet Copilot: Detailed Design and Gated Implementation Proposal](docs/fleet-copilot-design-and-implementation-proposal.md),
+covering external-model integration, RMF mission and telemetry contracts, phased acceptance
+gates, and migration to local OpenShift AI inference.
+
 ---
 
 ## Hotel Multi-Level Navigation Demos
