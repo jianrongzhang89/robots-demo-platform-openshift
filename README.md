@@ -6,6 +6,12 @@ demonstrating [Open-RMF](https://www.open-rmf.org/) fleet management and
 [Nav2](https://nav2.ros.org/) LiDAR-based collision avoidance in a
 [Gazebo Harmonic](https://gazebosim.org/home) simulation.
 
+## OpenShift AI Research and Use Cases
+
+See [OpenShift AI for Robotics: Research, Customer Use Cases, and Demo Proposal](docs/openshift-ai-robotics-research-and-use-cases.md)
+for a sourced investigation of fleet copilots, inspection, predictive operations,
+robot AI lifecycle management, and customer-facing demonstrations using this platform.
+
 ---
 
 ## Hotel Multi-Level Navigation Demos
