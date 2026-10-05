@@ -172,6 +172,8 @@ Ratings are qualitative judgments for this repository: **H = high, M = medium, L
 
 ### U1. Natural-language fleet copilot
 
+**Detailed follow-up:** [U1 Fleet Copilot: Detailed Design and Gated Implementation Proposal](fleet-copilot-design-and-implementation-proposal.md) develops the external-model-first architecture, RMF lifecycle/recovery contracts, local OpenShift AI migration, and phase-by-phase acceptance gates.
+
 **Customers and buyers:** Hospitals, hotels, campuses, warehouses; operations managers, dispatch supervisors, and robotics integrators.
 
 **Problem:** Fleet interfaces require specialist knowledge, and users need to consult multiple screens to understand mission status.
