@@ -1,0 +1,349 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "88"
+    meta.helm.sh/release-name: multi-robot-demo
+    meta.helm.sh/release-namespace: ros2-rmf-hotel
+  creationTimestamp: "2026-09-28T01:35:00Z"
+  generation: 88
+  labels:
+    app: rmf-core
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: ros2-multi-robot-demo
+  name: rmf-core
+  namespace: ros2-rmf-hotel
+  resourceVersion: "373200125"
+  uid: 3251d807-0ab3-49a9-a4e6-eb12a3179d9c
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: rmf-core
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/restartedAt: "2026-09-30T11:57:45-04:00"
+      labels:
+        app: rmf-core
+        app.kubernetes.io/part-of: ros2-multi-robot-demo
+    spec:
+      containers:
+      - command:
+        - /entrypoint-rmf.sh
+        env:
+        - name: ROS_DOMAIN_ID
+          value: "55"
+        - name: ROS_DISTRO
+          value: jazzy
+        - name: RMW_IMPLEMENTATION
+          value: rmw_cyclonedds_cpp
+        - name: FLEET_CONFIG
+          value: /canonical-rmf/fleet_config.yaml
+        - name: NAV_GRAPH
+          value: /canonical-rmf/nav_graph.yaml
+        - name: BUILDING_CONFIG
+          value: /canonical-rmf/hotel.building.yaml
+        - name: SERVER_URI
+        - name: ROBOT_NAMES
+          value: 'robot_1 '
+        - name: ROBOT_1_INITIAL_X
+          value: "15.402"
+        - name: ROBOT_1_INITIAL_Y
+          value: "-31.594"
+        - name: ROBOT_1_INITIAL_YAW
+          value: "0"
+        image: image-registry.openshift-image-registry.svc:5000/ros2-rmf-hotel/rmf-image:latest
+        imagePullPolicy: Always
+        livenessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: /user
+            port: 8000
+            scheme: HTTP
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 1
+        name: rmf-core
+        ports:
+        - containerPort: 8000
+          name: api
+          protocol: TCP
+        - containerPort: 3000
+          name: dashboard
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 10
+          httpGet:
+            path: /user
+            port: 8000
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources:
+          limits:
+            cpu: "1"
+            memory: 1Gi
+          requests:
+            cpu: 500m
+            memory: 512Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /opt/ros2-demo/rmf
+          name: rmf-config
+          readOnly: true
+        - mountPath: /opt/ros2-demo/zenoh
+          name: zenoh-config
+          readOnly: true
+        - mountPath: /canonical-rmf
+          name: canonical-rmf-assets
+          readOnly: true
+      - args:
+        - -c
+        - /zenoh-config/rmf-clock-bridge.json5
+        env:
+        - name: ROS_DOMAIN_ID
+          value: "55"
+        - name: ROS_DISTRO
+          value: jazzy
+        image: eclipse/zenoh-bridge-ros2dds:1.5.0
+        imagePullPolicy: IfNotPresent
+        name: zenoh-clock-bridge
+        resources:
+          limits:
+            cpu: 200m
+            memory: 128Mi
+          requests:
+            cpu: 100m
+            memory: 64Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /zenoh-config/rmf-clock-bridge.json5
+          name: zenoh-config
+          readOnly: true
+          subPath: rmf-clock-bridge.json5
+      - args:
+        - -c
+        - /zenoh-config/rmf-robot-bridge.json5
+        env:
+        - name: ROS_DOMAIN_ID
+          value: "55"
+        - name: ROS_DISTRO
+          value: jazzy
+        image: eclipse/zenoh-bridge-ros2dds:1.5.0
+        imagePullPolicy: IfNotPresent
+        name: zenoh-robot-bridge
+        resources:
+          limits:
+            cpu: 200m
+            memory: 128Mi
+          requests:
+            cpu: 100m
+            memory: 64Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /zenoh-config/rmf-robot-bridge.json5
+          name: zenoh-config
+          readOnly: true
+          subPath: rmf-robot-bridge.json5
+      - args:
+        - |
+          export HOME=/tmp
+          source /opt/ros/jazzy/setup.bash
+          exec python3 -u - <<'PYEOF'
+          import rclpy
+          from rclpy.node import Node
+          from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy
+          from tf2_msgs.msg import TFMessage
+          import os
+
+          class TFRelay(Node):
+              def __init__(self):
+                  super().__init__('tf_relay')
+                  robot_names = os.environ.get('ROBOT_NAMES', 'robot_1 robot_2').split()
+
+                  # TF QoS profile
+                  tf_qos = QoSProfile(
+                      depth=100,
+                      reliability=ReliabilityPolicy.RELIABLE,
+                      history=HistoryPolicy.KEEP_LAST,
+                      durability=DurabilityPolicy.VOLATILE,
+                  )
+
+                  # Publishers to /tf and /tf_static (what Free Fleet adapter subscribes to)
+                  self.tf_pub = self.create_publisher(TFMessage, '/tf', tf_qos)
+
+                  tf_static_qos = QoSProfile(
+                      depth=100,
+                      reliability=ReliabilityPolicy.RELIABLE,
+                      history=HistoryPolicy.KEEP_LAST,
+                      durability=DurabilityPolicy.TRANSIENT_LOCAL,
+                  )
+                  self.tf_static_pub = self.create_publisher(TFMessage, '/tf_static', tf_static_qos)
+
+                  # Subscribe to each robot's namespaced TF topics (both /tf and /tf_static)
+                  self.subs = []
+                  for robot_name in robot_names:
+                      # Subscribe to dynamic TF
+                      sub_tf = self.create_subscription(
+                          TFMessage,
+                          f'/{robot_name}/tf',
+                          lambda msg, rname=robot_name: self.tf_callback(msg, rname),
+                          tf_qos
+                      )
+                      self.subs.append(sub_tf)
+                      self.get_logger().info(f'Subscribed to /{robot_name}/tf')
+
+                      # Subscribe to static TF
+                      sub_tf_static = self.create_subscription(
+                          TFMessage,
+                          f'/{robot_name}/tf_static',
+                          lambda msg, rname=robot_name: self.tf_static_callback(msg, rname),
+                          tf_static_qos
+                      )
+                      self.subs.append(sub_tf_static)
+                      self.get_logger().info(f'Subscribed to /{robot_name}/tf_static')
+
+                  self.get_logger().info(f'TF relay active for {len(robot_names)} robots')
+
+              def tf_callback(self, msg, robot_name):
+                  # Add robot namespace to all frame IDs
+                  relayed_msg = TFMessage()
+                  for transform in msg.transforms:
+                      import copy
+                      t = copy.deepcopy(transform)
+                      # Always namespace both parent and child frames
+                      # Input from Nav2: map, odom, base_footprint, base_link, etc.
+                      # Output for Free Fleet: robot_N/map, robot_N/odom, robot_N/base_footprint, etc.
+                      t.header.frame_id = f'{robot_name}/{transform.header.frame_id}'
+                      t.child_frame_id = f'{robot_name}/{transform.child_frame_id}'
+                      relayed_msg.transforms.append(t)
+
+                  # Publish to global /tf
+                  self.tf_pub.publish(relayed_msg)
+
+              def tf_static_callback(self, msg, robot_name):
+                  # Add robot namespace to all static frame IDs
+                  relayed_msg = TFMessage()
+                  for transform in msg.transforms:
+                      import copy
+                      t = copy.deepcopy(transform)
+                      t.header.frame_id = f'{robot_name}/{transform.header.frame_id}'
+                      t.child_frame_id = f'{robot_name}/{transform.child_frame_id}'
+                      relayed_msg.transforms.append(t)
+
+                  # Publish to global /tf_static
+                  self.tf_static_pub.publish(relayed_msg)
+
+          def main():
+              rclpy.init()
+              node = TFRelay()
+              try:
+                  rclpy.spin(node)
+              except KeyboardInterrupt:
+                  pass
+              finally:
+                  node.destroy_node()
+                  rclpy.shutdown()
+
+          if __name__ == '__main__':
+              main()
+          PYEOF
+        command:
+        - /bin/bash
+        - -c
+        env:
+        - name: ROS_DOMAIN_ID
+          value: "55"
+        - name: ROS_DISTRO
+          value: jazzy
+        - name: ROBOT_NAMES
+          value: 'robot_1 '
+        - name: HOME
+          value: /tmp
+        image: image-registry.openshift-image-registry.svc:5000/ros2-rmf-hotel/rmf-image:latest
+        imagePullPolicy: Always
+        name: tf-relay
+        resources:
+          limits:
+            cpu: 200m
+            memory: 256Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      initContainers:
+      - args:
+        - |
+          set -e
+          mkdir -p /canonical-rmf/maps
+           cp /opt/ros2-demo/rmf/nav_graph.yaml /canonical-rmf/nav_graph.yaml
+           cp /opt/ros2-demo/hotel-assets/hotel.building.yaml /canonical-rmf/hotel.building.yaml
+          cp /opt/ros2-demo/rmf/fleet_config.yaml /tmp/fleet_config.yaml
+          cp /opt/ros2-demo/maps/hotel_*.yaml /canonical-rmf/maps/
+          sed -i 's#/opt/ros2-demo/maps#/canonical-rmf/maps#g; /    delivery: true/a\    patrol: true' \
+            /tmp/fleet_config.yaml
+          cp /tmp/fleet_config.yaml /canonical-rmf/fleet_config.yaml
+        command:
+        - /bin/bash
+        - -c
+        image: quay.io/jianrzha/ros2-rmf-hotel-sim:latest
+        imagePullPolicy: Always
+        name: canonical-rmf-assets
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /canonical-rmf
+          name: canonical-rmf-assets
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: ros2-demo
+      serviceAccountName: ros2-demo
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: rmf-config
+        name: rmf-config
+      - configMap:
+          defaultMode: 420
+          name: zenoh-bridge-config
+        name: zenoh-config
+      - emptyDir: {}
+        name: canonical-rmf-assets
+status:
+  availableReplicas: 1
+  conditions:
+  - lastTransitionTime: "2026-09-30T00:22:44Z"
+    lastUpdateTime: "2026-09-30T00:22:44Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2026-09-30T14:33:14Z"
+    lastUpdateTime: "2026-09-30T15:58:20Z"
+    message: ReplicaSet "rmf-core-6b559f9754" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  observedGeneration: 88
+  readyReplicas: 1
+  replicas: 1
+  updatedReplicas: 1

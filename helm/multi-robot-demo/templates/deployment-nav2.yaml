@@ -37,9 +37,9 @@ spec:
             - name: ROBOT_NAME
               value: {{ .name | quote }}
             - name: INITIAL_X
-              value: {{ $.Values.nav2.mapOffsetX | default .initialPose.xPos | quote }}
+              value: {{ .initialPose.xPos | quote }}
             - name: INITIAL_Y
-              value: {{ $.Values.nav2.mapOffsetY | default .initialPose.yPos | quote }}
+              value: {{ .initialPose.yPos | quote }}
             - name: INITIAL_YAW
               value: {{ .initialPose.yaw | quote }}
             - name: MAP_OFFSET_X

@@ -1,0 +1,24 @@
+NAME                                       HOST/PORT                                                                          PATH   SERVICES              PORT        TERMINATION     WILDCARD
+route.route.openshift.io/hotel-dashboard   hotel-dashboard-ros2-rmf-hotel.apps.ai-dev02.kni.syseng.devcluster.openshift.com          hotel-sim-dashboard   dashboard   edge/Redirect   None
+route.route.openshift.io/hotel-novnc       hotel-novnc-ros2-rmf-hotel.apps.ai-dev02.kni.syseng.devcluster.openshift.com              hotel-sim-novnc       novnc       edge/Redirect   None
+
+NAME                          TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
+service/hotel-sim-dashboard   ClusterIP   172.30.240.242   <none>        3000/TCP   7d19h
+service/hotel-sim-novnc       ClusterIP   172.30.233.56    <none>        6080/TCP   7d19h
+service/zenoh-router          ClusterIP   172.30.64.95     <none>        7447/TCP   7d19h
+
+NAME                                    DATA   AGE
+configmap/kube-root-ca.crt              1      14d
+configmap/odh-kserve-custom-ca-bundle   1      14d
+configmap/odh-trusted-ca-bundle         2      14d
+configmap/odom-tf-broadcaster           1      7d19h
+configmap/openshift-service-ca.crt      1      14d
+configmap/rmf-config                    2      7d19h
+configmap/rmf-image-1-ca                1      5d21h
+configmap/rmf-image-1-global-ca         1      5d21h
+configmap/rmf-image-1-sys-config        0      5d21h
+configmap/rmf-image-2-ca                1      5d6h
+configmap/rmf-image-2-global-ca         1      5d6h
+configmap/rmf-image-2-sys-config        0      5d6h
+configmap/robot-spawn-config            1      7d19h
+configmap/zenoh-bridge-config           12     7d19h
