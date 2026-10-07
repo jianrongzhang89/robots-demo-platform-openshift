@@ -56,6 +56,11 @@ class CameraSupervisor(Node):
         threading.Thread(target=self._check_camera_pose_thread, daemon=True).start()
 
     def _check_camera_pose_thread(self) -> None:
+        # Gazebo can report a transient invalid camera pose while a lift is
+        # moving. Tracking is intentionally paused during that transition;
+        # restarting the GUI here would disconnect every noVNC session.
+        if self._moving:
+            return
         if time.monotonic() - self._last_restart < 30.0:
             return
         env = os.environ.copy()
