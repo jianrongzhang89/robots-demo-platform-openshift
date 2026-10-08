@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import os
+import json
+import time
 from pathlib import Path
 
 from fastapi import FastAPI, Header, HTTPException, Response
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -23,8 +25,20 @@ store = Store(os.environ.get("FLEET_COPILOT_DB", "/var/lib/fleet-copilot/fleet.d
 bridge = RmfBridge(os.environ.get("RMF_API_BASE_URL", "http://rmf-core-api:8000"))
 
 
+def model_provider():
+    if os.environ.get("FLEET_COPILOT_PROVIDER") == "openai" or os.environ.get("OPENAI_API_KEY"):
+        return OpenAIProvider()
+    return MockProvider()
+
+
 class InterpretRequest(BaseModel):
     text: str = Field(min_length=1, max_length=2000)
+
+
+class TurnRequest(BaseModel):
+    text: str = Field(min_length=1, max_length=2000)
+    site_id: str = "hotel-demo"
+    actor_id: str = "development-operator"
 
 
 class MissionPreviewRequest(BaseModel):
@@ -55,8 +69,26 @@ def get_catalog():
 
 @app.post("/api/interpret")
 def post_interpret(payload: InterpretRequest):
-    provider = OpenAIProvider() if os.environ.get("OPENAI_API_KEY") else MockProvider()
-    return interpret(payload.text, catalog, provider).as_dict()
+    return interpret(payload.text, catalog, model_provider()).as_dict()
+
+
+@app.post("/api/v1/turns")
+def post_turn(payload: TurnRequest):
+    if payload.site_id != "hotel-demo":
+        raise HTTPException(status_code=404, detail="site not found")
+    preview = interpret(payload.text, catalog, model_provider())
+    result = preview.as_dict()
+    if preview.dispatchable:
+        stored = store.create_preview(
+            payload.actor_id,
+            payload.site_id,
+            catalog.version,
+            list(preview.places),
+            preview.rounds or 1,
+        )
+        result["preview_id"] = stored["preview_id"]
+        result["preview_expires_at"] = stored["expires_at"]
+    return result
 
 
 @app.get("/api/v1/health")
@@ -134,6 +166,26 @@ def get_events(mission_id: str):
         return {"events": store.events(mission_id)}
     except NotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/api/v1/missions/{mission_id}/stream")
+def stream_mission(mission_id: str):
+    def events():
+        last_revision = -1
+        for _ in range(60):
+            try:
+                mission = store.get_mission(mission_id)
+            except NotFoundError:
+                yield "event: error\ndata: {\"detail\":\"mission not found\"}\n\n"
+                return
+            if mission["revision"] != last_revision:
+                last_revision = mission["revision"]
+                yield f"id: {last_revision}\nevent: mission\ndata: {json.dumps(mission)}\n\n"
+            if mission["execution"] in {"completed", "failed", "canceled"}:
+                return
+            time.sleep(1)
+
+    return StreamingResponse(events(), media_type="text/event-stream", headers={"Cache-Control": "no-cache"})
 
 
 @app.post("/api/v1/missions/{mission_id}/events")

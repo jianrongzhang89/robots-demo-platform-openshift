@@ -57,3 +57,10 @@ deployment mounts that database at `/var/lib/fleet-copilot` on a PVC. The
 current bridge publication is an emulator boundary; it records one publish
 attempt and accepts explicit lifecycle events, but does not yet publish to
 RMF/ROS.
+
+## Phase 3 External Copilot
+
+The browser now calls `POST /api/v1/turns` for OpenAI-backed interpretation,
+shows a validated preview, and requires an explicit Dispatch click before
+calling `POST /api/v1/missions`. Mission status is rendered from the
+Phase 2 gateway and can be streamed from `/api/v1/missions/{id}/stream`.

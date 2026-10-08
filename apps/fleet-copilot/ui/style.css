@@ -8,7 +8,9 @@ h1 { font-size: clamp(2.5rem, 8vw, 5rem); line-height: .95; margin: 16px 0; }
 label { display: block; color: #a9b8b8; margin-bottom: 10px; }
 textarea { box-sizing: border-box; width: 100%; resize: vertical; background: #0e1316; color: #edf2f2; border: 1px solid #405256; border-radius: 10px; padding: 14px; font: inherit; }
 button { margin-top: 16px; border: 0; border-radius: 999px; padding: 12px 18px; background: #72d3c5; color: #082224; font-weight: 700; cursor: pointer; }
+button:disabled { opacity: .55; cursor: wait; }.dispatch { background: #ffd18a; color: #402b0d; }
 .result { min-height: 120px; }
 .badge { display: inline-block; border-radius: 999px; padding: 5px 10px; font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; }
 .safe { background: #9ae6b4; color: #12331d; }.hold { background: #ffd18a; color: #402b0d; }
 .route { color: #72d3c5; font-size: 1.2rem; font-weight: 700; } small { color: #829596; }
+.mission-card { display: grid; gap: 6px; margin-top: 20px; padding: 14px; border-left: 3px solid #72d3c5; background: #0e1316; }.mission-status { color: #ffd18a; }.error { color: #ff9b9b; }
