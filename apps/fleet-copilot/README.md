@@ -34,3 +34,26 @@ oc get route fleet-copilot -n ros2-rmf-hotel
 Phase 0 is not accepted yet, so this package intentionally has no RMF bridge
 or live dispatch integration. Phase 1 evaluation is limited to semantic intent
 and safety behavior.
+
+## Phase 2 Typed Gateway
+
+Phase 2 adds deterministic mission control without allowing the model to
+dispatch directly. Create a validated preview, then consume it through the
+typed API with an `Idempotency-Key`:
+
+```bash
+PREVIEW=$(curl -sS -X POST "$BASE/api/v1/mission-previews" \
+  -H 'content-type: application/json' \
+  -d '{"catalog_version":"sha256:4576e4eb1c95cfbb","places":["lobby","L3_middle_hallway"],"rounds":1}')
+PREVIEW_ID=$(python3 -c 'import json,sys; print(json.load(sys.stdin)["preview_id"])' <<<"$PREVIEW")
+curl -i -X POST "$BASE/api/v1/missions" \
+  -H 'content-type: application/json' -H 'Idempotency-Key: demo-001' \
+  -d "{\"preview_id\":\"$PREVIEW_ID\"}"
+```
+
+Mission creation persists the immutable payload, episode/generation, dispatch
+request UUID, publish marker, and event history in SQLite. The Phase 2
+deployment mounts that database at `/var/lib/fleet-copilot` on a PVC. The
+current bridge publication is an emulator boundary; it records one publish
+attempt and accepts explicit lifecycle events, but does not yet publish to
+RMF/ROS.

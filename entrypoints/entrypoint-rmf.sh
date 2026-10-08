@@ -458,11 +458,12 @@ ros2 run rmf_task_ros2 rmf_task_dispatcher &
 DISPATCHER_PID=$!
 sleep 2
 
-# Wait for both robots' AMCL to localize and publish amcl_pose before the
-# adapter tries to initialize. At real_time_factor=0.5, AMCL convergence
-# takes roughly 2× wall-clock time vs. a 1× simulation.
-echo "[rmf-pod] Waiting 90s for AMCL to localize both robots (real_time_factor=0.5)..."
-sleep 90
+# Wait through the full federated Nav2 startup and AMCL seeding window before
+# the adapter can bid. The relay action server becomes ready before the Nav2
+# entrypoint finishes publishing initial poses, so a readiness probe alone can
+# dispatch a goal while AMCL is still being reset underneath it.
+echo "[rmf-pod] Waiting 180s for Nav2 startup and AMCL localization (real_time_factor=0.5)..."
+sleep 180
 
 # Do not register the fleet until every Nav2 relay can actually reach its
 # NavigateToPose action server. A relay process being alive is not sufficient:

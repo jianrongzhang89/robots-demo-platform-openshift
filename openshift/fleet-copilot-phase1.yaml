@@ -24,6 +24,19 @@ spec:
       kind: ImageStreamTag
       name: fleet-copilot:latest
 ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: fleet-copilot-data
+  labels:
+    app: fleet-copilot
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -40,10 +53,19 @@ spec:
       labels:
         app: fleet-copilot
     spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: fleet-copilot
           image: image-registry.openshift-image-registry.svc:5000/ros2-rmf-hotel/fleet-copilot:latest
           imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           ports:
             - name: http
               containerPort: 8080
@@ -53,6 +75,11 @@ spec:
                 secretKeyRef:
                   name: fleet-copilot-openai
                   key: OPENAI_API_KEY
+            - name: RMF_API_BASE_URL
+              value: http://rmf-core-api:8000
+          volumeMounts:
+            - name: fleet-copilot-data
+              mountPath: /var/lib/fleet-copilot
           readinessProbe:
             httpGet:
               path: /
@@ -72,6 +99,10 @@ spec:
             limits:
               cpu: 500m
               memory: 512Mi
+      volumes:
+        - name: fleet-copilot-data
+          persistentVolumeClaim:
+            claimName: fleet-copilot-data
 ---
 apiVersion: v1
 kind: Service
@@ -101,3 +132,17 @@ spec:
     targetPort: http
   tls:
     termination: edge
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rmf-core-api
+  labels:
+    app: rmf-core
+spec:
+  selector:
+    app: rmf-core
+  ports:
+    - name: api
+      port: 8000
+      targetPort: api
