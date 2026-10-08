@@ -1,0 +1,103 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: fleet-copilot
+  labels:
+    app: fleet-copilot
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: fleet-copilot
+  labels:
+    app: fleet-copilot
+spec:
+  runPolicy: SerialLatestOnly
+  source:
+    type: Binary
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Containerfile
+  output:
+    to:
+      kind: ImageStreamTag
+      name: fleet-copilot:latest
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fleet-copilot
+  labels:
+    app: fleet-copilot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fleet-copilot
+  template:
+    metadata:
+      labels:
+        app: fleet-copilot
+    spec:
+      containers:
+        - name: fleet-copilot
+          image: image-registry.openshift-image-registry.svc:5000/ros2-rmf-hotel/fleet-copilot:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: fleet-copilot-openai
+                  key: OPENAI_API_KEY
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fleet-copilot
+  labels:
+    app: fleet-copilot
+spec:
+  selector:
+    app: fleet-copilot
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: fleet-copilot
+  labels:
+    app: fleet-copilot
+spec:
+  to:
+    kind: Service
+    name: fleet-copilot
+  port:
+    targetPort: http
+  tls:
+    termination: edge

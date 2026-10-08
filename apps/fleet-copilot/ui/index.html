@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fleet Copilot Preview</title>
+  <link rel="stylesheet" href="/ui/style.css">
+</head>
+<body>
+  <main>
+    <p class="eyebrow">U1 / PHASE 1</p>
+    <h1>Fleet Copilot</h1>
+    <p class="lede">Interpret a request and review a safe, non-dispatching mission preview.</p>
+    <section class="panel">
+      <label for="request">Operator request</label>
+      <textarea id="request" rows="4">Send the robot from the lobby to the third-floor middle hallway and bring it back.</textarea>
+      <button id="interpret">Interpret request</button>
+    </section>
+    <section id="result" class="panel result" aria-live="polite">
+      <p>Preview will appear here.</p>
+    </section>
+  </main>
+  <script src="/ui/app.js"></script>
+</body>
+</html>
