@@ -38,7 +38,7 @@ import rclpy
 from rclpy.node import Node
 from rclpy.action import ActionClient
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
-from std_msgs.msg import String
+from std_msgs.msg import String, Bool
 from rosgraph_msgs.msg import Clock
 from geometry_msgs.msg import PoseStamped, Twist
 from nav2_msgs.action import NavigateToPose
@@ -48,6 +48,7 @@ SERVER_TIMEOUT = 15.0     # s — wait for action server at startup
 FAIL_COOLDOWN = 5.0       # s — pause after rapid-abort to let bt_navigator recover
 RECENT_OK_WINDOW = 10.0   # s — ignore retries of recently-completed destinations
 RECENT_SENT_WINDOW = 25.0  # s — ignore retries of same dest within 25s of sending
+GOAL_TIMEOUT = 180.0       # s — bound a hung Nav2 action so RMF can retry/fail it
 
 # slam_toolbox localization: map frame = posegraph frame (origin = robot spawn).
 # Goals from RMF are in world frame; Nav2 needs map frame = world - spawn offset.
@@ -67,6 +68,8 @@ class NavRelay(Node):
         nav_qos = QoSProfile(depth=10, reliability=ReliabilityPolicy.RELIABLE,
                               history=HistoryPolicy.KEEP_LAST)
         self._result_pub = self.create_publisher(String, "/rmf_navigate_result", nav_qos)
+        self._ready_pub = self.create_publisher(Bool, "/rmf_navigate_ready", nav_qos)
+        self._probe_pub = self.create_publisher(String, "/rmf_navigate_probe_result", nav_qos)
         self._cmd_sub = self.create_subscription(
             String, "/rmf_navigate_cmd", self._on_cmd,
             QoSProfile(depth=10, reliability=ReliabilityPolicy.BEST_EFFORT,
@@ -111,6 +114,8 @@ class NavRelay(Node):
         # _run_active is True. New threads spawned during this window exit immediately.
         # Cleared when the thread exits (success, failure, or superseded).
         self._run_active: bool = False
+        self._goal_timers: dict[int, threading.Timer] = {}
+        self._ready_logged = False
 
         # Clock relay: /clock_bridge → /clock (monotonic filter)
         self._last_clock_ns: int = 0
@@ -121,7 +126,18 @@ class NavRelay(Node):
             Clock, "/clock_bridge", self._on_clock_bridge, clock_qos
         )
 
-        self.get_logger().info("[nav_relay] Ready (Nav2 ActionClient mode).")
+        self.create_timer(2.0, self._publish_readiness)
+        self.get_logger().info("[nav_relay] Relay started; waiting for Nav2 action server.")
+
+    def _publish_readiness(self) -> None:
+        """Advertise readiness only after Nav2 can accept NavigateToPose goals."""
+        ready = self._nav_client.server_is_ready()
+        if ready and not self._ready_logged:
+            self._ready_logged = True
+            self.get_logger().info("[nav_relay] Ready (Nav2 ActionClient mode).")
+        message = Bool()
+        message.data = ready
+        self._ready_pub.publish(message)
 
     # ── Clock relay ──────────────────────────────────────────────────────────
 
@@ -154,6 +170,13 @@ class NavRelay(Node):
         if len(parts) < 2:
             return
         rmf_id = parts[0]
+
+        if parts[0] == "__rmf_readiness__" and parts[1] == "PING":
+            response = String()
+            response.data = "__rmf_readiness__ OK"
+            self._probe_pub.publish(response)
+            self.get_logger().info("[nav_relay] RMF command path probe acknowledged")
+            return
 
         # Timed CANCEL: wait 2s before cancelling the active Nav2 goal.
         # RMF responsive_wait (negotiation yield) sends CANCEL without a
@@ -406,14 +429,39 @@ class NavRelay(Node):
                     pass
                 return
 
+        timer = threading.Timer(GOAL_TIMEOUT, self._on_goal_timeout, args=(rmf_id, handle))
+        with self._lock:
+            self._goal_timers[id(handle)] = timer
+        timer.daemon = True
+        timer.start()
         handle.get_result_async().add_done_callback(
             lambda f: self._on_result(f, rmf_id, handle, dest)
         )
+
+    def _on_goal_timeout(self, rmf_id: str, handle) -> None:
+        with self._lock:
+            if self._handle is not handle or self._rmf_id != rmf_id:
+                return
+            self._handle = None
+            self._rmf_id = None
+            self._goal_timers.pop(id(handle), None)
+        self.get_logger().warning(
+            f"[nav_relay] {rmf_id}: Nav2 action exceeded {GOAL_TIMEOUT:.0f}s; reporting FAILED"
+        )
+        try:
+            handle.cancel_goal_async()
+        except Exception:
+            pass
+        self._finish(rmf_id, False)
 
     def _on_result(self, future, rmf_id: str, handle, dest: tuple) -> None:
         from action_msgs.msg import GoalStatus
         status = future.result().status
         success = (status == GoalStatus.STATUS_SUCCEEDED)
+        with self._lock:
+            timer = self._goal_timers.pop(id(handle), None)
+        if timer is not None:
+            timer.cancel()
         self.get_logger().info(
             f"[nav_relay] {rmf_id}: {'SUCCEEDED' if success else 'FAILED'} "
             f"(status={status})"

@@ -158,6 +158,101 @@ sleep 2
 echo "[rmf-pod] Starting domain-55 clock relay (Zenoh clock -> ROS domain 55 /clock)..."
 mkfifo /tmp/d55clock 2>/dev/null || true
 
+# Keep lift-state delivery independent of DDS bridge discovery. The simulator
+# publishes raw LiftState CDR on Zenoh; this two-process relay deserializes it
+# and republishes it in RMF's ROS domain 55.
+echo "[rmf-pod] Starting lift-state relay (Zenoh lift_states -> ROS domain 55)..."
+mkfifo /tmp/liftstates 2>/dev/null || true
+mkfifo /tmp/liftrequests 2>/dev/null || true
+cat > /tmp/liftstates_zenoh_half.py << 'LIFT_ZENOH_EOF'
+import base64, sys, time, zenoh
+
+conf = zenoh.Config()
+conf.insert_json5("connect/endpoints", '["tcp/zenoh-router:7447"]')
+conf.insert_json5("mode", '"client"')
+conf.insert_json5("scouting/multicast/enabled", "false")
+z = zenoh.open(conf)
+out = open("/tmp/liftstates", "w")
+
+def on_state(sample):
+    out.write(base64.b64encode(bytes(sample.payload.to_bytes())).decode() + "\n")
+    out.flush()
+
+z.declare_subscriber("lift_states", on_state)
+while True:
+    time.sleep(1)
+LIFT_ZENOH_EOF
+
+cat > /tmp/liftstates_ros_half.py << 'LIFT_ROS_EOF'
+import base64, os, rclpy, sys
+from rclpy.node import Node
+from rclpy.serialization import deserialize_message
+from rmf_lift_msgs.msg import LiftState
+
+os.environ["HOME"] = "/tmp/ros-home"
+os.environ["ROS_HOME"] = "/tmp/ros-home/.ros"
+os.environ["ROS_LOG_DIR"] = "/tmp/ros-home/.ros/log"
+os.makedirs(os.environ["ROS_LOG_DIR"], exist_ok=True)
+rclpy.init(args=[])
+node = Node("lift_state_relay")
+publisher = node.create_publisher(LiftState, "/lift_states", 100)
+for line in sys.stdin:
+    try:
+        publisher.publish(deserialize_message(base64.b64decode(line.strip()), LiftState))
+    except Exception as error:
+        node.get_logger().warning(f"lift-state relay decode failed: {error}")
+LIFT_ROS_EOF
+
+python3 /tmp/liftstates_zenoh_half.py 2>/tmp/liftstates_zenoh.log &
+LIFT_ZENOH_PID=$!
+python3 /tmp/liftstates_ros_half.py </tmp/liftstates &
+LIFT_ROS_PID=$!
+
+cat > /tmp/liftrequests_zenoh_half.py << 'LIFT_REQUEST_ZENOH_EOF'
+import base64, sys, zenoh
+
+conf = zenoh.Config()
+conf.insert_json5("connect/endpoints", '["tcp/zenoh-router:7447"]')
+conf.insert_json5("mode", '"client"')
+conf.insert_json5("scouting/multicast/enabled", "false")
+z = zenoh.open(conf)
+publisher = z.declare_publisher("lift_requests")
+for line in sys.stdin:
+    if line.strip():
+        publisher.put(base64.b64decode(line.strip()))
+LIFT_REQUEST_ZENOH_EOF
+
+cat > /tmp/liftrequests_ros_half.py << 'LIFT_REQUEST_ROS_EOF'
+import base64, os, rclpy
+from rclpy.node import Node
+from rclpy.serialization import serialize_message
+from rmf_lift_msgs.msg import LiftRequest
+
+os.environ["HOME"] = "/tmp/ros-home"
+os.environ["ROS_HOME"] = "/tmp/ros-home/.ros"
+os.environ["ROS_LOG_DIR"] = "/tmp/ros-home/.ros/log"
+os.makedirs(os.environ["ROS_LOG_DIR"], exist_ok=True)
+rclpy.init(args=[])
+node = Node("lift_request_relay")
+out = open("/tmp/liftrequests", "w")
+
+def on_request(message):
+    out.write(base64.b64encode(bytes(serialize_message(message))).decode() + "\n")
+    out.flush()
+
+node.create_subscription(LiftRequest, "/lift_requests", on_request, 100)
+rclpy.spin(node)
+LIFT_REQUEST_ROS_EOF
+
+# Keep one read/write descriptor open so neither half can block opening the FIFO
+# during pod startup.
+exec 9<>/tmp/liftrequests
+python3 /tmp/liftrequests_zenoh_half.py <&9 &
+LIFT_REQUEST_ZENOH_PID=$!
+python3 /tmp/liftrequests_ros_half.py &
+LIFT_REQUEST_ROS_PID=$!
+sleep 2
+
 cat > /tmp/d55_zenoh_half.py << 'D55_ZENOH_EOF'
 import struct, time, sys, zenoh
 
@@ -369,6 +464,74 @@ sleep 2
 echo "[rmf-pod] Waiting 90s for AMCL to localize both robots (real_time_factor=0.5)..."
 sleep 90
 
+# Do not register the fleet until every Nav2 relay can actually reach its
+# NavigateToPose action server. A relay process being alive is not sufficient:
+# dispatching during this startup gap can lose the first RMF goal/result.
+echo "[rmf-pod] Waiting for Nav2 relay readiness before RMF registration..."
+python3 - "${ROBOT_NAMES:-robot_1}" <<'PYEOF'
+import struct
+import sys
+import time
+import zenoh
+
+robots = sys.argv[1].split()
+ready = set()
+probed = set()
+conf = zenoh.Config()
+conf.insert_json5("connect/endpoints", '["tcp/zenoh-router:7447"]')
+conf.insert_json5("mode", '"client"')
+conf.insert_json5("scouting/multicast/enabled", "false")
+session = zenoh.open(conf)
+
+def on_ready(sample):
+    raw = bytes(sample.payload.to_bytes())
+    # CDR std_msgs/Bool stores the value at offset 4; trailing alignment bytes
+    # may follow it in the serialized payload.
+    if len(raw) >= 5 and raw[4] == 1:
+        ready.add(str(sample.key_expr).split("/", 1)[0])
+
+def cdr_string(value):
+    data = value.encode() + b"\x00"
+    return b"\x00\x01\x00\x00" + struct.pack("<I", len(data)) + data
+
+def on_probe(sample):
+    raw = bytes(sample.payload.to_bytes())
+    if len(raw) < 9:
+        return
+    length = struct.unpack_from("<I", raw, 4)[0]
+    text = raw[8:8 + length - 1].decode("utf-8", errors="ignore")
+    if text == "__rmf_readiness__ OK":
+        probed.add(str(sample.key_expr).split("/", 1)[0])
+
+subscribers = [session.declare_subscriber(f"{robot}/rmf_navigate_ready", on_ready)
+              for robot in robots]
+probe_subscribers = [session.declare_subscriber(f"{robot}/rmf_navigate_probe_result", on_probe)
+                     for robot in robots]
+probe_publishers = [session.declare_publisher(f"{robot}/rmf_navigate_cmd")
+                    for robot in robots]
+deadline = time.monotonic() + 180.0
+while time.monotonic() < deadline and set(robots) - ready:
+    time.sleep(1.0)
+
+for robot in robots:
+    if robot in ready:
+        print(f"[rmf-pod] Nav2 relay ready for {robot}", flush=True)
+if set(robots) - ready:
+    session.close()
+    print(f"[rmf-pod] ERROR: Nav2 relay not ready: {sorted(set(robots) - ready)}", file=sys.stderr)
+    raise SystemExit(1)
+
+probe_deadline = time.monotonic() + 30.0
+while time.monotonic() < probe_deadline and set(robots) - probed:
+    for publisher in probe_publishers:
+        publisher.put(cdr_string("__rmf_readiness__ PING"))
+    time.sleep(1.0)
+session.close()
+if set(robots) - probed:
+    print(f"[rmf-pod] ERROR: RMF command path not ready: {sorted(set(robots) - probed)}", file=sys.stderr)
+    raise SystemExit(1)
+PYEOF
+
 ZENOH_CONFIG="${ZENOH_CONFIG:-/opt/ros2-demo/zenoh/fleet-adapter-zenoh.json5}"
 echo "[rmf-pod] Launching free_fleet adapter (fleet_adapter.py) with zenoh config: ${ZENOH_CONFIG}..."
 # -sim flag: domain 55 /clock is now provided by d55_ros_half.py (Zenoh clock relay).
@@ -403,8 +566,13 @@ term_handler() {
        "${LIFT_SUPERVISOR_PID:-}" "${DOOR_SUPERVISOR_PID:-}" \
        "${API_PID:-}" "${DASHBOARD_PID:-}" "${CLOCK_RELAY_PID:-}" \
        "${D55_ZENOH_PID:-}" "${D55_ROS_PID:-}" "${CMDVEL_KEEP_PID:-}" \
-       "${TF_RELAY_PID:-}" 2>/dev/null || true
-  rm -f /tmp/d55clock /tmp/d55_zenoh_half.py /tmp/d55_ros_half.py
+       "${TF_RELAY_PID:-}" "${LIFT_ZENOH_PID:-}" "${LIFT_ROS_PID:-}" \
+       "${LIFT_REQUEST_ZENOH_PID:-}" "${LIFT_REQUEST_ROS_PID:-}" \
+       2>/dev/null || true
+  rm -f /tmp/d55clock /tmp/d55_zenoh_half.py /tmp/d55_ros_half.py \
+        /tmp/liftstates /tmp/liftstates_zenoh_half.py /tmp/liftstates_ros_half.py \
+        /tmp/liftrequests /tmp/liftrequests_zenoh_half.py /tmp/liftrequests_ros_half.py
+  exec 9>&- 2>/dev/null || true
   pkill -P $$ 2>/dev/null || true
   wait "${ADAPTER_PID}" 2>/dev/null || true
 }

@@ -5,7 +5,10 @@
 # Build: podman build --platform linux/amd64 -t quay.io/jianrzha/ros2-rmf:latest -f Containerfile.rmf .
 # Push:  podman push quay.io/jianrzha/ros2-rmf:latest
 
-FROM --platform=linux/amd64 ros:jazzy
+# Use the published canonical hotel image as the ROS/Jazzy base. It contains
+# the same ROS distribution and hotel assets as the old ros:jazzy base while
+# avoiding unauthenticated Docker Hub pulls in OpenShift builds.
+FROM --platform=linux/amd64 quay.io/jianrzha/ros2-rmf-hotel-nav2-rmf:canonical-20260925
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -25,8 +28,11 @@ RUN apt-get install -y --no-install-recommends \
       git wget \
     && rm -rf /var/lib/apt/lists/*
 
-# Python deps for free_fleet (zenoh pinned to 1.5.0) and rmf-web api-server
-RUN pip3 install --break-system-packages \
+# Python deps for free_fleet (zenoh pinned to 1.5.0) and rmf-web api-server.
+# The canonical base ships Debian-managed typing_extensions; install a wheel
+# copy first so pip does not attempt to uninstall a package without RECORD.
+RUN pip3 install --break-system-packages --ignore-installed "typing_extensions>=4.5" && \
+    pip3 install --break-system-packages \
       "eclipse-zenoh==1.5.0" \
       "pycdr2" \
       "numpy" \

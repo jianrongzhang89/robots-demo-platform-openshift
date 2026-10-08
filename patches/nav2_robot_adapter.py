@@ -1416,6 +1416,10 @@ class Nav2RobotAdapter(RobotAdapter):
                     f'{"OK" if nav_handle._rmf_result else "FAILED"}'
                 )
 
+        nav_handle._rmf_result_zenoh_sub = self.zenoh_session.declare_subscriber(
+            namespacify("rmf_navigate_result", self.name), _result_callback
+        )
+
         nav_handle._rmf_result_sub = self.node.create_subscription(
             StdMsgsString,
             f'/{self.name}/rmf_navigate_result',
@@ -1442,6 +1446,18 @@ class Nav2RobotAdapter(RobotAdapter):
         ros_msg = StdMsgsString()
         ros_msg.data = cmd_msg
         cmd_pub.publish(ros_msg)
+
+        # Keep the ROS publication for local observability, but also publish
+        # directly on the proven Zenoh command key. In the federated profile
+        # the DDS bridge may expose the ROS publisher without a DDS reader,
+        # which silently drops the first RMF goal.
+        direct_pub = getattr(self, '_rmf_nav_zenoh_pub', None)
+        if direct_pub is None:
+            direct_pub = self.zenoh_session.declare_publisher(
+                namespacify("rmf_navigate_cmd", self.name)
+            )
+            self._rmf_nav_zenoh_pub = direct_pub
+        direct_pub.put(_PubSubNavHandle._str_cdr(cmd_msg))
 
         # Result tracking is handled by _is_navigation_done through the relay's
         # RMF result topic. Do not set the ROS action goal_id here.

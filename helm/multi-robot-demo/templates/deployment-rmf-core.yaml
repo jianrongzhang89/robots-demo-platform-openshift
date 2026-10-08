@@ -31,7 +31,8 @@ spec:
               mkdir -p /canonical-rmf/maps
                cp /opt/ros2-demo/rmf/nav_graph.yaml /canonical-rmf/nav_graph.yaml
                cp /opt/ros2-demo/hotel-assets/hotel.building.yaml /canonical-rmf/hotel.building.yaml
-              cp /opt/ros2-demo/rmf/fleet_config.yaml /tmp/fleet_config.yaml
+               cp /opt/ros2-demo/hotel-assets/hotel_L*.png /canonical-rmf/
+               cp /opt/ros2-demo/rmf/fleet_config.yaml /tmp/fleet_config.yaml
               cp /opt/ros2-demo/maps/hotel_*.yaml /canonical-rmf/maps/
               sed -i 's#/opt/ros2-demo/maps#/canonical-rmf/maps#g; /    delivery: true/a\    patrol: true' \
                 /tmp/fleet_config.yaml

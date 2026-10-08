@@ -73,7 +73,7 @@ data:
               ".*/(rmf_navigate_cmd|lift_requests|door_requests)"
             ],
             subscribers: [
-               ".*/(amcl_pose|odom|battery_state|scan|tf|tf_static|joint_states|rmf_navigate_result|lift_states|door_states)"
+               ".*/(amcl_pose|odom|battery_state|scan|tf|tf_static|joint_states|rmf_navigate_result|rmf_navigate_ready|rmf_navigate_probe_result|lift_states|door_states)"
             ]
           }
         }
@@ -139,7 +139,7 @@ data:
           allow: {
             publishers: [
               // tf and tf_static: robot_state_publisher runs on Nav2 pod, must forward URDF TF
-               ".*/(tf|tf_static|battery_state|cmd_vel|amcl_pose|rmf_navigate_result|lift_requests|door_requests|local_costmap/costmap|local_costmap/costmap_updates)"
+               ".*/(tf|tf_static|battery_state|cmd_vel|amcl_pose|rmf_navigate_result|rmf_navigate_ready|rmf_navigate_probe_result|lift_requests|door_requests|local_costmap/costmap|local_costmap/costmap_updates)"
             ],
             subscribers: [
               ".*/tf",

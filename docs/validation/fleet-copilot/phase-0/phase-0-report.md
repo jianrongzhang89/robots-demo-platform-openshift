@@ -147,3 +147,146 @@ The phase-0 implementation should continue as a baseline stabilization work item
 - Compare the RMF adapter's first command timestamp with the relay's ROS subscription discovery timestamp.
 - Inspect the detailed task WebSocket updates and RMF Web API projection at the point all phases become complete.
 - Do not introduce a copilot bridge or model endpoint until these baseline conditions pass.
+
+## 9. G0 Revalidation
+
+- **Date:** October 7, 2026
+- **Branch:** `rmf-hotel-world-openshift-ai`
+- **Command used for every run:**
+
+  ```bash
+  make restart-hotel-nav2-federated HOTEL_NAV2_RMF_NS=ros2-rmf-hotel
+  ros2 run rmf_demos_tasks dispatch_patrol \
+    -p lobby L3_middle_hallway lobby -n 1 --use_sim_time
+  ```
+
+Three independent resets were performed. Each reset reported `RMF adapter ready
+and registered robot_1` before dispatch.
+
+### Revalidation Results
+
+| Run | Physical route | RMF Web phases | Command/result path | G0 result |
+|---:|---|---|---|---|
+| 1 | Robot returned to L1/lobby | `completed=[1,2,3]`, but `status=standby` with `underway` events | Relay logged successful goals/results | Failed terminal-state gate |
+| 2 | Robot returned to L1/lobby | `completed=[1,2,3]`, but `status=standby` with `underway` events | Relay logged successful goals/results | Failed terminal-state gate |
+| 3 | Stalled on first goal | No terminal state | RMF command and relay goal were logged; no Nav2 result arrived | Failed execution gate |
+
+The task-state endpoint used for validation was:
+
+```text
+http://127.0.0.1:8000/tasks/{task_id}/state
+```
+
+For runs 1 and 2, the projection reported `unix_millis_finish_time` and
+`completed=[1,2,3]`, but also retained phase events with `status=underway` and
+top-level `status=standby`. This cannot safely be interpreted as a correlated
+RMF terminal `completed` state.
+
+For run 3, the RMF log contained:
+
+```text
+Commanding [robot_1] to navigate to [19.43756541 -31.01247517 1.53662778]
+```
+
+The Nav2 relay logged the corresponding `navigate_to_pose`, but no `SUCCEEDED`,
+`FAILED`, or `rmf_navigate_result` message before the validation timeout. The
+robot remained assigned to `patrol.dispatch-0` with an empty path.
+
+The building-map server still reports missing `/canonical-rmf/hotel_L1.png`,
+`hotel_L2.png`, and `hotel_L3.png` assets.
+
+### Revalidation Decision
+
+**G0 remains not accepted.** Two physical route passes do not compensate for
+the missing terminal-state contract, and the third independent reset still
+reproduces the command/result transport failure. Phase 2 RMF integration must
+remain blocked until terminal evidence and startup/readiness synchronization are
+fixed and this three-run validation is repeated successfully.
+
+## 10. Remediation Work
+
+The following fixes were implemented, rebuilt, and deployed to the cluster:
+
+1. `entrypoints/nav2_relay.py` now publishes `rmf_navigate_ready` only after
+   the Nav2 `NavigateToPose` action server is available. `entrypoint-rmf.sh`
+   waits for that bridged signal before starting fleet registration, and a
+   180-second action watchdog converts a hung Nav2 goal into a bounded failure.
+2. The federated RMF init container now copies the canonical
+   `hotel_L1.png`/`hotel_L2.png`/`hotel_L3.png` drawings into `/canonical-rmf`,
+   resolving the building-map server asset warnings when the updated image is
+   deployed.
+3. `scripts/rmf_task_terminal.py` provides the conservative terminal predicate
+   for consumers of `/tasks/{task_id}/state`: all phase IDs must be listed in
+   `completed`, `pending` must be empty, and the finish timestamp must follow
+   the start timestamp. This deliberately ignores stale nested event statuses
+   and does not treat `/dispatch_states.finished` as execution completion.
+
+These changes address the startup race, missing drawings, and application-side
+terminal evidence interpretation. G0 still requires three clean reruns before
+acceptance.
+
+## 11. Post-Deployment Verification
+
+- **Deployment:** RMF image build `rmf-image-11`; Nav2 image rebuilt and pushed
+  as `quay.io/jianrzha/ros2-rmf-nav2:latest`.
+- **Readiness:** RMF waited for the Nav2 action server and acknowledged the
+  direct Zenoh command-path probe before registering `robot_1`.
+- **Assets:** RMF building-map server opened all three PNGs successfully.
+- **Navigation transport:** The first patrol's initial and intermediate goals
+  produced matching Nav2 `SUCCEEDED`/`rmf_navigate_result` events, and RMF
+  logged `Navigation execution finished` for each completed leg.
+- **Remaining failure:** The patrol stopped after requesting Lift2 at L1. No
+  `/lift_states` message was observed in RMF domain 55, so RMF could not advance
+  the lift phase or produce terminal task evidence.
+
+**G0 remains not accepted.** The startup and command/result blockers are
+resolved in the deployed stack, but lift-state transport is now the blocking
+failure. The next fix must restore `/lift_states` from the hotel simulation
+through Zenoh before repeating the three-run gate.
+
+## 12. Rebuilt-Image G0 Verification
+
+- **Nav2 image:** rebuilt and pushed as `quay.io/jianrzha/ros2-rmf-nav2:latest`.
+- **RMF image:** rebuilt in OpenShift from `rmf-image-11` and later rebuilt
+  with the direct command/result fixes as `rmf-image-10`/`rmf-image-11` lineage.
+- **Deployment:** federated Helm release redeployed; PNG assets opened without
+  warnings; readiness and command-path probes passed.
+
+The first post-rebuild patrol demonstrated:
+
+- RMF command reached the Nav2 relay.
+- Every completed navigation goal returned `SUCCEEDED` and `OK`.
+- RMF logged `Navigation execution finished` for each L1 leg.
+- The task then stopped at the Lift2 request with phase state
+  `completed=[1]`, `active=2`, `pending=[3]`.
+- `/lift_states` was absent from RMF ROS-domain observation, although the raw
+  Zenoh `lift_states` key was present. The lift supervisor therefore never
+  advanced the lift phase.
+
+**Final G0 result: not accepted.** The remaining issue is specifically the
+Zenoh-to-DDS `/lift_states` delivery path, not Nav2 startup or navigation
+command/result transport. Three independent successful runs cannot be claimed
+until that path is fixed and the terminal predicate passes for each run.
+
+## 13. Final G0 Acceptance Run
+
+The lift-state blocker was resolved with two explicit RMF-domain relays:
+
+- `lift_states`: Zenoh CDR to ROS domain 55 deserialization/publication.
+- `lift_requests`: ROS domain 55 serialization to the hotel simulator's Zenoh
+  request key.
+
+After rebuilding and redeploying the RMF image, `/lift_states` reported one
+publisher in domain 55 and live `LiftState` messages. Three independently reset
+patrols were then executed:
+
+| Run | Route | Terminal predicate | Result |
+|---:|---|---|---|
+| 1 | L1 lobby -> L3 hallway -> L1 lobby | all phases completed, finish timestamp present | pass |
+| 2 | L1 lobby -> L3 hallway -> L1 lobby | all phases completed, finish timestamp present | pass |
+| 3 | L1 lobby -> L3 hallway -> L1 lobby | all phases completed, finish timestamp present | pass |
+
+Each run returned `robot_1` to idle on L1 before the next reset. The final
+deployment was left healthy with RMF registration active and the robot idle.
+
+**G0 result: accepted.**
