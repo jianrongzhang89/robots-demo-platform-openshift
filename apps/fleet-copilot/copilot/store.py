@@ -264,6 +264,8 @@ class Store:
             updates: dict[str, Any] = {}
             if event_type == "queued":
                 updates = {"submission": "rmf_queued", "execution": "queued"}
+            elif event_type == "underway":
+                updates = {"submission": "rmf_queued", "execution": "underway"}
             elif event_type == "selected":
                 updates = {"allocation": "selected"}
             elif event_type == "dispatched":

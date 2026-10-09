@@ -55,6 +55,7 @@ function renderMission(mission) {
       <strong>Mission ${escapeHtml(mission.mission_id)}</strong>
       <span class="mission-status">${escapeHtml(mission.execution)} · RMF ${escapeHtml(mission.rmf_task_id ?? 'pending')}</span>
       <small>Submission ${escapeHtml(mission.submission)} · Revision ${escapeHtml(mission.revision)}</small>
+      <div class="evidence-card"><small>Evidence will appear as task state arrives.</small></div>
     </div>`);
 }
 
@@ -68,6 +69,10 @@ async function pollMission(missionId) {
       currentMission = mission;
       const status = document.querySelector('.mission-status');
       if (status) status.textContent = `${mission.execution} · RMF ${mission.rmf_task_id ?? 'pending'}`;
+      const evidenceResponse = await fetch(`/api/v1/missions/${missionId}/evidence`);
+      const evidence = await evidenceResponse.json();
+      const evidenceCard = document.querySelector('.evidence-card');
+      if (evidenceCard) evidenceCard.innerHTML = `<strong>${escapeHtml(evidence.classification)}</strong><p>${escapeHtml(evidence.summary)}</p><small>Evidence IDs: ${evidence.evidence_ids.map(escapeHtml).join(', ') || 'none'}</small>`;
       if (['completed', 'failed', 'canceled'].includes(mission.execution)) return;
     } catch (_) {
       const status = document.querySelector('.mission-status');

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import json
+import hashlib
 import time
 from pathlib import Path
 
@@ -12,6 +13,7 @@ from pydantic import BaseModel, Field
 
 from .catalog import Catalog
 from .bridge import RmfBridge, RmfBridgeError
+from .evidence import classify
 from .interpreter import interpret
 from .providers import MockProvider, OpenAIProvider
 from .store import ConflictError, NotFoundError, Store
@@ -168,6 +170,22 @@ def get_events(mission_id: str):
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
+@app.get("/api/v1/missions/{mission_id}/evidence")
+def mission_evidence(mission_id: str):
+    try:
+        return classify(store.get_mission(mission_id), store.events(mission_id))
+    except NotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/api/v1/missions/{mission_id}/explanation")
+def mission_explanation(mission_id: str):
+    try:
+        return classify(store.get_mission(mission_id), store.events(mission_id))
+    except NotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
 @app.get("/api/v1/missions/{mission_id}/stream")
 def stream_mission(mission_id: str):
     def events():
@@ -205,16 +223,19 @@ def sync_mission(mission_id: str):
         if not mission["rmf_task_id"]:
             raise HTTPException(status_code=409, detail="mission has no RMF task")
         state = bridge.state(mission["rmf_task_id"])
+        state_event_id = mission_id + ":state:" + hashlib.sha256(json.dumps(state, sort_keys=True).encode()).hexdigest()[:16]
         terminal, reason = bridge.terminal_success(state)
         if terminal:
-            return store.record_event(mission_id, "completed", {"rmf_state": state, "terminal_reason": reason}, "rmf-web", mission_id + ":state:" + mission["rmf_task_id"] + ":completed")
+            return store.record_event(mission_id, "completed", {"rmf_state": state, "terminal_reason": reason}, "rmf-web", state_event_id)
         status = state.get("status")
         if status == "canceled":
-            return store.record_event(mission_id, "canceled", {"rmf_state": state, "terminal_reason": reason}, "rmf-web", mission_id + ":state:" + mission["rmf_task_id"] + ":canceled")
+            return store.record_event(mission_id, "canceled", {"rmf_state": state, "terminal_reason": reason}, "rmf-web", state_event_id)
         if status in {"failed", "killed", "error"}:
-            return store.record_event(mission_id, "failed", {"rmf_state": state, "terminal_reason": reason}, "rmf-web", mission_id + ":state:" + mission["rmf_task_id"] + ":failed")
-        if (state.get("dispatch") or {}).get("status") in {"queued", "underway"} or state.get("status") in {"queued", "underway", "standby"}:
-            return store.record_event(mission_id, "queued", {"rmf_state": state}, "rmf-web", mission_id + ":state:" + mission["rmf_task_id"] + ":queued")
+            return store.record_event(mission_id, "failed", {"rmf_state": state, "terminal_reason": reason}, "rmf-web", state_event_id)
+        if state.get("status") == "underway":
+            return store.record_event(mission_id, "underway", {"rmf_state": state}, "rmf-web", state_event_id)
+        if (state.get("dispatch") or {}).get("status") == "queued" or state.get("status") in {"queued", "standby"}:
+            return store.record_event(mission_id, "queued", {"rmf_state": state}, "rmf-web", state_event_id)
         return mission
     except NotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
