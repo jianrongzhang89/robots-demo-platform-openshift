@@ -19,7 +19,7 @@ The evidence is uneven. Commercial organizations have documented Open-RMF integr
 | Are actual Nav2 plugins available? | Yes: semantic segmentation and nvblox costmap plugins, NeuPAN and social-RL controller integrations, and agricultural traversability code | Some are well-documented integrations; others require substantial research engineering |
 | What should this platform evaluate first? | Nayantra as an orchestration reference, followed by semantic costmaps | These align with the existing hotel/fleet demonstration and offer distinct, visible AI outcomes |
 
-**Recommended direction:** complete the existing fleet-copilot-to-RMF execution path, then add a camera-based semantic navigation demonstration. Evaluate learned local controllers separately against the existing controller baseline. These are engineering recommendations from the evidence, not measured results for this platform.
+**Recommended direction:** extend and compare the existing live fleet-copilot-to-RMF execution path, then add a camera-based semantic navigation demonstration. Evaluate learned local controllers separately against the existing controller baseline. The follow-up [Nayantra source audit](nayantra-integration-assessment.md) corrects the initial README-based assessment of our dispatch capability and qualifies Nayantra's MCP and planner claims. These are engineering recommendations from the evidence, not measured results for this platform.
 
 Primary anchors: [Nayantra](https://github.com/shashankbr27/nayantra), [Nav2 AI integrations](https://github.com/ros-navigation/navigation2.ai), [semantic segmentation layer](https://github.com/kiwicampus/semantic_segmentation_layer), and [NeuPAN Nav2 controller](https://github.com/LihanChen2004/nav2_neupan_controller).
 
@@ -35,7 +35,7 @@ The following distinctions apply throughout:
 - **Proposed/research:** an architecture or experiment is reported, but reusable code, checkpoints, or deployment evidence may be missing.
 - **Assessment:** an engineering judgment about suitability for this platform.
 
-No external package was installed, no robot or cluster was exercised, and no external performance claim was reproduced. Repository branches and online documentation are mutable. A reproduction effort should pin commits, model revisions, ROS distributions, and inference dependencies.
+During the initial broad research, no external package was installed, no robot or cluster was exercised, and no external performance claim was reproduced. The separately documented [Nayantra follow-up](nayantra-integration-assessment.md) subsequently ran isolated upstream tests and mocked implementation probes; it did not exercise a robot or cluster. Repository branches and online documentation are mutable. A reproduction effort should pin commits, model revisions, ROS distributions, and inference dependencies.
 
 The scope is the **Open Robotics Middleware Framework (Open-RMF)**. Search results concerning the NIST AI Risk Management Framework or the unrelated OpenRMF cybersecurity product are excluded.
 
@@ -50,15 +50,17 @@ The scope is the **Open Robotics Middleware Framework (Open-RMF)**. Search resul
 | Inside Nav2 control | Generate local trajectories, waypoints, or velocity decisions | Run the controller interface and remaining navigation functions | NeuPAN, Nav2SocialRL |
 | Above Nav2 navigation | Select destinations or exploration targets using language and vision | Perform local planning and control | RAI, WildOS |
 
-For example, Nayantra follows `request → LLM → MCP tools → Open-RMF API → fleet adapter → Nav2 → robot`. In a semantic navigation pipeline, a model's masks become costmap observations before the ordinary navigation algorithms use them. These integrations do not require the same model to understand both fleet scheduling and motor control. [Nayantra architecture](https://github.com/shashankbr27/nayantra), [Nav2 semantic navigation tutorial](https://docs.nav2.org/rolling/tutorials/general_tutorials/navigation2_with_semantic_segmentation/navigation2_with_semantic_segmentation/).
+For example, Nayantra advertises `request → LLM → MCP tools → Open-RMF API → fleet adapter → Nav2 → robot`. The follow-up audit found a custom REST tool protocol and an alternate RMF-like bridge that directly controls Nav2; the deployed backend must therefore be identified before claiming full MCP/RMF integration. In a semantic navigation pipeline, a model's masks become costmap observations before the ordinary navigation algorithms use them. These integrations do not require the same model to understand both fleet scheduling and motor control. [Nayantra audit](nayantra-integration-assessment.md), [Nav2 semantic navigation tutorial](https://docs.nav2.org/rolling/tutorials/general_tutorials/navigation2_with_semantic_segmentation/navigation2_with_semantic_segmentation/).
 
 ## 4. Open-RMF: existing integrations and demonstrations
 
-### 4.1 Nayantra: natural-language fleet control through MCP
+### 4.1 Nayantra: natural-language fleet control through tools
 
-Nayantra is the closest public reference for an LLM interface over Open-RMF. It supplies an agent, an MCP-facing tool layer, an RMF client, and integration instructions for Nav2, Isaac Sim, and Zenoh. The repository includes a laptop-friendly stub setup. [Repository](https://github.com/shashankbr27/nayantra).
+**Branch qualification:** this section describes the earlier main-branch implementation. The [follow-up examples review](nayantra-examples-and-demo-use-cases.md) covers September's development branches, which add a tool-feedback loop and a separate Nayantra-native fleet core. The latter is not Open-RMF, despite retained RMF-shaped compatibility endpoints.
 
-Selected implementation inspection confirmed provider-specific tool-calling paths for Anthropic, OpenAI, and Gemini. The agent constructs structured plans, handles dependencies between tool calls, executes them, and summarizes the results. The inspected configuration names:
+Nayantra is a close public reference for an LLM interface over Open-RMF. It supplies an agent, a tool layer advertised as MCP, an RMF client, and integration instructions for Nav2, Isaac Sim, and Zenoh. The reviewed server actually implements custom REST tool calls and SSE rather than the MCP initialization/tool protocol. The repository includes a laptop-friendly stub setup. [Repository](https://github.com/shashankbr27/nayantra), [source-audit qualification](nayantra-integration-assessment.md).
+
+Selected implementation inspection confirmed provider-specific tool-calling paths for Anthropic, OpenAI, and Gemini. The agent constructs tool-call plans, executes them, and summarizes the results. Its planner supports dependencies, but the follow-up audit found that the provider conversion paths do not populate those dependencies; this is not a complete observe-and-replan loop. The inspected configuration names:
 
 | Provider | Configured model identifier | What this establishes |
 |---|---|---|
@@ -221,13 +223,13 @@ Nav2's [plugin catalog](https://docs.nav2.org/rolling/configuration_and_developm
 
 ## 9. Assessment for this repository
 
-The repository's fleet-copilot README describes interpretation, validated previews, persistent mission handling, and an external-model UI. It also states that its bridge publication boundary is currently an emulator rather than a live RMF/ROS publisher. This is a documentary finding, not a runtime assessment. [Current application README](../apps/fleet-copilot/README.md).
+The initial assessment repeated an outdated emulator-only statement in the fleet-copilot README. Follow-up inspection confirmed that the current [bridge](../apps/fleet-copilot/copilot/bridge.py) and [API](../apps/fleet-copilot/copilot/api.py) implement live RMF REST dispatch, task-ID binding, replay reconciliation, synchronization, cancellation, and terminal-state checks. [G3 validation](validation/fleet-copilot/phase-3/phase-3-report.md) records repeated model-driven physical patrol completions for development scope. This corrects the source assessment; it is not a fresh cluster-health check or production acceptance. See the [Nayantra integration assessment](nayantra-integration-assessment.md) for the resulting recommendation.
 
 The earlier [OpenShift AI research](openshift-ai-robotics-research-and-use-cases.md) supplies platform context. This report supplements it with public examples and more specific model/plugin evidence; it does not revalidate that document's platform-version or cluster claims.
 
 | Priority | Evaluation | Reason | Proposed acceptance evidence |
 |---|---|---|---|
-| 1 | Nayantra comparison and completion of live copilot dispatch | Closest architectural match to the existing application | Validated intent leads to an RMF task ID and observed robot completion; retries do not create duplicate tasks |
+| 1 | Nayantra comparison above the existing live copilot gateway | Closest architectural match; preserve current preview, idempotency, and completion checks | Added tools retain explicit confirmation, correct RMF task correlation, and observed completion without duplicate tasks |
 | 2 | Semantic costmap demonstration | Makes the model's effect on navigation visible | Same scene and goal produce explainable changes when semantic costs are enabled; model output, costmap, and path are recorded |
 | 3 | Depth Anything 3 or nvblox | Adds learned perception through existing navigation interfaces | Reproducible camera-to-costmap pipeline, measured latency, and scenario-based obstacle detection results |
 | 4 | NeuPAN controller comparison | Tests actual learned local navigation | Comparison with existing controller on completion, tracking, clearance, and compute timing across repeated runs |
@@ -237,9 +239,13 @@ These are proposed evaluation criteria, not results already achieved.
 
 ### 9.1 Proposed initial demonstrations
 
+The October 12 [Nav2 AI demo implementation proposal](nav2-ai-demo-implementation-proposal.md) develops the semantic-navigation and learned-controller experiments below against the canonical hotel configuration, including source-audit risks, camera and geometry prerequisites, fair comparison protocols, and acceptance gates.
+
+The October 13 [semantic navigation implementation plan](semantic-navigation-implementation-plan.md) selects SAM3 first to avoid starting with custom training, retains ONNX as an alternative, and requires verified phase gates before navigation, runtime prompt changes, or RMF integration.
+
 **Fleet mission copilot:** reuse the hotel mission and named destinations. Show the request, interpreted mission, live RMF acceptance, execution state, elevator transition, and completion. Nayantra is the external reference for the language/tool/orchestration path. Record mission completion separately from successful model interpretation or successful API submission.
 
-**Semantic navigation:** add a robot camera pipeline and a semantic costmap layer. Use an observable distinction such as floor versus a restricted surface or a specifically detected object. Compare the same scenario with and without semantic costs. Start with the documented ONNX example if minimizing compute and setup variability is the priority; evaluate SAM3 when runtime text-defined categories are part of the demonstration objective.
+**Semantic navigation:** add a robot camera pipeline and a semantic costmap layer. Use an observable distinction such as floor versus a restricted surface or a specifically detected object. Compare the same scenario with and without semantic costs. Following the October 13 decision, start with pretrained SAM3 and one fixed prompt, gated by hardware, recognition, latency, costmap, and safety tests. Retain the documented ONNX integration as an alternative with a simpler runtime but a separate indoor-model qualification requirement.
 
 **Learned controller experiment:** keep the same robot and navigation task while comparing the existing controller with NeuPAN. Establish the robot-geometry model and runtime performance before introducing multi-floor scheduling. This isolates what the learned controller contributes.
 
