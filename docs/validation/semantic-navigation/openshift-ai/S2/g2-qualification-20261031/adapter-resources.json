@@ -1,0 +1,172 @@
+{
+  "apiVersion": "v1",
+  "kind": "List",
+  "items": [
+    {
+      "apiVersion": "v1",
+      "kind": "ConfigMap",
+      "metadata": {
+        "name": "semantic-s2-adapter",
+        "namespace": "semantic-navigation"
+      },
+      "data": {
+        "identity.json": "{\"container_digest\": \"sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e\", \"model_name\": \"sam3-mat-v1\", \"policy\": \"avoid-target/v1\", \"precision\": \"bfloat16\", \"prompt\": \"red mat\", \"schema\": \"semantic-deployment/v1\", \"shared_sha256\": {\"inference_contract.py\": \"d238d2490f826b6fbb70f07aa5579492dc425e8c858b780c8216679f121ffdef\", \"sam3_backend.py\": \"3d83819971704e8ce642db98972194996307b314bb73cbb44257384e45714761\", \"sam3_runtime_core.py\": \"683cf53a5b6378fa72d0cefe404bd899039b1420b4d5a2e7cfe3faecaf57085f\"}, \"source_revision\": \"0570b3a5be9c4e694f23d85232fb55f4a6f1f7fc\", \"threshold\": 0.5, \"versions\": {\"decoder\": \"sam3-binary-instances/v1\", \"model\": \"3c879f39826c281e95690f02c7821c4de09afae7\", \"preprocess\": \"sam3-pil-rgb/v1\"}, \"weights_sha256\": \"9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e\"}",
+        "cyclonedds.xml": "<CycloneDDS><Domain><General><Interfaces><NetworkInterface name=\"lo\" multicast=\"true\"/></Interfaces><AllowMulticast>true</AllowMulticast></General></Domain></CycloneDDS>"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "name": "semantic-s2-adapter",
+        "namespace": "semantic-navigation",
+        "labels": {
+          "app": "semantic-s2-adapter",
+          "semantic-serving-client": "sam3-mat-v1"
+        }
+      },
+      "spec": {
+        "nodeSelector": {
+          "kubernetes.io/hostname": "ip-10-0-53-174.ec2.internal"
+        },
+        "serviceAccountName": "sam3-replay",
+        "automountServiceAccountToken": false,
+        "terminationGracePeriodSeconds": 10,
+        "containers": [
+          {
+            "name": "adapter",
+            "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-cpu-adapter@sha256:20ea4f5e6bc30646f48b29895eb071d40403f8c20b0c1526aeacf06dce716d4b",
+            "command": [
+              "/bin/bash",
+              "-ec"
+            ],
+            "args": [
+              "source /opt/ros/jazzy/setup.bash; exec python3 /opt/semantic-perception/sam3_ros_node.py --ros-args -p backend:=http -p robot_id:=robot_1 -p stream_id:=camera/color -p input_prefix:=/g2/robot_1/camera -p output_prefix:=/g2/robot_1/semantic"
+            ],
+            "env": [
+              {
+                "name": "SEMANTIC_BACKEND",
+                "value": "http"
+              },
+              {
+                "name": "SEMANTIC_ENDPOINT",
+                "value": "https://sam3-mat-v1-tls.semantic-model-serving.svc:8443"
+              },
+              {
+                "name": "SEMANTIC_TLS_CA",
+                "value": "/cert/ca.crt"
+              },
+              {
+                "name": "SEMANTIC_TLS_CERT",
+                "value": "/cert/tls.crt"
+              },
+              {
+                "name": "SEMANTIC_TLS_KEY",
+                "value": "/cert/tls.key"
+              },
+              {
+                "name": "SEMANTIC_DEPLOYMENT_IDENTITY",
+                "value": "/config/identity.json"
+              },
+              {
+                "name": "SEMANTIC_REQUIRE_CAPTURE_TRACE",
+                "value": "1"
+              },
+              {
+                "name": "SEMANTIC_CLOCK_UNCERTAINTY_MS",
+                "value": "2"
+              },
+              {
+                "name": "SEMANTIC_MAX_WORK_WAIT_MS",
+                "value": "40"
+              },
+              {
+                "name": "SEMANTIC_STATUS_FILE",
+                "value": "/tmp/semantic-status.json"
+              },
+              {
+                "name": "ROS_DOMAIN_ID",
+                "value": "188"
+              },
+              {
+                "name": "CYCLONEDDS_URI",
+                "value": "file:///config/cyclonedds.xml"
+              }
+            ],
+            "resources": {
+              "requests": {
+                "cpu": "1",
+                "memory": "1Gi"
+              },
+              "limits": {
+                "cpu": "2",
+                "memory": "2Gi"
+              }
+            },
+            "securityContext": {
+              "allowPrivilegeEscalation": false,
+              "readOnlyRootFilesystem": true,
+              "capabilities": {
+                "drop": [
+                  "ALL"
+                ]
+              },
+              "seccompProfile": {
+                "type": "RuntimeDefault"
+              }
+            },
+            "readinessProbe": {
+              "exec": {
+                "command": [
+                  "python3",
+                  "-c",
+                  "import json,time; s=json.load(open(\"/tmp/semantic-status.json\")); assert s[\"ready\"] and 0 <= time.time_ns()-s[\"status_wall_ns\"] < 500000000"
+                ]
+              },
+              "periodSeconds": 1,
+              "timeoutSeconds": 1,
+              "failureThreshold": 1
+            },
+            "volumeMounts": [
+              {
+                "name": "config",
+                "mountPath": "/config",
+                "readOnly": true
+              },
+              {
+                "name": "tls",
+                "mountPath": "/cert",
+                "readOnly": true
+              },
+              {
+                "name": "tmp",
+                "mountPath": "/tmp"
+              }
+            ]
+          }
+        ],
+        "volumes": [
+          {
+            "name": "config",
+            "configMap": {
+              "name": "semantic-s2-adapter"
+            }
+          },
+          {
+            "name": "tls",
+            "secret": {
+              "secretName": "sam3-replay-tls",
+              "defaultMode": 288
+            }
+          },
+          {
+            "name": "tmp",
+            "emptyDir": {
+              "sizeLimit": "256Mi"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

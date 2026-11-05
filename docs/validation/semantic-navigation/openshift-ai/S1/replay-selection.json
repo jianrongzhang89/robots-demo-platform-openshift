@@ -1,0 +1,20 @@
+{
+  "schema": "semantic-replay-selection/v1",
+  "scope": "Backend parity only. Archived JPEG captures are decoded once to RGB8; both backends receive the same lossless request. Recognition waiver remains. The empty-mask case must be confirmed by local GPU output before freezing.",
+  "frames": [
+    {
+      "case": "mat",
+      "repo_path": "docs/validation/semantic-navigation/phase-2/capture-pilot/initial/initial-pose-0000.jpg",
+      "source_sha256": "c1843a68c1bdc8c71b09ae9125f2154a381df778336efe3aaefdc9b85b324045"
+    },
+    {
+      "case": "absent-target",
+      "repo_path": "docs/validation/semantic-navigation/phase-2/capture-pilot/tile-negative/tile-negative-46deg-0000.jpg",
+      "source_sha256": "abb4990fed700c00d25baf462594b2a68b274ab6a3d52341788c0740bb00686a"
+    },
+    {
+      "case": "empty-mask",
+      "synthetic": "black-rgb8-640x480"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+ "event": "standalone paired-series re-run 10 (November 3)",
+ "context": "Series 9 ran 21 clean trials - past every previous stopping point except series-4 - with the acceptance criterion visibly working (off-arm aggregate hull exposure 14.09 m vs on-arm 0.0 m over the completed pairs). It stopped on trial 010-off when the runner crashed: the pod-state poll's check=True `oc get pod` hung past its 45 s command timeout during a network blip, and TimeoutExpired was not in the poll's tolerance list (the earlier fix covered only check=False callers). The trial's pod was healthy mid-navigation.",
+ "change": "The pod-state poll now tolerates subprocess.TimeoutExpired the same as transient oc errors (deadline-bounded); harness robustness only, no gate/check semantics.",
+ "setup": {
+  "topology": "G4 topology up (direct endpoint); the series' per-trial recycle manages it; reservation remains deleted",
+  "series_output": "qualification-22/paired-series-10",
+  "phase5_evidence": "qualification-22/served-phase5-qualification.json",
+  "sampler": {
+   "output": "serving-resources-paired-series-10.jsonl",
+   "stop_file": "/tmp/g4-paired-series-10-monitor-stop"
+  }
+ },
+ "command": "run_phase6_series.py --output-dir qualification-22/paired-series-10 (same arguments as series 2-9)"
+}

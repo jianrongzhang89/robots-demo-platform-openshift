@@ -1,0 +1,161 @@
+{
+  "apiVersion": "build.openshift.io/v1",
+  "kind": "Build",
+  "metadata": {
+    "annotations": {
+      "openshift.io/build-config.name": "semantic-safety-console-phase5",
+      "openshift.io/build.number": "25",
+      "openshift.io/build.pod-name": "semantic-safety-console-phase5-25-build"
+    },
+    "creationTimestamp": "2026-10-26T16:56:20Z",
+    "generation": 2,
+    "labels": {
+      "buildconfig": "semantic-safety-console-phase5",
+      "openshift.io/build-config.name": "semantic-safety-console-phase5",
+      "openshift.io/build.start-policy": "Serial"
+    },
+    "name": "semantic-safety-console-phase5-25",
+    "namespace": "semantic-navigation",
+    "ownerReferences": [
+      {
+        "apiVersion": "build.openshift.io/v1",
+        "controller": true,
+        "kind": "BuildConfig",
+        "name": "semantic-safety-console-phase5",
+        "uid": "22e3050b-68bd-4c47-818b-c6b3a771ca22"
+      }
+    ],
+    "resourceVersion": "472450991",
+    "uid": "429a16e2-d74b-4af2-a598-72289263fbc5"
+  },
+  "spec": {
+    "nodeSelector": null,
+    "output": {
+      "pushSecret": {
+        "name": "builder-dockercfg-htt4p"
+      },
+      "to": {
+        "kind": "ImageStreamTag",
+        "name": "semantic-safety:phase5-console-candidate"
+      }
+    },
+    "postCommit": {},
+    "resources": {
+      "limits": {
+        "cpu": "2",
+        "memory": "4Gi"
+      },
+      "requests": {
+        "cpu": "1",
+        "memory": "2Gi"
+      }
+    },
+    "revision": {
+      "git": {
+        "author": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "commit": "7f0c9cb4f82648cba28334e5dae666f00bff5641",
+        "committer": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "message": "Add the watchdog's UDP companion path for status and leases\n\nThe perception camera's image publications hold the console server's\nshared gz transport mutex long enough to delay the watchdog's status\nPUBLICATION by p95 ~575 ms under the SAM3 observation load (measured;\nthe fixture's receive path is 0.5 ms median), which the 20 ms\ncapture-bracket joins cannot absorb, and lease delivery showed the\nsame exposure. The watchdog now sends status through a non-blocking\nloopback UDP sendto that no transport mutex can block and listens for\nleases on a dedicated UDP thread feeding the same guard; the native\nlink worker mirrors leases onto that path, and the observation fixture\nreads status from it. All qualified gz paths remain active and\nunchanged; arm/stop services stay on gz. Rebuilds the image chain\nbase->contacts->controller->console (build 24, 4b1ad9db)."
+      },
+      "type": "Git"
+    },
+    "serviceAccount": "builder",
+    "source": {
+      "binary": {},
+      "type": "Binary"
+    },
+    "strategy": {
+      "dockerStrategy": {
+        "dockerfilePath": "Containerfile.console"
+      },
+      "type": "Docker"
+    }
+  },
+  "status": {
+    "completionTimestamp": "2026-10-26T17:01:59Z",
+    "conditions": [
+      {
+        "lastTransitionTime": "2026-10-26T16:56:20Z",
+        "lastUpdateTime": "2026-10-26T16:56:20Z",
+        "status": "False",
+        "type": "New"
+      },
+      {
+        "lastTransitionTime": "2026-10-26T16:56:21Z",
+        "lastUpdateTime": "2026-10-26T16:56:21Z",
+        "status": "False",
+        "type": "Pending"
+      },
+      {
+        "lastTransitionTime": "2026-10-26T17:01:59Z",
+        "lastUpdateTime": "2026-10-26T17:01:59Z",
+        "status": "False",
+        "type": "Running"
+      },
+      {
+        "lastTransitionTime": "2026-10-26T17:01:59Z",
+        "lastUpdateTime": "2026-10-26T17:01:59Z",
+        "status": "True",
+        "type": "Complete"
+      }
+    ],
+    "config": {
+      "kind": "BuildConfig",
+      "name": "semantic-safety-console-phase5",
+      "namespace": "semantic-navigation"
+    },
+    "duration": 339000000000,
+    "output": {
+      "to": {
+        "imageDigest": "sha256:7bb7a34bb9976f1a2b443cc7fc7c04e9f0f6b0621493e54ad86aa4e9a9915cfd"
+      }
+    },
+    "outputDockerImageReference": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety:phase5-console-candidate",
+    "phase": "Complete",
+    "stages": [
+      {
+        "durationMilliseconds": 125963,
+        "name": "PullImages",
+        "startTime": "2026-10-26T16:56:23Z",
+        "steps": [
+          {
+            "durationMilliseconds": 125963,
+            "name": "PullBaseImage",
+            "startTime": "2026-10-26T16:56:23Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 200933,
+        "name": "Build",
+        "startTime": "2026-10-26T16:58:29Z",
+        "steps": [
+          {
+            "durationMilliseconds": 200933,
+            "name": "DockerBuild",
+            "startTime": "2026-10-26T16:58:29Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 7098,
+        "name": "PushImage",
+        "startTime": "2026-10-26T17:01:50Z",
+        "steps": [
+          {
+            "durationMilliseconds": 7098,
+            "name": "PushDockerImage",
+            "startTime": "2026-10-26T17:01:50Z"
+          }
+        ]
+      }
+    ],
+    "startTimestamp": "2026-10-26T16:56:20Z"
+  }
+}

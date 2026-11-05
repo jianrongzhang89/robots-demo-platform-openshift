@@ -1,0 +1,393 @@
+{
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+        "annotations": {
+            "k8s.ovn.org/pod-networks": "{\"default\":{\"ip_addresses\":[\"10.128.9.155/23\"],\"mac_address\":\"0a:58:0a:80:09:9b\",\"gateway_ips\":[\"10.128.8.1\"],\"routes\":[{\"dest\":\"10.128.0.0/14\",\"nextHop\":\"10.128.8.1\"},{\"dest\":\"172.30.0.0/16\",\"nextHop\":\"10.128.8.1\"},{\"dest\":\"169.254.0.5/32\",\"nextHop\":\"10.128.8.1\"},{\"dest\":\"100.64.0.0/16\",\"nextHop\":\"10.128.8.1\"}],\"ip_address\":\"10.128.9.155/23\",\"gateway_ip\":\"10.128.8.1\",\"role\":\"primary\"}}",
+            "k8s.v1.cni.cncf.io/network-status": "[{\n    \"name\": \"ovn-kubernetes\",\n    \"interface\": \"eth0\",\n    \"ips\": [\n        \"10.128.9.155\"\n    ],\n    \"mac\": \"0a:58:0a:80:09:9b\",\n    \"default\": true,\n    \"dns\": {}\n}]",
+            "openshift.io/scc": "restricted-v2",
+            "seccomp.security.alpha.kubernetes.io/pod": "runtime/default",
+            "security.openshift.io/validated-scc-subject-type": "user"
+        },
+        "creationTimestamp": "2026-10-30T22:15:20Z",
+        "generateName": "maas-controller-5fcd89886f-",
+        "generation": 1,
+        "labels": {
+            "app": "maas-controller",
+            "app.kubernetes.io/part-of": "modelsasservice",
+            "app.opendatahub.io/modelsasservice": "true",
+            "control-plane": "maas-controller",
+            "pod-template-hash": "5fcd89886f"
+        },
+        "name": "maas-controller-5fcd89886f-2xkg8",
+        "namespace": "redhat-ods-applications",
+        "ownerReferences": [
+            {
+                "apiVersion": "apps/v1",
+                "blockOwnerDeletion": true,
+                "controller": true,
+                "kind": "ReplicaSet",
+                "name": "maas-controller-5fcd89886f",
+                "uid": "d2c42d8b-e5ad-4eca-a15d-273c4d7f2441"
+            }
+        ],
+        "resourceVersion": "490698372",
+        "uid": "9ab8ceeb-fae6-4760-ad93-74a3266899f6"
+    },
+    "spec": {
+        "containers": [
+            {
+                "args": [
+                    "--leader-elect",
+                    "--health-probe-bind-address=:8081",
+                    "--gateway-name=$(GATEWAY_NAME)",
+                    "--gateway-namespace=$(GATEWAY_NAMESPACE)",
+                    "--maas-api-namespace=$(MAAS_API_NAMESPACE)",
+                    "--maas-subscription-namespace=$(MAAS_SUBSCRIPTION_NAMESPACE)",
+                    "--metadata-cache-ttl=60",
+                    "--authz-cache-ttl=60"
+                ],
+                "command": [
+                    "/manager"
+                ],
+                "env": [
+                    {
+                        "name": "GATEWAY_NAME",
+                        "value": "maas-default-gateway"
+                    },
+                    {
+                        "name": "GATEWAY_NAMESPACE",
+                        "value": "openshift-ingress"
+                    },
+                    {
+                        "name": "MAAS_API_NAMESPACE",
+                        "valueFrom": {
+                            "fieldRef": {
+                                "apiVersion": "v1",
+                                "fieldPath": "metadata.namespace"
+                            }
+                        }
+                    },
+                    {
+                        "name": "MAAS_SUBSCRIPTION_NAMESPACE",
+                        "value": "models-as-a-service"
+                    },
+                    {
+                        "name": "RELATED_IMAGE_ODH_MAAS_API_IMAGE",
+                        "valueFrom": {
+                            "configMapKeyRef": {
+                                "key": "maas-api-image",
+                                "name": "maas-parameters",
+                                "optional": true
+                            }
+                        }
+                    },
+                    {
+                        "name": "RELATED_IMAGE_ODH_MAAS_CONTROLLER_IMAGE",
+                        "valueFrom": {
+                            "configMapKeyRef": {
+                                "key": "maas-controller-image",
+                                "name": "maas-parameters",
+                                "optional": true
+                            }
+                        }
+                    },
+                    {
+                        "name": "RELATED_IMAGE_ODH_AI_GATEWAY_PAYLOAD_PROCESSING_IMAGE",
+                        "valueFrom": {
+                            "configMapKeyRef": {
+                                "key": "payload-processing-image",
+                                "name": "maas-parameters",
+                                "optional": true
+                            }
+                        }
+                    },
+                    {
+                        "name": "RELATED_IMAGE_UBI_MINIMAL_IMAGE",
+                        "valueFrom": {
+                            "configMapKeyRef": {
+                                "key": "maas-api-key-cleanup-image",
+                                "name": "maas-parameters",
+                                "optional": true
+                            }
+                        }
+                    }
+                ],
+                "image": "registry.redhat.io/rhoai/odh-maas-controller-rhel9@sha256:745da3f2220415b37e099e0067fe73d6080c6bd16cc340d432666b606a232686",
+                "imagePullPolicy": "Always",
+                "livenessProbe": {
+                    "failureThreshold": 3,
+                    "httpGet": {
+                        "path": "/healthz",
+                        "port": 8081,
+                        "scheme": "HTTP"
+                    },
+                    "initialDelaySeconds": 15,
+                    "periodSeconds": 20,
+                    "successThreshold": 1,
+                    "timeoutSeconds": 1
+                },
+                "name": "manager",
+                "ports": [
+                    {
+                        "containerPort": 8080,
+                        "name": "metrics",
+                        "protocol": "TCP"
+                    }
+                ],
+                "readinessProbe": {
+                    "failureThreshold": 3,
+                    "httpGet": {
+                        "path": "/readyz",
+                        "port": 8081,
+                        "scheme": "HTTP"
+                    },
+                    "initialDelaySeconds": 5,
+                    "periodSeconds": 10,
+                    "successThreshold": 1,
+                    "timeoutSeconds": 1
+                },
+                "resources": {
+                    "limits": {
+                        "cpu": "500m",
+                        "memory": "512Mi"
+                    },
+                    "requests": {
+                        "cpu": "10m",
+                        "memory": "64Mi"
+                    }
+                },
+                "securityContext": {
+                    "allowPrivilegeEscalation": false,
+                    "capabilities": {
+                        "drop": [
+                            "ALL"
+                        ]
+                    },
+                    "runAsUser": 1000760000
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "File",
+                "volumeMounts": [
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-ct6qx",
+                        "readOnly": true
+                    }
+                ]
+            }
+        ],
+        "dnsPolicy": "ClusterFirst",
+        "enableServiceLinks": true,
+        "imagePullSecrets": [
+            {
+                "name": "maas-controller-dockercfg-ns46l"
+            }
+        ],
+        "nodeName": "ip-10-0-53-182.ec2.internal",
+        "preemptionPolicy": "PreemptLowerPriority",
+        "priority": 0,
+        "restartPolicy": "Always",
+        "schedulerName": "default-scheduler",
+        "securityContext": {
+            "fsGroup": 1000760000,
+            "runAsNonRoot": true,
+            "seLinuxOptions": {
+                "level": "s0:c28,c2"
+            },
+            "seccompProfile": {
+                "type": "RuntimeDefault"
+            }
+        },
+        "serviceAccount": "maas-controller",
+        "serviceAccountName": "maas-controller",
+        "terminationGracePeriodSeconds": 10,
+        "tolerations": [
+            {
+                "effect": "NoExecute",
+                "key": "node.kubernetes.io/not-ready",
+                "operator": "Exists",
+                "tolerationSeconds": 300
+            },
+            {
+                "effect": "NoExecute",
+                "key": "node.kubernetes.io/unreachable",
+                "operator": "Exists",
+                "tolerationSeconds": 300
+            },
+            {
+                "effect": "NoSchedule",
+                "key": "node.kubernetes.io/memory-pressure",
+                "operator": "Exists"
+            }
+        ],
+        "volumes": [
+            {
+                "name": "kube-api-access-ct6qx",
+                "projected": {
+                    "defaultMode": 420,
+                    "sources": [
+                        {
+                            "serviceAccountToken": {
+                                "expirationSeconds": 3607,
+                                "path": "token"
+                            }
+                        },
+                        {
+                            "configMap": {
+                                "items": [
+                                    {
+                                        "key": "ca.crt",
+                                        "path": "ca.crt"
+                                    }
+                                ],
+                                "name": "kube-root-ca.crt"
+                            }
+                        },
+                        {
+                            "downwardAPI": {
+                                "items": [
+                                    {
+                                        "fieldRef": {
+                                            "apiVersion": "v1",
+                                            "fieldPath": "metadata.namespace"
+                                        },
+                                        "path": "namespace"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "configMap": {
+                                "items": [
+                                    {
+                                        "key": "service-ca.crt",
+                                        "path": "service-ca.crt"
+                                    }
+                                ],
+                                "name": "openshift-service-ca.crt"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "status": {
+        "conditions": [
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-30T22:15:25Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "PodReadyToStartContainers"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-30T22:15:20Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "Initialized"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-31T02:30:49Z",
+                "message": "containers with unready status: [manager]",
+                "observedGeneration": 1,
+                "reason": "ContainersNotReady",
+                "status": "False",
+                "type": "Ready"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-31T02:30:49Z",
+                "message": "containers with unready status: [manager]",
+                "observedGeneration": 1,
+                "reason": "ContainersNotReady",
+                "status": "False",
+                "type": "ContainersReady"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-30T22:15:20Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "PodScheduled"
+            }
+        ],
+        "containerStatuses": [
+            {
+                "allocatedResources": {
+                    "cpu": "10m",
+                    "memory": "64Mi"
+                },
+                "containerID": "cri-o://bd65d289922fcad551c92864aeb04b29183f893b442f4fae7e600e64ce514680",
+                "image": "registry.redhat.io/rhoai/odh-maas-controller-rhel9@sha256:745da3f2220415b37e099e0067fe73d6080c6bd16cc340d432666b606a232686",
+                "imageID": "registry.redhat.io/rhoai/odh-maas-controller-rhel9@sha256:745da3f2220415b37e099e0067fe73d6080c6bd16cc340d432666b606a232686",
+                "lastState": {
+                    "terminated": {
+                        "containerID": "cri-o://bd65d289922fcad551c92864aeb04b29183f893b442f4fae7e600e64ce514680",
+                        "exitCode": 137,
+                        "finishedAt": "2026-10-31T02:30:48Z",
+                        "reason": "OOMKilled",
+                        "startedAt": "2026-10-31T02:30:28Z"
+                    }
+                },
+                "name": "manager",
+                "ready": false,
+                "resources": {
+                    "limits": {
+                        "cpu": "500m",
+                        "memory": "512Mi"
+                    },
+                    "requests": {
+                        "cpu": "10m",
+                        "memory": "64Mi"
+                    }
+                },
+                "restartCount": 51,
+                "started": false,
+                "state": {
+                    "waiting": {
+                        "message": "back-off 5m0s restarting failed container=manager pod=maas-controller-5fcd89886f-2xkg8_redhat-ods-applications(9ab8ceeb-fae6-4760-ad93-74a3266899f6)",
+                        "reason": "CrashLoopBackOff"
+                    }
+                },
+                "user": {
+                    "linux": {
+                        "gid": 0,
+                        "supplementalGroups": [
+                            0,
+                            1000760000
+                        ],
+                        "uid": 1000760000
+                    }
+                },
+                "volumeMounts": [
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-ct6qx",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    }
+                ]
+            }
+        ],
+        "hostIP": "10.0.53.182",
+        "hostIPs": [
+            {
+                "ip": "10.0.53.182"
+            }
+        ],
+        "observedGeneration": 1,
+        "phase": "Running",
+        "podIP": "10.128.9.155",
+        "podIPs": [
+            {
+                "ip": "10.128.9.155"
+            }
+        ],
+        "qosClass": "Burstable",
+        "startTime": "2026-10-30T22:15:20Z"
+    }
+}

@@ -1,0 +1,951 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: semantic-phase5-native
+  namespace: semantic-navigation
+data:
+  audit_geometry.py: "#!/usr/bin/env python3\n\"\"\"Audit collision XY bounds in the\
+    \ installed hotel SDF, without modifying it.\"\"\"\nimport hashlib\nimport json\n\
+    import math\nfrom pathlib import Path\nimport xml.etree.ElementTree as ET\n\n\n\
+    def rotation(roll, pitch, yaw):\n    cr, sr, cp, sp, cy, sy = math.cos(roll),\
+    \ math.sin(roll), math.cos(pitch), math.sin(pitch), math.cos(yaw), math.sin(yaw)\n\
+    \    return [[cy*cp, cy*sp*sr-sy*cr, cy*sp*cr+sy*sr],\n            [sy*cp, sy*sp*sr+cy*cr,\
+    \ sy*sp*cr-cy*sr], [-sp, cp*sr, cp*cr]]\n\n\ndef pose(element):\n    p = element.find(\"\
+    pose\")\n    if p is not None and p.get(\"relative_to\"):\n        raise ValueError(\"\
+    explicit relative_to needs frame-graph resolution\")\n    values = [float(v) for\
+    \ v in (p.text if p is not None else \"0 0 0 0 0 0\").split()]\n    return values[:3],\
+    \ rotation(*values[3:])\n\n\ndef audit(world_path, urdf_path):\n    raw = Path(world_path).read_bytes()\n\
+    \    model = ET.fromstring(raw).find(\".//model[@name='robot_1']\")\n    if model\
+    \ is None:\n        raise ValueError(\"robot_1 missing\")\n    origin, basis =\
+    \ pose(model.find(\"link[@name='base_footprint']\"))\n    if origin != [0, 0,\
+    \ 0] or basis != rotation(0, 0, 0):\n        raise ValueError(\"audit requires\
+    \ base_footprint coincident with model frame\")\n    boxes = []\n    for link\
+    \ in model.findall(\"link\"):\n        if not link.findall(\"collision\"):\n \
+    \           continue\n        translation, orient = pose(link)\n        for collision\
+    \ in link.findall(\"collision\"):\n            offset, rot = pose(collision)\n\
+    \            center = [translation[i] + sum(orient[i][j]*offset[j] for j in range(3))\
+    \ for i in range(3)]\n            combined = [[sum(orient[i][k]*rot[k][j] for\
+    \ k in range(3)) for j in range(3)] for i in range(3)]\n            geometry =\
+    \ collision.find(\"geometry\")\n            if geometry.find(\"box\") is not None:\n\
+    \                half = [float(v)/2 for v in geometry.findtext(\"box/size\").split()]\n\
+    \                extent = [sum(abs(combined[i][j])*half[j] for j in range(3))\
+    \ for i in range(3)]\n            elif geometry.find(\"cylinder\") is not None:\n\
+    \                radius, half_length = float(geometry.findtext(\"cylinder/radius\"\
+    )), float(geometry.findtext(\"cylinder/length\"))/2\n                extent =\
+    \ [radius*math.sqrt(max(0, 1-combined[i][2]**2)) + half_length*abs(combined[i][2])\
+    \ for i in range(3)]\n            else:\n                raise ValueError(\"unsupported\
+    \ collision geometry; manual review required\")\n            boxes.append({\"\
+    link\": link.get(\"name\"), \"collision\": collision.get(\"name\"),\n        \
+    \                  \"min\": [center[i]-extent[i] for i in range(3)],\n       \
+    \                   \"max\": [center[i]+extent[i] for i in range(3)]})\n    bounds\
+    \ = {\"min\": [min(b[\"min\"][i] for b in boxes) for i in range(3)],\n       \
+    \       \"max\": [max(b[\"max\"][i] for b in boxes) for i in range(3)]}\n    corner_radius\
+    \ = max(math.hypot(x, y) for x in (bounds[\"min\"][0], bounds[\"max\"][0])\n \
+    \                       for y in (bounds[\"min\"][1], bounds[\"max\"][1]))\n \
+    \   urdf_raw = Path(urdf_path).read_bytes()\n    urdf = ET.fromstring(urdf_raw)\n\
+    \    base_joint = next(j for j in urdf.findall(\"joint\") if j.find(\"child\"\
+    ).get(\"link\") == \"base_link\")\n    return {\"world_sha256\": hashlib.sha256(raw).hexdigest(),\n\
+    \            \"robot_sdf\": ET.tostring(model, encoding=\"unicode\"), \"collisions\"\
+    : boxes,\n            \"xy_bounds\": {k: v[:2] for k, v in bounds.items()},\n\
+    \            \"bounding_rectangle_radius_m\": corner_radius, \"canonical_radius_m\"\
+    : 0.22,\n            \"canonical_radius_covers_rectangle\": 0.22 >= corner_radius,\n\
+    \            \"urdf_sha256\": hashlib.sha256(urdf_raw).hexdigest(),\n        \
+    \    \"urdf_base_joint_xyz\": base_joint.find(\"origin\").get(\"xyz\"),\n    \
+    \        \"sdf_base_link_pose\": model.find(\"link[@name='base_link']\").findtext(\"\
+    pose\", \"0 0 0 0 0 0\"),\n            \"diff_drive_plugin\": ET.tostring(next(p\
+    \ for p in model.findall(\"plugin\") if \"DiffDrive\" in p.get(\"name\", \"\"\
+    )), encoding=\"unicode\"),\n            \"qualification\": \"static SDF audit\
+    \ only; moving TF and physical stop tests still required\"}\n\n\nif __name__ ==\
+    \ \"__main__\":\n    print(json.dumps(audit(\"/opt/ros2-demo/hotel-assets/hotel.world\"\
+    , \"/opt/ros2-demo/robot/turtlebot3_waffle.urdf\"), sort_keys=True))\n"
+  frame_bridge.py: "#!/usr/bin/env python3\n\"\"\"Phase 5 sensor-only bridge: preserve\
+    \ stamps, one odom TF authority, no map TF.\n\nPublishes neither commands nor\
+    \ synthetic fresh poses. Clock rollback latches\nuntil process restart (the coordinator\
+    \ must stop and clear consumers first).\n\"\"\"\nimport copy\nimport json\nimport\
+    \ math\nimport time\n\nimport rclpy\nfrom rclpy.clock import Clock, ClockType\n\
+    from rclpy.node import Node\nfrom rclpy.qos import qos_profile_sensor_data\nfrom\
+    \ geometry_msgs.msg import TransformStamped\nfrom nav_msgs.msg import Odometry\n\
+    from rosgraph_msgs.msg import Clock as ClockMessage\nfrom sensor_msgs.msg import\
+    \ LaserScan\nfrom std_msgs.msg import String\nfrom tf2_ros import TransformBroadcaster\n\
+    \n\ndef stamp_ns(stamp):\n    return stamp.sec * 1_000_000_000 + stamp.nanosec\n\
+    \n\nclass FrameBridge(Node):\n    def __init__(self):\n        super().__init__(\"\
+    phase5_frame_bridge\")\n        if not self.has_parameter(\"use_sim_time\"):\n\
+    \            self.declare_parameter(\"use_sim_time\", True)\n        else:\n \
+    \           self.set_parameters([rclpy.parameter.Parameter(\"use_sim_time\", rclpy.Parameter.Type.BOOL,\
+    \ True)])\n        self.clock_ns = None\n        self.clock_progress = None\n\
+    \        self.last = {\"odom\": -1, \"scan\": -1}\n        self.receipts = {\"\
+    odom\": None, \"scan\": None}\n        self.deadlines = {\"odom\": None, \"scan\"\
+    : None}\n        self.fault = None\n        self.tf = TransformBroadcaster(self)\n\
+    \        self.scan_pub = self.create_publisher(LaserScan, \"/robot_1/scan_fixed\"\
+    , qos_profile_sensor_data)\n        self.status = self.create_publisher(String,\
+    \ \"/robot_1/phase5/frames\", 10)\n        self.create_subscription(ClockMessage,\
+    \ \"/clock\", self.on_clock, qos_profile_sensor_data)\n        self.create_subscription(Odometry,\
+    \ \"/robot_1/odom\", self.on_odom, qos_profile_sensor_data)\n        self.create_subscription(LaserScan,\
+    \ \"/robot_1/scan\", self.on_scan, qos_profile_sensor_data)\n        self.create_timer(.05,\
+    \ self.report, clock=Clock(clock_type=ClockType.STEADY_TIME))\n\n    def on_clock(self,\
+    \ message):\n        value = stamp_ns(message.clock)\n        if self.clock_ns\
+    \ is not None and value < self.clock_ns:\n            self.fault = \"simulation_clock_rollback_restart_required\"\
+    \n        if self.clock_ns is None or value > self.clock_ns:\n            self.clock_progress\
+    \ = time.monotonic()\n        self.clock_ns = value\n\n    def eligible(self,\
+    \ kind, header):\n        value = stamp_ns(header.stamp)\n        if (self.fault\
+    \ or self.clock_ns is None or self.clock_progress is None\n                or\
+    \ time.monotonic()-self.clock_progress >= .5\n                or not 0 <= self.clock_ns-value\
+    \ < 500_000_000 or value <= self.last[kind]):\n            return False\n    \
+    \    self.last[kind] = value\n        self.receipts[kind] = time.monotonic()\n\
+    \        self.deadlines[kind] = self.receipts[kind] + .5 - (self.clock_ns-value)/1e9\n\
+    \        return True\n\n    def on_odom(self, message):\n        if message.header.frame_id\
+    \ != \"odom\" or message.child_frame_id != \"base_footprint\":\n            self.fault\
+    \ = \"unexpected_odometry_frames\"\n            return\n        p, q = message.pose.pose.position,\
+    \ message.pose.pose.orientation\n        if (not all(math.isfinite(x) for x in\
+    \ (p.x,p.y,p.z,q.x,q.y,q.z,q.w))\n                or abs(q.x*q.x+q.y*q.y+q.z*q.z+q.w*q.w-1)\
+    \ > .01):\n            self.fault = \"invalid_odometry_pose\"\n            return\n\
+    \        if not self.eligible(\"odom\", message.header):\n            return\n\
+    \        transform = TransformStamped()\n        transform.header = copy.deepcopy(message.header)\n\
+    \        transform.child_frame_id = message.child_frame_id\n        transform.transform.translation.x\
+    \ = p.x\n        transform.transform.translation.y = p.y\n        transform.transform.translation.z\
+    \ = p.z\n        transform.transform.rotation = copy.deepcopy(q)\n        self.tf.sendTransform(transform)\n\
+    \n    def on_scan(self, message):\n        if message.header.frame_id not in (\"\
+    lidar_frame\", \"robot_1/base_scan/lidar\"):\n            self.fault = \"unexpected_lidar_frame\"\
+    \n            return\n        if not self.eligible(\"scan\", message.header):\n\
+    \            return\n        result = copy.deepcopy(message)\n        result.header.frame_id\
+    \ = \"lidar_frame\"\n        self.scan_pub.publish(result)\n\n    def report(self):\n\
+    \        now = time.monotonic()\n        ages = {key: None if value is None else\
+    \ (now-value)*1000 for key,value in self.receipts.items()}\n        reason = self.fault\n\
+    \        if reason is None:\n            if self.clock_ns is None or self.clock_progress\
+    \ is None:\n                reason = \"clock_missing\"\n            elif now-self.clock_progress\
+    \ >= .5:\n                reason = \"clock_stale\"\n            else:\n      \
+    \          for kind, deadline in self.deadlines.items():\n                   \
+    \ if deadline is None:\n                        reason = kind+\"_missing\"\n \
+    \                       break\n                    if now >= deadline or not 0\
+    \ <= self.clock_ns-self.last[kind] < 500_000_000:\n                        reason\
+    \ = kind+\"_stale\"\n                        break\n        self.status.publish(String(data=json.dumps({\"\
+    ready\": reason is None, \"reason\": reason,\n            \"receipt_ages_ms\"\
+    : ages, \"source_stamp_ns\": self.last, \"wall_ns\": time.time_ns()})))\n\n\n\
+    if __name__ == \"__main__\":\n    rclpy.init()\n    node = FrameBridge()\n   \
+    \ try:\n        rclpy.spin(node)\n    finally:\n        node.destroy_node()\n\
+    \        rclpy.shutdown()\n"
+  prepare_assets.py: "\"\"\"Prepare private Phase 5 assets; never edit canonical source\
+    \ assets in place.\"\"\"\nimport copy\nimport hashlib\nimport json\nfrom pathlib\
+    \ import Path\nimport xml.etree.ElementTree as ET\n\n\ndef values(text):\n   \
+    \ return [float(v) for v in text.split()]\n\n\ndef prepare(world_text, urdf_text):\n\
+    \    world, urdf = ET.fromstring(world_text), ET.fromstring(urdf_text)\n    model\
+    \ = world.find(\".//model[@name='robot_1']\")\n    if model is None:\n       \
+    \ raise ValueError(\"robot_1 absent\")\n    for name in (\"base_link\", \"base_footprint\"\
+    ):\n        if values(model.find(f\"link[@name='{name}']\").findtext(\"pose\"\
+    , \"0 0 0 0 0 0\")) != [0]*6:\n            raise ValueError(\"unqualified base\
+    \ pose\")\n    lidar = model.find(\"link[@name='base_scan']\")\n    if values(lidar.findtext(\"\
+    pose\")) != [-.032, 0, .172, 0, 0, 0]:\n        raise ValueError(\"unqualified\
+    \ lidar pose\")\n    sensor = lidar.find(\"sensor[@name='lidar']\")\n    if values(sensor.findtext(\"\
+    pose\")) != [0, 0, .01, 0, 0, 0]:\n        raise ValueError(\"unqualified lidar\
+    \ sensor offset\")\n    for child, expected, replacement in ((\"base_link\", [0,\
+    \ 0, .10], \"0 0 0\"),\n                                         (\"base_scan\"\
+    , [-.064, 0, .172], \"-0.032 0 0.172\")):\n        joint = next(j for j in urdf.findall(\"\
+    joint\") if j.find(\"child\").get(\"link\") == child)\n        origin = joint.find(\"\
+    origin\")\n        if values(origin.get(\"xyz\")) != expected:\n            raise\
+    \ ValueError(\"unexpected input URDF; refusing double/unknown patch\")\n     \
+    \   origin.set(\"xyz\", replacement)\n    if urdf.find(\"link[@name='lidar_frame']\"\
+    ) is not None:\n        raise ValueError(\"lidar_frame already exists\")\n   \
+    \ ET.SubElement(urdf, \"link\", {\"name\": \"lidar_frame\"})\n    joint = ET.SubElement(urdf,\
+    \ \"joint\", {\"name\": \"lidar_sensor_joint\", \"type\": \"fixed\"})\n    ET.SubElement(joint,\
+    \ \"parent\", {\"link\": \"base_scan\"})\n    ET.SubElement(joint, \"child\",\
+    \ {\"link\": \"lidar_frame\"})\n    ET.SubElement(joint, \"origin\", {\"xyz\"\
+    : \"0 0 0.01\", \"rpy\": \"0 0 0\"})\n    frame = sensor.find(\"gz_frame_id\"\
+    )\n    if frame is None:\n        frame = ET.SubElement(sensor, \"gz_frame_id\"\
+    )\n    frame.text = \"lidar_frame\"\n    drive = next(p for p in model.findall(\"\
+    plugin\") if \"DiffDrive\" in p.get(\"name\", \"\"))\n    for key, expected in\
+    \ ((\"wheel_radius\", \".033\"), (\"wheel_separation\", \".287\")):\n        if\
+    \ float(drive.findtext(key, \"nan\")) != float(expected):\n            raise ValueError(\"\
+    unqualified wheel geometry\")\n    if drive.findtext(\"topic\") != \"/robot_1/cmd_vel\"\
+    :\n        raise ValueError(\"unexpected/double-patched drive topic\")\n    drive.find(\"\
+    topic\").text = \"/phase5/internal_drive\"\n    plugin = ET.SubElement(model,\
+    \ \"plugin\", {\"filename\": \"libphase5_drive_watchdog.so\", \"name\": \"phase5::DriveWatchdog\"\
+    })\n    ET.SubElement(plugin, \"output_topic\").text = \"/phase5/internal_drive\"\
+    \n    ET.SubElement(plugin, \"prefix\").text = \"/phase5/drive\"\n    return ET.tostring(world,\
+    \ encoding=\"unicode\"), ET.tostring(urdf, encoding=\"unicode\")\n\n\ndef micro_world(patched_world):\n\
+    \    \"\"\"Same actual robot physics/drive, no hotel, camera or navigation stack.\"\
+    \"\"\n    model = copy.deepcopy(ET.fromstring(patched_world).find(\".//model[@name='robot_1']\"\
+    ))\n    model.find(\"pose\").text = \"0 0 0.1 0 0 0\"\n    for link in model.findall(\"\
+    link\"):\n        for sensor in link.findall(\"sensor\"):\n            link.remove(sensor)\n\
+    \    root = ET.fromstring('''<sdf version=\"1.9\"><world name=\"phase5_watchdog_fixture\"\
+    >\n      <physics name=\"physics\" type=\"ignored\"><max_step_size>0.001</max_step_size><real_time_factor>1</real_time_factor></physics>\n\
+    \      <gravity>0 0 -9.8</gravity>\n      <plugin filename=\"gz-sim-physics-system\"\
+    \ name=\"gz::sim::systems::Physics\"/>\n      <plugin filename=\"gz-sim-user-commands-system\"\
+    \ name=\"gz::sim::systems::UserCommands\"/>\n      <model name=\"ground\"><static>true</static><link\
+    \ name=\"ground\">\n        <collision name=\"ground\"><geometry><plane><normal>0\
+    \ 0 1</normal><size>20 20</size></plane></geometry></collision>\n      </link></model></world></sdf>''')\n\
+    \    root.find(\"world\").append(model)\n    return ET.tostring(root, encoding=\"\
+    unicode\")\n\n\ndef write_assets(directory):\n    directory = Path(directory)\n\
+    \    directory.mkdir(parents=True, exist_ok=False)\n    source_world = Path(\"\
+    /opt/ros2-demo/hotel-assets/hotel.world\").read_text()\n    source_urdf = Path(\"\
+    /opt/ros2-demo/robot/turtlebot3_waffle.urdf\").read_text()\n    world, urdf =\
+    \ prepare(source_world, source_urdf)\n    (directory / \"hotel.world\").write_text(world)\n\
+    \    (directory / \"robot.urdf\").write_text(urdf)\n    (directory / \"watchdog.world\"\
+    ).write_text(micro_world(world))\n    # Retain the actual installed map pair,\
+    \ not the different repository map.\n    import yaml\n    import numpy as np\n\
+    \    from PIL import Image\n    map_path = Path(\"/opt/ros2-demo/maps/hotel_L1.yaml\"\
+    )\n    map_config = yaml.safe_load(map_path.read_text())\n    image_path = map_path.parent\
+    \ / map_config[\"image\"]\n    if image_path.name != \"hotel_L1.pgm\" or map_config.get(\"\
+    negate\", 0) != 0:\n        raise ValueError(\"unqualified map encoding\")\n \
+    \   raster = np.asarray(Image.open(image_path).convert(\"L\"))\n    origin, resolution\
+    \ = map_config[\"origin\"], map_config[\"resolution\"]\n    if origin[2] != 0:\n\
+    \        raise ValueError(\"rotated map needs separate audit\")\n    free = (255-raster.astype(float))/255\
+    \ < map_config[\"free_thresh\"]\n    initial = values(ET.fromstring(world).find(\"\
+    .//model[@name='robot_1']/pose\").text)\n    def hull_free(x, y):\n        # Conservative\
+    \ grid AABB for the qualified yaw-zero padded hull.\n        c0, c1 = [int(np.floor((x+offset-origin[0])/resolution))\
+    \ for offset in (-.182,.118)]\n        r0, r1 = [int(np.floor((y+offset-origin[1])/resolution))\
+    \ for offset in (-.165,.165)]\n        if not (0<=c0<=c1<raster.shape[1] and 0<=r0<=r1<raster.shape[0]):\n\
+    \            return False\n        return bool(np.all(free[raster.shape[0]-1-r1:raster.shape[0]-r0,\
+    \ c0:c1+1]))\n    map_audit = {\"resolution\": resolution, \"origin\": origin,\
+    \ \"dimensions\": list(raster.shape[::-1]),\n                 \"initial_model_pose\"\
+    : initial, \"initial_padded_hull_free\": hull_free(*initial[:2]),\n          \
+    \       \"candidate_straight_segments\": [], \"qualification\": \"static map-only,\
+    \ not localization or planning\"}\n    for distance in (1.0, 3.0):\n        samples\
+    \ = [(initial[0]+float(d),initial[1]) for d in np.arange(0,distance+.001,.025)]\n\
+    \        map_audit[\"candidate_straight_segments\"].append({\"goal\": [initial[0]+distance,initial[1],0],\n\
+    \            \"length_m\": distance, \"padded_hull_free_all_samples\": all(hull_free(x,y)\
+    \ for x,y in samples)})\n    (directory / \"hotel_L1.yaml\").write_bytes(map_path.read_bytes())\n\
+    \    (directory / \"hotel_L1.pgm\").write_bytes(image_path.read_bytes())\n   \
+    \ (directory / \"map-audit.json\").write_text(json.dumps(map_audit,indent=2))\n\
+    \    report = {\"source_world_sha256\": hashlib.sha256(source_world.encode()).hexdigest(),\n\
+    \              \"source_urdf_sha256\": hashlib.sha256(source_urdf.encode()).hexdigest(),\n\
+    \              \"outputs\": {p.name: hashlib.sha256(p.read_bytes()).hexdigest()\
+    \ for p in directory.iterdir()}}\n    (directory / \"assets.json\").write_text(json.dumps(report,\
+    \ indent=2))\n    return report\n"
+  run_native_suite.py: "\"\"\"Pod entrypoint, retaining test artifacts until the orchestrator\
+    \ retrieves them.\"\"\"\nimport json\nfrom pathlib import Path\nimport subprocess\n\
+    import sys\nimport time\n\nroot = Path(__file__).resolve().parent\nresults = []\n\
+    for command in ([sys.executable, \"-m\", \"unittest\", \"discover\", \"-s\", str(root),\
+    \ \"-p\", \"test_*.py\", \"-v\"],\n                [sys.executable, str(root /\
+    \ \"verify_frame_bridge.py\")],\n                [\"/opt/semantic-safety/build/test_native_lease\"\
+    ],\n                [sys.executable, str(root / \"verify_native_watchdog.py\"\
+    )]):\n    result = subprocess.run(command, timeout=100)\n    results.append({\"\
+    command\": command, \"returncode\": result.returncode})\n    if result.returncode:\n\
+    \        break\nPath(\"/tmp/phase5-suite.json\").write_text(json.dumps(results,\
+    \ indent=2))\nprint(json.dumps({\"event\": \"native_suite_finished\", \"results\"\
+    : results}), flush=True)\ntime.sleep(200)  # pod stays available for evidence\
+    \ retrieval; activeDeadline=300s\n"
+  safety_core.py: "\"\"\"Phase 5 candidate: ROS-independent, fail-latched command\
+    \ admission.\n\nThis is not a safety-certified controller or an actuator watchdog.\
+    \ Adapters must\nvalidate/bind payloads before submitting Evidence, cancel tasks\
+    \ on a trip, and\nindependently establish stationary + idle before explicit rearm.\
+    \ A final receiver\nmust run next to the actuator; its own death still requires\
+    \ an actuator-side\nwatchdog. No functions in this module publish commands or\
+    \ automatically rearm.\nAll times are integer nanoseconds; monotonic clocks never\
+    \ cross machines.\n\"\"\"\nfrom dataclasses import dataclass\nimport math\nimport\
+    \ uuid\n\nMS = 1_000_000\nSTALE_NS = 500 * MS\nCOMMAND_NS = 100 * MS\nLEASE_NS\
+    \ = 80 * MS\nUNCERTAINTY_NS = 2 * MS\nTICK_NS = 20 * MS\nZERO = (0.0, 0.0, 0.0)\
+    \  # x, y, yaw; diff-drive only\n\n\n@dataclass(frozen=True)\nclass Now:\n   \
+    \ steady: int\n    wall: int\n    ros: int\n\n\n@dataclass(frozen=True)\nclass\
+    \ Evidence:\n    epoch: str\n    sequence: int\n    wall: int\n    ros: int\n\n\
+    \n@dataclass(frozen=True)\nclass Lease:\n    evidence: Evidence\n    deadline:\
+    \ int\n\n\n@dataclass(frozen=True)\nclass Command:\n    session: str\n    sequence:\
+    \ int\n    issued_wall: int\n    expires_wall: int\n    velocity: tuple[float,\
+    \ float, float]\n\n\ndef integer(value):\n    return type(value) is int and value\
+    \ >= 0\n\n\ndef velocity_ok(value):\n    return (isinstance(value, (tuple, list))\
+    \ and len(value) == 3\n            and all(type(v) in (int, float) and math.isfinite(v)\
+    \ for v in value)\n            and -0.10 <= value[0] <= 0.15 and value[1] == 0.0\n\
+    \            and abs(value[2]) <= 0.5)\n\n\nclass SafetyGate:\n    \"\"\"Pure\
+    \ state machine. Call tick on a wall/steady timer, never a ROS timer.\"\"\"\n\n\
+    \    def __init__(self, *, require_semantics=True):\n        self.required = (\"\
+    clock\", \"scan\", \"odom\", \"tf\") + (\n            (\"camera\", \"semantic\"\
+    , \"inference_heartbeat\") if require_semantics else ())\n        self.leases\
+    \ = {}\n        self.last_time = None\n        self.barrier_wall = -1\n      \
+    \  self.armed = False\n        self.reason = \"startup_disarmed\"\n        self.trigger_steady\
+    \ = None\n        self.session = None\n        self.sequence = -1\n        self.command_sequence\
+    \ = -1\n        self.command_deadline = None\n        self.command_wall = -1\n\
+    \        self.velocity = ZERO\n\n    def trip(self, reason, now):\n        # Retain\
+    \ the first trigger/reason; subsequent late successes or faults\n        # must\
+    \ not move its stopping-latency origin or silently clear it.\n        if self.armed\
+    \ or self.trigger_steady is None:\n            self.reason = reason\n        \
+    \    self.trigger_steady = now.steady\n        # A second fault during recovery\
+    \ invalidates partially refreshed input\n        # too, without rewriting the\
+    \ original stop reason/latency origin.\n        self.barrier_wall = now.wall\n\
+    \        self.leases.clear()\n        self.armed = False\n        self.velocity\
+    \ = ZERO\n        self.command_deadline = None\n        self.session = None\n\n\
+    \    def _advance(self, now):\n        if not all(integer(v) for v in (now.steady,\
+    \ now.wall, now.ros)):\n            raise ValueError(\"invalid local clock\")\n\
+    \        previous, self.last_time = self.last_time, now\n        if previous is\
+    \ not None:\n            if now.steady < previous.steady or now.ros < previous.ros:\n\
+    \                self.trip(\"clock_rollback\", now)\n                self.leases.clear()\n\
+    \                self.barrier_wall = now.wall\n                return False\n\
+    \            if abs((now.wall - previous.wall) - (now.steady - previous.steady))\
+    \ > 20 * MS:\n                self.trip(\"wall_clock_discontinuity\", now)\n \
+    \               self.leases.clear()\n                self.barrier_wall = now.wall\n\
+    \                return False\n        if self.armed:\n            # Check BEFORE\
+    \ accepting callbacks; late refreshed inputs cannot\n            # conceal a missed\
+    \ deadline if the event loop was delayed.\n            failures = []\n       \
+    \     for key in self.required:\n                item = self.leases.get(key)\n\
+    \                if item is None:\n                    failures.append((now.steady,\
+    \ key + \"_missing\"))\n                elif self._expired(item, now):\n     \
+    \               failures.append((min(now.steady, item.deadline), key + \"_stale\"\
+    ))\n            if now.steady >= self.command_deadline:\n                failures.append((self.command_deadline,\
+    \ \"command_expired\"))\n            if failures:\n                trigger, reason\
+    \ = min(failures)\n                self.trip(reason, now)\n                self.trigger_steady\
+    \ = trigger\n        return True\n\n    @staticmethod\n    def _expired(item,\
+    \ now):\n        return (now.steady >= item.deadline\n                or now.wall\
+    \ - item.evidence.wall + UNCERTAINTY_NS >= STALE_NS\n                or not 0\
+    \ <= now.ros - item.evidence.ros < STALE_NS)\n\n    def observe(self, key, evidence,\
+    \ now):\n        if key not in self.required:\n            raise ValueError(\"\
+    unconfigured safety input\")\n        if not self._advance(now):\n           \
+    \ return False\n        if (not isinstance(evidence.epoch, str) or not 1 <= len(evidence.epoch)\
+    \ <= 128\n                or not all(integer(v) for v in (evidence.sequence, evidence.wall,\
+    \ evidence.ros))):\n            self.trip(key + \"_invalid\", now)\n         \
+    \   return False\n        age = now.wall - evidence.wall\n        if (evidence.wall\
+    \ - UNCERTAINTY_NS <= self.barrier_wall or age < -UNCERTAINTY_NS\n           \
+    \     or age + UNCERTAINTY_NS >= STALE_NS\n                or not 0 <= now.ros\
+    \ - evidence.ros < STALE_NS):\n            # While stopped, drain pre-barrier/late\
+    \ replies without advancing\n            # the barrier: otherwise ordinary inference\
+    \ latency can prevent\n            # recovery forever. Still fail closed if motion\
+    \ was authorized.\n            if self.armed:\n                self.trip(key +\
+    \ \"_invalid_age\", now)\n            return False\n        prior = self.leases.get(key)\n\
+    \        if prior:\n            if evidence.epoch != prior.evidence.epoch:\n \
+    \               self.trip(key + \"_epoch_changed\", now)\n                return\
+    \ False\n            if (evidence.sequence <= prior.evidence.sequence\n      \
+    \              or evidence.wall <= prior.evidence.wall\n                    or\
+    \ evidence.ros < prior.evidence.ros):\n                # Duplicate reception cannot\
+    \ renew a capture lease.\n                return False\n        remaining = STALE_NS\
+    \ - max(0, age + UNCERTAINTY_NS)\n        self.leases[key] = Lease(evidence, now.steady\
+    \ + remaining)\n        return True\n\n    def arm(self, now, *, stationary, tasks_idle,\
+    \ neutral_command):\n        \"\"\"Trusted coordinator must independently verify\
+    \ all three conditions.\n\n        Disallow repeated arm while moving; a fresh\
+    \ session is required for\n        every downstream command and independent receiver\
+    \ rearm.\n        \"\"\"\n        if not self._advance(now) or self.armed:\n \
+    \           return None\n        if not (stationary is True and tasks_idle is\
+    \ True and neutral_command is True):\n            return None\n        if any(k\
+    \ not in self.leases or self._expired(self.leases[k], now) for k in self.required):\n\
+    \            return None\n        self.session = str(uuid.uuid4())\n        self.armed,\
+    \ self.reason, self.trigger_steady = True, \"armed\", None\n        self.sequence\
+    \ = self.command_sequence = -1\n        self.command_deadline = now.steady + COMMAND_NS\n\
+    \        self.command_wall = now.wall\n        self.velocity = ZERO\n        return\
+    \ self.session\n\n    def command(self, session, sequence, issued_wall, velocity,\
+    \ now):\n        self._advance(now)\n        if not self.armed:\n            return\
+    \ False\n        if (session != self.session or not integer(sequence) or sequence\
+    \ <= self.command_sequence\n                or not integer(issued_wall) or issued_wall\
+    \ < self.command_wall\n                or not -UNCERTAINTY_NS <= now.wall - issued_wall\
+    \ < COMMAND_NS - UNCERTAINTY_NS\n                or not velocity_ok(velocity)):\n\
+    \            self.trip(\"command_invalid\", now)\n            return False\n \
+    \       self.command_sequence = sequence\n        self.command_wall = issued_wall\n\
+    \        self.command_deadline = now.steady + COMMAND_NS - max(0, now.wall - issued_wall\
+    \ + UNCERTAINTY_NS)\n        self.velocity = tuple(velocity)\n        return True\n\
+    \n    def tick(self, now):\n        self._advance(now)\n        return self.velocity\
+    \ if self.armed else ZERO\n\n    def packet(self, now):\n        \"\"\"None means\
+    \ revoke/zero, never a live lease with an old session.\"\"\"\n        self.tick(now)\n\
+    \        if not self.armed:\n            return None\n        self.sequence +=\
+    \ 1\n        # Do not extend a command/input's authority by periodically republishing.\n\
+    \        remaining = min(LEASE_NS, self.command_deadline - now.steady,\n     \
+    \                   *(v.deadline - now.steady for v in self.leases.values()))\n\
+    \        return Command(self.session, self.sequence, now.wall, now.wall + remaining,\
+    \ self.velocity)\n\n\nclass FinalReceiver:\n    \"\"\"Receiver-side, independently\
+    \ fail-latched short lease (no ROS/Gazebo I/O).\n\n    Must be rearmed explicitly\
+    \ together with SafetyGate; never adopt a session\n    from a command packet.\
+    \ Requires a local 20 ms steady timer and synchronized\n    wall clocks with <=2\
+    \ ms allowance, same as the existing capture contract.\n    \"\"\"\n\n    def\
+    \ __init__(self):\n        self.session = None\n        self.sequence = -1\n \
+    \       self.deadline = None\n        self.expires_wall = None\n        self.reason\
+    \ = \"startup_disarmed\"\n        self.velocity = ZERO\n        self.last_time\
+    \ = None\n        self.used_sessions = set()\n\n    def stop(self, reason):\n\
+    \        self.session = None\n        self.velocity = ZERO\n        self.reason\
+    \ = reason\n        self.deadline = self.expires_wall = None\n\n    def arm(self,\
+    \ session, now, *, stationary):\n        self.tick(now)\n        if (self.session\
+    \ is not None or stationary is not True\n                or not isinstance(session,\
+    \ str) or len(session) != 36\n                or session in self.used_sessions\
+    \ or len(self.used_sessions) >= 1024):\n            return False\n        self.used_sessions.add(session)\n\
+    \        self.session, self.sequence = session, -1\n        self.reason = \"armed_waiting_first_packet\"\
+    \n        self.deadline = now.steady + LEASE_NS\n        self.expires_wall = now.wall\
+    \ + LEASE_NS\n        return True\n\n    def tick(self, now):\n        if not\
+    \ all(integer(v) for v in (now.steady, now.wall, now.ros)):\n            raise\
+    \ ValueError(\"invalid local clock\")\n        prior, self.last_time = self.last_time,\
+    \ now\n        if prior and (now.steady < prior.steady or now.ros < prior.ros\n\
+    \                      or abs(now.wall-prior.wall-now.steady+prior.steady) > 20\
+    \ * MS):\n            self.stop(\"clock_discontinuity\")\n        if self.session\
+    \ is not None and (now.steady >= self.deadline\n                             \
+    \            or now.wall >= self.expires_wall):\n            self.stop(\"lease_expired\"\
+    )\n        return self.velocity if self.session is not None else ZERO\n\n    def\
+    \ receive(self, packet, now):\n        self.tick(now)\n        if packet is None:\n\
+    \            self.stop(\"supervisor_revoked\")\n            return False\n   \
+    \     if self.session is None:\n            return False\n        if (packet.session\
+    \ != self.session or not integer(packet.sequence)\n                or packet.sequence\
+    \ <= self.sequence or not velocity_ok(packet.velocity)\n                or not\
+    \ all(integer(v) for v in (packet.issued_wall, packet.expires_wall))\n       \
+    \         or not 0 < packet.expires_wall-packet.issued_wall <= LEASE_NS\n    \
+    \            or packet.issued_wall > now.wall + UNCERTAINTY_NS\n             \
+    \   or packet.expires_wall <= now.wall + UNCERTAINTY_NS):\n            self.stop(\"\
+    packet_invalid\")\n            return False\n        self.sequence = packet.sequence\n\
+    \        self.expires_wall = packet.expires_wall - UNCERTAINTY_NS\n        self.deadline\
+    \ = now.steady + self.expires_wall - now.wall\n        self.velocity = tuple(packet.velocity)\n\
+    \        self.reason = \"armed\"\n        return True\n"
+  test_prepare_assets.py: "import unittest\nimport xml.etree.ElementTree as ET\nfrom\
+    \ prepare_assets import prepare, micro_world\n\nWORLD = '''<sdf><world name=\"\
+    w\"><model name=\"robot_1\"><pose>1 2 .1 0 0 0</pose>\n<link name=\"base_footprint\"\
+    /><link name=\"base_link\"/>\n<link name=\"base_scan\"><pose>-.032 0 .172 0 0\
+    \ 0</pose><sensor name=\"lidar\"><pose>0 0 .01 0 0 0</pose></sensor></link>\n\
+    <plugin name=\"gz::sim::systems::DiffDrive\"><topic>/robot_1/cmd_vel</topic><wheel_radius>.033</wheel_radius><wheel_separation>.287</wheel_separation></plugin></model></world></sdf>'''\n\
+    URDF = '''<robot><link name=\"base_link\"/>\n<joint name=\"base_joint\"><parent\
+    \ link=\"base_footprint\"/><child link=\"base_link\"/><origin xyz=\"0 0 .10\"\
+    /></joint>\n<joint name=\"scan_joint\"><parent link=\"base_link\"/><child link=\"\
+    base_scan\"/><origin xyz=\"-.064 0 .172\"/></joint></robot>'''\n\n\nclass AssetsTests(unittest.TestCase):\n\
+    \    def test_extrinsics(self):\n        _, xml = prepare(WORLD, URDF)\n     \
+    \   robot = ET.fromstring(xml)\n        self.assertEqual(robot.find(\"joint[@name='base_joint']/origin\"\
+    ).get(\"xyz\"), \"0 0 0\")\n        self.assertEqual(robot.find(\"joint[@name='scan_joint']/origin\"\
+    ).get(\"xyz\"), \"-0.032 0 0.172\")\n        self.assertEqual(robot.find(\"joint[@name='lidar_sensor_joint']/origin\"\
+    ).get(\"xyz\"), \"0 0 0.01\")\n\n    def test_only_private_drive_topic_and_one_watchdog(self):\n\
+    \        xml, _ = prepare(WORLD, URDF)\n        model = ET.fromstring(xml).find(\"\
+    .//model\")\n        self.assertEqual(model.find(\"plugin/topic\").text, \"/phase5/internal_drive\"\
+    )\n        self.assertEqual(len(model.findall(\"plugin[@name='phase5::DriveWatchdog']\"\
+    )), 1)\n        self.assertNotIn(\"/robot_1/cmd_vel\", xml)\n\n    def test_unknown_geometry_and_double_patch_rejected(self):\n\
+    \        with self.assertRaises(ValueError): prepare(WORLD.replace(\"-.032\",\
+    \ \"-.099\"), URDF)\n        world, urdf = prepare(WORLD, URDF)\n        with\
+    \ self.assertRaises(ValueError): prepare(world, urdf)\n\n    def test_micro_world_preserves_robot_but_removes_sensors(self):\n\
+    \        world, _ = prepare(WORLD, URDF)\n        micro = ET.fromstring(micro_world(world))\n\
+    \        self.assertFalse(micro.findall(\".//sensor\"))\n        self.assertEqual(micro.find(\"\
+    .//model[@name='robot_1']/pose\").text, \"0 0 0.1 0 0 0\")\n        self.assertEqual(micro.find(\"\
+    world\").get(\"name\"), \"phase5_watchdog_fixture\")\n\n\nif __name__ == \"__main__\"\
+    :\n    unittest.main()\n"
+  test_safety_core.py: "import dataclasses\nimport unittest\n\nfrom safety_core import\
+    \ (COMMAND_NS, LEASE_NS, MS, TICK_NS, ZERO, Command,\n                       \
+    \  Evidence, FinalReceiver, Now, SafetyGate)\n\n\ndef instant(ms=0, *, ros_ms=None,\
+    \ wall_ms=None):\n    return Now(10_000 * MS + round(ms * MS),\n             \
+    \  100_000 * MS + round((ms if wall_ms is None else wall_ms) * MS),\n        \
+    \       20_000 * MS + round((ms if ros_ms is None else ros_ms) * MS))\n\n\ndef\
+    \ refresh(gate, ms, *, exclude=(), epoch=\"stream-1\"):\n    now = instant(ms)\n\
+    \    for key in gate.required:\n        if key not in exclude:\n            gate.observe(key,\
+    \ Evidence(epoch, int(ms) + 1, now.wall, now.ros), now)\n\n\ndef armed(semantics=True):\n\
+    \    gate = SafetyGate(require_semantics=semantics)\n    refresh(gate, 0)\n  \
+    \  session = gate.arm(instant(), stationary=True, tasks_idle=True, neutral_command=True)\n\
+    \    assert session\n    return gate, session\n\n\ndef command(gate, session,\
+    \ ms, velocity=(0.1, 0.0, 0.0)):\n    return gate.command(session, int(ms), instant(ms).wall,\
+    \ velocity, instant(ms))\n\n\nclass SafetyGateTests(unittest.TestCase):\n    def\
+    \ test_startup_never_moves(self):\n        gate = SafetyGate()\n        self.assertEqual(gate.tick(instant()),\
+    \ ZERO)\n        self.assertIsNone(gate.packet(instant()))\n        self.assertFalse(command(gate,\
+    \ \"unarmed\", 0))\n\n    def test_arm_requires_all_inputs_and_idle_stationary_neutral(self):\n\
+    \        gate = SafetyGate()\n        conditions = dict(stationary=True, tasks_idle=True,\
+    \ neutral_command=True)\n        self.assertIsNone(gate.arm(instant(), **conditions))\n\
+    \        refresh(gate, 0)\n        for key in conditions:\n            self.assertIsNone(gate.arm(instant(),\
+    \ **{**conditions, key: False}))\n        self.assertTrue(gate.arm(instant(),\
+    \ **conditions))\n        self.assertIsNone(gate.arm(instant(), **conditions))\n\
+    \n    def test_normal_motion_and_bounds(self):\n        gate, session = armed()\n\
+    \        self.assertTrue(command(gate, session, 1, (0.15, 0.0, 0.5)))\n      \
+    \  self.assertEqual(gate.tick(instant(10)), (0.15, 0.0, 0.5))\n        self.assertTrue(command(gate,\
+    \ session, 50, (-0.1, 0.0, -0.5)))\n\n    def test_invalid_velocity_latches(self):\n\
+    \        for velocity in ((float(\"nan\"), 0, 0), (float(\"inf\"), 0, 0),\n  \
+    \                       (0.151, 0, 0), (-0.101, 0, 0), (0, .001, 0), (0, 0, .501),\n\
+    \                         (True, 0, 0), (0, 0)):\n            with self.subTest(velocity=velocity):\n\
+    \                gate, session = armed()\n                self.assertFalse(command(gate,\
+    \ session, 1, velocity))\n                self.assertEqual(gate.reason, \"command_invalid\"\
+    )\n                self.assertEqual(gate.tick(instant(2)), ZERO)\n\n    def test_command_expiry_and_late_command_cannot_resume(self):\n\
+    \        gate, session = armed()\n        command(gate, session, 1)\n        self.assertEqual(gate.tick(instant(99)),\
+    \ ZERO)  # 2 ms uncertainty\n        self.assertEqual(gate.reason, \"command_expired\"\
+    )\n        self.assertFalse(command(gate, session, 100))\n\n    def test_delayed_callback_cannot_conceal_command_expiry(self):\n\
+    \        gate, session = armed()\n        command(gate, session, 1)\n        self.assertFalse(command(gate,\
+    \ session, 101))\n        self.assertEqual(gate.trigger_steady, instant(99).steady)\n\
+    \n    def test_each_missing_input_stops_by_deadline(self):\n        for missing\
+    \ in SafetyGate().required:\n            with self.subTest(missing=missing):\n\
+    \                gate, session = armed()\n                for ms in range(1, 498,\
+    \ 20):\n                    refresh(gate, ms, exclude=(missing,))\n          \
+    \          self.assertTrue(command(gate, session, ms))\n                self.assertEqual(gate.tick(instant(498)),\
+    \ ZERO)\n                self.assertEqual(gate.reason, missing + \"_stale\")\n\
+    \n    def test_repeated_capture_does_not_refresh_lease(self):\n        gate, session\
+    \ = armed()\n        old = Evidence(\"stream-1\", 1, instant().wall, instant().ros)\n\
+    \        for ms in range(1, 498, 20):\n            refresh(gate, ms, exclude=(\"\
+    semantic\",))\n            command(gate, session, ms)\n            self.assertFalse(gate.observe(\"\
+    semantic\", old, instant(ms)))\n        self.assertEqual(gate.tick(instant(498)),\
+    \ ZERO)\n        self.assertEqual(gate.reason, \"semantic_stale\")\n\n    def\
+    \ test_late_success_cannot_hide_input_deadline(self):\n        gate, session =\
+    \ armed()\n        for ms in range(1, 498, 20):\n            refresh(gate, ms,\
+    \ exclude=(\"semantic\",))\n            command(gate, session, ms)\n        refresh(gate,\
+    \ 499)  # callbacks, without an intervening timer\n        self.assertFalse(gate.armed)\n\
+    \        self.assertEqual(gate.reason, \"semantic_stale\")\n\n    def test_capture_age_not_arrival_age(self):\n\
+    \        gate = SafetyGate()\n        now = instant(450)\n        gate.observe(\"\
+    semantic\", Evidence(\"e\", 1, instant().wall, instant().ros), now)\n        self.assertEqual(gate.leases[\"\
+    semantic\"].deadline, instant(498).steady)\n\n    def test_future_expired_and_malformed_inputs(self):\n\
+    \        for ev in (Evidence(\"e\", 1, instant(3).wall, instant().ros),\n    \
+    \               Evidence(\"e\", 1, instant(-500).wall, instant().ros),\n     \
+    \              Evidence(\"e\", 1, instant().wall, instant(1).ros),\n         \
+    \          Evidence(\"\", 1, instant().wall, instant().ros),\n               \
+    \    Evidence(\"e\", True, instant().wall, instant().ros)):\n            gate,\
+    \ _ = armed()\n            self.assertFalse(gate.observe(\"semantic\", ev, instant()))\n\
+    \            self.assertFalse(gate.armed)\n\n    def test_paused_simulation_still_expires(self):\n\
+    \        gate, session = armed()\n        command(gate, session, 1)\n        self.assertEqual(gate.tick(instant(501,\
+    \ ros_ms=1)), ZERO)\n        self.assertFalse(gate.armed)\n\n    def test_clock_rollback_latches_and_clears(self):\n\
+    \        gate, session = armed()\n        command(gate, session, 10)\n       \
+    \ self.assertEqual(gate.tick(instant(11, ros_ms=0)), ZERO)\n        self.assertEqual(gate.reason,\
+    \ \"clock_rollback\")\n        self.assertFalse(gate.leases)\n\n    def test_wall_jump_latches(self):\n\
+    \        for wall_ms in (-100, 100):\n            gate, session = armed()\n  \
+    \          command(gate, session, 1)\n            self.assertEqual(gate.tick(instant(2,\
+    \ wall_ms=wall_ms)), ZERO)\n            self.assertEqual(gate.reason, \"wall_clock_discontinuity\"\
+    )\n\n    def test_epoch_change_latches(self):\n        gate, _ = armed()\n   \
+    \     now = instant(1)\n        self.assertFalse(gate.observe(\"semantic\", Evidence(\"\
+    new\", 2, now.wall, now.ros), now))\n        self.assertEqual(gate.reason, \"\
+    semantic_epoch_changed\")\n\n    def test_local_and_remote_faults_share_stop_path(self):\n\
+    \        for reason in (\"camera_loss\", \"tf_loss\", \"stale_mask\", \"hung_inference\"\
+    ,\n                       \"backend:timeout\", \"backend:overload\", \"backend:connection_loss\"\
+    ,\n                       \"cancel\", \"collision_intervention\", \"node_restart\"\
+    ):\n            with self.subTest(reason=reason):\n                gate, session\
+    \ = armed()\n                command(gate, session, 1)\n                gate.trip(reason,\
+    \ instant(2))\n                refresh(gate, 3)\n                self.assertFalse(command(gate,\
+    \ session, 4))\n                self.assertEqual(gate.tick(instant(4)), ZERO)\n\
+    \                self.assertEqual(gate.reason, reason)\n\n    def test_rearm_requires_new_evidence_and_changes_session(self):\n\
+    \        gate, old = armed()\n        gate.trip(\"cancel\", instant(1))\n    \
+    \    args = dict(stationary=True, tasks_idle=True, neutral_command=True)\n   \
+    \     self.assertIsNone(gate.arm(instant(2), **args))\n        refresh(gate, 5)\n\
+    \        new = gate.arm(instant(5), **args)\n        self.assertTrue(new)\n  \
+    \      self.assertNotEqual(old, new)\n        self.assertFalse(command(gate, old,\
+    \ 6))\n\n    def test_second_fault_during_recovery_clears_partial_inputs(self):\n\
+    \        gate, _ = armed()\n        gate.trip(\"cancel\", instant(1))\n      \
+    \  refresh(gate, 5)\n        gate.trip(\"backend:connection_loss\", instant(6))\n\
+    \        self.assertFalse(gate.leases)\n        self.assertEqual(gate.reason,\
+    \ \"cancel\")\n        self.assertEqual(gate.trigger_steady, instant(1).steady)\n\
+    \        refresh(gate, 10, epoch=\"restarted\")\n        self.assertTrue(gate.arm(instant(10),\
+    \ stationary=True, tasks_idle=True, neutral_command=True))\n\n    def test_reset_capture_barrier_includes_clock_uncertainty(self):\n\
+    \        gate, _ = armed()\n        gate.trip(\"cancel\", instant(1))\n      \
+    \  almost = Evidence(\"stream-1\", 3, instant(3).wall, instant(3).ros)\n     \
+    \   self.assertFalse(gate.observe(\"semantic\", almost, instant(3)))\n\n    def\
+    \ test_delayed_inputs_during_recovery_do_not_chase_barrier(self):\n        gate,\
+    \ _ = armed()\n        gate.trip(\"cancel\", instant(1))\n        # Continuous\
+    \ 250 ms inference latency must not keep moving the reset\n        # barrier forward\
+    \ forever as pre-fault captures finish processing.\n        for ms in (100, 200):\n\
+    \            capture = instant(ms - 250)\n            self.assertFalse(gate.observe(\"\
+    semantic\", Evidence(\"stream-1\", ms, capture.wall, capture.ros), instant(ms)))\n\
+    \            self.assertEqual(gate.barrier_wall, instant(1).wall)\n        capture\
+    \ = instant(50)\n        self.assertTrue(gate.observe(\"semantic\", Evidence(\"\
+    stream-1\", 300, capture.wall, capture.ros), instant(300)))\n        refresh(gate,\
+    \ 300, exclude=(\"semantic\",))\n        self.assertTrue(gate.arm(instant(300),\
+    \ stationary=True, tasks_idle=True, neutral_command=True))\n\n    def test_geometry_baseline_is_separate_startup_policy(self):\n\
+    \        gate, session = armed(semantics=False)\n        self.assertNotIn(\"semantic\"\
+    , gate.required)\n        self.assertTrue(command(gate, session, 1))\n       \
+    \ with self.assertRaises(ValueError):\n            gate.observe(\"semantic\",\
+    \ Evidence(\"e\", 1, 0, 0), instant(1))\n\n    def test_packet_cannot_extend_command_authority(self):\n\
+    \        gate, session = armed()\n        command(gate, session, 1)\n        packet\
+    \ = gate.packet(instant(90))\n        self.assertEqual(packet.expires_wall, instant(99).wall)\n\
+    \n\nclass ReceiverTests(unittest.TestCase):\n    def setup_motion(self):\n   \
+    \     gate, session = armed()\n        receiver = FinalReceiver()\n        self.assertTrue(receiver.arm(session,\
+    \ instant(), stationary=True))\n        command(gate, session, 1)\n        packet\
+    \ = gate.packet(instant(1))\n        self.assertTrue(receiver.receive(packet,\
+    \ instant(2)))\n        return gate, session, receiver, packet\n\n    def test_startup_packet_does_not_arm(self):\n\
+    \        gate, session = armed()\n        command(gate, session, 1)\n        receiver\
+    \ = FinalReceiver()\n        self.assertFalse(receiver.receive(gate.packet(instant(1)),\
+    \ instant(1)))\n        self.assertEqual(receiver.tick(instant(2)), ZERO)\n\n\
+    \    def test_lost_supervisor_or_transport_expires_locally(self):\n        _,\
+    \ _, receiver, packet = self.setup_motion()\n        self.assertEqual(receiver.tick(instant(78)),\
+    \ (0.1, 0, 0))\n        self.assertEqual(receiver.tick(instant(79)), ZERO)\n \
+    \       self.assertEqual(receiver.reason, \"lease_expired\")\n        self.assertFalse(receiver.receive(packet,\
+    \ instant(80)))\n\n    def test_renewals_and_explicit_revoke(self):\n        gate,\
+    \ session, receiver, _ = self.setup_motion()\n        for ms in range(20, 201,\
+    \ 20):\n            refresh(gate, ms)\n            command(gate, session, ms)\n\
+    \            self.assertTrue(receiver.receive(gate.packet(instant(ms)), instant(ms)))\n\
+    \        self.assertFalse(receiver.receive(None, instant(201)))\n        self.assertEqual(receiver.tick(instant(201)),\
+    \ ZERO)\n\n    def test_late_packet_never_renews_expired_receiver(self):\n   \
+    \     gate, session, receiver, _ = self.setup_motion()\n        command(gate,\
+    \ session, 79)\n        self.assertFalse(receiver.receive(gate.packet(instant(79)),\
+    \ instant(79)))\n        self.assertEqual(receiver.tick(instant(80)), ZERO)\n\n\
+    \    def test_replay_wrong_session_bad_velocity_and_deadline_latch(self):\n  \
+    \      for change in ({\"session\": \"another\"}, {\"sequence\": 0},\n       \
+    \                {\"velocity\": (9, 0, 0)}, {\"issued_wall\": instant(20).wall},\n\
+    \                       {\"expires_wall\": instant(200).wall}, {\"expires_wall\"\
+    : instant(3).wall},\n                       {\"sequence\": True}):\n         \
+    \   _, _, receiver, packet = self.setup_motion()\n            bad = dataclasses.replace(packet,\
+    \ sequence=1)\n            bad = dataclasses.replace(bad, **change)\n        \
+    \    self.assertFalse(receiver.receive(bad, instant(3)))\n            self.assertEqual(receiver.reason,\
+    \ \"packet_invalid\")\n\n    def test_no_session_reuse_or_rearm_while_running(self):\n\
+    \        _, session, receiver, _ = self.setup_motion()\n        self.assertFalse(receiver.arm(session,\
+    \ instant(3), stationary=True))\n        receiver.stop(\"cancel\")\n        self.assertFalse(receiver.arm(session,\
+    \ instant(4), stationary=True))\n        self.assertFalse(receiver.arm(\"a\" *\
+    \ 36, instant(4), stationary=False))\n\n    def test_clock_jump_and_restart_stop(self):\n\
+    \        _, _, receiver, packet = self.setup_motion()\n        self.assertEqual(receiver.tick(instant(3,\
+    \ wall_ms=-100)), ZERO)\n        self.assertEqual(receiver.reason, \"clock_discontinuity\"\
+    )\n        receiver = FinalReceiver()\n        self.assertFalse(receiver.receive(packet,\
+    \ instant(4)))\n\n    def test_worst_timer_phase_is_within_100ms_lease_budget(self):\n\
+    \        # Exhaust all integer-ms positions within one 20 ms timer period.\n \
+    \       for phase in range(20):\n            _, _, receiver, _ = self.setup_motion()\n\
+    \            zero_at = None\n            for ms in range(3 + phase, 121, 20):\n\
+    \                if receiver.tick(instant(ms)) == ZERO:\n                    zero_at\
+    \ = ms\n                    break\n            self.assertIsNotNone(zero_at)\n\
+    \            self.assertLessEqual(zero_at - 1, 100)\n        self.assertLessEqual(LEASE_NS\
+    \ + TICK_NS, 100 * MS)\n\n\nif __name__ == \"__main__\":\n    unittest.main(verbosity=2)\n"
+  verify_collision_monitor.py: "#!/usr/bin/env python3\n\"\"\"Non-actuating Jazzy\
+    \ smoke test with synthetic scan/TF/footprint/commands.\n\nRun only in the isolated\
+    \ test pod (domain 85, loopback DDS, no bridge). This is\nnot a physical stop,\
+    \ geometric localization or live SAM3 fault qualification.\n\"\"\"\nimport json\n\
+    import math\nimport os\nfrom pathlib import Path\nimport signal\nimport subprocess\n\
+    import tempfile\nimport time\n\nimport rclpy\nfrom geometry_msgs.msg import Point32,\
+    \ PolygonStamped, TransformStamped, Twist\nfrom lifecycle_msgs.srv import ChangeState\n\
+    from nav2_msgs.msg import CollisionMonitorState\nfrom rclpy.node import Node\n\
+    from sensor_msgs.msg import LaserScan\nfrom tf2_ros import StaticTransformBroadcaster\n\
+    import yaml\n\n\ndef main():\n    if os.getenv(\"ROS_DOMAIN_ID\") != \"85\" or\
+    \ \"phase5\" not in os.getenv(\"CYCLONEDDS_URI\", \"\"):\n        raise RuntimeError(\"\
+    refusing to run outside isolated Phase 5 fixture\")\n    params = yaml.safe_load(Path(\"\
+    /phase5/phase5-nav2-candidate.yaml\").read_text())[\"collision_monitor\"][\"ros__parameters\"\
+    ]\n    params[\"use_sim_time\"] = False  # synthetic fixture uses wall stamps,\
+    \ no simulator\n    with tempfile.TemporaryDirectory(prefix=\"phase5-collision-\"\
+    ) as directory:\n        config = Path(directory) / \"params.yaml\"\n        config.write_text(yaml.safe_dump({\"\
+    collision_monitor\": {\"ros__parameters\": params}}))\n        with (Path(directory)\
+    \ / \"monitor.log\").open(\"w+\") as log:\n            process = subprocess.Popen([\"\
+    /opt/ros/jazzy/lib/nav2_collision_monitor/collision_monitor\",\n             \
+    \                           \"--ros-args\", \"--params-file\", str(config)], stdout=log,\
+    \ stderr=subprocess.STDOUT)\n            rclpy.init()\n            node = Node(\"\
+    phase5_non_actuating_fixture\")\n            records, states, checks = [], [],\
+    \ []\n            node.create_subscription(Twist, \"/phase5/collision_checked\"\
+    ,\n                                     lambda m: records.append({\"wall_ns\"\
+    : time.time_ns(), \"steady_ns\": time.monotonic_ns(),\n                      \
+    \                                         \"x\": m.linear.x, \"yaw\": m.angular.z}),\
+    \ 10)\n            node.create_subscription(CollisionMonitorState, \"/collision_monitor_state\"\
+    ,\n                                     lambda m: states.append({\"steady_ns\"\
+    : time.monotonic_ns(), \"state\": str(m)}), 10)\n            commands = node.create_publisher(Twist,\
+    \ \"/cmd_vel_smoothed\", 10)\n            scans = node.create_publisher(LaserScan,\
+    \ \"/scan_fixed\", 10)\n            footprints = node.create_publisher(PolygonStamped,\
+    \ \"/local_costmap/published_footprint\", 10)\n            transforms = StaticTransformBroadcaster(node)\n\
+    \            tfs = []\n            for parent, child, z in ((\"odom\", \"base_footprint\"\
+    , 0.0), (\"base_footprint\", \"base_scan\", .25)):\n                tf = TransformStamped()\n\
+    \                tf.header.stamp = node.get_clock().now().to_msg()\n         \
+    \       tf.header.frame_id, tf.child_frame_id = parent, child\n              \
+    \  tf.transform.translation.z, tf.transform.rotation.w = z, 1.0\n            \
+    \    tfs.append(tf)\n            transforms.sendTransform(tfs)\n            client\
+    \ = node.create_client(ChangeState, \"/collision_monitor/change_state\")\n\n \
+    \           def drive(duration, obstacle=False, publish_scan=True, speed=.1):\n\
+    \                started = time.monotonic_ns()\n                while time.monotonic_ns()\
+    \ - started < int(duration * 1e9):\n                    stamp = node.get_clock().now().to_msg()\n\
+    \                    footprint = PolygonStamped()\n                    footprint.header.stamp,\
+    \ footprint.header.frame_id = stamp, \"base_footprint\"\n                    footprint.polygon.points\
+    \ = [Point32(x=x, y=y, z=0.0) for x, y in\n                                  \
+    \              ((-.182, -.165), (.118, -.165), (.118, .165), (-.182, .165))]\n\
+    \                    footprints.publish(footprint)\n                    if publish_scan:\n\
+    \                        scan = LaserScan()\n                        scan.header.stamp,\
+    \ scan.header.frame_id = stamp, \"base_scan\"\n                        scan.angle_min,\
+    \ scan.angle_max, scan.angle_increment = 0.0, 2*math.pi, 2*math.pi/359\n     \
+    \                   scan.range_min, scan.range_max = .12, 3.5\n              \
+    \          scan.ranges = [float(\"inf\")] * 360\n                        scan.ranges[0]\
+    \ = .22 if obstacle else 2.0\n                        scans.publish(scan)\n  \
+    \                  message = Twist()\n                    message.linear.x = speed\n\
+    \                    commands.publish(message)\n                    rclpy.spin_once(node,\
+    \ timeout_sec=.01)\n                    time.sleep(.01)\n                return\
+    \ started, [r for r in records if r[\"steady_ns\"] >= started]\n\n           \
+    \ try:\n                if not client.wait_for_service(timeout_sec=20):\n    \
+    \                raise RuntimeError(\"collision monitor lifecycle service missing\"\
+    )\n                for transition in (1, 3):\n                    req = ChangeState.Request()\n\
+    \                    req.transition.id = transition\n                    future\
+    \ = client.call_async(req)\n                    rclpy.spin_until_future_complete(node,\
+    \ future, timeout_sec=10)\n                    if not future.done() or not future.result().success:\n\
+    \                        raise RuntimeError(f\"lifecycle transition {transition}\
+    \ failed\")\n                start, output = drive(2.0)\n                assert\
+    \ any(r[\"x\"] > .09 for r in output), \"nominal command blocked\"\n         \
+    \       checks.append({\"case\": \"clear_scan_passes_command\", \"passed\": True})\n\
+    \                start, output = drive(1.0, obstacle=True)\n                zeros\
+    \ = [r for r in output if r[\"x\"] == 0 and r[\"yaw\"] == 0]\n               \
+    \ assert zeros, \"stop polygon failed\"\n                latency_ms = (zeros[0][\"\
+    steady_ns\"] - start)/1e6\n                assert latency_ms <= 100, f\"fixture\
+    \ intervention took {latency_ms} ms\"\n                assert all(r[\"x\"] ==\
+    \ 0 for r in output if r[\"steady_ns\"] >= start + 200_000_000)\n            \
+    \    checks.append({\"case\": \"stop_polygon_intervenes\", \"passed\": True, \"\
+    fixture_first_zero_ms\": latency_ms})\n                _, output = drive(1.0)\n\
+    \                assert any(r[\"x\"] > .09 for r in output), \"clear scan did\
+    \ not restore native monitor output\"\n                checks.append({\"case\"\
+    : \"native_monitor_can_resume_requires_external_latch\", \"passed\": True})\n\
+    \                start, output = drive(1.5, publish_scan=False)\n            \
+    \    late = [r for r in output if r[\"steady_ns\"] >= start + 650_000_000]\n \
+    \               assert late and all(r[\"x\"] == 0 for r in late), \"expired scan\
+    \ did not stop\"\n                checks.append({\"case\": \"source_timeout_stops_with_continuing_commands\"\
+    , \"passed\": True})\n                graph = dict(node.get_topic_names_and_types())\n\
+    \                assert \"/robot_1/cmd_vel\" not in graph and \"/cmd_vel\" not\
+    \ in graph\n                checks.append({\"case\": \"no_actuator_topic\", \"\
+    passed\": True})\n                print(json.dumps({\"event\": \"phase5_native_collision_fixture\"\
+    , \"passed\": True,\n                                  \"checks\": checks, \"\
+    outputs\": records, \"states\": states,\n                                  \"\
+    topics\": graph, \"params\": params}, sort_keys=True), flush=True)\n         \
+    \   finally:\n                node.destroy_node()\n                rclpy.shutdown()\n\
+    \                process.send_signal(signal.SIGINT)\n                try:\n  \
+    \                  process.wait(timeout=10)\n                except subprocess.TimeoutExpired:\n\
+    \                    process.kill()\n                    process.wait(timeout=5)\n\
+    \                log.seek(0)\n                print(\"NATIVE_MONITOR_LOG_BEGIN\\\
+    n\" + log.read() + \"NATIVE_MONITOR_LOG_END\", flush=True)\n\n\nif __name__ ==\
+    \ \"__main__\":\n    main()\n"
+  verify_frame_bridge.py: "\"\"\"Real ROS message/node callback tests; not moving\
+    \ TF qualification.\"\"\"\nimport time\nimport unittest\nfrom unittest.mock import\
+    \ Mock\nimport rclpy\nfrom nav_msgs.msg import Odometry\nfrom rosgraph_msgs.msg\
+    \ import Clock\nfrom sensor_msgs.msg import LaserScan\nfrom frame_bridge import\
+    \ FrameBridge\n\n\nclass FrameTests(unittest.TestCase):\n    @classmethod\n  \
+    \  def setUpClass(cls):\n        rclpy.init()\n\n    @classmethod\n    def tearDownClass(cls):\n\
+    \        rclpy.shutdown()\n\n    def setUp(self):\n        self.node = FrameBridge()\n\
+    \        self.node.tf.sendTransform = Mock()\n        self.node.scan_pub.publish\
+    \ = Mock()\n        self.node.status.publish = Mock()\n        clock = Clock()\n\
+    \        clock.clock.sec = 20\n        self.node.on_clock(clock)\n\n    def tearDown(self):\n\
+    \        self.node.destroy_node()\n\n    def odom(self):\n        msg = Odometry()\n\
+    \        msg.header.stamp.sec = 20\n        msg.header.frame_id = \"odom\"\n \
+    \       msg.child_frame_id = \"base_footprint\"\n        msg.pose.pose.position.x\
+    \ = 1.23\n        msg.pose.pose.orientation.w = 1.0\n        return msg\n\n  \
+    \  def test_pose_and_stamp_preserved_no_map_edge(self):\n        msg = self.odom()\n\
+    \        self.node.on_odom(msg)\n        tf = self.node.tf.sendTransform.call_args.args[0]\n\
+    \        self.assertEqual(tf.header, msg.header)\n        self.assertEqual(tf.child_frame_id,\
+    \ \"base_footprint\")\n        self.assertEqual(tf.transform.translation.x, 1.23)\n\
+    \        self.node.report()\n        self.node.on_odom(msg)  # repeated receipt\
+    \ cannot produce fresh TF\n        self.assertEqual(self.node.tf.sendTransform.call_count,\
+    \ 1)\n\n    def test_stale_and_missing_clock_rejected(self):\n        msg = self.odom()\n\
+    \        msg.header.stamp.sec = 19\n        self.node.on_odom(msg)\n        self.node.tf.sendTransform.assert_not_called()\n\
+    \        self.node.clock_progress = time.monotonic()-.6\n        self.node.on_odom(self.odom())\n\
+    \        self.node.tf.sendTransform.assert_not_called()\n\n    def test_delayed_capture_does_not_restart_deadline(self):\n\
+    \        msg = self.odom()\n        msg.header.stamp.sec = 19\n        msg.header.stamp.nanosec\
+    \ = 600000000\n        before = time.monotonic()\n        self.node.on_odom(msg)\n\
+    \        self.assertLessEqual(self.node.deadlines[\"odom\"]-before, .11)\n\n \
+    \   def test_scan_stamp_preserved_and_sensor_offset_frame_used(self):\n      \
+    \  msg = LaserScan()\n        msg.header.stamp.sec = 20\n        msg.header.frame_id\
+    \ = \"robot_1/base_scan/lidar\"\n        self.node.on_scan(msg)\n        fixed\
+    \ = self.node.scan_pub.publish.call_args.args[0]\n        self.assertEqual(fixed.header.stamp,\
+    \ msg.header.stamp)\n        self.assertEqual(fixed.header.frame_id, \"lidar_frame\"\
+    )\n        self.assertEqual(msg.header.frame_id, \"robot_1/base_scan/lidar\")\n\
+    \n    def test_rollback_latches(self):\n        clock = Clock()\n        clock.clock.sec\
+    \ = 19\n        self.node.on_clock(clock)\n        clock.clock.sec = 20\n    \
+    \    self.node.on_clock(clock)\n        self.node.on_odom(self.odom())\n     \
+    \   self.node.tf.sendTransform.assert_not_called()\n        self.assertEqual(self.node.fault,\
+    \ \"simulation_clock_rollback_restart_required\")\n\n    def test_unknown_frames_and_invalid_pose_fail_closed(self):\n\
+    \        msg = self.odom()\n        msg.header.frame_id = \"map\"\n        self.node.on_odom(msg)\n\
+    \        self.assertEqual(self.node.fault, \"unexpected_odometry_frames\")\n \
+    \       self.node.tf.sendTransform.assert_not_called()\n\n\nif __name__ == \"\
+    __main__\":\n    unittest.main(verbosity=2)\n"
+  verify_native_watchdog.py: "#!/usr/bin/env python3\n\"\"\"Private physics fixture:\
+    \ native watchdog, actual hotel robot, no Nav2/SAM3.\n\nNever attach to an existing\
+    \ Gazebo world. This script starts and stops its own\nserver, only in a phase5-watchdog-*\
+    \ partition, and retains full native traces.\n\"\"\"\nimport argparse\nimport\
+    \ json\nimport math\nimport multiprocessing\nimport os\nfrom pathlib import Path\n\
+    import signal\nimport subprocess\nimport sys\nimport threading\nimport time\n\
+    import uuid\n\nfrom gz.transport13 import Node\nfrom gz.msgs10.stringmsg_pb2 import\
+    \ StringMsg\nfrom gz.msgs10.boolean_pb2 import Boolean\nfrom gz.msgs10.world_control_pb2\
+    \ import WorldControl\nfrom gz.msgs10.twist_pb2 import Twist\nfrom prepare_assets\
+    \ import write_assets\n\n\ndef service_worker(connection):\n    # The installed\
+    \ Python binding holds the GIL during blocking RequestRaw.\n    # Do not share\
+    \ that process with Python subscription callbacks: they can\n    # otherwise stall\
+    \ reception of the service response. This process has no\n    # subscriptions\
+    \ and never publishes velocity commands.\n    node = Node()\n    kinds = {kind.DESCRIPTOR.full_name:\
+    \ kind for kind in (StringMsg, WorldControl)}\n    while True:\n        command\
+    \ = connection.recv()\n        if command is None:\n            return\n     \
+    \   service, kind, wire, timeout = command\n        message = kinds[kind]()\n\
+    \        message.ParseFromString(wire)\n        ok, response = node.request(service,\
+    \ message, type(message), Boolean, timeout)\n        connection.send((ok, response.SerializeToString()))\n\
+    \n\nclass ServiceClient:\n    def __init__(self):\n        context = multiprocessing.get_context(\"\
+    spawn\")\n        self.connection, child = context.Pipe()\n        self.process\
+    \ = context.Process(target=service_worker, args=(child,))\n        self.process.start()\n\
+    \        child.close()\n\n    def request(self, service, message, request_type,\
+    \ response_type, timeout):\n        self.connection.send((service, request_type.DESCRIPTOR.full_name,\n\
+    \                              message.SerializeToString(), timeout))\n      \
+    \  if not self.connection.poll(timeout/1000+3):\n            raise RuntimeError(\"\
+    service worker timed out\")\n        ok, wire = self.connection.recv()\n     \
+    \   response = response_type()\n        response.ParseFromString(wire)\n     \
+    \   return ok, response\n\n    def close(self):\n        if self.process.is_alive():\n\
+    \            self.connection.send(None)\n            self.process.join(timeout=3)\n\
+    \        if self.process.is_alive():\n            self.process.terminate()\n \
+    \           self.process.join(timeout=3)\n        self.connection.close()\n\n\n\
+    def request(node, service, data):\n    ok, response = node.request(service, data,\
+    \ type(data), Boolean, 2000)\n    if not ok:\n        raise RuntimeError(f\"service\
+    \ unavailable: {service}\")\n    return response.data\n\n\ndef packet(token, sequence):\n\
+    \    now = time.time_ns()\n    return StringMsg(data=json.dumps({\"schema\": \"\
+    phase5-drive/v1\", \"session\": token,\n        \"sequence\": sequence, \"issued_wall\"\
+    : now, \"expires_wall\": now+80_000_000,\n        \"velocity\": [.1, 0, 0]}))\n\
+    \n\ndef producer(token):\n    node = Node()\n    publisher = node.advertise(\"\
+    /phase5/drive/lease\", StringMsg)\n    end = time.monotonic()+5\n    while not\
+    \ publisher.has_connections() and time.monotonic()<end:\n        time.sleep(.02)\n\
+    \    if not publisher.has_connections():\n        raise RuntimeError(\"native\
+    \ receiver was not discovered\")\n    # Advertise a live stream before the independent\
+    \ coordinator arms it.\n    # Service response latency must not consume the 80\
+    \ ms first-packet window.\n    # No packet can authorize itself while the receiver\
+    \ is disarmed.\n    for sequence in range(6000):\n        began = time.monotonic_ns()\n\
+    \        publisher.publish(packet(token, sequence))\n        if sequence == 0:\n\
+    \            print(\"STREAM_READY\", flush=True)\n        print(json.dumps({\"\
+    sequence\": sequence, \"publish_begin_ns\": began,\n                         \
+    \ \"publish_end_ns\": time.monotonic_ns()}), flush=True)\n        time.sleep(.02)\n\
+    \n\ndef main():\n    parser = argparse.ArgumentParser()\n    parser.add_argument(\"\
+    --producer\")\n    parser.add_argument(\"--output\", type=Path, default=Path(\"\
+    /tmp/phase5-native-results\"))\n    args = parser.parse_args()\n    if not os.environ.get(\"\
+    GZ_PARTITION\", \"\").startswith(\"phase5-watchdog-\") or os.getenv(\"GZ_IP\"\
+    ) != \"127.0.0.1\":\n        raise RuntimeError(\"refusing non-private Gazebo\
+    \ partition\")\n    if args.producer:\n        return producer(args.producer)\n\
+    \    args.output.mkdir(exist_ok=False)\n    assets = write_assets(args.output\
+    \ / \"assets\")\n    source = Path(__file__).resolve()\n    traces, checks = [],\
+    \ []\n    lock = threading.Lock()\n    node = Node()\n    def receive(message):\n\
+    \        with lock:\n            traces.append(json.loads(message.data))\n   \
+    \ node.subscribe(StringMsg, \"/phase5/drive/status\", receive)\n    replay = node.advertise(\"\
+    /phase5/drive/lease\", StringMsg)\n    bypass = node.advertise(\"/phase5/internal_drive\"\
+    , Twist)\n    rpc = ServiceClient()\n\n    def snapshot():\n        with lock:\n\
+    \            return list(traces)\n\n    def until(predicate, timeout=10):\n  \
+    \      end = time.monotonic()+timeout\n        while time.monotonic()<end:\n \
+    \           current = snapshot()\n            if predicate(current):\n       \
+    \         return current\n            time.sleep(.01)\n        raise RuntimeError(\"\
+    fixture condition timed out\")\n\n    process = None\n    child = None\n    producer_logs\
+    \ = []\n    succeeded = False\n    with (args.output / \"gazebo.log\").open(\"\
+    w+\") as log:\n        try:\n            process = subprocess.Popen([\"gz\", \"\
+    sim\", \"--force-version\", \"8\", \"-r\", \"-s\", \"-v\", \"2\",\n          \
+    \                              \"--record-path\", str(args.output / \"gz-record\"\
+    ),\n                                        str(args.output / \"assets/watchdog.world\"\
+    )], stdout=log, stderr=subprocess.STDOUT)\n            until(lambda t: len(t)>50\
+    \ and t[-1][\"physical\"] and t[-1][\"physical\"][\"velocity_valid\"] and t[-1][\"\
+    physical\"][\"speed\"]<.005, 30)\n            time.sleep(.5)\n            assert\
+    \ all(t[\"vx\"]==0 and not t[\"armed\"] for t in snapshot()), \"startup moved\"\
+    \n            checks.append({\"case\": \"startup_disarmed\", \"passed\": True})\n\
+    \            # Exercise the physics-thread clamp against a retained/raw Twist\n\
+    \            # on DiffDrive's internal input, without granting a command lease.\n\
+    \            injected = Twist()\n            injected.linear.x = .1\n        \
+    \    anchor = snapshot()[-1][\"physical\"]\n            inject_at = time.monotonic_ns()\n\
+    \            for _ in range(20):\n                bypass.publish(injected)\n \
+    \               time.sleep(.02)\n            after = snapshot()[-1][\"physical\"\
+    ]\n            assert math.hypot(after[\"x\"]-anchor[\"x\"], after[\"y\"]-anchor[\"\
+    y\"]) < .003, \"raw drive bypassed clamp\"\n            assert all(t[\"physical\"\
+    ][\"speed\"]<.005 for t in snapshot() if t[\"steady_ns\"]>=inject_at), \"raw drive\
+    \ caused motion\"\n            checks.append({\"case\": \"raw_diffdrive_input_cannot_bypass_disarmed_clamp\"\
+    , \"passed\": True})\n            # Establish control-plane connections while\
+    \ wheels are inhibited.\n            # gz-transport's first service connection\
+    \ can hold its shared mutex\n            # for 100 ms; it must not consume a moving-command\
+    \ lease.\n            services = subprocess.run([\"gz\", \"service\", \"-l\"],\
+    \ capture_output=True, text=True, timeout=10)\n            (args.output / \"services.txt\"\
+    ).write_text(services.stdout+services.stderr)\n            assert request(rpc,\
+    \ \"/phase5/drive/stop\", StringMsg(data=\"fixture_prepare\"))\n            assert\
+    \ request(rpc, \"/world/phase5_watchdog_fixture/control\", WorldControl(pause=False))\n\
+    \            for case in (\"producer_killed\", \"explicit_stop\", \"paused_simulation\"\
+    ):\n                token = str(uuid.uuid4())\n                start = time.monotonic_ns()\n\
+    \                producer_log = (args.output / (case+\"-producer.log\")).open(\"\
+    w+\")\n                producer_logs.append(producer_log)\n                child\
+    \ = subprocess.Popen([sys.executable, str(source), \"--producer\", token], stdout=producer_log,\
+    \ stderr=subprocess.STDOUT, text=True)\n                count = snapshot()[-1][\"\
+    received_packets\"]\n                until(lambda t: t[-1][\"received_packets\"\
+    ]>=count+150, 8)\n                assert request(rpc, \"/phase5/drive/arm\", StringMsg(data=token)),\
+    \ \"explicit native arm rejected\"\n                moving_start = until(lambda\
+    \ t: t and t[-1][\"steady_ns\"]>start and t[-1][\"armed\"] and t[-1][\"physical\"\
+    ][\"speed\"]>.07)[-1]\n                time.sleep(.5)\n                latest\
+    \ = snapshot()[-1]\n                assert latest[\"armed\"] and latest[\"physical\"\
+    ][\"speed\"]>.07, \"premature stop before fault injection: \"+latest[\"reason\"\
+    ]\n                fault_at = time.monotonic_ns()\n                assert fault_at-latest[\"\
+    steady_ns\"]<50_000_000, \"pre-fault telemetry stale\"\n                checks.append({\"\
+    case\": case+\"_injection\", \"fault_steady_ns\": fault_at,\n                \
+    \               \"pre_fault_status\": latest})\n                if case == \"\
+    producer_killed\":\n                    child.kill()\n                    child.wait(timeout=3)\n\
+    \                elif case == \"explicit_stop\":\n                    assert request(rpc,\
+    \ \"/phase5/drive/stop\", StringMsg(data=\"fixture_cancel\"))\n              \
+    \  else:\n                    assert request(rpc, \"/world/phase5_watchdog_fixture/control\"\
+    , WorldControl(pause=True))\n                until(lambda t: t and t[-1][\"steady_ns\"\
+    ]>=fault_at and not t[-1][\"armed\"] and t[-1][\"applied_vx\"]==0)\n         \
+    \       if child.poll() is None:\n                    child.kill()\n         \
+    \           child.wait(timeout=3)\n                child = None\n            \
+    \    if case == \"paused_simulation\":\n                    time.sleep(.2)\n \
+    \                   assert request(rpc, \"/world/phase5_watchdog_fixture/control\"\
+    , WorldControl(pause=False))\n                until(lambda t: t and t[-1][\"physical\"\
+    ][\"speed\"]<.005)\n                time.sleep(.4)\n                current =\
+    \ [t for t in snapshot() if t[\"steady_ns\"]>=fault_at]\n                zero\
+    \ = next(t for t in current if not t[\"armed\"] and t[\"vx\"]==0 and t[\"applied_vx\"\
+    ]==0 and t[\"stop_applied_steady_ns\"]>=fault_at and t[\"stop_applied_trigger_ns\"\
+    ]==t[\"trigger_steady_ns\"])\n                assert zero[\"trigger_steady_ns\"\
+    ]>=fault_at, \"stop preceded intended fault\"\n                expected_reason\
+    \ = {\"producer_killed\": \"lease_expired\", \"explicit_stop\": \"fixture_cancel\"\
+    ,\n                                   \"paused_simulation\": \"simulation_paused\"\
+    }[case]\n                assert zero[\"reason\"]==expected_reason, \"unexpected\
+    \ stop reason: \"+zero[\"reason\"]\n                assert zero[\"stop_applied_steady_ns\"\
+    ]-zero[\"trigger_steady_ns\"]<=100_000_000, \"native expiry latency >100 ms\"\n\
+    \                assert zero[\"steady_ns\"]-fault_at<=200_000_000, \"fault to\
+    \ zero excessive\"\n                physical = {t[\"physical\"][\"steady_ns\"\
+    ]: t[\"physical\"] for t in current if t[\"physical\"] and t[\"physical\"][\"\
+    steady_ns\"]>=zero[\"stop_applied_steady_ns\"]}\n                points = [physical[k]\
+    \ for k in sorted(physical)]\n                assert len(points)>2\n         \
+    \       distance = sum(math.hypot(b[\"x\"]-a[\"x\"], b[\"y\"]-a[\"y\"]) for a,b\
+    \ in zip(points,points[1:]))\n                # Include sample bracketing uncertainty\
+    \ separately, not as a\n                # fabricated physical safety limit. The\
+    \ final native trace\n                # records independent physics velocity/pose,\
+    \ not wheel odometry.\n                previous_nonzero = [t for t in snapshot()\
+    \ if t[\"steady_ns\"]<zero[\"steady_ns\"] and t[\"applied_vx\"]!=0 and t[\"physical\"\
+    ]]\n                assert previous_nonzero, \"no pre-stop physical reference\"\
+    \n                anchor = previous_nonzero[-1][\"physical\"]\n              \
+    \  bracket_ms = (points[0][\"steady_ns\"]-anchor[\"steady_ns\"])/1e6\n       \
+    \         moving_wall = latest[\"physical\"][\"steady_ns\"]-moving_start[\"physical\"\
+    ][\"steady_ns\"]\n                moving_sim = latest[\"physical\"][\"sim_ns\"\
+    ]-moving_start[\"physical\"][\"sim_ns\"]\n                checks.append({\"case\"\
+    : case, \"passed\": True, \"fault_steady_ns\": fault_at,\n                   \
+    \ \"moving_observed_wall_s\": moving_wall/1e9,\n                    \"moving_real_time_factor\"\
+    : moving_sim/moving_wall,\n                    \"trigger_to_zero_ms\": (zero[\"\
+    stop_applied_steady_ns\"]-zero[\"trigger_steady_ns\"])/1e6,\n                \
+    \    \"zero_observed_in_status_ms\": (zero[\"steady_ns\"]-zero[\"trigger_steady_ns\"\
+    ])/1e6,\n                    \"fault_to_applied_zero_ms\": (zero[\"stop_applied_steady_ns\"\
+    ]-fault_at)/1e6,\n                    \"fault_to_status_zero_ms\": (zero[\"steady_ns\"\
+    ]-fault_at)/1e6,\n                    \"reason\": zero[\"reason\"], \"post_zero_sampled_distance_m\"\
+    : distance,\n                    \"zero_sample_bracket_ms\": bracket_ms,\n   \
+    \                 \"bracketed_stop_distance_m\": math.hypot(points[0][\"x\"]-anchor[\"\
+    x\"], points[0][\"y\"]-anchor[\"y\"])+distance,\n                    \"final_physical_speed\"\
+    : points[-1][\"speed\"]})\n                before = time.monotonic_ns()\n    \
+    \            for sequence in range(10000, 10010):\n                    replay.publish(packet(token,\
+    \ sequence))\n                    time.sleep(.02)\n                assert all(not\
+    \ t[\"armed\"] and t[\"vx\"]==0 for t in snapshot() if t[\"steady_ns\"]>=before),\
+    \ \"late packet resumed motion\"\n                assert not request(rpc, \"/phase5/drive/arm\"\
+    , StringMsg(data=token)), \"old session rearmed\"\n                checks.append({\"\
+    case\": case+\"_late_success_and_session_reuse_rejected\", \"passed\": True})\n\
+    \            info = subprocess.run([\"gz\", \"topic\", \"-i\", \"-t\", \"/phase5/internal_drive\"\
+    ], capture_output=True, text=True, timeout=10)\n            (args.output / \"\
+    drive-endpoints.txt\").write_text(info.stdout+info.stderr)\n            succeeded\
+    \ = True\n        finally:\n            if child and child.poll() is None:\n \
+    \               child.kill(); child.wait(timeout=3)\n            for producer_log\
+    \ in producer_logs:\n                producer_log.close()\n            try:\n\
+    \                request(rpc, \"/phase5/drive/stop\", StringMsg(data=\"fixture_cleanup\"\
+    ))\n            except Exception:\n                pass\n            if process\
+    \ and process.poll() is None:\n                process.send_signal(signal.SIGINT)\n\
+    \                try: process.wait(timeout=10)\n                except subprocess.TimeoutExpired:\
+    \ process.kill(); process.wait(timeout=5)\n            rpc.close()\n         \
+    \   result = {\"event\": \"phase5_native_watchdog_fixture\", \"passed\": succeeded,\n\
+    \                      \"checks\": checks, \"assets\": assets, \"trace_count\"\
+    : len(traces)}\n            (args.output / \"summary.json\").write_text(json.dumps(result,\
+    \ indent=2))\n            with (args.output / \"trace.jsonl\").open(\"w\") as\
+    \ handle:\n                for entry in snapshot(): handle.write(json.dumps(entry)+\"\
+    \\n\")\n            print(json.dumps(result), flush=True)\n            log.seek(0)\n\
+    \            print(log.read(), flush=True)\n\n\nif __name__ == \"__main__\":\n\
+    \    main()\n"
+  cyclonedds-phase5.xml: <CycloneDDS><Domain id="any"><General><Interfaces><NetworkInterface
+    name="lo"/></Interfaces><AllowMulticast>false</AllowMulticast></General><Discovery><ParticipantIndex>auto</ParticipantIndex></Discovery></Domain></CycloneDDS>
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: semantic-phase5-native
+  namespace: semantic-navigation
+spec:
+  restartPolicy: Never
+  activeDeadlineSeconds: 300
+  automountServiceAccountToken: false
+  containers:
+  - name: fixture
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:48fd677170651c34371c344e908db60140ff5275287e90b5a7b14fd9b7d0f098
+    command:
+    - /bin/bash
+    - -ec
+    args:
+    - source /opt/ros/jazzy/setup.bash; exec python3 /phase5-native/run_native_suite.py
+    env:
+    - name: ROS_DOMAIN_ID
+      value: '85'
+    - name: RMW_IMPLEMENTATION
+      value: rmw_cyclonedds_cpp
+    - name: CYCLONEDDS_URI
+      value: file:///phase5-native/cyclonedds-phase5.xml
+    - name: ROS_LOG_DIR
+      value: /tmp/phase5-ros-logs
+    - name: PYTHONDONTWRITEBYTECODE
+      value: '1'
+    - name: GZ_IP
+      value: 127.0.0.1
+    - name: GZ_PARTITION
+      value: phase5-watchdog-native-qualification
+    - name: GZ_SIM_SYSTEM_PLUGIN_PATH
+      value: /opt/semantic-safety/lib:/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins:/opt/ros/jazzy/opt/gz_sim_vendor/lib/gz-sim-8/plugins
+    volumeMounts:
+    - name: source
+      mountPath: /phase5-native
+      readOnly: true
+    resources:
+      requests:
+        cpu: '1'
+        memory: 1Gi
+      limits:
+        cpu: '4'
+        memory: 3Gi
+    securityContext:
+      runAsNonRoot: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      seccompProfile:
+        type: RuntimeDefault
+  volumes:
+  - name: source
+    configMap:
+      name: semantic-phase5-native

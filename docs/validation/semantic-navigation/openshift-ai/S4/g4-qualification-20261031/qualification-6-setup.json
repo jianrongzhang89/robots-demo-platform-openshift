@@ -1,0 +1,31 @@
+{
+ "event": "qualification-6 setup",
+ "date": "2026-11-01",
+ "preconditions": {
+  "S1": "PASS accepted",
+  "S2": "PASS accepted",
+  "S3": "PASS accepted",
+  "leftover_g4_or_fixture_resources": "none",
+  "pilot": "serving-transport-pilot-5 PASS (ordered restore: restore_flow_verified, 24 post-restore worker results, late success without resume, tampered 200 on the wire, zero command 0.55 ms, clean cleanup)"
+ },
+ "rendering_reservation": "deleted to free the A10G for the G4 fixture; run_g4_suite.py finally restores it from rendering-reservation-saved.json",
+ "proxy_certificate": {
+  "secret": "semantic-g4-proxy-tls",
+  "subject": "CN=localhost",
+  "notBefore": "Nov 1 23:27:52 2026 GMT",
+  "notAfter": "Nov 4 23:27:52 2026 GMT",
+  "sha256_fingerprint": "1E:30:C8:51:53:63:06:2F:EA:A0:32:A5:D9:55:69:8B:70:74:2D:16:E9:D1:39:4B:EC:B3:98:5B:60:44:7B:0D",
+  "key_material_retained": false
+ },
+ "sampler": {
+  "output": "serving-resources-qualification-6.jsonl",
+  "stop_file": "/tmp/g4-qualification-6-monitor-stop"
+ },
+ "source_changes_vs_qualification_5": {
+  "scripts/semantic-navigation/run_g4_faults.py": "ordered restore for wrong_version/process_loss/transport_loss (force-kill, 20 s retirement settle, pod-only replacement), wait_semantic_flow end-to-end proof, adapter-*.log collision fix",
+  "scripts/semantic-navigation/g4_topology.py": "recycle(fault_proxy) parameter (unused by the restore; router restarts proven harmful)",
+  "apps/semantic-safety/semantic_fault_probe.py": "served late-success wait 120 s -> 240 s to cover the ordered restore's repair time",
+  "rationale": "serving-transport-pilot-1-rationale.md (qualification-5 addendum and pilot-4 correction)"
+ },
+ "command": "run_g4_suite.py --output-dir qualification-6 --reservation rendering-reservation-saved.json"
+}

@@ -1,0 +1,7 @@
+FROM image-registry.openshift-image-registry.svc:5000/semantic-navigation/sam3-smoke@sha256:0df314c66fa1cdf00680cfab244e00c99d60ef05f5e5eb4eaf9d16ff0eb07cc3
+
+USER 0
+COPY apps/semantic-perception/sam3_eval.py /opt/sam3/sam3_eval.py
+COPY apps/semantic-perception/manifest_validation.py /opt/sam3/manifest_validation.py
+USER 1001
+ENTRYPOINT ["python", "/opt/sam3/sam3_eval.py"]

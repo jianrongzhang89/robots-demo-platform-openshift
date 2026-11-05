@@ -1,0 +1,135 @@
+<robot name="turtlebot3_waffle">
+  
+  <link name="base_footprint" />
+
+  
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <box size="0.28 0.31 0.14" />
+      </geometry>
+      <origin xyz="-0.032 0 0.07" />
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.28 0.31 0.14" />
+      </geometry>
+      <origin xyz="-0.032 0 0.07" />
+    </collision>
+    <inertial>
+      <mass value="1.37" />
+      <origin xyz="0 0 0" />
+      <inertia ixx="0.0087" ixy="0" ixz="0" iyy="0.0086" iyz="0" izz="0.0146" />
+    </inertial>
+  </link>
+
+  
+  <joint name="base_joint" type="fixed">
+    <parent link="base_footprint" />
+    <child link="base_link" />
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </joint>
+
+  
+  <link name="wheel_left_link">
+    <visual>
+      <geometry>
+        <cylinder length="0.018" radius="0.033" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="1.57 0 0" />
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder length="0.018" radius="0.033" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="1.57 0 0" />
+    </collision>
+    <inertial>
+      <mass value="0.028" />
+      <origin xyz="0 0 0" />
+      <inertia ixx="1.1e-5" ixy="0" ixz="0" iyy="1.1e-5" iyz="0" izz="2.1e-5" />
+    </inertial>
+  </link>
+
+  <joint name="wheel_left_joint" type="continuous">
+    <parent link="base_link" />
+    <child link="wheel_left_link" />
+    <origin xyz="0 0.144 0.023" rpy="-1.57 0 0" />
+    <axis xyz="0 0 1" />
+  </joint>
+
+  
+  <link name="wheel_right_link">
+    <visual>
+      <geometry>
+        <cylinder length="0.018" radius="0.033" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="1.57 0 0" />
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder length="0.018" radius="0.033" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="1.57 0 0" />
+    </collision>
+    <inertial>
+      <mass value="0.028" />
+      <origin xyz="0 0 0" />
+      <inertia ixx="1.1e-5" ixy="0" ixz="0" iyy="1.1e-5" iyz="0" izz="2.1e-5" />
+    </inertial>
+  </link>
+
+  <joint name="wheel_right_joint" type="continuous">
+    <parent link="base_link" />
+    <child link="wheel_right_link" />
+    <origin xyz="0 -0.144 0.023" rpy="-1.57 0 0" />
+    <axis xyz="0 0 1" />
+  </joint>
+
+  
+  <link name="base_scan">
+    <visual>
+      <geometry>
+        <cylinder length="0.04" radius="0.035" />
+      </geometry>
+      <origin xyz="0 0 0" />
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder length="0.04" radius="0.035" />
+      </geometry>
+      <origin xyz="0 0 0" />
+    </collision>
+    <inertial>
+      <mass value="0.125" />
+      <origin xyz="0 0 0" />
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+    </inertial>
+  </link>
+
+  <joint name="scan_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="base_scan" />
+    <origin xyz="-0.032 0 0.172" rpy="0 0 0" />
+  </joint>
+
+  
+  <link name="camera_link" />
+  <joint name="camera_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="camera_link" />
+    <origin xyz="0.11 0 0.15" rpy="0 0 0" />
+  </joint>
+  <link name="camera_color_optical_frame" />
+  <joint name="camera_color_optical_joint" type="fixed">
+    <parent link="camera_link" />
+    <child link="camera_color_optical_frame" />
+    <origin xyz="0 0 0" rpy="-1.57079632679 0 -1.57079632679" />
+  </joint>
+<link name="lidar_frame" /><joint name="lidar_sensor_joint" type="fixed"><parent link="base_scan" /><child link="lidar_frame" /><origin xyz="0 0 0.01" rpy="0 0 0" /></joint><link name="rear_left_caster">
+          <collision><geometry><sphere radius="0.005" /></geometry></collision>
+          <visual><geometry><sphere radius="0.005" /></geometry></visual></link><joint name="rear_left_caster_centre" type="fixed">
+          <parent link="base_link" /><child link="rear_left_caster" /><origin xyz="-0.14 0.064 -0.005" rpy="0 0 0" /></joint><link name="rear_right_caster">
+          <collision><geometry><sphere radius="0.005" /></geometry></collision>
+          <visual><geometry><sphere radius="0.005" /></geometry></visual></link><joint name="rear_right_caster_centre" type="fixed">
+          <parent link="base_link" /><child link="rear_right_caster" /><origin xyz="-0.14 -0.064 -0.005" rpy="0 0 0" /></joint></robot>

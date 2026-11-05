@@ -1,0 +1,141 @@
+<sdf version="1.9"><world name="phase5_watchdog_fixture">
+      <physics name="physics" type="ignored"><max_step_size>0.001</max_step_size><real_time_factor>1</real_time_factor></physics>
+      <gravity>0 0 -9.8</gravity>
+      <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics" />
+      <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands" />
+      <model name="ground"><static>true</static><link name="ground">
+        <collision name="ground"><geometry><plane><normal>0 0 1</normal><size>20 20</size></plane></geometry></collision>
+      </link></model><model name="robot_1">
+    <pose>0 0 0.1 0 0 0</pose>
+    <canonical_link>base_link</canonical_link><link name="base_footprint">
+      <inertial>
+        <mass>0.1</mass>
+        <inertia><ixx>0.001</ixx><iyy>0.001</iyy><izz>0.001</izz></inertia>
+      </inertial>
+    </link>
+    <link name="base_link">
+      <inertial>
+        <mass>1.37</mass>
+        <inertia><ixx>0.0087</ixx><iyy>0.0086</iyy><izz>0.0146</izz></inertia>
+      </inertial>
+      <collision name="base_collision">
+        <pose>-0.032 0 0.07 0 0 0</pose>
+        <geometry><box><size>0.28 0.31 0.14</size></box></geometry>
+      </collision>
+      <visual name="base_visual">
+        <pose>-0.032 0 0.07 0 0 0</pose>
+        <geometry><box><size>0.28 0.31 0.14</size></box></geometry>
+        <material><ambient>0.0 0.0 1.0 1</ambient><diffuse>0.0 0.0 1.0 1</diffuse></material>
+      </visual>
+    </link>
+    <link name="wheel_left_link">
+      <pose>0 0.144 0.023 -1.57 0 0</pose>
+      <inertial>
+        <mass>0.028</mass>
+        <inertia><ixx>1.1e-5</ixx><iyy>1.1e-5</iyy><izz>2.1e-5</izz></inertia>
+      </inertial>
+      <collision name="left_wheel_collision">
+        <geometry><cylinder><radius>0.033</radius><length>0.018</length></cylinder></geometry>
+        <surface>
+          <friction>
+            <ode><mu>1.0</mu><mu2>1.0</mu2></ode>
+            <bullet><friction>1.0</friction><friction2>1.0</friction2></bullet>
+          </friction>
+        </surface>
+      </collision>
+      <visual name="left_wheel_visual">
+        <geometry><cylinder><radius>0.033</radius><length>0.018</length></cylinder></geometry>
+      </visual>
+    </link>
+    <link name="wheel_right_link">
+      <pose>0 -0.144 0.023 -1.57 0 0</pose>
+      <inertial>
+        <mass>0.028</mass>
+        <inertia><ixx>1.1e-5</ixx><iyy>1.1e-5</iyy><izz>2.1e-5</izz></inertia>
+      </inertial>
+      <collision name="right_wheel_collision">
+        <geometry><cylinder><radius>0.033</radius><length>0.018</length></cylinder></geometry>
+        <surface>
+          <friction>
+            <ode><mu>1.0</mu><mu2>1.0</mu2></ode>
+            <bullet><friction>1.0</friction><friction2>1.0</friction2></bullet>
+          </friction>
+        </surface>
+      </collision>
+      <visual name="right_wheel_visual">
+        <geometry><cylinder><radius>0.033</radius><length>0.018</length></cylinder></geometry>
+      </visual>
+    </link>
+    <link name="base_scan">
+      <pose>-0.032 0 0.172 0 0 0</pose>
+      <inertial>
+        <mass>0.114</mass>
+        <inertia><ixx>0.001</ixx><iyy>0.001</iyy><izz>0.001</izz></inertia>
+      </inertial>
+      <collision name="lidar_collision">
+        <geometry><cylinder><radius>0.0508</radius><length>0.055</length></cylinder></geometry>
+      </collision>
+      <visual name="lidar_visual">
+        <geometry><cylinder><radius>0.0508</radius><length>0.055</length></cylinder></geometry>
+      </visual>
+      </link>
+    <link name="imu_link">
+      <pose>0 0 0.068 0 0 0</pose>
+      <inertial>
+        <mass>0.001</mass>
+        <inertia><ixx>0.0001</ixx><iyy>0.0001</iyy><izz>0.0001</izz></inertia>
+      </inertial>
+      </link>
+    <joint name="base_joint" type="fixed">
+      <parent>base_footprint</parent>
+      <child>base_link</child>
+    </joint>
+    <joint name="left_wheel_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>wheel_left_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e16</lower>
+          <upper>1e16</upper>
+          <effort>1000</effort>
+          <velocity>1000</velocity>
+        </limit>
+        <dynamics><friction>0.1</friction></dynamics>
+      </axis>
+    </joint>
+    <joint name="right_wheel_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>wheel_right_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e16</lower>
+          <upper>1e16</upper>
+          <effort>1000</effort>
+          <velocity>1000</velocity>
+        </limit>
+        <dynamics><friction>0.1</friction></dynamics>
+      </axis>
+    </joint>
+    <joint name="lidar_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>base_scan</child>
+    </joint>
+    <joint name="imu_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>imu_link</child>
+    </joint>
+    <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive">
+      <left_joint>left_wheel_joint</left_joint>
+      <right_joint>right_wheel_joint</right_joint>
+      <wheel_separation>0.287</wheel_separation>
+      <wheel_radius>0.033</wheel_radius>
+      <odom_publish_frequency>200.0</odom_publish_frequency>
+      <topic>/phase5/internal_drive</topic>
+      <odom_topic>/robot_1/odom</odom_topic>
+      <frame_id>odom</frame_id>
+      <child_frame_id>base_footprint</child_frame_id>
+      <tf_topic>/robot_1/tf</tf_topic>
+    </plugin>
+  <plugin filename="libphase5_drive_watchdog.so" name="phase5::DriveWatchdog"><output_topic>/phase5/internal_drive</output_topic><prefix>/phase5/drive</prefix></plugin></model></world></sdf>

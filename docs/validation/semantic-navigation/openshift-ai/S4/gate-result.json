@@ -1,0 +1,28 @@
+{
+ "gate": "G4",
+ "status": "PASS",
+ "accepted": true,
+ "reviewer": "User (explicit sign-off in conversation)",
+ "acceptance_note": "User paused the series campaign on 2026-11-04 after all 40 nominal off/on pairs completed three times with perfect hull-exposure reduction, and explicitly accepted G4 on the accumulated evidence: all five qualification stages passed in qualification-22, 293/309 paired-series trials completed across 20 attempts, and the two residual series-stopper classes fully characterized (goal-approach TF transient ~3.5% per on-arm trial; watchdog command-boundary race ~1.6% per armed trial — both in pinned components, each stop fully attributed with retained evidence).",
+ "recorded_at": "2026-11-04T00:00:00Z",
+ "upstream": "G3 PASS, user-approved 2026-10-31",
+ "qualification": "g4-qualification-20261031/qualification-22 (stages) plus paired-series-1..20 (series evidence)",
+ "criteria": {
+  "freshness_ms": 500,
+  "zero_command_ms": 100,
+  "added_fault_repeats": 2,
+  "nominal_pairs": 20,
+  "negative_pairs_each": 3,
+  "exposure_reduction_min": 0.9,
+  "collisions": 0
+ },
+ "waivers": [
+  "Standing recognition waiver",
+  "Accepted lethal-254 experiment and belief/truth reporting"
+ ],
+ "stage_results": "serving-faults 12/12 (every wire proof: injected 503s, tampered identity, real upstream 403/429), observation 10/10, recovery 10/10, moving-stop 10/10, semantic-faults 10/10 (served-phase5-qualification.json)",
+ "series_results": "309 trials recorded across 20 series attempts; 293 completed (95%); five stopped trials provably passed and were lost to retrieval failures now impossible under the log-recovery path; all 40 nominal pairs completed three times (series-4, 12, 16); all 6 target-absent pairs twice; 2 target-removal pairs once; exposure reduction perfect in every measured pair (series-16 aggregate: off 28.10 m vs on 0.0 m, zero collisions); the full 110-trial series never completed in a single attempt — the two characterized residual tails account for every genuine stop",
+ "environment": "OCP 4.21.16, OpenShift AI 3.4.2; model image sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e; CPU adapter sha256:20ea4f5e6bc30646f48b29895eb071d40403f8c20b0c1526aeacf06dce716d4b; G4 fixture image sha256:348fc584e70b07c6f73f9e428623240da5fc4c81ead630f0cb051c18de2d4371; 30 sim-Hz camera cadence; RTF-recalibrated wait cap 2.5 s, nav2 transform tolerances 0.3/0.15 s, navigation window 135 s, controller 60 sim-Hz",
+ "cluster_final_state": "G4 topology removed, no proxy certificate present, A10G rendering reservation restored Ready, accepted local SAM3 deployment preserved",
+ "evidence": "g4-qualification-20261031/ (all qualifications, pilots, series and protocols retained; report.md documents every failure diagnosis and fix)"
+}

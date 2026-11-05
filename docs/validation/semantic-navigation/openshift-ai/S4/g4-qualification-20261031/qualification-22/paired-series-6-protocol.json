@@ -1,0 +1,15 @@
+{
+ "event": "standalone paired-series re-run 6 (November 3)",
+ "context": "Series 5 completed trials 000-off/on then crashed on a single transient `oc create` failure (exit 2) inside the series' per-trial topology recycle - the series recycles the topology before EVERY trial (~110 per series), so the recycle path must tolerate API transients and partially-propagated deletions.",
+ "change": "g4_topology.py gained create_with_retry(): bounded three-attempt creation with a 15 s settle and a re-delete between attempts (covering AlreadyExists from partially-propagated deletions); recycle() uses it for both the router deployment and the adapter pod. Harness robustness only, no topology or gate semantics change.",
+ "setup": {
+  "topology": "cluster verified clean after the crash; the series' own per-trial recycle brings it up",
+  "series_output": "qualification-22/paired-series-6",
+  "phase5_evidence": "qualification-22/served-phase5-qualification.json",
+  "sampler": {
+   "output": "serving-resources-paired-series-6.jsonl",
+   "stop_file": "/tmp/g4-paired-series-6-monitor-stop"
+  }
+ },
+ "command": "run_phase6_series.py --output-dir qualification-22/paired-series-6 (same arguments as series 2-5)"
+}

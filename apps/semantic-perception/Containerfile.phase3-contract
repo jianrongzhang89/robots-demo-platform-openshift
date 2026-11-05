@@ -1,0 +1,7 @@
+FROM image-registry.openshift-image-registry.svc:5000/semantic-navigation/sam3-runtime@sha256:a9db442affa6a502ea862f118ac108f6d911aebe5b7049845118926b059ee62f
+USER 0
+COPY backend_factory.py http_backend.py sam3_runtime_core.py inference_contract.py sam3_backend.py sam3_ros_node.py capture_timing.py /opt/semantic-perception/
+COPY tests /opt/semantic-perception/tests
+COPY manifest_validation.py /opt/semantic-perception/
+RUN cd /opt/semantic-perception && /opt/sam3-venv/bin/python -m unittest discover -s tests -v
+USER 1001

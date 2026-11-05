@@ -1,0 +1,22 @@
+{
+  "stages": [
+    {
+      "stage": "serving-faults",
+      "passed": true,
+      "returncode": 0,
+      "evidence": "docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/qualification-9/serving-faults/summary.json"
+    },
+    {
+      "stage": "observation",
+      "passed": true,
+      "returncode": 0,
+      "evidence": "docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/qualification-9/observation/summary.json"
+    },
+    {
+      "stage": "recovery",
+      "passed": false,
+      "returncode": 1,
+      "evidence": "docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/qualification-9/recovery/summary.json"
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "pilot": "serving-unavailable lease-transport fix",
+  "passed": true,
+  "trial_passed": true,
+  "cleanup_ok": true,
+  "events": [
+    {
+      "event": "model_serving_preflight",
+      "running_ready": 1
+    },
+    {
+      "event": "rendering_reservation_removed"
+    },
+    {
+      "event": "sampler_started",
+      "stop_file": "docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/serving-transport-pilot-8/monitor-stop"
+    },
+    {
+      "event": "runner_started",
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/Users/zhangj/devt/src/robots-demo-platform-openshift/scripts/semantic-navigation/run_g4_phase5.py",
+        "--gate",
+        "recovery",
+        "--repetitions",
+        "1",
+        "--output-dir",
+        "docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/serving-transport-pilot-8/gate"
+      ]
+    },
+    {
+      "event": "runner_finished",
+      "returncode": 0
+    }
+  ],
+  "cleanup": [
+    {
+      "action": "stop serving sampler",
+      "returncode": 0,
+      "stopped": true
+    },
+    {
+      "action": "remove G4 topology",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "action": "remove fault injector certificate",
+      "returncode": 0
+    },
+    {
+      "action": "restore rendering reservation",
+      "returncode": 0,
+      "stderr": ""
+    },
+    {
+      "action": "reservation Ready",
+      "returncode": 0
+    }
+  ]
+}

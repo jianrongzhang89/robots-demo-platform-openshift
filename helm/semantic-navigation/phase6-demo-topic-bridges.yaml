@@ -1,0 +1,214 @@
+# Candidate-only Phase 6D transport profile. Do not apply to the running
+# semantic-navigation or canonical hotel workloads. It defines an isolated
+# router and narrowly scoped bridges for a separately deployed demo profile.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: semantic-phase6-demo-bridge-config
+  namespace: semantic-navigation
+  labels:
+    app.kubernetes.io/part-of: semantic-navigation-demo
+    semantic-navigation.robots-demo/phase: phase6d
+  annotations:
+    semantic-navigation.robots-demo/status: candidate-not-deployed
+data:
+  cyclonedds.xml: |-
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <CycloneDDS xmlns="https://cdds.io/config">
+      <Domain id="any">
+        <General><Interfaces><NetworkInterface name="lo" /></Interfaces><AllowMulticast>false</AllowMulticast></General>
+        <Discovery><ParticipantIndex>auto</ParticipantIndex></Discovery>
+      </Domain>
+    </CycloneDDS>
+  router.json5: |-
+    {
+      "mode": "router",
+      "listen": { "endpoints": ["tcp/0.0.0.0:17448"] },
+      "scouting": { "multicast": { "enabled": false } }
+    }
+  sim-bridge.json5: |-
+    {
+      "plugins": { "ros2dds": { "allow": {
+        "publishers": [
+          "^/clock$",
+          "^/robot_1/odom$",
+          "^/robot_1/demo/ground_truth$",
+          "^/robot_1/scan$",
+          "^/robot_1/tf$",
+          "^/robot_1/tf_static$",
+          "^/robot_1/camera/color/image_compressed$",
+          "^/robot_1/camera/depth/image_compressed$",
+          "^/robot_1/camera/color/camera_info$",
+          "^/robot_1/camera/capture_trace$",
+          "^/robot_1/camera/compression_trace$"
+        ],
+        "subscribers": ["^/robot_1/cmd_vel$"]
+      } } },
+      "mode": "client",
+      "connect": { "endpoints": ["tcp/semantic-phase6-router:17448"], "exit_on_failure": false },
+      "scouting": { "multicast": { "enabled": false } }
+    }
+  sim-bridge-d1.json5: |-
+    {
+      "plugins": { "ros2dds": { "allow": {
+        "publishers": [
+          "^/clock$",
+          "^/robot_1/odom$",
+          "^/robot_1/scan$",
+          "^/robot_1/tf$",
+          "^/robot_1/tf_static$",
+          "^/robot_1/camera/color/image_compressed$",
+          "^/robot_1/camera/depth/image_compressed$",
+          "^/robot_1/camera/color/camera_info$",
+          "^/robot_1/camera/capture_trace$",
+          "^/robot_1/camera/compression_trace$"
+        ],
+        "subscribers": []
+      } } },
+      "mode": "client",
+      "connect": { "endpoints": ["tcp/semantic-phase6-router:17448"], "exit_on_failure": false },
+      "scouting": { "multicast": { "enabled": false } }
+    }
+  sam3-bridge.json5: |-
+    {
+      "plugins": { "ros2dds": { "allow": {
+        "publishers": [
+          "^/robot_1/semantic/mask$",
+          "^/robot_1/semantic/points$",
+          "^/robot_1/semantic/timing$",
+          "^/robot_1/semantic/label_info$",
+          "^/robot_1/semantic/status$",
+          "^/robot_1/semantic/ready$"
+        ],
+        "subscribers": [
+          "^/clock$",
+          "^/robot_1/tf$",
+          "^/robot_1/tf_static$",
+          "^/robot_1/camera/color/image_compressed$",
+          "^/robot_1/camera/depth/image_compressed$",
+          "^/robot_1/camera/color/camera_info$",
+          "^/robot_1/camera/capture_trace$",
+          "^/robot_1/camera/compression_trace$"
+        ]
+      } } },
+      "mode": "client",
+      "connect": { "endpoints": ["tcp/semantic-phase6-router:17448"], "exit_on_failure": false },
+      "scouting": { "multicast": { "enabled": false } }
+    }
+  nav2-sim-input-bridge.json5: |-
+    {
+      "plugins": { "ros2dds": {
+        "namespace": "/robot_1",
+        "reliable_routes_blocking": false,
+        "allow": {
+          "publishers": [],
+          "subscribers": [".*/tf", ".*/tf_static", ".*/scan", ".*/odom", ".*/demo/ground_truth"]
+        }
+      } },
+      "mode": "client",
+      "connect": { "endpoints": ["tcp/semantic-phase6-router:17448"], "exit_on_failure": false },
+      "scouting": { "multicast": { "enabled": false } }
+    }
+  nav2-semantic-input-bridge.json5: |-
+    {
+      "plugins": { "ros2dds": { "allow": {
+        "publishers": [],
+        "subscribers": [
+          "^/robot_1/semantic/mask$",
+          "^/robot_1/semantic/points$",
+          "^/robot_1/semantic/timing$",
+          "^/robot_1/semantic/label_info$"
+        ]
+      } } },
+      "mode": "client",
+      "connect": { "endpoints": ["tcp/semantic-phase6-router:17448"], "exit_on_failure": false },
+      "scouting": { "multicast": { "enabled": false } }
+    }
+  nav2-clock-bridge.json5: |-
+    {
+      "plugins": { "ros2dds": { "allow": {
+        "publishers": [],
+        "subscribers": ["^/clock$"]
+      } } },
+      "mode": "client",
+      "connect": { "endpoints": ["tcp/semantic-phase6-router:17448"], "exit_on_failure": false },
+      "scouting": { "multicast": { "enabled": false } }
+    }
+  nav2-motion-output-gated.json5: |-
+    {
+      "plugins": { "ros2dds": { "namespace": "/robot_1", "allow": {
+        "publishers": ["^/cmd_vel$"],
+        "subscribers": []
+      } } },
+      "mode": "client",
+      "connect": { "endpoints": ["tcp/semantic-phase6-router:17448"], "exit_on_failure": false },
+      "scouting": { "multicast": { "enabled": false } }
+    }
+  nav2-cmd-vel-keepalive.json5: |-
+    {
+      "plugins": { "ros2dds": { "allow": {
+        "publishers": [],
+        "subscribers": ["robot_1/cmd_vel"]
+      } } },
+      "mode": "client",
+      "connect": { "endpoints": ["tcp/semantic-phase6-router:17448"], "exit_on_failure": false },
+      "scouting": { "multicast": { "enabled": false } }
+    }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: semantic-phase6-router
+  namespace: semantic-navigation
+  labels:
+    app: semantic-phase6-router
+spec:
+  selector:
+    app: semantic-phase6-router
+  ports:
+  - name: zenoh
+    port: 17448
+    targetPort: 17448
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: semantic-phase6-router
+  namespace: semantic-navigation
+  labels:
+    app: semantic-phase6-router
+    app.kubernetes.io/part-of: semantic-navigation-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: semantic-phase6-router
+  template:
+    metadata:
+      labels:
+        app: semantic-phase6-router
+        app.kubernetes.io/part-of: semantic-navigation-demo
+    spec:
+      containers:
+      - name: router
+        image: docker.io/eclipse/zenoh@sha256:137310456cc7a75d955063513207c737f25071fbb74fd7641835c50ab8e3369f
+        imagePullPolicy: IfNotPresent
+        args: ["-c", "/phase6-config/router.json5"]
+        ports:
+        - name: zenoh
+          containerPort: 17448
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        volumeMounts:
+        - name: config
+          mountPath: /phase6-config
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: semantic-phase6-demo-bridge-config

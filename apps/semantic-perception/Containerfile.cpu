@@ -1,0 +1,16 @@
+FROM docker.io/library/ros@sha256:c26c86a28e1addf9d10a81232869791974a3f7907943d5634742b58b2f26e1a3
+USER 0
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      python3-numpy python3-pil openssl ros-jazzy-rmw-cyclonedds-cpp \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /opt/semantic-perception
+COPY apps/semantic-perception/*.py /opt/semantic-perception/
+COPY apps/semantic-perception/tests /opt/semantic-perception/tests
+COPY apps/semantic-perception/tests_ros /opt/semantic-perception/tests_ros
+RUN python3 -c 'import importlib.util; assert importlib.util.find_spec("torch") is None' \
+    && python3 -m unittest discover -s tests -v \
+    && bash -ec 'source /opt/ros/jazzy/setup.bash; python3 -m unittest discover -s tests_ros -v' \
+    && chmod -R a=rX /opt/semantic-perception
+ENV PYTHONPATH=/opt/semantic-perception PYTHONDONTWRITEBYTECODE=1 RMW_IMPLEMENTATION=rmw_cyclonedds_cpp SEMANTIC_BACKEND=http HOME=/tmp ROS_LOG_DIR=/tmp/ros-logs
+USER 1001
+ENTRYPOINT ["/bin/bash", "-c", "source /opt/ros/jazzy/setup.bash; exec python3 /opt/semantic-perception/sam3_ros_node.py"]

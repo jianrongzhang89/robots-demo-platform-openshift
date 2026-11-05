@@ -1,0 +1,181 @@
+{
+  "recorded_at": "2026-11-04T15:09:56.367180+00:00",
+  "status": "PASS",
+  "samples": [
+    {
+      "recorded_at": "2026-11-04T15:09:57.219632+00:00",
+      "results": {
+        "scrape": [
+          {
+            "metric": {
+              "__name__": "up",
+              "container": "kserve-container",
+              "endpoint": "https",
+              "instance": "10.129.8.241:8443",
+              "job": "sam3-mat-v1-tls",
+              "namespace": "semantic-model-serving",
+              "pod": "sam3-mat-v1-predictor-5cb7c9f7d5-2kg6k",
+              "prometheus": "openshift-user-workload-monitoring/user-workload",
+              "service": "sam3-mat-v1-tls"
+            },
+            "value": [
+              1793805008.459,
+              "1"
+            ]
+          }
+        ],
+        "worker": [
+          {
+            "metric": {
+              "__name__": "semantic_worker_ready",
+              "container": "kserve-container",
+              "endpoint": "https",
+              "instance": "10.129.8.241:8443",
+              "job": "sam3-mat-v1-tls",
+              "namespace": "semantic-model-serving",
+              "pod": "sam3-mat-v1-predictor-5cb7c9f7d5-2kg6k",
+              "prometheus": "openshift-user-workload-monitoring/user-workload",
+              "service": "sam3-mat-v1-tls"
+            },
+            "value": [
+              1793805008.542,
+              "1"
+            ]
+          }
+        ],
+        "requests": [
+          {
+            "metric": {
+              "__name__": "semantic_requests_total",
+              "container": "kserve-container",
+              "endpoint": "https",
+              "instance": "10.129.8.241:8443",
+              "job": "sam3-mat-v1-tls",
+              "namespace": "semantic-model-serving",
+              "pod": "sam3-mat-v1-predictor-5cb7c9f7d5-2kg6k",
+              "prometheus": "openshift-user-workload-monitoring/user-workload",
+              "service": "sam3-mat-v1-tls",
+              "status": "ok"
+            },
+            "value": [
+              1793805008.622,
+              "174"
+            ]
+          }
+        ],
+        "gpu": [
+          {
+            "metric": {
+              "DCGM_FI_DRIVER_VERSION": "580.95.05",
+              "Hostname": "ip-10-0-55-175.ec2.internal",
+              "UUID": "GPU-cfcac3a1-878b-6beb-7475-bb19d9823db7",
+              "__name__": "accelerator_gpu_utilization",
+              "container": "nvidia-dcgm-exporter",
+              "device": "nvidia0",
+              "endpoint": "gpu-metrics",
+              "exported_container": "kserve-container",
+              "exported_namespace": "semantic-model-serving",
+              "exported_pod": "sam3-mat-v1-predictor-5cb7c9f7d5-2kg6k",
+              "gpu": "0",
+              "instance": "10.129.8.147:9400",
+              "job": "nvidia-dcgm-exporter",
+              "modelName": "NVIDIA L40S",
+              "namespace": "nvidia-gpu-operator",
+              "pci_bus_id": "00000000:30:00.0",
+              "pod": "nvidia-dcgm-exporter-9bbvc",
+              "prometheus": "openshift-monitoring/k8s",
+              "service": "nvidia-dcgm-exporter",
+              "vendor": "nvidia"
+            },
+            "value": [
+              1793805008.797,
+              "0"
+            ]
+          }
+        ],
+        "gpu_memory": [
+          {
+            "metric": {
+              "DCGM_FI_DRIVER_VERSION": "580.95.05",
+              "Hostname": "ip-10-0-55-175.ec2.internal",
+              "UUID": "GPU-cfcac3a1-878b-6beb-7475-bb19d9823db7",
+              "__name__": "accelerator_memory_used_bytes",
+              "container": "nvidia-dcgm-exporter",
+              "device": "nvidia0",
+              "endpoint": "gpu-metrics",
+              "exported_container": "kserve-container",
+              "exported_namespace": "semantic-model-serving",
+              "exported_pod": "sam3-mat-v1-predictor-5cb7c9f7d5-2kg6k",
+              "gpu": "0",
+              "instance": "10.129.8.147:9400",
+              "job": "nvidia-dcgm-exporter",
+              "modelName": "NVIDIA L40S",
+              "namespace": "nvidia-gpu-operator",
+              "pci_bus_id": "00000000:30:00.0",
+              "pod": "nvidia-dcgm-exporter-9bbvc",
+              "prometheus": "openshift-monitoring/k8s",
+              "service": "nvidia-dcgm-exporter",
+              "vendor": "nvidia"
+            },
+            "value": [
+              1793805008.867,
+              "0"
+            ]
+          }
+        ],
+        "image": [
+          {
+            "metric": {
+              "__name__": "kube_pod_container_info",
+              "container": "kserve-container",
+              "container_id": "cri-o://db5b88c89f019a376c9661a0b4ea1a058ea3a86d617367a3b7ae153be1bc970a",
+              "endpoint": "https-main",
+              "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+              "image_id": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+              "image_spec": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+              "job": "kube-state-metrics",
+              "namespace": "semantic-model-serving",
+              "pod": "sam3-mat-v1-predictor-5cb7c9f7d5-2kg6k",
+              "prometheus": "openshift-monitoring/k8s",
+              "service": "kube-state-metrics",
+              "uid": "d2758782-9073-493e-876a-05bab35cc0f5"
+            },
+            "value": [
+              1793805008.945,
+              "1"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "browser_visual_check": "NOT_RUN",
+  "dashboard": {
+    "name": "semantic-g5-serving",
+    "namespace": "redhat-ods-monitoring",
+    "uid": "fefd66d2-7462-41d9-bc6a-c2dc256016d9",
+    "panels": [
+      "admission",
+      "backend",
+      "busy",
+      "count",
+      "gpu",
+      "identity",
+      "memory",
+      "navigation_armed",
+      "navigation_capture",
+      "navigation_costmap",
+      "navigation_costmap_source",
+      "navigation_drops",
+      "navigation_reason",
+      "navigation_result",
+      "navigation_rtf",
+      "navigation_safety_source",
+      "navigation_source",
+      "queue",
+      "rate",
+      "ready",
+      "scrape"
+    ]
+  }
+}

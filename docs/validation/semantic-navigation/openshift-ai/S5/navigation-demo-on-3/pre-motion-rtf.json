@@ -1,0 +1,179 @@
+{
+  "samples": [
+    {
+      "backend": "http",
+      "backend_in_flight": 1,
+      "capture_trace_required": true,
+      "clock_uncertainty_ms": 2.0,
+      "confidence_threshold": 0.5,
+      "deployment_identity": {
+        "container_digest": "sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+        "model_name": "sam3-mat-v1",
+        "policy": "avoid-target/v1",
+        "precision": "bfloat16",
+        "prompt": "red mat",
+        "schema": "semantic-deployment/v1",
+        "shared_sha256": {
+          "inference_contract.py": "d238d2490f826b6fbb70f07aa5579492dc425e8c858b780c8216679f121ffdef",
+          "sam3_backend.py": "3d83819971704e8ce642db98972194996307b314bb73cbb44257384e45714761",
+          "sam3_runtime_core.py": "683cf53a5b6378fa72d0cefe404bd899039b1420b4d5a2e7cfe3faecaf57085f"
+        },
+        "source_revision": "0570b3a5be9c4e694f23d85232fb55f4a6f1f7fc",
+        "threshold": 0.5,
+        "versions": {
+          "decoder": "sam3-binary-instances/v1",
+          "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+          "preprocess": "sam3-pil-rgb/v1"
+        },
+        "weights_sha256": "9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e"
+      },
+      "emitted_results": 19,
+      "input_queue_depths": {
+        "camera_info": 0,
+        "depth": 0,
+        "rgb": 0
+      },
+      "input_queue_drops": 0,
+      "last_result": {
+        "capture": {
+          "frame_id": "camera_color_optical_frame",
+          "stamp_ns": 2344000000
+        },
+        "capture_age_upper_ms": 177.518581,
+        "capture_wall_ns": 1793807247570794498,
+        "identity": {
+          "epoch": "a609e905-763c-4e5a-ae86-56e90316ea04",
+          "generation": 1,
+          "request_id": "e84b92bd-6fad-41ab-bb3f-cd3291bd0a60",
+          "robot": "robot_1",
+          "sequence": 42,
+          "stream": "camera/color"
+        },
+        "receiver_processing_age_ms": 139.79323953390121,
+        "result_wall_ns": 1793807247746313079,
+        "simulation_age_ms": 44.0,
+        "source_epoch": "cda2cb99-92a1-4823-b210-4898ae398baf",
+        "source_sequence": 42
+      },
+      "last_valid_result_age_ms": 111.47,
+      "max_work_wait_ms": 60.0,
+      "model": "facebook/sam3-original",
+      "model_revision": "3c879f39826c281e95690f02c7821c4de09afae7",
+      "output_prefix": "/robot_1/semantic",
+      "paired_triplets": 44,
+      "policy": "avoid-target/v1",
+      "policy_generation": 1,
+      "prompt": "red mat",
+      "ready": true,
+      "reason": null,
+      "robot_id": "robot_1",
+      "source_epoch": "cda2cb99-92a1-4823-b210-4898ae398baf",
+      "state": "ready",
+      "status_wall_ns": 1793807247857773504,
+      "stream_epoch": "a609e905-763c-4e5a-ae86-56e90316ea04",
+      "stream_id": "camera/color",
+      "timestamp_discards": {
+        "depth": 0,
+        "info": 0,
+        "rgb": 0
+      },
+      "trace_errors": 0,
+      "versions": {
+        "decoder": "sam3-binary-instances/v1",
+        "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+        "preprocess": "sam3-pil-rgb/v1"
+      },
+      "work_queue_depth": 1,
+      "work_queue_drops": 21,
+      "work_wait_drops": 1
+    },
+    {
+      "backend": "http",
+      "backend_in_flight": 1,
+      "capture_trace_required": true,
+      "clock_uncertainty_ms": 2.0,
+      "confidence_threshold": 0.5,
+      "deployment_identity": {
+        "container_digest": "sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+        "model_name": "sam3-mat-v1",
+        "policy": "avoid-target/v1",
+        "precision": "bfloat16",
+        "prompt": "red mat",
+        "schema": "semantic-deployment/v1",
+        "shared_sha256": {
+          "inference_contract.py": "d238d2490f826b6fbb70f07aa5579492dc425e8c858b780c8216679f121ffdef",
+          "sam3_backend.py": "3d83819971704e8ce642db98972194996307b314bb73cbb44257384e45714761",
+          "sam3_runtime_core.py": "683cf53a5b6378fa72d0cefe404bd899039b1420b4d5a2e7cfe3faecaf57085f"
+        },
+        "source_revision": "0570b3a5be9c4e694f23d85232fb55f4a6f1f7fc",
+        "threshold": 0.5,
+        "versions": {
+          "decoder": "sam3-binary-instances/v1",
+          "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+          "preprocess": "sam3-pil-rgb/v1"
+        },
+        "weights_sha256": "9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e"
+      },
+      "emitted_results": 61,
+      "input_queue_depths": {
+        "camera_info": 0,
+        "depth": 0,
+        "rgb": 0
+      },
+      "input_queue_drops": 0,
+      "last_result": {
+        "capture": {
+          "frame_id": "camera_color_optical_frame",
+          "stamp_ns": 5412000000
+        },
+        "capture_age_upper_ms": 163.5358,
+        "capture_wall_ns": 1793807253667871226,
+        "identity": {
+          "epoch": "a609e905-763c-4e5a-ae86-56e90316ea04",
+          "generation": 1,
+          "request_id": "9dddc0b7-a978-46ae-9624-f8bd64c08d75",
+          "robot": "robot_1",
+          "sequence": 135,
+          "stream": "camera/color"
+        },
+        "receiver_processing_age_ms": 136.70140132308006,
+        "result_wall_ns": 1793807253829407026,
+        "simulation_age_ms": 86.0,
+        "source_epoch": "cda2cb99-92a1-4823-b210-4898ae398baf",
+        "source_sequence": 135
+      },
+      "last_valid_result_age_ms": 128.3,
+      "max_work_wait_ms": 60.0,
+      "model": "facebook/sam3-original",
+      "model_revision": "3c879f39826c281e95690f02c7821c4de09afae7",
+      "output_prefix": "/robot_1/semantic",
+      "paired_triplets": 139,
+      "policy": "avoid-target/v1",
+      "policy_generation": 1,
+      "prompt": "red mat",
+      "ready": true,
+      "reason": null,
+      "robot_id": "robot_1",
+      "source_epoch": "cda2cb99-92a1-4823-b210-4898ae398baf",
+      "state": "ready",
+      "status_wall_ns": 1793807253957698390,
+      "stream_epoch": "a609e905-763c-4e5a-ae86-56e90316ea04",
+      "stream_id": "camera/color",
+      "timestamp_discards": {
+        "depth": 0,
+        "info": 0,
+        "rgb": 0
+      },
+      "trace_errors": 0,
+      "versions": {
+        "decoder": "sam3-binary-instances/v1",
+        "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+        "preprocess": "sam3-pil-rgb/v1"
+      },
+      "work_queue_depth": 1,
+      "work_queue_drops": 72,
+      "work_wait_drops": 3
+    }
+  ],
+  "capture_stream_rtf": 0.5031919617987789
+}

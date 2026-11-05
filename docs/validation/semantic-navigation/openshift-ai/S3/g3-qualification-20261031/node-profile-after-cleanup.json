@@ -1,0 +1,61 @@
+{
+    "apiVersion": "tuned.openshift.io/v1",
+    "kind": "Profile",
+    "metadata": {
+        "creationTimestamp": "2026-05-28T05:02:57Z",
+        "generation": 3,
+        "name": "ip-10-0-53-174.ec2.internal",
+        "namespace": "openshift-cluster-node-tuning-operator",
+        "ownerReferences": [
+            {
+                "apiVersion": "tuned.openshift.io/v1",
+                "blockOwnerDeletion": true,
+                "controller": true,
+                "kind": "Tuned",
+                "name": "default",
+                "uid": "b46eac10-c998-4f22-aa9f-415d275b53bc"
+            }
+        ],
+        "resourceVersion": "494745116",
+        "uid": "03975ea6-6a55-48f5-9421-dbfbff00e9f6"
+    },
+    "spec": {
+        "config": {
+            "debug": false,
+            "providerName": "aws",
+            "tunedConfig": {},
+            "tunedProfile": "semantic-g3-adapter",
+            "verbosity": 0
+        },
+        "profile": [
+            {
+                "data": "[main]\nsummary=Optimize systems running OpenShift (provider specific parent profile)\ninclude=-provider-${f:exec:cat:/var/lib/ocp-tuned/provider},openshift\n",
+                "name": "openshift"
+            },
+            {
+                "data": "[main]\nsummary=Bounded DDS receive buffers for the qualified semantic CPU adapter\ninclude=openshift-node\n[sysctl]\nnet.core.rmem_max=8388608\n",
+                "name": "semantic-g3-adapter"
+            }
+        ]
+    },
+    "status": {
+        "conditions": [
+            {
+                "lastTransitionTime": "2026-05-28T05:03:51Z",
+                "message": "TuneD profile applied.",
+                "reason": "AsExpected",
+                "status": "True",
+                "type": "Applied"
+            },
+            {
+                "lastTransitionTime": "2026-05-28T05:03:51Z",
+                "message": "No error messages observed by applying the TuneD daemon profile, only warning(s). TuneD stderr: ",
+                "reason": "TunedWarning",
+                "status": "False",
+                "type": "Degraded"
+            }
+        ],
+        "observedGeneration": 3,
+        "tunedProfile": "semantic-g3-adapter"
+    }
+}

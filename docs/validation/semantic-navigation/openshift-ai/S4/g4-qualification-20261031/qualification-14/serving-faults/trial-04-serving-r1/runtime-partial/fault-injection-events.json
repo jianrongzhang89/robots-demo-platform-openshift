@@ -1,0 +1,60 @@
+[
+  {
+    "event": "semantic_fault_injected",
+    "mode": "serving",
+    "injected_by": "series-runner",
+    "steady_ns": 13660121493470072,
+    "wall_ns": 1793635250754575589,
+    "sim_ns": 11090000000,
+    "native_status": {
+      "applied_steady_ns": 13660121490093109,
+      "applied_vx": 0.15,
+      "applied_wz": -0.0003938262139917779,
+      "armed": true,
+      "clock_epoch": "1793635233710433758-207876672",
+      "last_packet_wall_ns": 1793635250748752880,
+      "pending": false,
+      "physical": {
+        "angular_speed": 0.00039245875261244685,
+        "paused": false,
+        "sequence": 5545,
+        "sim_ns": 11090000000,
+        "speed": 0.15000352150018267,
+        "steady_ns": 13660121491751680,
+        "velocity_valid": true,
+        "wall_ns": 1793635250752856977,
+        "x": 15.704466841151616,
+        "y": -31.59602917277305,
+        "yaw": -0.010648581438769702,
+        "z": 0.01000709408404068
+      },
+      "reason": "armed",
+      "received_packets": 315,
+      "schema": "phase5-drive-status/v1",
+      "sequence": 313,
+      "session": "7ab8ef10-9acd-4930-a596-c3ec24144467",
+      "steady_ns": 13660121491751680,
+      "stop_applied_steady_ns": 0,
+      "stop_applied_trigger_ns": 0,
+      "trigger_steady_ns": 0,
+      "vx": 0.15,
+      "wall_ns": 1793635250752856977,
+      "wz": -0.0003938262139917779,
+      "observer_received_wall_ns": 1793635250753332046
+    },
+    "input_freshness_ms": 500,
+    "command_zero_limit_ms": 100
+  },
+  {
+    "event": "guard_stopped_after_semantic_fault",
+    "steady_ns": 13660122967058208,
+    "reason": "semantic_stale",
+    "latency_ms": 1473.588136
+  },
+  {
+    "event": "semantic_fault_restored",
+    "mode": "serving",
+    "steady_ns": 13660122978595409,
+    "wall_ns": 1793635252239701356
+  }
+]

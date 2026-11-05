@@ -1,0 +1,161 @@
+{
+  "apiVersion": "build.openshift.io/v1",
+  "kind": "Build",
+  "metadata": {
+    "annotations": {
+      "openshift.io/build-config.name": "semantic-safety-console-phase5",
+      "openshift.io/build.number": "23",
+      "openshift.io/build.pod-name": "semantic-safety-console-phase5-23-build"
+    },
+    "creationTimestamp": "2026-10-26T12:50:08Z",
+    "generation": 2,
+    "labels": {
+      "buildconfig": "semantic-safety-console-phase5",
+      "openshift.io/build-config.name": "semantic-safety-console-phase5",
+      "openshift.io/build.start-policy": "Serial"
+    },
+    "name": "semantic-safety-console-phase5-23",
+    "namespace": "semantic-navigation",
+    "ownerReferences": [
+      {
+        "apiVersion": "build.openshift.io/v1",
+        "controller": true,
+        "kind": "BuildConfig",
+        "name": "semantic-safety-console-phase5",
+        "uid": "22e3050b-68bd-4c47-818b-c6b3a771ca22"
+      }
+    ],
+    "resourceVersion": "471750706",
+    "uid": "a90701f2-6cad-4694-9697-4797d72853f7"
+  },
+  "spec": {
+    "nodeSelector": null,
+    "output": {
+      "pushSecret": {
+        "name": "builder-dockercfg-htt4p"
+      },
+      "to": {
+        "kind": "ImageStreamTag",
+        "name": "semantic-safety:phase5-console-candidate"
+      }
+    },
+    "postCommit": {},
+    "resources": {
+      "limits": {
+        "cpu": "2",
+        "memory": "4Gi"
+      },
+      "requests": {
+        "cpu": "1",
+        "memory": "2Gi"
+      }
+    },
+    "revision": {
+      "git": {
+        "author": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "commit": "471d99454e5319ebe512c0ff1641d4d0a4f0cf1c",
+        "committer": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "message": "Close moving fault-stop: 10/10 frozen matrix on the guarded GPU fixture\n\nFive fault classes injected after independently verified motion, each\nstopping the chain fail-closed with a mode-qualified first reason in its\ncorrect latency band, trigger-to-applied-zero 0.3-4.7 ms and 1.7-2.3 mm\nsampled stopping distances. Records the probe, the retained failed-pilot\ndebugging history, both matrices and the report/plan updates."
+      },
+      "type": "Git"
+    },
+    "serviceAccount": "builder",
+    "source": {
+      "binary": {},
+      "type": "Binary"
+    },
+    "strategy": {
+      "dockerStrategy": {
+        "dockerfilePath": "Containerfile.console"
+      },
+      "type": "Docker"
+    }
+  },
+  "status": {
+    "completionTimestamp": "2026-10-26T12:55:48Z",
+    "conditions": [
+      {
+        "lastTransitionTime": "2026-10-26T12:50:08Z",
+        "lastUpdateTime": "2026-10-26T12:50:08Z",
+        "status": "False",
+        "type": "New"
+      },
+      {
+        "lastTransitionTime": "2026-10-26T12:50:13Z",
+        "lastUpdateTime": "2026-10-26T12:50:13Z",
+        "status": "False",
+        "type": "Pending"
+      },
+      {
+        "lastTransitionTime": "2026-10-26T12:55:48Z",
+        "lastUpdateTime": "2026-10-26T12:55:48Z",
+        "status": "False",
+        "type": "Running"
+      },
+      {
+        "lastTransitionTime": "2026-10-26T12:55:48Z",
+        "lastUpdateTime": "2026-10-26T12:55:48Z",
+        "status": "True",
+        "type": "Complete"
+      }
+    ],
+    "config": {
+      "kind": "BuildConfig",
+      "name": "semantic-safety-console-phase5",
+      "namespace": "semantic-navigation"
+    },
+    "duration": 340000000000,
+    "output": {
+      "to": {
+        "imageDigest": "sha256:1df223bc5d1ecda22525aa0d8728c12a3fb6f04f2ed393280360ad541c626ed0"
+      }
+    },
+    "outputDockerImageReference": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety:phase5-console-candidate",
+    "phase": "Complete",
+    "stages": [
+      {
+        "durationMilliseconds": 124792,
+        "name": "PullImages",
+        "startTime": "2026-10-26T12:50:17Z",
+        "steps": [
+          {
+            "durationMilliseconds": 124792,
+            "name": "PullBaseImage",
+            "startTime": "2026-10-26T12:50:17Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 199030,
+        "name": "Build",
+        "startTime": "2026-10-26T12:52:21Z",
+        "steps": [
+          {
+            "durationMilliseconds": 199030,
+            "name": "DockerBuild",
+            "startTime": "2026-10-26T12:52:21Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 6087,
+        "name": "PushImage",
+        "startTime": "2026-10-26T12:55:40Z",
+        "steps": [
+          {
+            "durationMilliseconds": 6087,
+            "name": "PushDockerImage",
+            "startTime": "2026-10-26T12:55:40Z"
+          }
+        ]
+      }
+    ],
+    "startTimestamp": "2026-10-26T12:50:08Z"
+  }
+}

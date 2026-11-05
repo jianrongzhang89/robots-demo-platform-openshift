@@ -1,0 +1,15 @@
+{
+ "event": "standalone paired-series re-run 19 (November 4)",
+ "context": "Series 18 passed 15 trials then stopped on 007-on when a single `oc create` for the fixture pod exited 1 (transient API error or AlreadyExists from a not-yet-propagated deletion; the cluster was otherwise healthy).",
+ "change": "The fixture pod/config creation in run_phase5_native gained a bounded delete-and-retry (three attempts, 15 s settle), mirroring g4_topology.create_with_retry. Harness robustness only.",
+ "setup": {
+  "topology": "G4 topology up (direct endpoint); the series' per-trial recycle manages it; reservation remains deleted",
+  "series_output": "qualification-22/paired-series-19",
+  "phase5_evidence": "qualification-22/served-phase5-qualification.json",
+  "sampler": {
+   "output": "serving-resources-paired-series-19.jsonl",
+   "stop_file": "/tmp/g4-paired-series-19-monitor-stop"
+  }
+ },
+ "command": "run_phase6_series.py --output-dir qualification-22/paired-series-19 (same arguments as series 2-18)"
+}

@@ -1,0 +1,607 @@
+{
+  "apiVersion": "v1",
+  "kind": "List",
+  "items": [
+    {
+      "apiVersion": "v1",
+      "kind": "ConfigMap",
+      "metadata": {
+        "name": "semantic-s3-inference-config",
+        "namespace": "semantic-navigation"
+      },
+      "data": {
+        "cyclonedds-consumer.xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<CycloneDDS xmlns=\"https://cdds.io/config\">\n  <Domain id=\"any\">\n    <General><Interfaces><NetworkInterface name=\"lo\" /></Interfaces><AllowMulticast>false</AllowMulticast></General>\n    <Discovery><ParticipantIndex>auto</ParticipantIndex></Discovery>\n    <Internal><NackDelay>1 ms</NackDelay></Internal>\n  </Domain>\n</CycloneDDS>\n",
+        "cyclonedds.xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<CycloneDDS xmlns=\"https://cdds.io/config\">\n  <Domain id=\"any\">\n    <General><Interfaces><NetworkInterface name=\"lo\" /></Interfaces><AllowMulticast>false</AllowMulticast></General>\n    <Discovery><ParticipantIndex>auto</ParticipantIndex></Discovery>\n  </Domain>\n</CycloneDDS>\n",
+        "router.json5": "{ mode: \"router\", listen: { endpoints: [\"tcp/0.0.0.0:17448\"] }, scouting: { multicast: { enabled: false } } }\n",
+        "sim-bridge.json5": "{\n  plugins: { ros2dds: { allow: { publishers: [\".*/camera/color/image_compressed\", \".*/camera/depth/image_compressed\", \".*/camera/color/camera_info\", \".*/tf\", \".*/tf_static\", \".*/camera/capture_trace\", \".*/camera/compression_trace\", \".*clock\"], subscribers: [] } } },\n  mode: \"client\",\n  connect: { endpoints: [\"tcp/semantic-s3-router:17448\"], exit_on_failure: false },\n  scouting: { multicast: { enabled: false } }\n}\n",
+        "inference-bridge.json5": "{\n  plugins: { ros2dds: { allow: { publishers: [], subscribers: [\".*/camera/color/image_compressed\", \".*/camera/depth/image_compressed\", \".*/camera/color/camera_info\", \".*/tf\", \".*/tf_static\", \".*/camera/capture_trace\", \".*/camera/compression_trace\", \".*clock\"] } } },\n  mode: \"client\",\n  connect: { endpoints: [\"tcp/semantic-s3-router:17448\"], exit_on_failure: false },\n  scouting: { multicast: { enabled: false } }\n}\n",
+        "identity.json": "{\n  \"schema\": \"semantic-deployment/v1\",\n  \"model_name\": \"sam3-mat-v1\",\n  \"weights_sha256\": \"9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e\",\n  \"source_revision\": \"0570b3a5be9c4e694f23d85232fb55f4a6f1f7fc\",\n  \"container_digest\": \"sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e\",\n  \"shared_sha256\": {\n    \"inference_contract.py\": \"d238d2490f826b6fbb70f07aa5579492dc425e8c858b780c8216679f121ffdef\",\n    \"sam3_backend.py\": \"3d83819971704e8ce642db98972194996307b314bb73cbb44257384e45714761\",\n    \"sam3_runtime_core.py\": \"683cf53a5b6378fa72d0cefe404bd899039b1420b4d5a2e7cfe3faecaf57085f\"\n  },\n  \"versions\": {\n    \"model\": \"3c879f39826c281e95690f02c7821c4de09afae7\",\n    \"preprocess\": \"sam3-pil-rgb/v1\",\n    \"decoder\": \"sam3-binary-instances/v1\"\n  },\n  \"precision\": \"bfloat16\",\n  \"policy\": \"avoid-target/v1\",\n  \"prompt\": \"red mat\",\n  \"threshold\": 0.5\n}\n",
+        "g3_simulator.sh": "#!/usr/bin/env bash\n# Private headless sensor fixture; no navigation, planner, RMF or command producer.\nset -Ee -o pipefail\nexport HOME=/tmp/ros-home ROS_LOG_DIR=/tmp/ros-home/.ros/log\nmkdir -p \"$ROS_LOG_DIR\" /tmp/g3\nsource /opt/ros/jazzy/setup.bash\nsource /opt/rmf_demos_ws/install/setup.bash\nexport LD_LIBRARY_PATH=\"/opt/semantic-navigation/capture-lib:${LD_LIBRARY_PATH:-}\"\nexport GZ_SIM_RESOURCE_PATH=\"/opt/ros2-demo/hotel-assets/models:/opt/ros2-demo/hotel-assets:/opt/rmf_demos_ws/install/share/rmf_demos_assets/models:${GZ_SIM_RESOURCE_PATH:-}\"\nexport GZ_SIM_SYSTEM_PLUGIN_PATH=\"/opt/ros/jazzy/opt/gz_sim_vendor/lib/gz-sim-8/plugins:${GZ_SIM_SYSTEM_PLUGIN_PATH:-}\"\ncp /opt/ros2-demo/hotel-assets/hotel.world /tmp/g3/hotel.world\npython3 /opt/semantic-navigation/install_phase1_camera.py /tmp/g3/hotel.world --phase2-targets\npids=()\ncleanup() { trap - TERM INT EXIT; for pid in \"${pids[@]}\"; do kill \"$pid\" 2>/dev/null || true; done; wait || true; }\ntrap cleanup TERM INT EXIT\ngz sim --force-version 8 --headless-rendering -r -s -v 2 /tmp/g3/hotel.world > /tmp/g3/gz-server.log 2>&1 & pids+=(\"$!\")\nros2 run robot_state_publisher robot_state_publisher --ros-args -p use_sim_time:=true -p robot_description:=\"$(cat /opt/ros2-demo/robot/turtlebot3_waffle.urdf)\" -r /tf:=/robot_1/tf -r /tf_static:=/robot_1/tf_static > /tmp/g3/robot-state.log 2>&1 & pids+=(\"$!\")\nros2 run ros_gz_bridge parameter_bridge '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock' '/robot_1/cmd_vel@geometry_msgs/msg/Twist]gz.msgs.Twist' '/robot_1/odom@nav_msgs/msg/Odometry[gz.msgs.Odometry' '/scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan' --ros-args -r /scan:=/robot_1/scan > /tmp/g3/bridge.log 2>&1 & pids+=(\"$!\")\nros2 launch ros_gz_bridge ros_gz_bridge.launch.py bridge_name:=semantic_camera_bridge config_file:=/opt/ros2-demo/config/semantic-camera-bridge.yaml > /tmp/g3/camera-bridge.log 2>&1 & pids+=(\"$!\")\npython3 /g3-config/g3_odom_tf.py > /tmp/g3/odom-tf.log 2>&1 & pids+=(\"$!\")\nwait \"${pids[0]}\"\n",
+        "g3_odom_tf.py": "\"\"\"Capture-stamped odometry TF for the private G3 observer; no commands.\"\"\"\nimport math\nimport rclpy\nfrom rclpy.node import Node\nfrom nav_msgs.msg import Odometry\nfrom geometry_msgs.msg import TransformStamped\nfrom tf2_ros import TransformBroadcaster\n\nrclpy.init(args=['--ros-args','-r','/tf:=/robot_1/tf']); node=Node('g3_odometry_tf'); broadcaster=TransformBroadcaster(node)\norigin=None; previous=None\n\ndef receive(msg):\n    global origin, previous\n    stamp=msg.header.stamp.sec*10**9+msg.header.stamp.nanosec\n    p=msg.pose.pose.position; q=msg.pose.pose.orientation\n    yaw=math.atan2(2*(q.w*q.z+q.x*q.y),1-2*(q.y*q.y+q.z*q.z))\n    if origin is None or previous is not None and stamp<previous:\n        origin=(p.x,p.y,yaw)\n    previous=stamp\n    dx,dy=p.x-origin[0],p.y-origin[1]; c,s=math.cos(origin[2]),math.sin(origin[2])\n    t=TransformStamped();t.header.stamp=msg.header.stamp;t.header.frame_id='odom';t.child_frame_id='base_footprint'\n    t.transform.translation.x=c*dx+s*dy;t.transform.translation.y=-s*dx+c*dy\n    t.transform.rotation.z=math.sin((yaw-origin[2])/2);t.transform.rotation.w=math.cos((yaw-origin[2])/2)\n    broadcaster.sendTransform(t)\nnode.create_subscription(Odometry,'/robot_1/odom',receive,50)\nrclpy.spin(node)\n",
+        "audit_g3_capture_timing.py": "#!/usr/bin/env python3\n\"\"\"Capture-origin timing observer. Runs beside inference; never commands motion.\"\"\"\nimport argparse\nimport json\nimport os\nimport hashlib\nfrom pathlib import Path\nimport time\nfrom collections import OrderedDict\n\nimport numpy as np\nimport rclpy\nfrom rclpy.node import Node\nfrom rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy\nfrom sensor_msgs.msg import Image, PointCloud2\nfrom std_msgs.msg import String\n\n\ndef main():\n    parser = argparse.ArgumentParser()\n    parser.add_argument(\"--duration\", type=float, default=60)\n    parser.add_argument(\"--output\", help=\"Write the complete evidence to a NEW file\")\n    parser.add_argument(\"--progress\", action=\"store_true\", help=\"Print one summary per minute\")\n    args = parser.parse_args()\n    if not 1 <= args.duration <= 600:\n        parser.error(\"duration must be within 1..600 seconds\")\n    rclpy.init()\n    node = Node(\"phase3_capture_timing_audit\", enable_rosout=False)\n    state = {\"status\": None, \"labels\": None}\n    rows, transitions, resources = [], [], []\n    captures, compression = OrderedDict(), OrderedDict()\n    counts = dict(mask=0, cloud=0, paired=0, invalid=0, source=0, compression=0)\n    pairs = {\"mask\": set(), \"cloud\": set()}\n    pair_receipts = {}\n    payload_hashes = {\"mask\": {}, \"cloud\": {}}\n    arrival_receipts = {\"mask\": {}, \"cloud\": {}}\n    last_ready = None\n    active = False\n    started = time.monotonic()\n    def status(msg):\n        nonlocal last_ready\n        state[\"status\"] = json.loads(msg.data)\n        if active and state[\"status\"][\"ready\"] != last_ready:\n            transitions.append({\"at_s\": time.monotonic() - started,\n                \"ready\": state[\"status\"][\"ready\"], \"reason\": state[\"status\"][\"reason\"]})\n            last_ready = state[\"status\"][\"ready\"]\n    def timing(msg):\n        if active:\n            row = json.loads(msg.data)\n            row[\"observer_wall_ns\"] = time.time_ns()\n            rows.append(row)\n    def trace(kind):\n        def receive(msg):\n            if active:\n                row = json.loads(msg.data)\n                row[\"observer_wall_ns\"] = time.time_ns()\n                target = captures if kind == \"source\" else compression\n                key = (row.get(\"source_epoch\", \"\"), row[\"stamp_ns\"])\n                target[key] = row\n                counts[kind] += 1\n        return receive\n    def output(kind):\n        def receive(msg):\n            if not active:\n                return\n            arrived_wall_ns = time.time_ns()\n            counts[kind] += 1\n            key = (msg.header.stamp.sec * 10**9 + msg.header.stamp.nanosec, msg.header.frame_id)\n            arrival_receipts[kind][key] = arrived_wall_ns\n            valid = (msg.width, msg.height) == (640, 480) and key[1] == \"camera_color_optical_frame\"\n            if kind == \"mask\":\n                valid = valid and msg.encoding == \"mono8\" and msg.step == 640 and not msg.is_bigendian and len(msg.data) == 640*480\n                valid = valid and np.isin(np.frombuffer(msg.data, dtype=np.uint8), [0, 2]).all()\n            else:\n                valid = valid and msg.point_step == 12 and msg.row_step == 640*12 and len(msg.data) == 640*480*12\n                valid = valid and not msg.is_bigendian and not msg.is_dense\n                valid = valid and [(f.name, f.offset, f.datatype, f.count) for f in msg.fields] == [(\"x\", 0, 7, 1), (\"y\", 4, 7, 1), (\"z\", 8, 7, 1)]\n                if valid:\n                    points = np.frombuffer(msg.data, dtype=\"<f4\").reshape(-1, 3)\n                    finite = np.isfinite(points).all(axis=1)\n                    valid = bool(np.all(finite | np.isnan(points).all(axis=1)))\n                    valid = valid and bool(np.all((points[finite, 2] >= .15) & (points[finite, 2] <= 5)))\n            if not valid:\n                counts[\"invalid\"] += 1\n                return\n            payload_hashes[kind][key] = hashlib.sha256(bytes(msg.data)).hexdigest()\n            other = \"cloud\" if kind == \"mask\" else \"mask\"\n            if key in pairs[other]:\n                pairs[other].remove(key)\n                counts[\"paired\"] += 1\n                pair_receipts[key] = time.time_ns()\n            else:\n                pairs[kind].add(key)\n        return receive\n    node.create_subscription(String, \"/robot_1/semantic/status\", status, 20)\n    node.create_subscription(String, \"/robot_1/semantic/label_info\",\n        lambda msg: state.update(labels=json.loads(msg.data)),\n        QoSProfile(depth=1, reliability=ReliabilityPolicy.RELIABLE,\n                   durability=DurabilityPolicy.TRANSIENT_LOCAL))\n    node.create_subscription(String, \"/robot_1/semantic/timing\", timing, 20)\n    node.create_subscription(String, \"/robot_1/camera/capture_trace\", trace(\"source\"), 20)\n    node.create_subscription(String, \"/robot_1/camera/compression_trace\", trace(\"compression\"), 20)\n    node.create_subscription(Image, \"/robot_1/semantic/mask\", output(\"mask\"), 20)\n    node.create_subscription(PointCloud2, \"/robot_1/semantic/points\", output(\"cloud\"), 20)\n    wait_start = time.monotonic()\n    while not (state[\"status\"] and state[\"status\"][\"ready\"] and state[\"labels\"]):\n        rclpy.spin_once(node, timeout_sec=.1)\n        if time.monotonic() - wait_start > 180:\n            print(json.dumps({\"error\": \"no ready state\", **state}))\n            raise SystemExit(1)\n    initial = state[\"status\"]\n    assert state[\"labels\"][\"policy\"] == \"avoid-target/v1\"\n    assert state[\"labels\"][\"generation\"] == 1\n    assert state[\"labels\"][\"labels\"] == {\"0\": \"unobserved\", \"1\": \"traversable\", \"2\": \"avoid_target\"}\n    assert state[\"labels\"][\"active_labels\"] == [0, 2]\n    started = time.monotonic()\n    started_wall_ns = time.time_ns()\n    next_sample = started\n    next_progress = started + 60\n    active = True\n    while time.monotonic() - started < args.duration:\n        rclpy.spin_once(node, timeout_sec=.05)\n        if time.monotonic() >= next_sample:\n            resources.append({\"at_s\": time.monotonic()-started,\n                \"container_memory_bytes\": int(Path(\"/sys/fs/cgroup/memory.current\").read_text()), \"status\": state[\"status\"]})\n            next_sample += 10\n        if args.progress and time.monotonic() >= next_progress:\n            ages_so_far = [row[\"capture_age_upper_ms\"] for row in rows]\n            print(json.dumps({\"event\": \"progress\", \"elapsed_s\": time.monotonic()-started,\n                \"counts\": counts, \"capture_p95_ms\": float(np.percentile(ages_so_far, 95)) if ages_so_far else None,\n                \"ready\": state[\"status\"][\"ready\"]}), flush=True)\n            next_progress += 60\n    elapsed = time.monotonic()-started\n    def stats(values):\n        if not values:\n            return None\n        return {\"count\": len(values), \"p50\": float(np.percentile(values,50)),\n                \"p95\": float(np.percentile(values,95)), \"max\": float(max(values))}\n    ages = [row[\"capture_age_upper_ms\"] for row in rows]\n    observer_pair_ages = []\n    payload_binding_errors = 0\n    observer_arrival_ages = []\n    for row in rows:\n        received = pair_receipts.get((row[\"capture\"][\"stamp_ns\"], row[\"capture\"][\"frame_id\"]))\n        if received is not None:\n            key = (row[\"capture\"][\"stamp_ns\"], row[\"capture\"][\"frame_id\"])\n            if any(payload_hashes[kind].get(key) != row[kind+\"_sha256\"] for kind in (\"mask\", \"cloud\")):\n                payload_binding_errors += 1\n            row[\"observer_pair_wall_ns\"] = received\n            observer_pair_ages.append((received-row[\"capture_wall_ns\"])/1e6+row[\"clock_uncertainty_ms\"])\n            key = (row[\"capture\"][\"stamp_ns\"], row[\"capture\"][\"frame_id\"])\n            arrival = max(values[key] for values in arrival_receipts.values())\n            row[\"observer_pair_arrival_wall_ns\"] = arrival\n            observer_arrival_ages.append((arrival-row[\"capture_wall_ns\"])/1e6+row[\"clock_uncertainty_ms\"])\n    identities = [row[\"identity\"][\"request_id\"] for row in rows]\n    identity_errors = len(identities) - len(set(identities))\n    order_errors = sum(right[\"capture\"][\"stamp_ns\"] <= left[\"capture\"][\"stamp_ns\"]\n                       for left, right in zip(rows, rows[1:])\n                       if left[\"source_epoch\"] == right[\"source_epoch\"])\n    age_errors = sum(not 0 <= row[\"capture_age_upper_ms\"] <= 500 or\n                     not 0 <= row[\"simulation_age_ms\"] <= 500 for row in rows)\n    def stage(fn):\n        return stats([fn(row) for row in rows])\n    gaps = [(right[\"result_wall_ns\"]-left[\"result_wall_ns\"])/1e6\n            for left, right in zip(rows, rows[1:])]\n    source_rows = list(captures.values())\n    source_rtf = None\n    if len(source_rows) > 1 and source_rows[0][\"source_epoch\"] == source_rows[-1][\"source_epoch\"]:\n        source_rtf = (source_rows[-1][\"stamp_ns\"]-source_rows[0][\"stamp_ns\"]) / (source_rows[-1][\"capture_wall_ns\"]-source_rows[0][\"capture_wall_ns\"])\n    report = {\"kind\": \"capture_origin_timing\", \"duration_s\": elapsed,\n        \"receiver_cyclonedds_uri\": os.getenv(\"CYCLONEDDS_URI\"),\n        \"started_wall_ns\": started_wall_ns, \"finished_wall_ns\": time.time_ns(),\n        \"counts\": counts, \"timed_outputs\": len(rows), \"outputs_per_s\": counts[\"mask\"]/elapsed,\n        \"identity_errors\": identity_errors, \"age_errors\": age_errors, \"payload_binding_errors\": payload_binding_errors,\n        \"order_errors\": order_errors, \"label_metadata\": state[\"labels\"],\n        \"capture_age_upper_ms\": stats(ages), \"simulation_age_ms\": stage(lambda r:r[\"simulation_age_ms\"]),\n        \"observer_pair_capture_age_upper_ms\": stats(observer_pair_ages),\n        \"observer_pair_arrival_capture_age_upper_ms\": stats(observer_arrival_ages),\n        \"outputs_within_250ms_per_s\": sum(x<=250 for x in ages)/elapsed,\n        \"outputs_within_500ms_per_s\": sum(x<=500 for x in ages)/elapsed,\n        \"publication_gap_ms\": stats(gaps), \"gaps_over_500ms\": sum(x>500 for x in gaps),\n        \"source_simulation_wall_ratio\": source_rtf,\n        \"stages_ms\": {\n            \"render\": stage(lambda r:r[\"source\"][\"render_duration_ns\"]/1e6),\n            \"source_publish_to_raw_rgb\": stage(lambda r:(r[\"compression\"][\"rgb_received_wall_ns\"]-r[\"source\"][\"source_publish_wall_ns\"])/1e6),\n            \"raw_pair_wait\": stage(lambda r:(r[\"compression\"][\"compression_start_wall_ns\"]-min(r[\"compression\"][\"rgb_received_wall_ns\"],r[\"compression\"][\"depth_received_wall_ns\"]))/1e6),\n            \"compression\": stage(lambda r:(r[\"compression\"][\"compression_end_wall_ns\"]-r[\"compression\"][\"compression_start_wall_ns\"])/1e6),\n            \"compressed_to_receiver_rgb\": stage(lambda r:(r[\"receiver_rgb_wall_ns\"]-r[\"compression\"][\"compression_end_wall_ns\"])/1e6),\n            \"backend\": stage(lambda r:r[\"backend_ms\"]),\n            \"work_wait\": stage(lambda r:r.get(\"work_wait_ms\", 0)),\n            \"normalized_cloud_publish\": stage(lambda r:r[\"normalization_cloud_publish_ms\"]),\n            \"receiver_rgb_to_result\": stage(lambda r:(r[\"result_wall_ns\"]-r[\"receiver_rgb_wall_ns\"])/1e6)},\n        \"initial_status\": initial, \"final_status\": state[\"status\"],\n        \"transitions\": transitions, \"resources\": resources, \"results\": rows,\n        \"source_traces\": list(captures.values()), \"compression_traces\": list(compression.values())}\n    if (report[\"receiver_cyclonedds_uri\"] or \"\").startswith(\"file://\"):\n        report[\"receiver_cyclonedds_sha256\"] = hashlib.sha256(Path(report[\"receiver_cyclonedds_uri\"][7:]).read_bytes()).hexdigest()\n    if args.output:\n        with open(args.output, \"x\") as handle:\n            json.dump(report, handle, sort_keys=True)\n        summary = {key: value for key, value in report.items()\n                   if key not in (\"results\", \"source_traces\", \"compression_traces\", \"resources\")}\n        summary[\"evidence_file\"] = args.output\n        summary[\"container_memory_first_last_bytes\"] = [resources[0][\"container_memory_bytes\"], resources[-1][\"container_memory_bytes\"]]\n        print(json.dumps(summary, sort_keys=True), flush=True)\n    else:\n        print(json.dumps(report, sort_keys=True), flush=True)\n    node.destroy_node()\n    rclpy.shutdown()\n    if not rows or counts[\"invalid\"] or identity_errors or age_errors or order_errors or payload_binding_errors:\n        raise SystemExit(1)\n\n\nif __name__ == \"__main__\":\n    main()\n"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "semantic-s3-router",
+        "namespace": "semantic-navigation"
+      },
+      "spec": {
+        "selector": {
+          "app": "semantic-s3-router"
+        },
+        "ports": [
+          {
+            "name": "zenoh",
+            "port": 17448,
+            "targetPort": 17448
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "name": "semantic-s3-router",
+        "namespace": "semantic-navigation",
+        "labels": {
+          "app": "semantic-s3-router"
+        }
+      },
+      "spec": {
+        "restartPolicy": "Always",
+        "containers": [
+          {
+            "name": "router",
+            "image": "docker.io/eclipse/zenoh@sha256:137310456cc7a75d955063513207c737f25071fbb74fd7641835c50ab8e3369f",
+            "args": [
+              "-c",
+              "/g3-config/router.json5"
+            ],
+            "volumeMounts": [
+              {
+                "name": "config",
+                "mountPath": "/g3-config",
+                "readOnly": true
+              }
+            ],
+            "resources": {
+              "requests": {
+                "cpu": "100m",
+                "memory": "128Mi"
+              },
+              "limits": {
+                "cpu": "500m",
+                "memory": "512Mi"
+              }
+            }
+          }
+        ],
+        "volumes": [
+          {
+            "name": "config",
+            "configMap": {
+              "name": "semantic-s3-inference-config"
+            }
+          }
+        ],
+        "automountServiceAccountToken": false
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "name": "semantic-s3-simulator",
+        "namespace": "semantic-navigation",
+        "labels": {
+          "app": "semantic-s3-simulator"
+        }
+      },
+      "spec": {
+        "restartPolicy": "Always",
+        "nodeSelector": {
+          "kubernetes.io/hostname": "ip-10-0-44-146.ec2.internal"
+        },
+        "tolerations": [
+          {
+            "key": "g5-gpu",
+            "operator": "Equal",
+            "value": "true",
+            "effect": "NoSchedule"
+          }
+        ],
+        "containers": [
+          {
+            "name": "simulator",
+            "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:d417c9f252d1f89dd859290a4bca1f634bcfd7d3cde6d1702c409d432bd48894",
+            "imagePullPolicy": "Always",
+            "command": [
+              "/bin/bash",
+              "/g3-config/g3_simulator.sh"
+            ],
+            "env": [
+              {
+                "name": "ROS_DISTRO",
+                "value": "jazzy"
+              },
+              {
+                "name": "ROS_DOMAIN_ID",
+                "value": "190"
+              },
+              {
+                "name": "RMW_IMPLEMENTATION",
+                "value": "rmw_cyclonedds_cpp"
+              },
+              {
+                "name": "CYCLONEDDS_URI",
+                "value": "file:///g3-config/cyclonedds.xml"
+              },
+              {
+                "name": "GZ_PARTITION",
+                "value": "semantic_s3_inference"
+              },
+              {
+                "name": "GZ_IP",
+                "value": "127.0.0.1"
+              },
+              {
+                "name": "RESOLUTION",
+                "value": "1600x900x24"
+              },
+              {
+                "name": "SEMANTIC_PHASE2_SCENE",
+                "value": "1"
+              },
+              {
+                "name": "SEMANTIC_CAPTURE_TRACE",
+                "value": "1"
+              },
+              {
+                "name": "NVIDIA_DRIVER_CAPABILITIES",
+                "value": "all"
+              }
+            ],
+            "volumeMounts": [
+              {
+                "name": "config",
+                "mountPath": "/g3-config",
+                "readOnly": true
+              }
+            ],
+            "resources": {
+              "requests": {
+                "cpu": "3",
+                "memory": "3Gi",
+                "nvidia.com/gpu": 1
+              },
+              "limits": {
+                "cpu": "6",
+                "memory": "8Gi",
+                "nvidia.com/gpu": 1
+              }
+            }
+          },
+          {
+            "name": "camera-compressor",
+            "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:c3ba94bbcbbe2283f1c46ea0f2baba398da313ffe83d2b59a63272ef91d95ebf",
+            "imagePullPolicy": "Always",
+            "command": [
+              "/bin/bash",
+              "-lc"
+            ],
+            "args": [
+              "export HOME=/tmp/ros-home ROS_LOG_DIR=/tmp/ros-home/.ros/log; mkdir -p \"$ROS_LOG_DIR\"; source /opt/ros/jazzy/setup.bash; source /opt/rmf_demos_ws/install/setup.bash; for attempt in {1..90}; do\n  color_info=$(ros2 topic info /robot_1/camera/color/image_raw 2>/dev/null || true);\n  depth_info=$(ros2 topic info /robot_1/camera/depth/image_raw 2>/dev/null || true);\n  if printf '%s' \"$color_info\" | grep -q 'Publisher count: 1' && printf '%s' \"$depth_info\" | grep -q 'Publisher count: 1'; then break; fi;\n  sleep 1;\ndone; exec python3 /opt/semantic-navigation/camera_compressor.py"
+            ],
+            "env": [
+              {
+                "name": "ROS_DISTRO",
+                "value": "jazzy"
+              },
+              {
+                "name": "ROS_DOMAIN_ID",
+                "value": "190"
+              },
+              {
+                "name": "RMW_IMPLEMENTATION",
+                "value": "rmw_cyclonedds_cpp"
+              },
+              {
+                "name": "CYCLONEDDS_URI",
+                "value": "file:///g3-config/cyclonedds.xml"
+              },
+              {
+                "name": "SEMANTIC_CAMERA_SUBSCRIPTION_DEPTH",
+                "value": "20"
+              },
+              {
+                "name": "SEMANTIC_COMPRESSION_TRACE",
+                "value": "1"
+              },
+              {
+                "name": "SEMANTIC_RAW_INPUT",
+                "value": "gz"
+              },
+              {
+                "name": "PHASE3_CAMERA_FAULT_FILE",
+                "value": "/tmp/phase3-camera-fault.json"
+              },
+              {
+                "name": "GZ_PARTITION",
+                "value": "semantic_s3_inference"
+              },
+              {
+                "name": "GZ_IP",
+                "value": "127.0.0.1"
+              }
+            ],
+            "volumeMounts": [
+              {
+                "name": "config",
+                "mountPath": "/g3-config",
+                "readOnly": true
+              }
+            ],
+            "resources": {
+              "requests": {
+                "cpu": "250m",
+                "memory": "512Mi"
+              },
+              "limits": {
+                "cpu": "2",
+                "memory": "2Gi"
+              }
+            }
+          },
+          {
+            "name": "sim-zenoh-bridge",
+            "image": "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+            "args": [
+              "-c",
+              "/g3-config/sim-bridge.json5"
+            ],
+            "env": [
+              {
+                "name": "ROS_DOMAIN_ID",
+                "value": "190"
+              },
+              {
+                "name": "ROS_DISTRO",
+                "value": "jazzy"
+              },
+              {
+                "name": "RMW_IMPLEMENTATION",
+                "value": "rmw_cyclonedds_cpp"
+              },
+              {
+                "name": "CYCLONEDDS_URI",
+                "value": "file:///g3-config/cyclonedds.xml"
+              }
+            ],
+            "volumeMounts": [
+              {
+                "name": "config",
+                "mountPath": "/g3-config",
+                "readOnly": true
+              }
+            ],
+            "resources": {
+              "requests": {
+                "cpu": "100m",
+                "memory": "128Mi"
+              },
+              "limits": {
+                "cpu": "1",
+                "memory": "1Gi"
+              }
+            }
+          }
+        ],
+        "volumes": [
+          {
+            "name": "config",
+            "configMap": {
+              "name": "semantic-s3-inference-config"
+            }
+          }
+        ],
+        "automountServiceAccountToken": false
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "name": "semantic-s3-inference",
+        "namespace": "semantic-navigation",
+        "labels": {
+          "app": "semantic-s3-inference",
+          "semantic-serving-client": "sam3-mat-v1"
+        }
+      },
+      "spec": {
+        "restartPolicy": "Always",
+        "nodeSelector": {
+          "kubernetes.io/hostname": "ip-10-0-53-174.ec2.internal"
+        },
+        "containers": [
+          {
+            "name": "inference-zenoh-bridge",
+            "image": "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+            "args": [
+              "-c",
+              "/g3-config/inference-bridge.json5"
+            ],
+            "env": [
+              {
+                "name": "ROS_DOMAIN_ID",
+                "value": "191"
+              },
+              {
+                "name": "ROS_DISTRO",
+                "value": "jazzy"
+              },
+              {
+                "name": "HOME",
+                "value": "/tmp/sam3-home"
+              },
+              {
+                "name": "ROS_LOG_DIR",
+                "value": "/tmp/ros-log"
+              },
+              {
+                "name": "RMW_IMPLEMENTATION",
+                "value": "rmw_cyclonedds_cpp"
+              },
+              {
+                "name": "CYCLONEDDS_URI",
+                "value": "file:///g3-config/cyclonedds.xml"
+              }
+            ],
+            "volumeMounts": [
+              {
+                "name": "config",
+                "mountPath": "/g3-config",
+                "readOnly": true
+              }
+            ],
+            "resources": {
+              "requests": {
+                "cpu": "100m",
+                "memory": "128Mi"
+              },
+              "limits": {
+                "cpu": "500m",
+                "memory": "512Mi"
+              }
+            }
+          },
+          {
+            "name": "adapter",
+            "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-cpu-adapter@sha256:20ea4f5e6bc30646f48b29895eb071d40403f8c20b0c1526aeacf06dce716d4b",
+            "command": [
+              "/bin/bash",
+              "-ec"
+            ],
+            "args": [
+              "source /opt/ros/jazzy/setup.bash; exec python3 /opt/semantic-perception/sam3_ros_node.py --ros-args -p backend:=http -p robot_id:=robot_1 -p stream_id:=camera/color"
+            ],
+            "env": [
+              {
+                "name": "SEMANTIC_BACKEND",
+                "value": "http"
+              },
+              {
+                "name": "SEMANTIC_ENDPOINT",
+                "value": "https://sam3-mat-v1-tls.semantic-model-serving.svc:8443"
+              },
+              {
+                "name": "SEMANTIC_TLS_CA",
+                "value": "/cert/ca.crt"
+              },
+              {
+                "name": "SEMANTIC_TLS_CERT",
+                "value": "/cert/tls.crt"
+              },
+              {
+                "name": "SEMANTIC_TLS_KEY",
+                "value": "/cert/tls.key"
+              },
+              {
+                "name": "SEMANTIC_DEPLOYMENT_IDENTITY",
+                "value": "/g3-config/identity.json"
+              },
+              {
+                "name": "SEMANTIC_REQUIRE_CAPTURE_TRACE",
+                "value": "1"
+              },
+              {
+                "name": "SEMANTIC_CLOCK_UNCERTAINTY_MS",
+                "value": "2"
+              },
+              {
+                "name": "SEMANTIC_MAX_WORK_WAIT_MS",
+                "value": "60"
+              },
+              {
+                "name": "SEMANTIC_STATUS_FILE",
+                "value": "/tmp/semantic-status.json"
+              },
+              {
+                "name": "ROS_DOMAIN_ID",
+                "value": "191"
+              },
+              {
+                "name": "CYCLONEDDS_URI",
+                "value": "file:///g3-config/cyclonedds-consumer.xml"
+              }
+            ],
+            "resources": {
+              "requests": {
+                "cpu": "1",
+                "memory": "1Gi"
+              },
+              "limits": {
+                "cpu": "2",
+                "memory": "2Gi"
+              }
+            },
+            "securityContext": {
+              "allowPrivilegeEscalation": false,
+              "readOnlyRootFilesystem": true,
+              "capabilities": {
+                "drop": [
+                  "ALL"
+                ]
+              },
+              "seccompProfile": {
+                "type": "RuntimeDefault"
+              }
+            },
+            "readinessProbe": {
+              "exec": {
+                "command": [
+                  "python3",
+                  "-c",
+                  "import json,time; s=json.load(open(\"/tmp/semantic-status.json\")); assert s[\"ready\"] and 0 <= time.time_ns()-s[\"status_wall_ns\"] < 500000000"
+                ]
+              },
+              "periodSeconds": 1,
+              "timeoutSeconds": 1,
+              "failureThreshold": 1
+            },
+            "volumeMounts": [
+              {
+                "name": "config",
+                "mountPath": "/g3-config",
+                "readOnly": true
+              },
+              {
+                "name": "tls",
+                "mountPath": "/cert",
+                "readOnly": true
+              },
+              {
+                "name": "tmp",
+                "mountPath": "/tmp"
+              }
+            ]
+          },
+          {
+            "name": "costmap-observer",
+            "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-g3-costmap@sha256:456f2707026b9de64275669f6a5d14bda1ef927c15ab35aa848801b1e94b2ec9",
+            "command": [
+              "/bin/bash",
+              "-lc"
+            ],
+            "args": [
+              "source /opt/semantic-costmap-ws/install/setup.bash; exec /opt/g3/build/g3_observer --ros-args -p use_sim_time:=true -p global_frame:=odom -r /tf:=/robot_1/tf -r /tf_static:=/robot_1/tf_static"
+            ],
+            "env": [
+              {
+                "name": "ROS_DOMAIN_ID",
+                "value": "191"
+              },
+              {
+                "name": "ROS_LOG_DIR",
+                "value": "/tmp/phase4-ros-logs"
+              },
+              {
+                "name": "RMW_IMPLEMENTATION",
+                "value": "rmw_cyclonedds_cpp"
+              },
+              {
+                "name": "CYCLONEDDS_URI",
+                "value": "file:///g3-config/cyclonedds-consumer.xml"
+              }
+            ],
+            "volumeMounts": [
+              {
+                "name": "config",
+                "mountPath": "/g3-config",
+                "readOnly": true
+              }
+            ],
+            "resources": {
+              "requests": {
+                "cpu": "1",
+                "memory": "1Gi"
+              },
+              "limits": {
+                "cpu": "3",
+                "memory": "3Gi"
+              }
+            },
+            "securityContext": {
+              "allowPrivilegeEscalation": false,
+              "capabilities": {
+                "drop": [
+                  "ALL"
+                ]
+              },
+              "runAsNonRoot": true,
+              "seccompProfile": {
+                "type": "RuntimeDefault"
+              }
+            }
+          },
+          {
+            "name": "background-load",
+            "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-cpu-adapter@sha256:20ea4f5e6bc30646f48b29895eb071d40403f8c20b0c1526aeacf06dce716d4b",
+            "command": [
+              "python3",
+              "-c"
+            ],
+            "args": [
+              "import time\nwhile True:\n t=time.monotonic()\n while time.monotonic()-t<0.05: pass\n time.sleep(0.05)"
+            ],
+            "resources": {
+              "requests": {
+                "cpu": "500m",
+                "memory": "32Mi"
+              },
+              "limits": {
+                "cpu": "500m",
+                "memory": "64Mi"
+              }
+            },
+            "securityContext": {
+              "allowPrivilegeEscalation": false,
+              "capabilities": {
+                "drop": [
+                  "ALL"
+                ]
+              }
+            }
+          }
+        ],
+        "volumes": [
+          {
+            "name": "config",
+            "configMap": {
+              "name": "semantic-s3-inference-config"
+            }
+          },
+          {
+            "name": "tls",
+            "secret": {
+              "secretName": "sam3-replay-tls",
+              "defaultMode": 288
+            }
+          },
+          {
+            "name": "tmp",
+            "emptyDir": {
+              "sizeLimit": "512Mi"
+            }
+          }
+        ],
+        "automountServiceAccountToken": false,
+        "serviceAccountName": "sam3-replay"
+      }
+    }
+  ]
+}

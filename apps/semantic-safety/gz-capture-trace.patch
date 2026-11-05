@@ -1,0 +1,40 @@
+--- a/src/RgbdCameraSensor.cc
++++ b/src/RgbdCameraSensor.cc
+@@ -40,3 +40,4 @@
+ #include "PointCloudUtil.hh"
++#include "SemanticCaptureTrace.hh"
+ 
+ /// \brief Private data for RgbdCameraSensor
+@@ -60,5 +61,6 @@
+   /// \brief node to create publisher
+   public: transport::Node node;
++  public: std::unique_ptr<SemanticCaptureTrace> captureTrace;
+ 
+   /// \brief publisher to publish images
+   public: transport::Node::Publisher imagePub;
+@@ -264,4 +266,8 @@
+   this->dataPtr->initialized = true;
++  if (std::getenv("SEMANTIC_CAPTURE_TRACE"))
++  {
++    this->dataPtr->captureTrace.reset(new SemanticCaptureTrace(this->Topic()));
++  }
+ 
+   return true;
+ }
+@@ -512,4 +518,8 @@
+   // generate sensor data
++  if (this->dataPtr->captureTrace)
++    this->dataPtr->captureTrace->Begin(_now);
+   this->Render();
++  if (this->dataPtr->captureTrace)
++    this->dataPtr->captureTrace->Rendered();
+ 
+   // create and publish the depthmessage
+@@ -652,5 +662,7 @@
++  if (this->dataPtr->captureTrace)
++    this->dataPtr->captureTrace->End();
+   return true;
+ }
+ 
+ //////////////////////////////////////////////////
+ unsigned int RgbdCameraSensor::ImageWidth() const

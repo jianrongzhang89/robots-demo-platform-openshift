@@ -1,0 +1,76 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: sam3-phase2-probe
+  namespace: semantic-navigation
+  labels:
+    app.kubernetes.io/name: sam3-phase2-probe
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 1800
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: sam3-phase2-probe
+    spec:
+      restartPolicy: Never
+      securityContext:
+        fsGroup: 1001340000
+        fsGroupChangePolicy: OnRootMismatch
+      nodeSelector:
+        nvidia.com/gpu.product: NVIDIA-L40S
+      tolerations:
+        - key: g6e-gpu
+          operator: Equal
+          value: "true"
+          effect: NoSchedule
+      containers:
+        - name: sam3-probe
+          image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/sam3-smoke:phase0
+          imagePullPolicy: Always
+          args:
+            - --checkpoint
+            - /models/sam3.pt
+            - --image
+            - /phase2-data/preview.jpg
+            - --prompt
+            - red floor mat
+            - --confidence-threshold
+            - "0.5"
+            - --device
+            - cuda
+          env:
+            - name: HF_HUB_OFFLINE
+              value: "1"
+            - name: HOME
+              value: /tmp/sam3-home
+          resources:
+            requests:
+              cpu: "4"
+              memory: 16Gi
+              nvidia.com/gpu: "1"
+            limits:
+              cpu: "8"
+              memory: 32Gi
+              nvidia.com/gpu: "1"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - name: model
+              mountPath: /models
+              readOnly: true
+            - name: preview
+              mountPath: /phase2-data
+              readOnly: true
+      volumes:
+        - name: model
+          persistentVolumeClaim:
+            claimName: sam3-checkpoint
+        - name: preview
+          configMap:
+            name: phase2-preview

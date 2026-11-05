@@ -1,0 +1,504 @@
+{
+  "pods": [
+    {
+      "name": "semantic-phase4-router",
+      "uid": "7a009bdd-3ad0-4b5f-ac71-4033f55b63e0",
+      "node": "ip-10-0-44-171.ec2.internal",
+      "phase": "Running",
+      "containers": [
+        {
+          "name": "router",
+          "image": "eclipse/zenoh:1.5.0",
+          "resources": {
+            "limits": {
+              "cpu": "500m",
+              "memory": "512Mi"
+            },
+            "requests": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            }
+          },
+          "status": {
+            "allocatedResources": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            },
+            "containerID": "cri-o://e23fda02adc5dd99755e72cbbe45e863dafe198e3c3d855d1122f6c8c1ad9799",
+            "image": "docker.io/eclipse/zenoh:1.5.0",
+            "imageID": "docker.io/eclipse/zenoh@sha256:137310456cc7a75d955063513207c737f25071fbb74fd7641835c50ab8e3369f",
+            "lastState": {},
+            "name": "router",
+            "ready": true,
+            "resources": {
+              "limits": {
+                "cpu": "500m",
+                "memory": "512Mi"
+              },
+              "requests": {
+                "cpu": "100m",
+                "memory": "128Mi"
+              }
+            },
+            "restartCount": 0,
+            "started": true,
+            "state": {
+              "running": {
+                "startedAt": "2026-10-16T18:27:55Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 0,
+                "supplementalGroups": [
+                  0
+                ],
+                "uid": 1001340000
+              }
+            },
+            "volumeMounts": [
+              {
+                "mountPath": "/phase4-config",
+                "name": "config",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              },
+              {
+                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                "name": "kube-api-access-vt86w",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "semantic-phase4-simulator",
+      "uid": "7befcaa2-2447-4c61-9b3b-4f3d84b5cc5c",
+      "node": "ip-10-0-38-113.ec2.internal",
+      "phase": "Running",
+      "containers": [
+        {
+          "name": "simulator",
+          "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:d417c9f252d1f89dd859290a4bca1f634bcfd7d3cde6d1702c409d432bd48894",
+          "resources": {
+            "limits": {
+              "cpu": "12",
+              "memory": "8Gi"
+            },
+            "requests": {
+              "cpu": "1",
+              "memory": "3Gi"
+            }
+          },
+          "status": {
+            "allocatedResources": {
+              "cpu": "1",
+              "memory": "3Gi"
+            },
+            "containerID": "cri-o://f9ce80a41cb0262e53828c44e72aec55cf316db6bf151b019180670315b1f7a1",
+            "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:d417c9f252d1f89dd859290a4bca1f634bcfd7d3cde6d1702c409d432bd48894",
+            "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:d417c9f252d1f89dd859290a4bca1f634bcfd7d3cde6d1702c409d432bd48894",
+            "lastState": {},
+            "name": "simulator",
+            "ready": true,
+            "resources": {
+              "limits": {
+                "cpu": "12",
+                "memory": "8Gi"
+              },
+              "requests": {
+                "cpu": "1",
+                "memory": "3Gi"
+              }
+            },
+            "restartCount": 0,
+            "started": true,
+            "state": {
+              "running": {
+                "startedAt": "2026-10-16T18:27:55Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 0,
+                "supplementalGroups": [
+                  0
+                ],
+                "uid": 1001340000
+              }
+            },
+            "volumeMounts": [
+              {
+                "mountPath": "/phase4-config",
+                "name": "config",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              },
+              {
+                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                "name": "kube-api-access-kq5bf",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              }
+            ]
+          }
+        },
+        {
+          "name": "camera-compressor",
+          "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:c3ba94bbcbbe2283f1c46ea0f2baba398da313ffe83d2b59a63272ef91d95ebf",
+          "resources": {
+            "limits": {
+              "cpu": "2",
+              "memory": "2Gi"
+            },
+            "requests": {
+              "cpu": "250m",
+              "memory": "512Mi"
+            }
+          },
+          "status": {
+            "allocatedResources": {
+              "cpu": "250m",
+              "memory": "512Mi"
+            },
+            "containerID": "cri-o://e9f8858e3601f6dfdfd109368e035ddc1465567df2ff03d2308e2bc01c1de716",
+            "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:c3ba94bbcbbe2283f1c46ea0f2baba398da313ffe83d2b59a63272ef91d95ebf",
+            "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:c3ba94bbcbbe2283f1c46ea0f2baba398da313ffe83d2b59a63272ef91d95ebf",
+            "lastState": {},
+            "name": "camera-compressor",
+            "ready": true,
+            "resources": {
+              "limits": {
+                "cpu": "2",
+                "memory": "2Gi"
+              },
+              "requests": {
+                "cpu": "250m",
+                "memory": "512Mi"
+              }
+            },
+            "restartCount": 0,
+            "started": true,
+            "state": {
+              "running": {
+                "startedAt": "2026-10-16T18:27:56Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 0,
+                "supplementalGroups": [
+                  0
+                ],
+                "uid": 1001340000
+              }
+            },
+            "volumeMounts": [
+              {
+                "mountPath": "/phase4-config",
+                "name": "config",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              },
+              {
+                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                "name": "kube-api-access-kq5bf",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              }
+            ]
+          }
+        },
+        {
+          "name": "sim-zenoh-bridge",
+          "image": "eclipse/zenoh-bridge-ros2dds:1.5.0",
+          "resources": {
+            "limits": {
+              "cpu": "1",
+              "memory": "1Gi"
+            },
+            "requests": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            }
+          },
+          "status": {
+            "allocatedResources": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            },
+            "containerID": "cri-o://5d608fffa98508204c3c650e445df0be2a35c83689815d0b0a1da86c5353f942",
+            "image": "docker.io/eclipse/zenoh-bridge-ros2dds:1.5.0",
+            "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+            "lastState": {},
+            "name": "sim-zenoh-bridge",
+            "ready": true,
+            "resources": {
+              "limits": {
+                "cpu": "1",
+                "memory": "1Gi"
+              },
+              "requests": {
+                "cpu": "100m",
+                "memory": "128Mi"
+              }
+            },
+            "restartCount": 0,
+            "started": true,
+            "state": {
+              "running": {
+                "startedAt": "2026-10-16T18:27:56Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 0,
+                "supplementalGroups": [
+                  0
+                ],
+                "uid": 1001340000
+              }
+            },
+            "volumeMounts": [
+              {
+                "mountPath": "/phase4-config",
+                "name": "config",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              },
+              {
+                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                "name": "kube-api-access-kq5bf",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "semantic-phase4-inference",
+      "uid": "c4f190e8-034f-4558-9f7e-0f0b966fd056",
+      "node": "ip-10-0-18-251.ec2.internal",
+      "phase": "Running",
+      "containers": [
+        {
+          "name": "inference-zenoh-bridge",
+          "image": "eclipse/zenoh-bridge-ros2dds:1.5.0",
+          "resources": {
+            "limits": {
+              "cpu": "500m",
+              "memory": "512Mi"
+            },
+            "requests": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            }
+          },
+          "status": {
+            "allocatedResources": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            },
+            "containerID": "cri-o://ab071cb8eff071f2f0616f78b1040ca6219598b7e0a742e318ad8a4d27c9853a",
+            "image": "docker.io/eclipse/zenoh-bridge-ros2dds:1.5.0",
+            "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+            "lastState": {},
+            "name": "inference-zenoh-bridge",
+            "ready": true,
+            "resources": {
+              "limits": {
+                "cpu": "500m",
+                "memory": "512Mi"
+              },
+              "requests": {
+                "cpu": "100m",
+                "memory": "128Mi"
+              }
+            },
+            "restartCount": 0,
+            "started": true,
+            "state": {
+              "running": {
+                "startedAt": "2026-10-16T18:28:05Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 0,
+                "supplementalGroups": [
+                  0,
+                  1001340000
+                ],
+                "uid": 1001340000
+              }
+            },
+            "volumeMounts": [
+              {
+                "mountPath": "/phase4-config",
+                "name": "config",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              },
+              {
+                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                "name": "kube-api-access-wjp4k",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              }
+            ]
+          }
+        },
+        {
+          "name": "sam3-inference",
+          "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/sam3-runtime@sha256:478ec01a7a47fbb0c862fbbef495c71b4a512ff59ed8d6ed5b7234422cc35686",
+          "resources": {
+            "limits": {
+              "cpu": "6",
+              "memory": "24Gi",
+              "nvidia.com/gpu": "1"
+            },
+            "requests": {
+              "cpu": "3",
+              "memory": "12Gi",
+              "nvidia.com/gpu": "1"
+            }
+          },
+          "status": {
+            "allocatedResources": {
+              "cpu": "3",
+              "memory": "12Gi",
+              "nvidia.com/gpu": "1"
+            },
+            "containerID": "cri-o://20cd502bb5885fcbd317d6340e3f462cd74ca18b6ab8d575d643ff9a5d54666f",
+            "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/sam3-runtime@sha256:478ec01a7a47fbb0c862fbbef495c71b4a512ff59ed8d6ed5b7234422cc35686",
+            "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/sam3-runtime@sha256:478ec01a7a47fbb0c862fbbef495c71b4a512ff59ed8d6ed5b7234422cc35686",
+            "lastState": {},
+            "name": "sam3-inference",
+            "ready": true,
+            "resources": {
+              "limits": {
+                "cpu": "6",
+                "memory": "24Gi",
+                "nvidia.com/gpu": "1"
+              },
+              "requests": {
+                "cpu": "3",
+                "memory": "12Gi",
+                "nvidia.com/gpu": "1"
+              }
+            },
+            "restartCount": 0,
+            "started": true,
+            "state": {
+              "running": {
+                "startedAt": "2026-10-16T18:28:06Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 0,
+                "supplementalGroups": [
+                  0,
+                  1001340000
+                ],
+                "uid": 1001340000
+              }
+            },
+            "volumeMounts": [
+              {
+                "mountPath": "/phase4-config",
+                "name": "config",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              },
+              {
+                "mountPath": "/models",
+                "name": "model",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              },
+              {
+                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                "name": "kube-api-access-wjp4k",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              }
+            ]
+          }
+        },
+        {
+          "name": "costmap-observer",
+          "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-costmap@sha256:447c6ee36d2eff0707a69133881c4131e0033dab5c38099750844173d416c92f",
+          "resources": {
+            "limits": {
+              "cpu": "3",
+              "memory": "3Gi"
+            },
+            "requests": {
+              "cpu": "1",
+              "memory": "1Gi"
+            }
+          },
+          "status": {
+            "allocatedResources": {
+              "cpu": "1",
+              "memory": "1Gi"
+            },
+            "containerID": "cri-o://c195aaa80035aa6fd37b44fe2c88ca2f419bf4b4e852569b95475067b9f2bfdc",
+            "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-costmap@sha256:447c6ee36d2eff0707a69133881c4131e0033dab5c38099750844173d416c92f",
+            "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-costmap@sha256:447c6ee36d2eff0707a69133881c4131e0033dab5c38099750844173d416c92f",
+            "lastState": {},
+            "name": "costmap-observer",
+            "ready": true,
+            "resources": {
+              "limits": {
+                "cpu": "3",
+                "memory": "3Gi"
+              },
+              "requests": {
+                "cpu": "1",
+                "memory": "1Gi"
+              }
+            },
+            "restartCount": 0,
+            "started": true,
+            "state": {
+              "running": {
+                "startedAt": "2026-10-16T18:28:47Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 0,
+                "supplementalGroups": [
+                  0,
+                  1001340000
+                ],
+                "uid": 1001340000
+              }
+            },
+            "volumeMounts": [
+              {
+                "mountPath": "/phase4-config",
+                "name": "config",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              },
+              {
+                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                "name": "kube-api-access-wjp4k",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

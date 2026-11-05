@@ -1,0 +1,1042 @@
+{
+  "started_at": "2026-11-04T14:06:30.600058+00:00",
+  "status": "PASS",
+  "scope": "stopped replay only; no ROS, motion, timing or new-presenter qualification",
+  "cycles": [
+    {
+      "cycle": 1,
+      "update": {
+        "pod": "sam3-mat-v1-predictor-665bbb5f9-dvngj",
+        "uid": "e6ec7634-0f66-439d-a2b2-53d01cadf013",
+        "containers": [
+          {
+            "allocatedResources": {
+              "cpu": "100m",
+              "memory": "100Mi"
+            },
+            "containerID": "cri-o://dbb080e8916b4a235643a7805f0a536f966426dc64fd8d8ee50a2f58c622652b",
+            "image": "registry.redhat.io/rhoai/odh-kserve-agent-rhel9@sha256:8ec73b6a944b78c3ef5595c28aad3d13284c2c89b6cdf4ed4cdf6a6939ee91d2",
+            "imageID": "registry.redhat.io/rhoai/odh-kserve-agent-rhel9@sha256:8ec73b6a944b78c3ef5595c28aad3d13284c2c89b6cdf4ed4cdf6a6939ee91d2",
+            "lastState": {},
+            "name": "agent",
+            "ready": true,
+            "resources": {
+              "limits": {
+                "cpu": "1",
+                "memory": "1Gi"
+              },
+              "requests": {
+                "cpu": "100m",
+                "memory": "100Mi"
+              }
+            },
+            "restartCount": 0,
+            "started": true,
+            "state": {
+              "running": {
+                "startedAt": "2026-11-04T14:07:28Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 0,
+                "supplementalGroups": [
+                  0,
+                  1000840000
+                ],
+                "uid": 1000840000
+              }
+            },
+            "volumeMounts": [
+              {
+                "mountPath": "/mnt/models",
+                "name": "model-dir"
+              },
+              {
+                "mountPath": "/mnt/configs",
+                "name": "model-config"
+              }
+            ]
+          },
+          {
+            "allocatedResources": {
+              "cpu": "3",
+              "memory": "12Gi",
+              "nvidia.com/gpu": "1"
+            },
+            "containerID": "cri-o://590e471355bed408ff89d5056416c591cad6035c792ee188035d8a5218140264",
+            "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:af5cb7325f08fd137380d488745cba3a229857cb57d059d31befce93e25246c9",
+            "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:af5cb7325f08fd137380d488745cba3a229857cb57d059d31befce93e25246c9",
+            "lastState": {},
+            "name": "kserve-container",
+            "ready": true,
+            "resources": {
+              "limits": {
+                "cpu": "6",
+                "memory": "24Gi",
+                "nvidia.com/gpu": "1"
+              },
+              "requests": {
+                "cpu": "3",
+                "memory": "12Gi",
+                "nvidia.com/gpu": "1"
+              }
+            },
+            "restartCount": 0,
+            "started": true,
+            "state": {
+              "running": {
+                "startedAt": "2026-11-04T14:07:24Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 0,
+                "supplementalGroups": [
+                  0,
+                  1000840000
+                ],
+                "uid": 1000840000
+              }
+            },
+            "volumeMounts": [
+              {
+                "mountPath": "/models",
+                "name": "model",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              },
+              {
+                "mountPath": "/tls",
+                "name": "tls",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              },
+              {
+                "mountPath": "/policy",
+                "name": "policy",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              },
+              {
+                "mountPath": "/tmp",
+                "name": "tmp"
+              },
+              {
+                "mountPath": "/mnt/models",
+                "name": "model-dir"
+              }
+            ]
+          }
+        ],
+        "at": "2026-11-04T14:07:55.809107+00:00"
+      },
+      "candidate_parity": "PASS",
+      "rollback": {
+        "pod": "sam3-mat-v1-predictor-5cb7c9f7d5-hbgzf",
+        "uid": "6e646cd3-c307-49c6-a05e-a8f05da5ef01",
+        "containers": [
+          {
+            "allocatedResources": {
+              "cpu": "100m",
+              "memory": "100Mi"
+            },
+            "containerID": "cri-o://53559d6d7091d05a8a213dae94663295be6e15cfccd8206bcbe433f530d62f79",
+            "image": "registry.redhat.io/rhoai/odh-kserve-agent-rhel9@sha256:8ec73b6a944b78c3ef5595c28aad3d13284c2c89b6cdf4ed4cdf6a6939ee91d2",
+            "imageID": "registry.redhat.io/rhoai/odh-kserve-agent-rhel9@sha256:8ec73b6a944b78c3ef5595c28aad3d13284c2c89b6cdf4ed4cdf6a6939ee91d2",
+            "lastState": {},
+            "name": "agent",
+            "ready": true,
+            "resources": {
+              "limits": {
+                "cpu": "1",
+                "memory": "1Gi"
+              },
+              "requests": {
+                "cpu": "100m",
+                "memory": "100Mi"
+              }
+            },
+            "restartCount": 0,
+            "started": true,
+            "state": {
+              "running": {
+                "startedAt": "2026-11-04T14:08:42Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 0,
+                "supplementalGroups": [
+                  0,
+                  1000840000
+                ],
+                "uid": 1000840000
+              }
+            },
+            "volumeMounts": [
+              {
+                "mountPath": "/mnt/models",
+                "name": "model-dir"
+              },
+              {
+                "mountPath": "/mnt/configs",
+                "name": "model-config"
+              }
+            ]
+          },
+          {
+            "allocatedResources": {
+              "cpu": "3",
+              "memory": "12Gi",
+              "nvidia.com/gpu": "1"
+            },
+            "containerID": "cri-o://947f88911d4028085877acaf66ab9d497ecc6075e8b5a3b85935f22ee38ae655",
+            "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+            "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+            "lastState": {},
+            "name": "kserve-container",
+            "ready": true,
+            "resources": {
+              "limits": {
+                "cpu": "6",
+                "memory": "24Gi",
+                "nvidia.com/gpu": "1"
+              },
+              "requests": {
+                "cpu": "3",
+                "memory": "12Gi",
+                "nvidia.com/gpu": "1"
+              }
+            },
+            "restartCount": 0,
+            "started": true,
+            "state": {
+              "running": {
+                "startedAt": "2026-11-04T14:08:42Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 0,
+                "supplementalGroups": [
+                  0,
+                  1000840000
+                ],
+                "uid": 1000840000
+              }
+            },
+            "volumeMounts": [
+              {
+                "mountPath": "/models",
+                "name": "model",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              },
+              {
+                "mountPath": "/tls",
+                "name": "tls",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              },
+              {
+                "mountPath": "/policy",
+                "name": "policy",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              },
+              {
+                "mountPath": "/tmp",
+                "name": "tmp"
+              },
+              {
+                "mountPath": "/mnt/models",
+                "name": "model-dir"
+              }
+            ]
+          }
+        ],
+        "at": "2026-11-04T14:09:11.862305+00:00"
+      },
+      "rollback_parity": "PASS",
+      "passed": true
+    },
+    {
+      "cycle": 2,
+      "update": {
+        "pod": "sam3-mat-v1-predictor-665bbb5f9-qg5pp",
+        "uid": "86326cb4-a252-4230-bc65-c7c4342cbea8",
+        "containers": [
+          {
+            "allocatedResources": {
+              "cpu": "100m",
+              "memory": "100Mi"
+            },
+            "containerID": "cri-o://c96a6571aa36f2d814d916e79a53d34093d4fb8376d47ca06b68ad79779e100b",
+            "image": "registry.redhat.io/rhoai/odh-kserve-agent-rhel9@sha256:8ec73b6a944b78c3ef5595c28aad3d13284c2c89b6cdf4ed4cdf6a6939ee91d2",
+            "imageID": "registry.redhat.io/rhoai/odh-kserve-agent-rhel9@sha256:8ec73b6a944b78c3ef5595c28aad3d13284c2c89b6cdf4ed4cdf6a6939ee91d2",
+            "lastState": {},
+            "name": "agent",
+            "ready": true,
+            "resources": {
+              "limits": {
+                "cpu": "1",
+                "memory": "1Gi"
+              },
+              "requests": {
+                "cpu": "100m",
+                "memory": "100Mi"
+              }
+            },
+            "restartCount": 0,
+            "started": true,
+            "state": {
+              "running": {
+                "startedAt": "2026-11-04T14:10:03Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 0,
+                "supplementalGroups": [
+                  0,
+                  1000840000
+                ],
+                "uid": 1000840000
+              }
+            },
+            "volumeMounts": [
+              {
+                "mountPath": "/mnt/models",
+                "name": "model-dir"
+              },
+              {
+                "mountPath": "/mnt/configs",
+                "name": "model-config"
+              }
+            ]
+          },
+          {
+            "allocatedResources": {
+              "cpu": "3",
+              "memory": "12Gi",
+              "nvidia.com/gpu": "1"
+            },
+            "containerID": "cri-o://aace7d328a0276559b8ed5df1300044ed8305cd1030209e52bc44f4f0e59bb19",
+            "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:af5cb7325f08fd137380d488745cba3a229857cb57d059d31befce93e25246c9",
+            "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:af5cb7325f08fd137380d488745cba3a229857cb57d059d31befce93e25246c9",
+            "lastState": {},
+            "name": "kserve-container",
+            "ready": true,
+            "resources": {
+              "limits": {
+                "cpu": "6",
+                "memory": "24Gi",
+                "nvidia.com/gpu": "1"
+              },
+              "requests": {
+                "cpu": "3",
+                "memory": "12Gi",
+                "nvidia.com/gpu": "1"
+              }
+            },
+            "restartCount": 0,
+            "started": true,
+            "state": {
+              "running": {
+                "startedAt": "2026-11-04T14:10:03Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 0,
+                "supplementalGroups": [
+                  0,
+                  1000840000
+                ],
+                "uid": 1000840000
+              }
+            },
+            "volumeMounts": [
+              {
+                "mountPath": "/models",
+                "name": "model",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              },
+              {
+                "mountPath": "/tls",
+                "name": "tls",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              },
+              {
+                "mountPath": "/policy",
+                "name": "policy",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              },
+              {
+                "mountPath": "/tmp",
+                "name": "tmp"
+              },
+              {
+                "mountPath": "/mnt/models",
+                "name": "model-dir"
+              }
+            ]
+          }
+        ],
+        "at": "2026-11-04T14:10:33.610009+00:00"
+      },
+      "candidate_parity": "PASS",
+      "rollback": {
+        "pod": "sam3-mat-v1-predictor-5cb7c9f7d5-c8d8d",
+        "uid": "3f1c0884-f82e-4b7d-b2f9-db8558e9ffe7",
+        "containers": [
+          {
+            "allocatedResources": {
+              "cpu": "100m",
+              "memory": "100Mi"
+            },
+            "containerID": "cri-o://a976f71d8f3a4f8d03265cdb1f76e0fdf4a7e46edb94710f08b056cc529dd74f",
+            "image": "registry.redhat.io/rhoai/odh-kserve-agent-rhel9@sha256:8ec73b6a944b78c3ef5595c28aad3d13284c2c89b6cdf4ed4cdf6a6939ee91d2",
+            "imageID": "registry.redhat.io/rhoai/odh-kserve-agent-rhel9@sha256:8ec73b6a944b78c3ef5595c28aad3d13284c2c89b6cdf4ed4cdf6a6939ee91d2",
+            "lastState": {},
+            "name": "agent",
+            "ready": true,
+            "resources": {
+              "limits": {
+                "cpu": "1",
+                "memory": "1Gi"
+              },
+              "requests": {
+                "cpu": "100m",
+                "memory": "100Mi"
+              }
+            },
+            "restartCount": 0,
+            "started": true,
+            "state": {
+              "running": {
+                "startedAt": "2026-11-04T14:11:20Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 0,
+                "supplementalGroups": [
+                  0,
+                  1000840000
+                ],
+                "uid": 1000840000
+              }
+            },
+            "volumeMounts": [
+              {
+                "mountPath": "/mnt/models",
+                "name": "model-dir"
+              },
+              {
+                "mountPath": "/mnt/configs",
+                "name": "model-config"
+              }
+            ]
+          },
+          {
+            "allocatedResources": {
+              "cpu": "3",
+              "memory": "12Gi",
+              "nvidia.com/gpu": "1"
+            },
+            "containerID": "cri-o://eb2ded5316044df244b1c73c901da500e3b68e4de1162de4a965e5b2822b5d07",
+            "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+            "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+            "lastState": {},
+            "name": "kserve-container",
+            "ready": true,
+            "resources": {
+              "limits": {
+                "cpu": "6",
+                "memory": "24Gi",
+                "nvidia.com/gpu": "1"
+              },
+              "requests": {
+                "cpu": "3",
+                "memory": "12Gi",
+                "nvidia.com/gpu": "1"
+              }
+            },
+            "restartCount": 0,
+            "started": true,
+            "state": {
+              "running": {
+                "startedAt": "2026-11-04T14:11:19Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 0,
+                "supplementalGroups": [
+                  0,
+                  1000840000
+                ],
+                "uid": 1000840000
+              }
+            },
+            "volumeMounts": [
+              {
+                "mountPath": "/models",
+                "name": "model",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              },
+              {
+                "mountPath": "/tls",
+                "name": "tls",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              },
+              {
+                "mountPath": "/policy",
+                "name": "policy",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              },
+              {
+                "mountPath": "/tmp",
+                "name": "tmp"
+              },
+              {
+                "mountPath": "/mnt/models",
+                "name": "model-dir"
+              }
+            ]
+          }
+        ],
+        "at": "2026-11-04T14:11:50.696862+00:00"
+      },
+      "rollback_parity": "PASS",
+      "passed": true
+    },
+    {
+      "cycle": 3,
+      "update": {
+        "pod": "sam3-mat-v1-predictor-665bbb5f9-vbqqs",
+        "uid": "9cf62ac0-44e5-4488-9105-c44a027eead5",
+        "containers": [
+          {
+            "allocatedResources": {
+              "cpu": "100m",
+              "memory": "100Mi"
+            },
+            "containerID": "cri-o://b81e3d66bb843525a4a2c09d6e823fb8b291b8ff0e031d5ca11d4e9e0d5608ca",
+            "image": "registry.redhat.io/rhoai/odh-kserve-agent-rhel9@sha256:8ec73b6a944b78c3ef5595c28aad3d13284c2c89b6cdf4ed4cdf6a6939ee91d2",
+            "imageID": "registry.redhat.io/rhoai/odh-kserve-agent-rhel9@sha256:8ec73b6a944b78c3ef5595c28aad3d13284c2c89b6cdf4ed4cdf6a6939ee91d2",
+            "lastState": {},
+            "name": "agent",
+            "ready": true,
+            "resources": {
+              "limits": {
+                "cpu": "1",
+                "memory": "1Gi"
+              },
+              "requests": {
+                "cpu": "100m",
+                "memory": "100Mi"
+              }
+            },
+            "restartCount": 0,
+            "started": true,
+            "state": {
+              "running": {
+                "startedAt": "2026-11-04T14:12:36Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 0,
+                "supplementalGroups": [
+                  0,
+                  1000840000
+                ],
+                "uid": 1000840000
+              }
+            },
+            "volumeMounts": [
+              {
+                "mountPath": "/mnt/models",
+                "name": "model-dir"
+              },
+              {
+                "mountPath": "/mnt/configs",
+                "name": "model-config"
+              }
+            ]
+          },
+          {
+            "allocatedResources": {
+              "cpu": "3",
+              "memory": "12Gi",
+              "nvidia.com/gpu": "1"
+            },
+            "containerID": "cri-o://83e71b5a5bf7a83f6ebc4722656e3e402d8a1475b7f0a85d7a7382c946c44d08",
+            "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:af5cb7325f08fd137380d488745cba3a229857cb57d059d31befce93e25246c9",
+            "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:af5cb7325f08fd137380d488745cba3a229857cb57d059d31befce93e25246c9",
+            "lastState": {},
+            "name": "kserve-container",
+            "ready": true,
+            "resources": {
+              "limits": {
+                "cpu": "6",
+                "memory": "24Gi",
+                "nvidia.com/gpu": "1"
+              },
+              "requests": {
+                "cpu": "3",
+                "memory": "12Gi",
+                "nvidia.com/gpu": "1"
+              }
+            },
+            "restartCount": 0,
+            "started": true,
+            "state": {
+              "running": {
+                "startedAt": "2026-11-04T14:12:36Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 0,
+                "supplementalGroups": [
+                  0,
+                  1000840000
+                ],
+                "uid": 1000840000
+              }
+            },
+            "volumeMounts": [
+              {
+                "mountPath": "/models",
+                "name": "model",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              },
+              {
+                "mountPath": "/tls",
+                "name": "tls",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              },
+              {
+                "mountPath": "/policy",
+                "name": "policy",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              },
+              {
+                "mountPath": "/tmp",
+                "name": "tmp"
+              },
+              {
+                "mountPath": "/mnt/models",
+                "name": "model-dir"
+              }
+            ]
+          }
+        ],
+        "at": "2026-11-04T14:13:05.464024+00:00"
+      },
+      "candidate_parity": "PASS",
+      "rollback": {
+        "pod": "sam3-mat-v1-predictor-5cb7c9f7d5-tc75p",
+        "uid": "ed1ff5a5-feff-4a6e-9a71-e99e2339c131",
+        "containers": [
+          {
+            "allocatedResources": {
+              "cpu": "100m",
+              "memory": "100Mi"
+            },
+            "containerID": "cri-o://b6ee713c8149c4fd12d135ef3f1e9a1c5f7fbe56d3ae851c34f932fa093063b9",
+            "image": "registry.redhat.io/rhoai/odh-kserve-agent-rhel9@sha256:8ec73b6a944b78c3ef5595c28aad3d13284c2c89b6cdf4ed4cdf6a6939ee91d2",
+            "imageID": "registry.redhat.io/rhoai/odh-kserve-agent-rhel9@sha256:8ec73b6a944b78c3ef5595c28aad3d13284c2c89b6cdf4ed4cdf6a6939ee91d2",
+            "lastState": {},
+            "name": "agent",
+            "ready": true,
+            "resources": {
+              "limits": {
+                "cpu": "1",
+                "memory": "1Gi"
+              },
+              "requests": {
+                "cpu": "100m",
+                "memory": "100Mi"
+              }
+            },
+            "restartCount": 0,
+            "started": true,
+            "state": {
+              "running": {
+                "startedAt": "2026-11-04T14:13:57Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 0,
+                "supplementalGroups": [
+                  0,
+                  1000840000
+                ],
+                "uid": 1000840000
+              }
+            },
+            "volumeMounts": [
+              {
+                "mountPath": "/mnt/models",
+                "name": "model-dir"
+              },
+              {
+                "mountPath": "/mnt/configs",
+                "name": "model-config"
+              }
+            ]
+          },
+          {
+            "allocatedResources": {
+              "cpu": "3",
+              "memory": "12Gi",
+              "nvidia.com/gpu": "1"
+            },
+            "containerID": "cri-o://01259063f4c6c7e6bba050c7fe6f5cd835658c3d20d629f10c5a57d32f733a79",
+            "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+            "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+            "lastState": {},
+            "name": "kserve-container",
+            "ready": true,
+            "resources": {
+              "limits": {
+                "cpu": "6",
+                "memory": "24Gi",
+                "nvidia.com/gpu": "1"
+              },
+              "requests": {
+                "cpu": "3",
+                "memory": "12Gi",
+                "nvidia.com/gpu": "1"
+              }
+            },
+            "restartCount": 0,
+            "started": true,
+            "state": {
+              "running": {
+                "startedAt": "2026-11-04T14:13:57Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 0,
+                "supplementalGroups": [
+                  0,
+                  1000840000
+                ],
+                "uid": 1000840000
+              }
+            },
+            "volumeMounts": [
+              {
+                "mountPath": "/models",
+                "name": "model",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              },
+              {
+                "mountPath": "/tls",
+                "name": "tls",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              },
+              {
+                "mountPath": "/policy",
+                "name": "policy",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              },
+              {
+                "mountPath": "/tmp",
+                "name": "tmp"
+              },
+              {
+                "mountPath": "/mnt/models",
+                "name": "model-dir"
+              }
+            ]
+          }
+        ],
+        "at": "2026-11-04T14:14:29.979335+00:00"
+      },
+      "rollback_parity": "PASS",
+      "passed": true
+    }
+  ],
+  "restoration": "PASS",
+  "baseline": {
+    "pod": "sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc",
+    "uid": "53394104-6568-4945-86f9-708e263b8deb",
+    "containers": [
+      {
+        "allocatedResources": {
+          "cpu": "100m",
+          "memory": "100Mi"
+        },
+        "containerID": "cri-o://81c9d7f0c4ff7764862eb01069158779cd444c94d04bb57f8a68222377da9fe5",
+        "image": "registry.redhat.io/rhoai/odh-kserve-agent-rhel9@sha256:00869f9eb48fe189feb9659fd53d8e881b089fea9c81a467112a5fd23e1dfe84",
+        "imageID": "registry.redhat.io/rhoai/odh-kserve-agent-rhel9@sha256:00869f9eb48fe189feb9659fd53d8e881b089fea9c81a467112a5fd23e1dfe84",
+        "lastState": {},
+        "name": "agent",
+        "ready": true,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "memory": "1Gi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "memory": "100Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": true,
+        "state": {
+          "running": {
+            "startedAt": "2026-10-31T14:09:55Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 0,
+            "supplementalGroups": [
+              0,
+              1000840000
+            ],
+            "uid": 1000840000
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/mnt/models",
+            "name": "model-dir"
+          },
+          {
+            "mountPath": "/mnt/configs",
+            "name": "model-config"
+          }
+        ]
+      },
+      {
+        "allocatedResources": {
+          "cpu": "3",
+          "memory": "12Gi",
+          "nvidia.com/gpu": "1"
+        },
+        "containerID": "cri-o://dbb6a77be357d6e3e4bb2669a54d1d3df897f4cca907e7d2c3e7a7fa560b3dc9",
+        "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+        "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+        "lastState": {
+          "terminated": {
+            "containerID": "cri-o://86fe020bb2dc7859591d36259ee7d439512e36430b9c75cb84706a6def460d6b",
+            "exitCode": 137,
+            "finishedAt": "2026-11-04T01:57:55Z",
+            "reason": "OOMKilled",
+            "startedAt": "2026-11-03T15:56:00Z"
+          }
+        },
+        "name": "kserve-container",
+        "ready": true,
+        "resources": {
+          "limits": {
+            "cpu": "6",
+            "memory": "24Gi",
+            "nvidia.com/gpu": "1"
+          },
+          "requests": {
+            "cpu": "3",
+            "memory": "12Gi",
+            "nvidia.com/gpu": "1"
+          }
+        },
+        "restartCount": 4,
+        "started": true,
+        "state": {
+          "running": {
+            "startedAt": "2026-11-04T01:57:55Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 0,
+            "supplementalGroups": [
+              0,
+              1000840000
+            ],
+            "uid": 1000840000
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/models",
+            "name": "model",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tls",
+            "name": "tls",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/policy",
+            "name": "policy",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "tmp"
+          },
+          {
+            "mountPath": "/mnt/models",
+            "name": "model-dir"
+          }
+        ]
+      }
+    ],
+    "at": "2026-11-04T14:06:36.563829+00:00"
+  },
+  "restored_pod": {
+    "pod": "sam3-mat-v1-predictor-5cb7c9f7d5-tc75p",
+    "uid": "ed1ff5a5-feff-4a6e-9a71-e99e2339c131",
+    "containers": [
+      {
+        "allocatedResources": {
+          "cpu": "100m",
+          "memory": "100Mi"
+        },
+        "containerID": "cri-o://b6ee713c8149c4fd12d135ef3f1e9a1c5f7fbe56d3ae851c34f932fa093063b9",
+        "image": "registry.redhat.io/rhoai/odh-kserve-agent-rhel9@sha256:8ec73b6a944b78c3ef5595c28aad3d13284c2c89b6cdf4ed4cdf6a6939ee91d2",
+        "imageID": "registry.redhat.io/rhoai/odh-kserve-agent-rhel9@sha256:8ec73b6a944b78c3ef5595c28aad3d13284c2c89b6cdf4ed4cdf6a6939ee91d2",
+        "lastState": {},
+        "name": "agent",
+        "ready": true,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "memory": "1Gi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "memory": "100Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": true,
+        "state": {
+          "running": {
+            "startedAt": "2026-11-04T14:13:57Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 0,
+            "supplementalGroups": [
+              0,
+              1000840000
+            ],
+            "uid": 1000840000
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/mnt/models",
+            "name": "model-dir"
+          },
+          {
+            "mountPath": "/mnt/configs",
+            "name": "model-config"
+          }
+        ]
+      },
+      {
+        "allocatedResources": {
+          "cpu": "3",
+          "memory": "12Gi",
+          "nvidia.com/gpu": "1"
+        },
+        "containerID": "cri-o://01259063f4c6c7e6bba050c7fe6f5cd835658c3d20d629f10c5a57d32f733a79",
+        "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+        "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+        "lastState": {},
+        "name": "kserve-container",
+        "ready": true,
+        "resources": {
+          "limits": {
+            "cpu": "6",
+            "memory": "24Gi",
+            "nvidia.com/gpu": "1"
+          },
+          "requests": {
+            "cpu": "3",
+            "memory": "12Gi",
+            "nvidia.com/gpu": "1"
+          }
+        },
+        "restartCount": 0,
+        "started": true,
+        "state": {
+          "running": {
+            "startedAt": "2026-11-04T14:13:57Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 0,
+            "supplementalGroups": [
+              0,
+              1000840000
+            ],
+            "uid": 1000840000
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/models",
+            "name": "model",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tls",
+            "name": "tls",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/policy",
+            "name": "policy",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "tmp"
+          },
+          {
+            "mountPath": "/mnt/models",
+            "name": "model-dir"
+          }
+        ]
+      }
+    ],
+    "at": "2026-11-04T14:14:33.684227+00:00"
+  }
+}

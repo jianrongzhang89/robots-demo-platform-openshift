@@ -1,0 +1,28 @@
+{
+ "event": "qualification-20 setup",
+ "date": "2026-11-02",
+ "preconditions": {
+  "S1": "PASS accepted",
+  "S2": "PASS accepted",
+  "S3": "PASS accepted",
+  "leftover_g4_or_fixture_resources": "none",
+  "pilot": "serving-transport-pilot-10 PASS (all five fault-stop modes at 0.3 m injection)",
+  "prior_attempt": "qualification-19 stopped on trial-01 (auth-r1) to the coincident-jitter tail (fourth occurrence at 30 Hz; backend 167.3 ms, fatal margin +5.8 ms at 4.18 s, robot past the 0.3 m threshold). Model-server latency verified stable across the day (median ~125 ms, p95 ~130, spikes 163-191 all along) - no degradation, the steady rare tail. User-approved continued re-running."
+ },
+ "candidate": "unchanged from qualification-19",
+ "environment": "adapter node ip-10-0-53-174 freed (hotel-sim at 0 replicas); keep hotel-sim at 0 while G4 runs",
+ "rendering_reservation": "deleted to free the A10G for the G4 fixture; run_g4_suite.py finally restores it from rendering-reservation-saved.json",
+ "proxy_certificate": {
+  "secret": "semantic-g4-proxy-tls",
+  "subject": "CN=localhost",
+  "notBefore": "Nov 2 19:10:50 2026 GMT",
+  "notAfter": "Nov 5 19:10:50 2026 GMT",
+  "sha256_fingerprint": "18:10:E7:68:4C:33:47:7F:6F:6E:0F:AA:B0:19:18:29:8F:A0:6A:21:53:5F:EF:77:0B:7C:13:A7:67:6D:9B:32",
+  "key_material_retained": false
+ },
+ "sampler": {
+  "output": "serving-resources-qualification-20.jsonl",
+  "stop_file": "/tmp/g4-qualification-20-monitor-stop"
+ },
+ "command": "run_g4_suite.py --output-dir qualification-20 --reservation rendering-reservation-saved.json"
+}

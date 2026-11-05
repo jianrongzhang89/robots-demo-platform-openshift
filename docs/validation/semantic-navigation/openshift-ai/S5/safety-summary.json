@@ -1,0 +1,123 @@
+{
+  "scope": "Accepted serving runtime; original native fault evaluator; separate from stopped candidate replay and full G4 navigation campaign",
+  "trials": {
+    "pod_loss": {
+      "summary": "pod-loss-5/trial/runtime/summary.json",
+      "passed": true,
+      "stop": {
+        "case": "semantic_fault_native_stop_metrics",
+        "passed": true,
+        "reason": "semantic_stale",
+        "measurement_origin": "native_watchdog",
+        "first_trigger_to_applied_zero_ms": 1.266446,
+        "revoke_to_applied_zero_ms": -0.733494,
+        "pretrigger_sample_gap_ms": 0.462498,
+        "first_trigger_to_confirmed_stationary_ms": 885.25423,
+        "revoke_to_confirmed_stationary_ms": 883.25429,
+        "sampled_distance_to_confirmed_stationary_m": 0.0013848152505541193,
+        "maximum_applied_forward_mps": 0.15,
+        "displacement_m": 0.6914268201066185,
+        "scope": "private serving armed-semantic fault trial; zero within 100 ms of the 500 ms semantic freshness trigger; not the full matrix"
+      },
+      "late_success": {
+        "case": "late_success_does_not_resume_motion",
+        "passed": true,
+        "mode": "serving",
+        "stage": "late_success_observed",
+        "native_samples": 482,
+        "late_success_key": "semantic"
+      },
+      "timing": {
+        "case": "sam3_observation_timing",
+        "passed": true,
+        "p95_capture_age_ms": 246.789637,
+        "p95_capture_age_limit_ms": 500.0,
+        "results_per_second": 7.245752630648183,
+        "rate_limit_per_s": 5.0,
+        "records": 157
+      },
+      "semantic_scope": {
+        "case": "sam3_semantic_isolation",
+        "passed": true,
+        "semantic_topics": [
+          "/robot_1/semantic/label_info",
+          "/robot_1/semantic/mask",
+          "/robot_1/semantic/points",
+          "/robot_1/semantic/ready",
+          "/robot_1/semantic/status",
+          "/robot_1/semantic/timing"
+        ],
+        "subscribing_nodes": [
+          "phase5_sam3_observer"
+        ],
+        "costmap_subscriptions": []
+      }
+    },
+    "wrong_version": {
+      "summary": "wrong-version-1/serving-faults/trial-01-wrong_version-r1/runtime/summary.json",
+      "passed": true,
+      "stop": {
+        "case": "semantic_fault_native_stop_metrics",
+        "passed": true,
+        "reason": "semantic_stale",
+        "measurement_origin": "native_watchdog",
+        "first_trigger_to_applied_zero_ms": 0.912384,
+        "revoke_to_applied_zero_ms": -1.087496,
+        "pretrigger_sample_gap_ms": 0.792449,
+        "first_trigger_to_confirmed_stationary_ms": 848.010457,
+        "revoke_to_confirmed_stationary_ms": 846.010577,
+        "sampled_distance_to_confirmed_stationary_m": 0.0017162987773639287,
+        "maximum_applied_forward_mps": 0.15,
+        "displacement_m": 0.4831891732853952,
+        "scope": "private wrong_version armed-semantic fault trial; zero within 100 ms of the 500 ms semantic freshness trigger; not the full matrix"
+      },
+      "late_success": {
+        "case": "late_success_does_not_resume_motion",
+        "passed": true,
+        "mode": "wrong_version",
+        "stage": "late_success_observed",
+        "native_samples": 476,
+        "late_success_key": "semantic"
+      },
+      "timing": {
+        "case": "sam3_observation_timing",
+        "passed": true,
+        "p95_capture_age_ms": 243.653466,
+        "p95_capture_age_limit_ms": 500.0,
+        "results_per_second": 6.9664934613745,
+        "rate_limit_per_s": 5.0,
+        "records": 135
+      },
+      "semantic_scope": {
+        "case": "sam3_semantic_isolation",
+        "passed": true,
+        "semantic_topics": [
+          "/robot_1/semantic/label_info",
+          "/robot_1/semantic/mask",
+          "/robot_1/semantic/points",
+          "/robot_1/semantic/ready",
+          "/robot_1/semantic/status",
+          "/robot_1/semantic/timing"
+        ],
+        "subscribing_nodes": [
+          "phase5_sam3_observer"
+        ],
+        "costmap_subscriptions": []
+      }
+    }
+  },
+  "pod_loss_attribution": {
+    "passed": true,
+    "checks": {
+      "fixture_gate": true,
+      "one_real_deletion": true,
+      "verified_motion": true,
+      "delete_before_stop": true,
+      "replacement_uid": true,
+      "replacement_identity": true,
+      "cleanup": true
+    },
+    "deletion_to_stop_ms": 1354.617202,
+    "timing_note": "Stop wall time reconstructed from fixture wall/steady anchor. Deletion interval is anchored in the fixture clock and conservatively spans the full host-monotonic command round trip; no host/fixture wall-clock equality assumed."
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-16",
+  "container": "semantic-hotel-sim-549b7c447f-splhk/camera-compressor",
+  "topic": "/semantic_dds_audit",
+  "publisher_rmw": "rmw_cyclonedds_cpp",
+  "publisher_configuration": "loopback only; multicast disabled; participant index auto",
+  "publisher_window_s": 14,
+  "subscriber_window_s": 10,
+  "cases": [
+    {"name": "fastdds_default", "domain": 86, "subscriber_rmw": "rmw_fastrtps_cpp", "discovery_range": "SUBNET", "sent": 280, "received": 0, "publishers_peak": 0, "publisher_exit": 0, "subscriber_exit": 0},
+    {"name": "fastdds_localhost", "domain": 87, "subscriber_rmw": "rmw_fastrtps_cpp", "discovery_range": "LOCALHOST", "sent": 280, "received": 0, "publishers_peak": 0, "publisher_exit": 0, "subscriber_exit": 0},
+    {"name": "cyclone_matching_config", "domain": 88, "subscriber_rmw": "rmw_cyclonedds_cpp", "discovery_range": "SUBNET", "sent": 280, "received": 201, "publishers_peak": 1, "publisher_exit": 0, "subscriber_exit": 0},
+    {"name": "fastdds_default_repeat", "domain": 89, "subscriber_rmw": "rmw_fastrtps_cpp", "discovery_range": "SUBNET", "sent": 279, "received": 0, "publishers_peak": 0, "publisher_exit": 0, "subscriber_exit": 0}
+  ],
+  "note": "Observation windows differ; do not compute a loss percentage from sent/received. An earlier logging-initialization failure is excluded. Values transcribed from diagnostic stdout."
+}

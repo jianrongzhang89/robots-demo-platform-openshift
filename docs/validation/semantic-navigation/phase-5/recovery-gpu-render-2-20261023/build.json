@@ -1,0 +1,161 @@
+{
+  "apiVersion": "build.openshift.io/v1",
+  "kind": "Build",
+  "metadata": {
+    "annotations": {
+      "openshift.io/build-config.name": "semantic-safety-console-phase5",
+      "openshift.io/build.number": "18",
+      "openshift.io/build.pod-name": "semantic-safety-console-phase5-18-build"
+    },
+    "creationTimestamp": "2026-10-23T18:22:55Z",
+    "generation": 2,
+    "labels": {
+      "buildconfig": "semantic-safety-console-phase5",
+      "openshift.io/build-config.name": "semantic-safety-console-phase5",
+      "openshift.io/build.start-policy": "Serial"
+    },
+    "name": "semantic-safety-console-phase5-18",
+    "namespace": "semantic-navigation",
+    "ownerReferences": [
+      {
+        "apiVersion": "build.openshift.io/v1",
+        "controller": true,
+        "kind": "BuildConfig",
+        "name": "semantic-safety-console-phase5",
+        "uid": "22e3050b-68bd-4c47-818b-c6b3a771ca22"
+      }
+    ],
+    "resourceVersion": "460645994",
+    "uid": "17a0215d-ba34-4588-8ae0-2e87d4749c27"
+  },
+  "spec": {
+    "nodeSelector": null,
+    "output": {
+      "pushSecret": {
+        "name": "builder-dockercfg-htt4p"
+      },
+      "to": {
+        "kind": "ImageStreamTag",
+        "name": "semantic-safety:phase5-console-candidate"
+      }
+    },
+    "postCommit": {},
+    "resources": {
+      "limits": {
+        "cpu": "2",
+        "memory": "4Gi"
+      },
+      "requests": {
+        "cpu": "1",
+        "memory": "2Gi"
+      }
+    },
+    "revision": {
+      "git": {
+        "author": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "commit": "63bdf13c52a8194c638f2e182a0a204baf419fa6",
+        "committer": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "message": "Skip Xvfb under GPU headless rendering; retain first GPU trial evidence\n\nThe first GPU-rendering trial aborted when Xvfb segfaulted in\nInitExtensions: the pod-wide NVIDIA graphics libraries injected with the\nGPU allocation interpose its GLX extension initialization. EGL headless\nrendering needs no X server, so the GPU profile no longer launches Xvfb\nor sets DISPLAY; the non-GPU software-rendering profile is unchanged.\nThe failed trial's evidence is retained (console-server preflight passed,\nrender context initialized without llvmpipe, Xvfb crash captured in\ndisplay.log) and documents the mechanism."
+      },
+      "type": "Git"
+    },
+    "serviceAccount": "builder",
+    "source": {
+      "binary": {},
+      "type": "Binary"
+    },
+    "strategy": {
+      "dockerStrategy": {
+        "dockerfilePath": "Containerfile.console"
+      },
+      "type": "Docker"
+    }
+  },
+  "status": {
+    "completionTimestamp": "2026-10-23T18:28:19Z",
+    "conditions": [
+      {
+        "lastTransitionTime": "2026-10-23T18:22:55Z",
+        "lastUpdateTime": "2026-10-23T18:22:55Z",
+        "status": "False",
+        "type": "New"
+      },
+      {
+        "lastTransitionTime": "2026-10-23T18:22:57Z",
+        "lastUpdateTime": "2026-10-23T18:22:57Z",
+        "status": "False",
+        "type": "Pending"
+      },
+      {
+        "lastTransitionTime": "2026-10-23T18:28:19Z",
+        "lastUpdateTime": "2026-10-23T18:28:19Z",
+        "status": "False",
+        "type": "Running"
+      },
+      {
+        "lastTransitionTime": "2026-10-23T18:28:19Z",
+        "lastUpdateTime": "2026-10-23T18:28:19Z",
+        "status": "True",
+        "type": "Complete"
+      }
+    ],
+    "config": {
+      "kind": "BuildConfig",
+      "name": "semantic-safety-console-phase5",
+      "namespace": "semantic-navigation"
+    },
+    "duration": 324000000000,
+    "output": {
+      "to": {
+        "imageDigest": "sha256:69983ea8bf22fff342dc3be40ec542625daf159595d267dd2f9cb190ba047beb"
+      }
+    },
+    "outputDockerImageReference": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety:phase5-console-candidate",
+    "phase": "Complete",
+    "stages": [
+      {
+        "durationMilliseconds": 125914,
+        "name": "PullImages",
+        "startTime": "2026-10-23T18:22:59Z",
+        "steps": [
+          {
+            "durationMilliseconds": 125914,
+            "name": "PullBaseImage",
+            "startTime": "2026-10-23T18:22:59Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 185736,
+        "name": "Build",
+        "startTime": "2026-10-23T18:25:05Z",
+        "steps": [
+          {
+            "durationMilliseconds": 185736,
+            "name": "DockerBuild",
+            "startTime": "2026-10-23T18:25:05Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 5931,
+        "name": "PushImage",
+        "startTime": "2026-10-23T18:28:11Z",
+        "steps": [
+          {
+            "durationMilliseconds": 5931,
+            "name": "PushDockerImage",
+            "startTime": "2026-10-23T18:28:11Z"
+          }
+        ]
+      }
+    ],
+    "startTimestamp": "2026-10-23T18:22:55Z"
+  }
+}

@@ -1,0 +1,7 @@
+FROM image-registry.openshift-image-registry.svc:5000/semantic-navigation/sam3-smoke:phase0
+
+USER 0
+RUN python -m pip install --no-cache-dir psutil==7.2.2
+COPY sam3_smoke.py /opt/sam3/sam3_smoke.py
+
+USER 1001

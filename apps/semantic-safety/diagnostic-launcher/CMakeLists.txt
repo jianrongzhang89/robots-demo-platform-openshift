@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.16)
+project(phase5_diagnostic_server)
+set(CMAKE_CXX_STANDARD 17)
+find_package(gz-sim8 REQUIRED)
+find_package(gz-common5 REQUIRED)
+add_executable(phase5_diagnostic_server diagnostic_server.cc)
+target_link_libraries(phase5_diagnostic_server gz-sim8::gz-sim8 gz-common5::gz-common5)
+target_compile_options(phase5_diagnostic_server PRIVATE -Wall -Wextra -Werror)

@@ -1,0 +1,28 @@
+{
+ "event": "qualification-15 setup",
+ "date": "2026-11-02",
+ "preconditions": {
+  "S1": "PASS accepted",
+  "S2": "PASS accepted",
+  "S3": "PASS accepted",
+  "leftover_g4_or_fixture_resources": "none",
+  "pilot": "serving-transport-pilot-10 PASS (all five fault-stop modes at 0.3 m injection)",
+  "prior_attempt": "qualification-14 stopped on trial-04 (serving-r1): the system under test behaved perfectly (qualified stop 1.47 s after injection, restore, late success flowing) but the host-side runner crashed on a single transient oc/API error (exit 2) in its 2 s pod-state poll — the second oc-blip loss after qualification-11. The poll loop now tolerates transient oc errors (bounded by the existing deadline); no gate, check or policy changed."
+ },
+ "candidate": "unchanged from qualification-13/14 plus the host-side poll-loop transient-error tolerance in run_phase5_native.py",
+ "environment": "adapter node ip-10-0-53-174 freed (hotel-sim at 0 replicas); keep hotel-sim at 0 while G4 runs",
+ "rendering_reservation": "deleted to free the A10G for the G4 fixture; run_g4_suite.py finally restores it from rendering-reservation-saved.json",
+ "proxy_certificate": {
+  "secret": "semantic-g4-proxy-tls",
+  "subject": "CN=localhost",
+  "notBefore": "Nov 2 16:04:55 2026 GMT",
+  "notAfter": "Nov 5 16:04:55 2026 GMT",
+  "sha256_fingerprint": "45:37:B9:12:AA:D4:FA:9F:28:DA:E9:E0:95:9D:40:3E:B5:CD:2F:18:63:4C:5E:1D:D0:7B:8B:AD:AA:95:9E:A5",
+  "key_material_retained": false
+ },
+ "sampler": {
+  "output": "serving-resources-qualification-15.jsonl",
+  "stop_file": "/tmp/g4-qualification-15-monitor-stop"
+ },
+ "command": "run_g4_suite.py --output-dir qualification-15 --reservation rendering-reservation-saved.json"
+}

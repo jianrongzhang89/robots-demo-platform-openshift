@@ -1,0 +1,14 @@
+# Phase 2 scene overlay; keep Phase 1 artifact immutable for rollback.
+FROM quay.io/jianrzha/ros2-rmf-hotel-sim@sha256:e515525dc4abb61e24097e1f1a556553f35febfc22c060faab67017a20b880d9
+
+COPY scripts/semantic-navigation/install_phase1_camera.py /opt/semantic-navigation/install_phase1_camera.py
+COPY scripts/semantic-navigation/entrypoint-phase1.sh /entrypoint-semantic-navigation-phase1.sh
+COPY scripts/semantic-navigation/camera_stream_probe.py /opt/semantic-navigation/camera_stream_probe.py
+COPY scripts/semantic-navigation/camera_compressor.py /opt/semantic-navigation/camera_compressor.py
+COPY scripts/semantic-navigation/rgbd_pairing.py /opt/semantic-navigation/rgbd_pairing.py
+COPY scripts/semantic-navigation/camera_qos.py /opt/semantic-navigation/camera_qos.py
+COPY scripts/semantic-navigation/capture_camera_frames.py /opt/semantic-navigation/capture_camera_frames.py
+COPY scripts/semantic-navigation/capture_phase2_sample.py /opt/semantic-navigation/capture_phase2_sample.py
+COPY scripts/semantic-navigation/drive_capture_motion.py /opt/semantic-navigation/drive_capture_motion.py
+COPY scripts/turtlebot3_waffle.urdf /opt/ros2-demo/robot/turtlebot3_waffle.urdf
+COPY helm/semantic-navigation/files/rgbd-camera-bridge.yaml /opt/ros2-demo/config/semantic-camera-bridge.yaml

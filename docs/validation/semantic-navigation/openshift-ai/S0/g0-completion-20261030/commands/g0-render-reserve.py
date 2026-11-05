@@ -1,0 +1,6 @@
+import json,subprocess
+from pathlib import Path
+p=Path('docs/validation/semantic-navigation/openshift-ai/S0/g0-completion-20261030')
+assert json.loads((p/'baseline/pair-result.json').read_text())['passed']
+r=json.loads((p/'rendering-pod.json').read_text());obj={'apiVersion':'v1','kind':'Pod','metadata':{'name':'sam3-g0-rendering-reservation','namespace':'semantic-navigation','labels':{'app':'sam3-g0-rendering-reservation'}},'spec':{'restartPolicy':'Never','automountServiceAccountToken':False,'nodeSelector':{'kubernetes.io/hostname':r['spec']['nodeName']},'tolerations':r['spec']['tolerations'],'containers':[{'name':'reservation','image':r['spec']['containers'][0]['image'],'command':['python3','-c','import time;time.sleep(604800)'],'resources':{'requests':{'cpu':'3150m','memory':'3200Mi','nvidia.com/gpu':'1'},'limits':{'cpu':'14','memory':'12800Mi','nvidia.com/gpu':'1'}},'securityContext':{'runAsNonRoot':True,'allowPrivilegeEscalation':False,'readOnlyRootFilesystem':True,'capabilities':{'drop':['ALL']},'seccompProfile':{'type':'RuntimeDefault'}}}]}}
+(p/'rendering-reservation-pod.json').write_text(json.dumps(obj,indent=2)+'\n');subprocess.run(['/Users/zhangj/bin/oc','create','-f',str(p/'rendering-reservation-pod.json')],check=True)

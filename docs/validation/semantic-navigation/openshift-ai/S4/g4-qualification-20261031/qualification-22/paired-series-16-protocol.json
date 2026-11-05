@@ -1,0 +1,14 @@
+{
+ "event": "standalone paired-series re-run 16 (November 4)",
+ "context": "Series 15 passed 9 trials then stopped on 004-on to the watchdog command-boundary race (native_session_lost; the instrumentation proves the sender perfect: 10,161 enqueues, 0 drops, sub-ms latency, 5-10 ms cadence - the aging command's last packets carried a 3.7 ms window while the next arrived 5.5 ms later). The known ~1.6% per armed-trial residual in the pinned command-deadline semantics. With every environmental and harness class fixed, the per-series odds are now ~20-25%, purely the two pinned-component tails (goal-approach TF ~3.5% + watchdog ~1.6% per on-arm trial).",
+ "setup": {
+  "topology": "G4 topology up (direct endpoint); the series' per-trial recycle manages it; reservation remains deleted",
+  "series_output": "qualification-22/paired-series-16",
+  "phase5_evidence": "qualification-22/served-phase5-qualification.json",
+  "sampler": {
+   "output": "serving-resources-paired-series-16.jsonl",
+   "stop_file": "/tmp/g4-paired-series-16-monitor-stop"
+  }
+ },
+ "command": "run_phase6_series.py --output-dir qualification-22/paired-series-16 (same arguments as series 2-15)"
+}

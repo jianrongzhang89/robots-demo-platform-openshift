@@ -1,0 +1,22 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: semantic-safety
+  namespace: semantic-navigation
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: semantic-safety-console-phase6
+  namespace: semantic-navigation
+spec:
+  runPolicy: Serial
+  source: {binary: {}}
+  strategy:
+    type: Docker
+    dockerStrategy: {dockerfilePath: Containerfile.phase6-console}
+  output:
+    to: {kind: ImageStreamTag, name: 'semantic-safety:phase6-console-candidate'}
+  resources:
+    requests: {cpu: '2', memory: 4Gi}
+    limits: {cpu: '4', memory: 8Gi}

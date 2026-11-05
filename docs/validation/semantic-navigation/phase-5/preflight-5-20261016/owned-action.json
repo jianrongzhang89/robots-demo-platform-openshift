@@ -1,0 +1,234 @@
+{
+  "event": "phase5_owned_action_fixture",
+  "passed": true,
+  "checks": [
+    {
+      "case": "revoke_before_cancel_ack_and_wait_for_terminal",
+      "passed": true
+    },
+    {
+      "case": "late_acceptance_canceled_without_permission",
+      "passed": true
+    },
+    {
+      "case": "success_revokes_and_requires_new_request",
+      "passed": true
+    },
+    {
+      "case": "rejected_cancel_stays_inhibited_until_terminal",
+      "passed": true
+    },
+    {
+      "case": "late_backend_success_not_reported_as_task_success",
+      "passed": true
+    },
+    {
+      "case": "backend_rejection_never_allows_command",
+      "passed": true
+    },
+    {
+      "case": "no_actuator_or_command_topics",
+      "passed": true
+    }
+  ],
+  "events": [
+    {
+      "event": "goal_requested",
+      "steady_ns": 3119588062616264,
+      "token": "a2f9a722-41c5-4f78-9db5-9b4f1a3c2d6f"
+    },
+    {
+      "event": "goal_response",
+      "steady_ns": 3119588064070101,
+      "token": "a2f9a722-41c5-4f78-9db5-9b4f1a3c2d6f",
+      "disposition": "run"
+    },
+    {
+      "event": "permission_revoked",
+      "steady_ns": 3119588064123351,
+      "token": "a2f9a722-41c5-4f78-9db5-9b4f1a3c2d6f",
+      "reason": "camera_stale"
+    },
+    {
+      "event": "cancel_requested",
+      "steady_ns": 3119588064125334,
+      "token": "a2f9a722-41c5-4f78-9db5-9b4f1a3c2d6f"
+    },
+    {
+      "event": "cancel_response",
+      "steady_ns": 3119588065181975,
+      "token": "a2f9a722-41c5-4f78-9db5-9b4f1a3c2d6f",
+      "accepted": true
+    },
+    {
+      "event": "terminal_result",
+      "steady_ns": 3119590073864555,
+      "token": "a2f9a722-41c5-4f78-9db5-9b4f1a3c2d6f",
+      "status": 5,
+      "outcome": "stopped"
+    },
+    {
+      "event": "goal_requested",
+      "steady_ns": 3119590073991649,
+      "token": "62ac0b77-8bd9-47f9-843d-3caefaba3294"
+    },
+    {
+      "event": "permission_revoked",
+      "steady_ns": 3119590074156112,
+      "token": "62ac0b77-8bd9-47f9-843d-3caefaba3294",
+      "reason": "cancel_before_accept"
+    },
+    {
+      "event": "goal_response",
+      "steady_ns": 3119590075728538,
+      "token": "62ac0b77-8bd9-47f9-843d-3caefaba3294",
+      "disposition": "cancel"
+    },
+    {
+      "event": "cancel_requested",
+      "steady_ns": 3119590075778636,
+      "token": "62ac0b77-8bd9-47f9-843d-3caefaba3294"
+    },
+    {
+      "event": "cancel_response",
+      "steady_ns": 3119590077218416,
+      "token": "62ac0b77-8bd9-47f9-843d-3caefaba3294",
+      "accepted": true
+    },
+    {
+      "event": "terminal_result",
+      "steady_ns": 3119590078530877,
+      "token": "62ac0b77-8bd9-47f9-843d-3caefaba3294",
+      "status": 5,
+      "outcome": "stopped"
+    },
+    {
+      "event": "goal_requested",
+      "steady_ns": 3119590078638956,
+      "token": "fc45c4f9-7cf9-473c-b542-21b469e2253e"
+    },
+    {
+      "event": "goal_response",
+      "steady_ns": 3119590080207279,
+      "token": "fc45c4f9-7cf9-473c-b542-21b469e2253e",
+      "disposition": "run"
+    },
+    {
+      "event": "permission_revoked",
+      "steady_ns": 3119590081778458,
+      "token": "fc45c4f9-7cf9-473c-b542-21b469e2253e",
+      "reason": "goal_succeeded"
+    },
+    {
+      "event": "terminal_result",
+      "steady_ns": 3119590081783231,
+      "token": "fc45c4f9-7cf9-473c-b542-21b469e2253e",
+      "status": 4,
+      "outcome": "succeeded"
+    },
+    {
+      "event": "goal_requested",
+      "steady_ns": 3119590081880662,
+      "token": "f6ae6c78-c37e-42ec-ae50-7447a452db0d"
+    },
+    {
+      "event": "goal_response",
+      "steady_ns": 3119590083431069,
+      "token": "f6ae6c78-c37e-42ec-ae50-7447a452db0d",
+      "disposition": "run"
+    },
+    {
+      "event": "permission_revoked",
+      "steady_ns": 3119590083476123,
+      "token": "f6ae6c78-c37e-42ec-ae50-7447a452db0d",
+      "reason": "tf_stale"
+    },
+    {
+      "event": "cancel_requested",
+      "steady_ns": 3119590083479640,
+      "token": "f6ae6c78-c37e-42ec-ae50-7447a452db0d"
+    },
+    {
+      "event": "cancel_response",
+      "steady_ns": 3119590084682664,
+      "token": "f6ae6c78-c37e-42ec-ae50-7447a452db0d",
+      "accepted": false
+    },
+    {
+      "event": "terminal_result",
+      "steady_ns": 3119590086140909,
+      "token": "f6ae6c78-c37e-42ec-ae50-7447a452db0d",
+      "status": 6,
+      "outcome": "stopped"
+    },
+    {
+      "event": "goal_requested",
+      "steady_ns": 3119590086235741,
+      "token": "fc364321-b695-4216-8e65-1bc96d699ad3"
+    },
+    {
+      "event": "goal_response",
+      "steady_ns": 3119590087800692,
+      "token": "fc364321-b695-4216-8e65-1bc96d699ad3",
+      "disposition": "run"
+    },
+    {
+      "event": "permission_revoked",
+      "steady_ns": 3119590087849075,
+      "token": "fc364321-b695-4216-8e65-1bc96d699ad3",
+      "reason": "backend_timeout"
+    },
+    {
+      "event": "cancel_requested",
+      "steady_ns": 3119590087851488,
+      "token": "fc364321-b695-4216-8e65-1bc96d699ad3"
+    },
+    {
+      "event": "cancel_response",
+      "steady_ns": 3119590089254866,
+      "token": "fc364321-b695-4216-8e65-1bc96d699ad3",
+      "accepted": false
+    },
+    {
+      "event": "terminal_result",
+      "steady_ns": 3119590090651675,
+      "token": "fc364321-b695-4216-8e65-1bc96d699ad3",
+      "status": 4,
+      "outcome": "stopped"
+    },
+    {
+      "event": "goal_requested",
+      "steady_ns": 3119590090744584,
+      "token": "328b884e-57c8-43e1-bc35-2a3346bdd68f"
+    },
+    {
+      "event": "goal_response",
+      "steady_ns": 3119590091883214,
+      "token": "328b884e-57c8-43e1-bc35-2a3346bdd68f",
+      "disposition": "rejected"
+    },
+    {
+      "event": "permission_revoked",
+      "steady_ns": 3119590091887143,
+      "token": "328b884e-57c8-43e1-bc35-2a3346bdd68f",
+      "reason": "goal_rejected"
+    }
+  ],
+  "topics": {
+    "/parameter_events": [
+      "rcl_interfaces/msg/ParameterEvent"
+    ],
+    "/phase5/task_status": [
+      "std_msgs/msg/String"
+    ],
+    "/phase5_fixture/navigate_to_pose/_action/feedback": [
+      "nav2_msgs/action/NavigateToPose_FeedbackMessage"
+    ],
+    "/phase5_fixture/navigate_to_pose/_action/status": [
+      "action_msgs/msg/GoalStatusArray"
+    ],
+    "/rosout": [
+      "rcl_interfaces/msg/Log"
+    ]
+  }
+}

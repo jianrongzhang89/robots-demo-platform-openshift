@@ -1,0 +1,330 @@
+{
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+        "annotations": {
+            "k8s.ovn.org/pod-networks": "{\"default\":{\"ip_addresses\":[\"10.131.3.248/23\"],\"mac_address\":\"0a:58:0a:83:03:f8\",\"gateway_ips\":[\"10.131.2.1\"],\"routes\":[{\"dest\":\"10.128.0.0/14\",\"nextHop\":\"10.131.2.1\"},{\"dest\":\"172.30.0.0/16\",\"nextHop\":\"10.131.2.1\"},{\"dest\":\"169.254.0.5/32\",\"nextHop\":\"10.131.2.1\"},{\"dest\":\"100.64.0.0/16\",\"nextHop\":\"10.131.2.1\"}],\"ip_address\":\"10.131.3.248/23\",\"gateway_ip\":\"10.131.2.1\",\"role\":\"primary\"}}",
+            "k8s.v1.cni.cncf.io/network-status": "[{\n    \"name\": \"ovn-kubernetes\",\n    \"interface\": \"eth0\",\n    \"ips\": [\n        \"10.131.3.248\"\n    ],\n    \"mac\": \"0a:58:0a:83:03:f8\",\n    \"default\": true,\n    \"dns\": {}\n}]",
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Pod\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"semantic-s2-adapter\",\"semantic-serving-client\":\"sam3-mat-v1\"},\"name\":\"semantic-s2-adapter\",\"namespace\":\"semantic-navigation\"},\"spec\":{\"automountServiceAccountToken\":false,\"containers\":[{\"args\":[\"source /opt/ros/jazzy/setup.bash; exec python3 /opt/semantic-perception/sam3_ros_node.py --ros-args -p backend:=http -p robot_id:=robot_1 -p stream_id:=camera/color -p input_prefix:=/g2/robot_1/camera -p output_prefix:=/g2/robot_1/semantic\"],\"command\":[\"/bin/bash\",\"-ec\"],\"env\":[{\"name\":\"SEMANTIC_BACKEND\",\"value\":\"http\"},{\"name\":\"SEMANTIC_ENDPOINT\",\"value\":\"https://sam3-mat-v1-tls.semantic-model-serving.svc:8443\"},{\"name\":\"SEMANTIC_TLS_CA\",\"value\":\"/cert/ca.crt\"},{\"name\":\"SEMANTIC_TLS_CERT\",\"value\":\"/cert/tls.crt\"},{\"name\":\"SEMANTIC_TLS_KEY\",\"value\":\"/cert/tls.key\"},{\"name\":\"SEMANTIC_DEPLOYMENT_IDENTITY\",\"value\":\"/config/identity.json\"},{\"name\":\"SEMANTIC_REQUIRE_CAPTURE_TRACE\",\"value\":\"1\"},{\"name\":\"SEMANTIC_CLOCK_UNCERTAINTY_MS\",\"value\":\"2\"},{\"name\":\"SEMANTIC_MAX_WORK_WAIT_MS\",\"value\":\"40\"},{\"name\":\"SEMANTIC_STATUS_FILE\",\"value\":\"/tmp/semantic-status.json\"},{\"name\":\"ROS_DOMAIN_ID\",\"value\":\"188\"},{\"name\":\"CYCLONEDDS_URI\",\"value\":\"file:///config/cyclonedds.xml\"}],\"image\":\"image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-cpu-adapter@sha256:20ea4f5e6bc30646f48b29895eb071d40403f8c20b0c1526aeacf06dce716d4b\",\"name\":\"adapter\",\"readinessProbe\":{\"exec\":{\"command\":[\"python3\",\"-c\",\"import json,time; s=json.load(open(\\\"/tmp/semantic-status.json\\\")); assert s[\\\"ready\\\"] and 0 \\u003c= time.time_ns()-s[\\\"status_wall_ns\\\"] \\u003c 500000000\"]},\"failureThreshold\":1,\"periodSeconds\":1,\"timeoutSeconds\":1},\"resources\":{\"limits\":{\"cpu\":\"2\",\"memory\":\"2Gi\"},\"requests\":{\"cpu\":\"1\",\"memory\":\"1Gi\"}},\"securityContext\":{\"allowPrivilegeEscalation\":false,\"capabilities\":{\"drop\":[\"ALL\"]},\"readOnlyRootFilesystem\":true,\"seccompProfile\":{\"type\":\"RuntimeDefault\"}},\"volumeMounts\":[{\"mountPath\":\"/config\",\"name\":\"config\",\"readOnly\":true},{\"mountPath\":\"/cert\",\"name\":\"tls\",\"readOnly\":true},{\"mountPath\":\"/tmp\",\"name\":\"tmp\"}]}],\"nodeSelector\":{\"kubernetes.io/hostname\":\"ip-10-0-53-174.ec2.internal\"},\"serviceAccountName\":\"sam3-replay\",\"terminationGracePeriodSeconds\":10,\"volumes\":[{\"configMap\":{\"name\":\"semantic-s2-adapter\"},\"name\":\"config\"},{\"name\":\"tls\",\"secret\":{\"defaultMode\":288,\"secretName\":\"sam3-replay-tls\"}},{\"emptyDir\":{\"sizeLimit\":\"256Mi\"},\"name\":\"tmp\"}]}}\n",
+            "openshift.io/scc": "openshift-ai-llminferenceservice-scc",
+            "seccomp.security.alpha.kubernetes.io/pod": "runtime/default",
+            "security.openshift.io/validated-scc-subject-type": "user"
+        },
+        "creationTimestamp": "2026-10-31T14:56:34Z",
+        "generation": 1,
+        "labels": {
+            "app": "semantic-s2-adapter",
+            "semantic-serving-client": "sam3-mat-v1"
+        },
+        "name": "semantic-s2-adapter",
+        "namespace": "semantic-navigation",
+        "resourceVersion": "493839847",
+        "uid": "285e7847-61a3-4d4a-a94c-77e190aecaae"
+    },
+    "spec": {
+        "automountServiceAccountToken": false,
+        "containers": [
+            {
+                "args": [
+                    "source /opt/ros/jazzy/setup.bash; exec python3 /opt/semantic-perception/sam3_ros_node.py --ros-args -p backend:=http -p robot_id:=robot_1 -p stream_id:=camera/color -p input_prefix:=/g2/robot_1/camera -p output_prefix:=/g2/robot_1/semantic"
+                ],
+                "command": [
+                    "/bin/bash",
+                    "-ec"
+                ],
+                "env": [
+                    {
+                        "name": "SEMANTIC_BACKEND",
+                        "value": "http"
+                    },
+                    {
+                        "name": "SEMANTIC_ENDPOINT",
+                        "value": "https://sam3-mat-v1-tls.semantic-model-serving.svc:8443"
+                    },
+                    {
+                        "name": "SEMANTIC_TLS_CA",
+                        "value": "/cert/ca.crt"
+                    },
+                    {
+                        "name": "SEMANTIC_TLS_CERT",
+                        "value": "/cert/tls.crt"
+                    },
+                    {
+                        "name": "SEMANTIC_TLS_KEY",
+                        "value": "/cert/tls.key"
+                    },
+                    {
+                        "name": "SEMANTIC_DEPLOYMENT_IDENTITY",
+                        "value": "/config/identity.json"
+                    },
+                    {
+                        "name": "SEMANTIC_REQUIRE_CAPTURE_TRACE",
+                        "value": "1"
+                    },
+                    {
+                        "name": "SEMANTIC_CLOCK_UNCERTAINTY_MS",
+                        "value": "2"
+                    },
+                    {
+                        "name": "SEMANTIC_MAX_WORK_WAIT_MS",
+                        "value": "40"
+                    },
+                    {
+                        "name": "SEMANTIC_STATUS_FILE",
+                        "value": "/tmp/semantic-status.json"
+                    },
+                    {
+                        "name": "ROS_DOMAIN_ID",
+                        "value": "188"
+                    },
+                    {
+                        "name": "CYCLONEDDS_URI",
+                        "value": "file:///config/cyclonedds.xml"
+                    }
+                ],
+                "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-cpu-adapter@sha256:20ea4f5e6bc30646f48b29895eb071d40403f8c20b0c1526aeacf06dce716d4b",
+                "imagePullPolicy": "IfNotPresent",
+                "name": "adapter",
+                "readinessProbe": {
+                    "exec": {
+                        "command": [
+                            "python3",
+                            "-c",
+                            "import json,time; s=json.load(open(\"/tmp/semantic-status.json\")); assert s[\"ready\"] and 0 \u003c= time.time_ns()-s[\"status_wall_ns\"] \u003c 500000000"
+                        ]
+                    },
+                    "failureThreshold": 1,
+                    "periodSeconds": 1,
+                    "successThreshold": 1,
+                    "timeoutSeconds": 1
+                },
+                "resources": {
+                    "limits": {
+                        "cpu": "2",
+                        "memory": "2Gi"
+                    },
+                    "requests": {
+                        "cpu": "1",
+                        "memory": "1Gi"
+                    }
+                },
+                "securityContext": {
+                    "allowPrivilegeEscalation": false,
+                    "capabilities": {
+                        "drop": [
+                            "ALL"
+                        ]
+                    },
+                    "readOnlyRootFilesystem": true,
+                    "runAsNonRoot": true,
+                    "runAsUser": 1001340000,
+                    "seccompProfile": {
+                        "type": "RuntimeDefault"
+                    }
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "File",
+                "volumeMounts": [
+                    {
+                        "mountPath": "/config",
+                        "name": "config",
+                        "readOnly": true
+                    },
+                    {
+                        "mountPath": "/cert",
+                        "name": "tls",
+                        "readOnly": true
+                    },
+                    {
+                        "mountPath": "/tmp",
+                        "name": "tmp"
+                    }
+                ]
+            }
+        ],
+        "dnsPolicy": "ClusterFirst",
+        "enableServiceLinks": true,
+        "imagePullSecrets": [
+            {
+                "name": "sam3-replay-dockercfg-2qhdk"
+            }
+        ],
+        "nodeName": "ip-10-0-53-174.ec2.internal",
+        "nodeSelector": {
+            "kubernetes.io/hostname": "ip-10-0-53-174.ec2.internal"
+        },
+        "preemptionPolicy": "PreemptLowerPriority",
+        "priority": 0,
+        "restartPolicy": "Always",
+        "schedulerName": "default-scheduler",
+        "securityContext": {
+            "seLinuxOptions": {
+                "level": "s0:c37,c4"
+            },
+            "seccompProfile": {
+                "type": "RuntimeDefault"
+            }
+        },
+        "serviceAccount": "sam3-replay",
+        "serviceAccountName": "sam3-replay",
+        "terminationGracePeriodSeconds": 10,
+        "tolerations": [
+            {
+                "effect": "NoExecute",
+                "key": "node.kubernetes.io/not-ready",
+                "operator": "Exists",
+                "tolerationSeconds": 300
+            },
+            {
+                "effect": "NoExecute",
+                "key": "node.kubernetes.io/unreachable",
+                "operator": "Exists",
+                "tolerationSeconds": 300
+            },
+            {
+                "effect": "NoSchedule",
+                "key": "node.kubernetes.io/memory-pressure",
+                "operator": "Exists"
+            }
+        ],
+        "volumes": [
+            {
+                "configMap": {
+                    "defaultMode": 420,
+                    "name": "semantic-s2-adapter"
+                },
+                "name": "config"
+            },
+            {
+                "name": "tls",
+                "secret": {
+                    "defaultMode": 288,
+                    "secretName": "sam3-replay-tls"
+                }
+            },
+            {
+                "emptyDir": {
+                    "sizeLimit": "256Mi"
+                },
+                "name": "tmp"
+            }
+        ]
+    },
+    "status": {
+        "conditions": [
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-31T14:56:50Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "PodReadyToStartContainers"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-31T14:56:34Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "Initialized"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-31T15:01:11Z",
+                "message": "containers with unready status: [adapter]",
+                "observedGeneration": 1,
+                "reason": "ContainersNotReady",
+                "status": "False",
+                "type": "Ready"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-31T15:01:11Z",
+                "message": "containers with unready status: [adapter]",
+                "observedGeneration": 1,
+                "reason": "ContainersNotReady",
+                "status": "False",
+                "type": "ContainersReady"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-31T14:56:34Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "PodScheduled"
+            }
+        ],
+        "containerStatuses": [
+            {
+                "allocatedResources": {
+                    "cpu": "1",
+                    "memory": "1Gi"
+                },
+                "containerID": "cri-o://d2ad501105f90d1249d452c1528b51d4388c5188f7d00feb3703fbf74590a26b",
+                "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-cpu-adapter@sha256:20ea4f5e6bc30646f48b29895eb071d40403f8c20b0c1526aeacf06dce716d4b",
+                "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-cpu-adapter@sha256:20ea4f5e6bc30646f48b29895eb071d40403f8c20b0c1526aeacf06dce716d4b",
+                "lastState": {},
+                "name": "adapter",
+                "ready": false,
+                "resources": {
+                    "limits": {
+                        "cpu": "2",
+                        "memory": "2Gi"
+                    },
+                    "requests": {
+                        "cpu": "1",
+                        "memory": "1Gi"
+                    }
+                },
+                "restartCount": 0,
+                "started": true,
+                "state": {
+                    "running": {
+                        "startedAt": "2026-10-31T14:56:49Z"
+                    }
+                },
+                "user": {
+                    "linux": {
+                        "gid": 0,
+                        "supplementalGroups": [
+                            0
+                        ],
+                        "uid": 1001340000
+                    }
+                },
+                "volumeMounts": [
+                    {
+                        "mountPath": "/config",
+                        "name": "config",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    },
+                    {
+                        "mountPath": "/cert",
+                        "name": "tls",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    },
+                    {
+                        "mountPath": "/tmp",
+                        "name": "tmp"
+                    }
+                ]
+            }
+        ],
+        "hostIP": "10.0.53.174",
+        "hostIPs": [
+            {
+                "ip": "10.0.53.174"
+            }
+        ],
+        "observedGeneration": 1,
+        "phase": "Running",
+        "podIP": "10.131.3.248",
+        "podIPs": [
+            {
+                "ip": "10.131.3.248"
+            }
+        ],
+        "qosClass": "Burstable",
+        "startTime": "2026-10-31T14:56:34Z"
+    }
+}

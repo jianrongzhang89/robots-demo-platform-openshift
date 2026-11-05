@@ -1,0 +1,16 @@
+{
+  "removed": [
+    "pod/semantic-phase3-inference",
+    "pod/semantic-phase3-simulator",
+    "pod/semantic-phase3-router",
+    "service/semantic-phase3-router",
+    "configmap/semantic-phase3-inference-config"
+  ],
+  "retained": [
+    "sam3-checkpoint PVC",
+    "built candidate images",
+    "source/manifests",
+    "validation evidence"
+  ],
+  "verification": "{\n  \"deployments\": [\n    {\n      \"name\": \"semantic-camera-probe\",\n      \"desired\": 1,\n      \"available\": 1,\n      \"images\": [\n        \"image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim:phase1\",\n        \"eclipse/zenoh-bridge-ros2dds:1.5.0\"\n      ]\n    },\n    {\n      \"name\": \"semantic-hotel-sim\",\n      \"desired\": 1,\n      \"available\": 1,\n      \"images\": [\n        \"image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim:phase2\",\n        \"image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:4e163b62f3e2fe39eca7c6ef917b1471700afb27a0b3c7e37b14e388dfc92fc3\",\n        \"eclipse/zenoh-bridge-ros2dds:1.5.0\"\n      ]\n    },\n    {\n      \"name\": \"semantic-zenoh-router\",\n      \"desired\": 1,\n      \"available\": 1,\n      \"images\": [\n        \"eclipse/zenoh:1.5.0\"\n      ]\n    }\n  ]\n}\nNAME              STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE\nsam3-checkpoint   Bound    pvc-945329f1-9ed1-4a82-8fe9-1aa888c504ec   10Gi       RWO            gp3-csi        <unset>                 2d23h\nNo resources found in semantic-navigation namespace.\n"
+}

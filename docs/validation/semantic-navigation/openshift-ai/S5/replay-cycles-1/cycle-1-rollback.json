@@ -1,0 +1,68 @@
+{
+  "scope": "G1 backend parity only; not recognition or live navigation qualification",
+  "recorded_at": "2026-11-04T14:09:24.640022+00:00",
+  "evaluation_set_sha256": "5e000545e7ba6fb4f97932a7825b7fa9016831724fbf76758f80612a41bc2a90",
+  "deployment": {
+    "schema": "semantic-deployment/v1",
+    "model_name": "sam3-mat-v1",
+    "weights_sha256": "9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e",
+    "source_revision": "0570b3a5be9c4e694f23d85232fb55f4a6f1f7fc",
+    "container_digest": "sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+    "shared_sha256": {
+      "inference_contract.py": "d238d2490f826b6fbb70f07aa5579492dc425e8c858b780c8216679f121ffdef",
+      "sam3_backend.py": "3d83819971704e8ce642db98972194996307b314bb73cbb44257384e45714761",
+      "sam3_runtime_core.py": "683cf53a5b6378fa72d0cefe404bd899039b1420b4d5a2e7cfe3faecaf57085f"
+    },
+    "versions": {
+      "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+      "preprocess": "sam3-pil-rgb/v1",
+      "decoder": "sam3-binary-instances/v1"
+    },
+    "precision": "bfloat16",
+    "policy": "avoid-target/v1",
+    "prompt": "red mat",
+    "threshold": 0.5
+  },
+  "thresholds": {
+    "union_mask_iou_min": 0.99,
+    "empty_agreement": 1.0,
+    "occupied_fraction_difference_max": 0.005
+  },
+  "sample_count": 3,
+  "frames": [
+    {
+      "case": "mat",
+      "request_sha256": "33a15eb3186e086c181325e5299a5afb8950175476bd8cc41b9038b843b0220e",
+      "http_status": 200,
+      "round_trip_ms": 116.29549413919449,
+      "response_sha256": "35afc22fee2e3832dc1c60e35884c8b91c00b89037c77d329b5404ee9371f09b",
+      "union_mask_iou": 1.0,
+      "empty_agreement": true,
+      "occupied_fraction_difference": 0.0,
+      "passed": true
+    },
+    {
+      "case": "absent-target",
+      "request_sha256": "5098af3db90b082d2e835efee98e9e0cbc290f61cb4f0ba94b161343e4b35c3d",
+      "http_status": 200,
+      "round_trip_ms": 146.87425829470158,
+      "response_sha256": "3924adda1a34d5d10589b0030337a47f7db3faa3f7b6d6cc1dd8d33b73e21563",
+      "union_mask_iou": 1.0,
+      "empty_agreement": true,
+      "occupied_fraction_difference": 0.0,
+      "passed": true
+    },
+    {
+      "case": "empty-mask",
+      "request_sha256": "81211bb0df457454befba07b3fa9d0ecb4c621b7763ad2a9891ad14df9ef04da",
+      "http_status": 200,
+      "round_trip_ms": 145.48084698617458,
+      "response_sha256": "5241149263ae640e19b13fbe6b10bf7f52712d001e3bca07e4e123375b69ae20",
+      "union_mask_iou": 1.0,
+      "empty_agreement": true,
+      "occupied_fraction_difference": 0.0,
+      "passed": true
+    }
+  ],
+  "status": "PASS"
+}

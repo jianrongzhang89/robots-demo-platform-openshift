@@ -1,0 +1,15 @@
+{
+ "event": "standalone paired-series re-run 4 (November 2)",
+ "context": "Series 3 passed 21 trials - beyond both previous stopping points, validating the transform-tolerance recalibration - then stopped on trial 010-on-nominal: navigation_trial_timeout. The robot was healthy and still creeping toward the goal when the on-arm navigation window (90 s wall, set when the crossing took ~30 s wall at RTF ~0.9, a 3x margin) expired; at the 30 Hz candidate's RTF 0.675 the same route takes ~40 s of motion and observed on-arm navigations run 60-100+ s wall (passing trials 91-120 s total, 010-on stalled the window at ~90 s of navigation).",
+ "change": "navigation_window_s 90 -> 135 s wall for the semantic arm (the same user-approved RTF-recalibration class as the wait cap and the nav2 transform tolerances): restores the historical 3x-motion-time multiple with headroom. Documented at the site in verify_hotel_stack.py. This is trial patience, not a safety threshold - the guarded stop, leases and collision criteria are unchanged. Flagged to the user for veto in the session report.",
+ "setup": {
+  "topology": "G4 topology remains up from series 3 (direct endpoint, no fault proxy); reservation remains deleted for the fixture's A10G rendering",
+  "series_output": "qualification-22/paired-series-4",
+  "phase5_evidence": "qualification-22/served-phase5-qualification.json",
+  "sampler": {
+   "output": "serving-resources-paired-series-4.jsonl",
+   "stop_file": "/tmp/g4-paired-series-4-monitor-stop"
+  }
+ },
+ "command": "run_phase6_series.py --output-dir qualification-22/paired-series-4 (same arguments as series 2/3)"
+}

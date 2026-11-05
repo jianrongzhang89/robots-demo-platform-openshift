@@ -1,0 +1,15 @@
+{
+ "event": "standalone paired-series re-run (user-approved protocol, November 2)",
+ "context": "Qualification-22 passed all five G4 stages for the first time (serving-faults 12/12, observation 10/10, recovery 10/10, moving-stop 10/10, semantic-faults 10/10; see served-phase5-qualification.json). Its paired series stopped on trial 004-on-nominal (10 of 110) when a single TF-extrapolation transient made the planner emit a 0-pose plan and abort - the same transient class that stopped eight historical Phase 6 series before series-23 passed. The series runner has no retry by design.",
+ "decision": "User approved re-running ONLY the paired series standalone, pointing at qualification-22's retained served-phase5-qualification.json with the suite's exact series arguments - the same pattern the accepted Phase 6 qualification used (series-23 passed standalone after series-1-22 failed).",
+ "setup": {
+  "topology": "g4_topology up without the fault proxy (the series uses the direct model endpoint); reservation deleted to free the A10G",
+  "series_output": "qualification-22/paired-series-2",
+  "phase5_evidence": "qualification-22/served-phase5-qualification.json",
+  "sampler": {
+   "output": "serving-resources-paired-series-2.jsonl",
+   "stop_file": "/tmp/g4-paired-series-2-monitor-stop"
+  }
+ },
+ "command": "run_phase6_series.py --output-dir qualification-22/paired-series-2 --serving-backend http --pairs 20 --negative-pairs 3 --hull-radius 0.246 --region-xmin 16.9514 --region-xmax 17.8514 --region-ymin -31.919 --region-ymax -31.269 --gpu-rendering --phase5-evidence qualification-22/served-phase5-qualification.json --reserved-window-note 'User authorized G4 after G3 sign-off; private A10G rendering reservation handed to G4 fixture.' --trial-command <python> phase6_trial.py {arm} {case} {trial} {output}"
+}

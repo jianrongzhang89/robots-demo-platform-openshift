@@ -1,0 +1,33 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: sam3-eval
+  namespace: semantic-navigation
+spec:
+  lookupPolicy:
+    local: true
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: sam3-eval-phase2
+  namespace: semantic-navigation
+spec:
+  runPolicy: Serial
+  source:
+    binary: {}
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Containerfile.sam3-eval
+  output:
+    to:
+      kind: ImageStreamTag
+      name: sam3-eval:phase2
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: "2"
+      memory: 4Gi

@@ -1,0 +1,485 @@
+{
+  "created": [
+    [
+      "ConfigMap",
+      "semantic-phase5-sam3-config"
+    ],
+    [
+      "Service",
+      "semantic-phase5-sam3-router"
+    ],
+    [
+      "Deployment",
+      "semantic-phase5-sam3-router"
+    ],
+    [
+      "Pod",
+      "semantic-phase5-sam3"
+    ]
+  ],
+  "ready_wall_ns": 1793036609125021000,
+  "sam3_pod": {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "annotations": {
+        "k8s.ovn.org/pod-networks": "{\"default\":{\"ip_addresses\":[\"10.129.12.124/23\"],\"mac_address\":\"0a:58:0a:81:0c:7c\",\"gateway_ips\":[\"10.129.12.1\"],\"routes\":[{\"dest\":\"10.128.0.0/14\",\"nextHop\":\"10.129.12.1\"},{\"dest\":\"172.30.0.0/16\",\"nextHop\":\"10.129.12.1\"},{\"dest\":\"169.254.0.5/32\",\"nextHop\":\"10.129.12.1\"},{\"dest\":\"100.64.0.0/16\",\"nextHop\":\"10.129.12.1\"}],\"ip_address\":\"10.129.12.124/23\",\"gateway_ip\":\"10.129.12.1\",\"role\":\"primary\"}}",
+        "k8s.v1.cni.cncf.io/network-status": "[{\n    \"name\": \"ovn-kubernetes\",\n    \"interface\": \"eth0\",\n    \"ips\": [\n        \"10.129.12.124\"\n    ],\n    \"mac\": \"0a:58:0a:81:0c:7c\",\n    \"default\": true,\n    \"dns\": {}\n}]",
+        "openshift.io/scc": "openshift-ai-llminferenceservice-scc",
+        "seccomp.security.alpha.kubernetes.io/pod": "runtime/default",
+        "security.openshift.io/validated-scc-subject-type": "user"
+      },
+      "creationTimestamp": "2026-10-26T17:43:31Z",
+      "generation": 1,
+      "labels": {
+        "app": "semantic-phase5-sam3"
+      },
+      "name": "semantic-phase5-sam3",
+      "namespace": "semantic-navigation",
+      "resourceVersion": "472564194",
+      "uid": "3746b631-c0cc-4261-ad76-2fb2bbe64155"
+    },
+    "spec": {
+      "containers": [
+        {
+          "args": [
+            "-c",
+            "/phase5-bridges/sam3-bridge.json5"
+          ],
+          "env": [
+            {
+              "name": "ROS_DOMAIN_ID",
+              "value": "86"
+            },
+            {
+              "name": "ROS_DISTRO",
+              "value": "jazzy"
+            },
+            {
+              "name": "RMW_IMPLEMENTATION",
+              "value": "rmw_cyclonedds_cpp"
+            },
+            {
+              "name": "CYCLONEDDS_URI",
+              "value": "file:///phase5-bridges/cyclonedds.xml"
+            }
+          ],
+          "image": "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+          "imagePullPolicy": "IfNotPresent",
+          "name": "sam3-zenoh-bridge",
+          "resources": {
+            "limits": {
+              "cpu": "500m",
+              "memory": "512Mi"
+            },
+            "requests": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            }
+          },
+          "securityContext": {
+            "allowPrivilegeEscalation": false,
+            "capabilities": {
+              "drop": [
+                "ALL"
+              ]
+            },
+            "runAsNonRoot": true,
+            "runAsUser": 1001340000
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/phase5-bridges",
+              "name": "bridge-config",
+              "readOnly": true
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-xj9rm",
+              "readOnly": true
+            }
+          ]
+        },
+        {
+          "env": [
+            {
+              "name": "ROS_DOMAIN_ID",
+              "value": "86"
+            },
+            {
+              "name": "ROS_DISTRO",
+              "value": "jazzy"
+            },
+            {
+              "name": "HOME",
+              "value": "/tmp/phase5-sam3-home"
+            },
+            {
+              "name": "ROS_LOG_DIR",
+              "value": "/tmp/phase5-sam3-logs"
+            },
+            {
+              "name": "RMW_IMPLEMENTATION",
+              "value": "rmw_cyclonedds_cpp"
+            },
+            {
+              "name": "CYCLONEDDS_URI",
+              "value": "file:///phase5-bridges/cyclonedds.xml"
+            },
+            {
+              "name": "SAM3_PROMPT",
+              "value": "red mat"
+            },
+            {
+              "name": "SEMANTIC_REQUIRE_CAPTURE_TRACE",
+              "value": "1"
+            },
+            {
+              "name": "SEMANTIC_MAX_WORK_WAIT_MS",
+              "value": "40"
+            },
+            {
+              "name": "SEMANTIC_CLOCK_UNCERTAINTY_MS",
+              "value": "2"
+            }
+          ],
+          "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/sam3-runtime@sha256:478ec01a7a47fbb0c862fbbef495c71b4a512ff59ed8d6ed5b7234422cc35686",
+          "imagePullPolicy": "IfNotPresent",
+          "name": "sam3-inference",
+          "resources": {
+            "limits": {
+              "cpu": "6",
+              "memory": "24Gi",
+              "nvidia.com/gpu": "1"
+            },
+            "requests": {
+              "cpu": "3",
+              "memory": "12Gi",
+              "nvidia.com/gpu": "1"
+            }
+          },
+          "securityContext": {
+            "allowPrivilegeEscalation": false,
+            "capabilities": {
+              "drop": [
+                "ALL"
+              ]
+            },
+            "runAsNonRoot": true,
+            "runAsUser": 1001340000
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/phase5-bridges",
+              "name": "bridge-config",
+              "readOnly": true
+            },
+            {
+              "mountPath": "/models",
+              "name": "model",
+              "readOnly": true
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-xj9rm",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirst",
+      "enableServiceLinks": true,
+      "imagePullSecrets": [
+        {
+          "name": "default-dockercfg-6jjg8"
+        }
+      ],
+      "nodeName": "ip-10-0-18-251.ec2.internal",
+      "nodeSelector": {
+        "kubernetes.io/hostname": "ip-10-0-18-251.ec2.internal"
+      },
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Always",
+      "schedulerName": "default-scheduler",
+      "securityContext": {
+        "fsGroup": 1001340000,
+        "fsGroupChangePolicy": "OnRootMismatch",
+        "seLinuxOptions": {
+          "level": "s0:c37,c4"
+        },
+        "seccompProfile": {
+          "type": "RuntimeDefault"
+        }
+      },
+      "serviceAccount": "default",
+      "serviceAccountName": "default",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoSchedule",
+          "key": "g6e-gpu",
+          "operator": "Equal",
+          "value": "true"
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/memory-pressure",
+          "operator": "Exists"
+        }
+      ],
+      "volumes": [
+        {
+          "configMap": {
+            "defaultMode": 420,
+            "name": "semantic-phase5-sam3-config"
+          },
+          "name": "bridge-config"
+        },
+        {
+          "name": "model",
+          "persistentVolumeClaim": {
+            "claimName": "sam3-checkpoint"
+          }
+        },
+        {
+          "name": "kube-api-access-xj9rm",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "service-ca.crt",
+                      "path": "service-ca.crt"
+                    }
+                  ],
+                  "name": "openshift-service-ca.crt"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-10-26T17:43:35Z",
+          "observedGeneration": 1,
+          "status": "True",
+          "type": "PodReadyToStartContainers"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-10-26T17:43:31Z",
+          "observedGeneration": 1,
+          "status": "True",
+          "type": "Initialized"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-10-26T17:43:35Z",
+          "observedGeneration": 1,
+          "status": "True",
+          "type": "Ready"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-10-26T17:43:35Z",
+          "observedGeneration": 1,
+          "status": "True",
+          "type": "ContainersReady"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-10-26T17:43:31Z",
+          "observedGeneration": 1,
+          "status": "True",
+          "type": "PodScheduled"
+        }
+      ],
+      "containerStatuses": [
+        {
+          "allocatedResources": {
+            "cpu": "3",
+            "memory": "12Gi",
+            "nvidia.com/gpu": "1"
+          },
+          "containerID": "cri-o://5f8de90479af776c05b612f1ebfa4dcfdee13070f63d2f723c696bf19dbb40ac",
+          "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/sam3-runtime@sha256:478ec01a7a47fbb0c862fbbef495c71b4a512ff59ed8d6ed5b7234422cc35686",
+          "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/sam3-runtime@sha256:478ec01a7a47fbb0c862fbbef495c71b4a512ff59ed8d6ed5b7234422cc35686",
+          "lastState": {},
+          "name": "sam3-inference",
+          "ready": true,
+          "resources": {
+            "limits": {
+              "cpu": "6",
+              "memory": "24Gi",
+              "nvidia.com/gpu": "1"
+            },
+            "requests": {
+              "cpu": "3",
+              "memory": "12Gi",
+              "nvidia.com/gpu": "1"
+            }
+          },
+          "restartCount": 0,
+          "started": true,
+          "state": {
+            "running": {
+              "startedAt": "2026-10-26T17:43:34Z"
+            }
+          },
+          "user": {
+            "linux": {
+              "gid": 0,
+              "supplementalGroups": [
+                0,
+                1001340000
+              ],
+              "uid": 1001340000
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/phase5-bridges",
+              "name": "bridge-config",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/models",
+              "name": "model",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-xj9rm",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        },
+        {
+          "allocatedResources": {
+            "cpu": "100m",
+            "memory": "128Mi"
+          },
+          "containerID": "cri-o://940404ddf636d40a8146cf8edb240ba2768090373fda4989754fdb56d9ff8427",
+          "image": "docker.io/eclipse/zenoh-bridge-ros2dds:1.5.0",
+          "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+          "lastState": {},
+          "name": "sam3-zenoh-bridge",
+          "ready": true,
+          "resources": {
+            "limits": {
+              "cpu": "500m",
+              "memory": "512Mi"
+            },
+            "requests": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            }
+          },
+          "restartCount": 0,
+          "started": true,
+          "state": {
+            "running": {
+              "startedAt": "2026-10-26T17:43:34Z"
+            }
+          },
+          "user": {
+            "linux": {
+              "gid": 0,
+              "supplementalGroups": [
+                0,
+                1001340000
+              ],
+              "uid": 1001340000
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/phase5-bridges",
+              "name": "bridge-config",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-xj9rm",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        }
+      ],
+      "hostIP": "10.0.18.251",
+      "hostIPs": [
+        {
+          "ip": "10.0.18.251"
+        }
+      ],
+      "observedGeneration": 1,
+      "phase": "Running",
+      "podIP": "10.129.12.124",
+      "podIPs": [
+        {
+          "ip": "10.129.12.124"
+        }
+      ],
+      "qosClass": "Burstable",
+      "startTime": "2026-10-26T17:43:31Z"
+    }
+  }
+}

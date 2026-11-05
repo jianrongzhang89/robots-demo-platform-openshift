@@ -1,0 +1,154 @@
+{
+  "gate": "G2",
+  "status": "PASS",
+  "accepted": true,
+  "reviewer": "User (explicit sign-off in conversation)",
+  "acceptance_note": "User signed off G2 PASS and authorized G3 qualification.",
+  "recorded_at": "2026-10-31T15:01:50.567783+00:00",
+  "commit": "ca60315af0a586967ae7137433659245862429b8",
+  "working_tree_dirty": true,
+  "source_hashes": "g2-qualification-20261031/source-hashes.json",
+  "runtime_image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-cpu-adapter@sha256:20ea4f5e6bc30646f48b29895eb071d40403f8c20b0c1526aeacf06dce716d4b",
+  "base_image": "docker.io/library/ros@sha256:c26c86a28e1addf9d10a81232869791974a3f7907943d5634742b58b2f26e1a3",
+  "model_runtime_image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+  "model_sha256": "9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e",
+  "deployment_identity": {
+    "schema": "semantic-deployment/v1",
+    "model_name": "sam3-mat-v1",
+    "weights_sha256": "9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e",
+    "source_revision": "0570b3a5be9c4e694f23d85232fb55f4a6f1f7fc",
+    "container_digest": "sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+    "shared_sha256": {
+      "inference_contract.py": "d238d2490f826b6fbb70f07aa5579492dc425e8c858b780c8216679f121ffdef",
+      "sam3_backend.py": "3d83819971704e8ce642db98972194996307b314bb73cbb44257384e45714761",
+      "sam3_runtime_core.py": "683cf53a5b6378fa72d0cefe404bd899039b1420b4d5a2e7cfe3faecaf57085f"
+    },
+    "versions": {
+      "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+      "preprocess": "sam3-pil-rgb/v1",
+      "decoder": "sam3-binary-instances/v1"
+    },
+    "precision": "bfloat16",
+    "policy": "avoid-target/v1",
+    "prompt": "red mat",
+    "threshold": 0.5
+  },
+  "cluster_versions": {
+    "ocp": "4.21.16",
+    "ai": [
+      {
+        "name": "rhods-operator.3.4.2",
+        "version": "3.4.2",
+        "phase": "Succeeded"
+      }
+    ],
+    "kserve_images": [
+      "registry.redhat.io/rhoai/odh-kserve-controller-rhel9@sha256:e046443ba557cb4c6c1dec0edb366752f7be0ba146caa2a341ee473c67443a99"
+    ]
+  },
+  "policy": "avoid-target/v1",
+  "prompt": "red mat",
+  "threshold": 0.5,
+  "precision": "bfloat16",
+  "endpoint": "https://sam3-mat-v1-tls.semantic-model-serving.svc:8443",
+  "hardware_profile": {
+    "adapter_node": "ip-10-0-53-174.ec2.internal",
+    "adapter_gpu_resources": 0,
+    "model_gpu": "NVIDIA L40S",
+    "model_node": "ip-10-0-55-175.ec2.internal"
+  },
+  "resource_profile": {
+    "requests": {
+      "cpu": "1",
+      "memory": "1Gi"
+    },
+    "limits": {
+      "cpu": "2",
+      "memory": "2Gi"
+    }
+  },
+  "evaluation_set_sha256": "5e000545e7ba6fb4f97932a7825b7fa9016831724fbf76758f80612a41bc2a90",
+  "sample_count": 6,
+  "exact_mask_parity": 6,
+  "capture_observer_ms": [
+    405.106026,
+    172.389374,
+    165.061153,
+    273.68907,
+    153.055874,
+    460.500382
+  ],
+  "percentiles_rates": null,
+  "timing_scope": "Six functional samples only; sustained timing and real geometry are G3.",
+  "tests": {
+    "unit": 42,
+    "build_ros": 12,
+    "deployed_cpu_ros": 12,
+    "live_ros_frames": 6,
+    "failed_attempts": 0,
+    "live_ros_batches": 2
+  },
+  "fault_outcomes": {
+    "clock_reset_during_request": "PASS",
+    "duplicate_input_and_reply": "PASS",
+    "reordered_reply": "PASS",
+    "missing_retained_bundle": "PASS",
+    "wrong_robot_or_sequence": "PASS",
+    "expired_response": "PASS",
+    "http_401_403_429_500_503_504": "PASS",
+    "network_drop_truncation_oversize": "PASS",
+    "process_response_hang": "PASS",
+    "slow_headers": "PASS",
+    "bounded_dns_resolver": "PASS",
+    "single_flight_and_bounded_queues": "PASS",
+    "wrong_deployment_latched": "PASS",
+    "metadata_does_not_grant_readiness": "PASS"
+  },
+  "fault_scope": "Real ROS callbacks and real mTLS deterministic fixture; live endpoint used for six parity frames. Live whole-server hang recovery remains G1 evidence.",
+  "isolation": {
+    "ros_domain": 188,
+    "dds_interface": "lo",
+    "output_prefix": "/g2/robot_1/semantic",
+    "navigation_connected": false,
+    "observed_nodes": [
+      "g2_live_replay",
+      "sam3_semantic_inference"
+    ]
+  },
+  "deviations": [
+    "Synthetic aligned one-metre depth and intrinsics; no real scene or TF geometry claim."
+  ],
+  "waivers": [
+    "Standing recognition waiver unchanged."
+  ],
+  "certificate_leaf_not_after": "2026-11-07T02:58:59Z",
+  "retained_state": {
+    "adapter": "Running, idle not Ready, zero restarts",
+    "serving": "Ready",
+    "accepted_local_sam3": "Ready",
+    "rendering_reservation": "Running"
+  },
+  "next_gate": "G3: sustained capture-to-consumer timing, freshness, capture-time TF and projection geometry",
+  "evidence": [
+    "report.md",
+    "g2-qualification-20261031/commands.sh",
+    "g2-qualification-20261031/build-1.log",
+    "g2-qualification-20261031/build.json",
+    "g2-qualification-20261031/cpu-ros-tests.txt",
+    "g2-qualification-20261031/live-1.json",
+    "g2-qualification-20261031/adapter-resources.json",
+    "g2-qualification-20261031/adapter-final.json",
+    "g2-qualification-20261031/adapter.log",
+    "g2-qualification-20261031/idle-status.json",
+    "g2-qualification-20261031/cpu-node.json",
+    "g2-qualification-20261031/inferenceservice-final.json",
+    "g2-qualification-20261031/baseline-final.json",
+    "g2-qualification-20261031/source-hashes.json",
+    "g2-qualification-20261031/evidence-hashes.json",
+    "g2-qualification-20261031/live-2.json"
+  ],
+  "technical_reviewer": "Codex (automated technical verification)",
+  "accepted_on": "2026-10-31",
+  "acceptance_timezone": "America/New_York",
+  "approval_statement": "G2 is signed off. Move on to G3."
+}

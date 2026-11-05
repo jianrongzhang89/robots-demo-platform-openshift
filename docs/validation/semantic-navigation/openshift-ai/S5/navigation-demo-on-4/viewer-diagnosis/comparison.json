@@ -1,0 +1,59 @@
+{
+  "baseline_first_10_seconds": {
+    "fps": [
+      1.622,
+      1.304,
+      1.245,
+      1.248,
+      1.203,
+      1.299,
+      1.258,
+      1.197,
+      1.304,
+      1.188
+    ],
+    "median_fps": 1.2530000000000001
+  },
+  "fixed_last_30_seconds": {
+    "fps": [
+      21.3,
+      20.72,
+      21.47,
+      21.31,
+      20.88,
+      20.97,
+      20.87,
+      20.34,
+      20.85,
+      20.37,
+      21.04,
+      21.31,
+      21.24,
+      20.53,
+      21.09,
+      20.45,
+      20.56,
+      20.96,
+      20.9,
+      20.69,
+      20.67,
+      20.31,
+      20.93,
+      20.68,
+      20.97,
+      20.74,
+      21.47,
+      20.84,
+      21.05,
+      20.81
+    ],
+    "median_fps": 20.875,
+    "min_fps": 20.31
+  },
+  "measurement": "Mesa Gallium frame counter in viewer; not remote browser delivery FPS",
+  "baseline": "OGRE2, software, 1 CPU limit,1280x800,default MSAA8",
+  "fixed": "OGRE, software,3 CPU limit,960x600,MSAA0,near0.1 far20",
+  "robot": "stationary/disarmed throughout comparison",
+  "geometry": "restored historical standalone 1.2 x 1.95 m; qualification defaults unchanged",
+  "live_mutations": "Viewer CPU in-place resize; GUI-only restarts; no simulator restart or world/robot pose commands"
+}

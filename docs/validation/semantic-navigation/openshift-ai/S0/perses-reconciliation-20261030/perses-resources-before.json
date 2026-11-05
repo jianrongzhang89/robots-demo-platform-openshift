@@ -1,0 +1,294 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "perses.dev/v1alpha2",
+            "kind": "Perses",
+            "metadata": {
+                "annotations": {
+                    "platform.opendatahub.io/instance.generation": "2",
+                    "platform.opendatahub.io/instance.name": "default-monitoring",
+                    "platform.opendatahub.io/instance.uid": "fd9c9aaa-663f-4254-84bd-90e62f19051e",
+                    "platform.opendatahub.io/type": "OpenShift AI Self-Managed",
+                    "platform.opendatahub.io/version": "3.4.1"
+                },
+                "creationTimestamp": "2026-08-10T18:21:09Z",
+                "finalizers": [
+                    "perses.dev/finalizer"
+                ],
+                "generation": 2,
+                "labels": {
+                    "platform.opendatahub.io/part-of": "monitoring"
+                },
+                "name": "data-science-perses",
+                "namespace": "redhat-ods-monitoring",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "services.platform.opendatahub.io/v1alpha1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "Monitoring",
+                        "name": "default-monitoring",
+                        "uid": "fd9c9aaa-663f-4254-84bd-90e62f19051e"
+                    }
+                ],
+                "resourceVersion": "196900952",
+                "uid": "2f2fb326-1c68-4045-b7a9-090727ad8d12"
+            },
+            "spec": {
+                "config": {
+                    "dashboard": {},
+                    "database": {
+                        "file": {
+                            "case_sensitive": false,
+                            "extension": "yaml",
+                            "folder": "/perses"
+                        }
+                    },
+                    "datasource": {
+                        "disable_local": false,
+                        "global": {
+                            "disable": false
+                        },
+                        "project": {
+                            "disable": false
+                        }
+                    },
+                    "ephemeral_dashboard": {
+                        "cleanup_interval": "1s",
+                        "enable": true
+                    },
+                    "frontend": {
+                        "disable": false,
+                        "explorer": {
+                            "enable": false
+                        }
+                    },
+                    "plugin": {
+                        "enable_dev": false
+                    },
+                    "provisioning": {},
+                    "schemas": {
+                        "datasources_path": "/etc/perses/cue/schemas/datasources",
+                        "panels_path": "/etc/perses/cue/schemas/panels",
+                        "queries_path": "/etc/perses/cue/schemas/queries",
+                        "variables_path": "/etc/perses/cue/schemas/variables"
+                    },
+                    "security": {
+                        "authentication": {
+                            "disable_sign_up": false,
+                            "providers": {
+                                "enable_native": false
+                            }
+                        },
+                        "authorization": {},
+                        "cookie": {
+                            "secure": false
+                        },
+                        "cors": {
+                            "enable": false
+                        },
+                        "enable_auth": false,
+                        "readonly": false
+                    },
+                    "variable": {
+                        "disable_local": false,
+                        "global": {
+                            "disable": false
+                        },
+                        "project": {
+                            "disable": false
+                        }
+                    }
+                },
+                "containerPort": 8080,
+                "image": "registry.redhat.io/cluster-observability-operator/perses-rhel9@sha256:e797cdb47beef40b04da7b6d645bca3dc32e6247003c45b56b38efd9e13bf01c",
+                "livenessProbe": {
+                    "failureThreshold": 5,
+                    "initialDelaySeconds": 10,
+                    "periodSeconds": 10,
+                    "successThreshold": 1,
+                    "timeoutSeconds": 5
+                },
+                "metadata": {
+                    "labels": {
+                        "app.kubernetes.io/name": "perses",
+                        "instance": "data-science-perses"
+                    }
+                },
+                "podSecurityContext": {},
+                "readinessProbe": {
+                    "failureThreshold": 5,
+                    "initialDelaySeconds": 10,
+                    "periodSeconds": 10,
+                    "successThreshold": 1,
+                    "timeoutSeconds": 5
+                }
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastTransitionTime": "2026-08-10T18:21:09Z",
+                        "message": "Perses (data-science-perses) created successfully",
+                        "reason": "Reconciled",
+                        "status": "True",
+                        "type": "Available"
+                    },
+                    {
+                        "lastTransitionTime": "2026-08-10T18:21:09Z",
+                        "message": "Perses (data-science-perses) reconciled successfully",
+                        "reason": "Reconciled",
+                        "status": "False",
+                        "type": "Degraded"
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "perses.dev/v1alpha2",
+            "kind": "PersesDatasource",
+            "metadata": {
+                "creationTimestamp": "2026-08-10T18:21:22Z",
+                "generation": 1,
+                "labels": {
+                    "app.kubernetes.io/component": "api",
+                    "app.kubernetes.io/managed-by": "maas-observability",
+                    "app.kubernetes.io/name": "maas-api",
+                    "app.kubernetes.io/part-of": "models-as-a-service",
+                    "app.opendatahub.io/modelsasservice": "true",
+                    "maas.opendatahub.io/tenant-name": "default-tenant",
+                    "maas.opendatahub.io/tenant-namespace": "models-as-a-service"
+                },
+                "name": "kuadrant-prometheus-datasource",
+                "namespace": "redhat-ods-applications",
+                "resourceVersion": "196901993",
+                "uid": "2c526346-8c43-4b55-b7bd-209aa2531395"
+            },
+            "spec": {
+                "client": {
+                    "tls": {
+                        "caCert": {
+                            "certPath": "service-ca.crt",
+                            "name": "prometheus-web-tls-ca",
+                            "type": "configmap"
+                        },
+                        "enable": true
+                    }
+                },
+                "config": {
+                    "default": false,
+                    "display": {
+                        "name": "Prometheus (Thanos Querier)"
+                    },
+                    "plugin": {
+                        "kind": "PrometheusDatasource",
+                        "spec": {
+                            "proxy": {
+                                "kind": "HTTPProxy",
+                                "spec": {
+                                    "secret": "kuadrant-prometheus-datasource-secret",
+                                    "url": "https://thanos-querier.openshift-monitoring.svc:9092?namespace=kuadrant-system"
+                                }
+                            },
+                            "scrapeInterval": "30s"
+                        }
+                    }
+                }
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastTransitionTime": "2026-08-10T18:21:22Z",
+                        "message": "something wrong happened with the request to the API. Error: Get \"http://data-science-perses.redhat-ods-monitoring.svc.cluster.local:8080/api/v1/projects/redhat-ods-applications\": dial tcp 172.30.227.118:8080: connect: connection refused",
+                        "reason": "PersesBackendError",
+                        "status": "False",
+                        "type": "Available"
+                    },
+                    {
+                        "lastTransitionTime": "2026-08-10T18:21:22Z",
+                        "message": "something wrong happened with the request to the API. Error: Get \"http://data-science-perses.redhat-ods-monitoring.svc.cluster.local:8080/api/v1/projects/redhat-ods-applications\": dial tcp 172.30.227.118:8080: connect: connection refused",
+                        "reason": "PersesBackendError",
+                        "status": "True",
+                        "type": "Degraded"
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "perses.dev/v1alpha2",
+            "kind": "PersesDatasource",
+            "metadata": {
+                "annotations": {
+                    "platform.opendatahub.io/description": "Data Science specific metrics from the local MonitoringStack",
+                    "platform.opendatahub.io/instance.generation": "2",
+                    "platform.opendatahub.io/instance.name": "default-monitoring",
+                    "platform.opendatahub.io/instance.uid": "fd9c9aaa-663f-4254-84bd-90e62f19051e",
+                    "platform.opendatahub.io/type": "OpenShift AI Self-Managed",
+                    "platform.opendatahub.io/version": "3.4.1"
+                },
+                "creationTimestamp": "2026-08-10T18:21:09Z",
+                "generation": 1,
+                "labels": {
+                    "platform.opendatahub.io/part-of": "monitoring"
+                },
+                "name": "data-science-prometheus-datasource",
+                "namespace": "redhat-ods-monitoring",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "services.platform.opendatahub.io/v1alpha1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "Monitoring",
+                        "name": "default-monitoring",
+                        "uid": "fd9c9aaa-663f-4254-84bd-90e62f19051e"
+                    }
+                ],
+                "resourceVersion": "196900958",
+                "uid": "d9fc8e4f-d5df-4d1d-8ca3-4a24737f4114"
+            },
+            "spec": {
+                "config": {
+                    "default": false,
+                    "display": {
+                        "description": "Data Science MonitoringStack Thanos Querier - provides DS workload metrics",
+                        "name": "Data Science Prometheus"
+                    },
+                    "plugin": {
+                        "kind": "PrometheusDatasource",
+                        "spec": {
+                            "proxy": {
+                                "kind": "HTTPProxy",
+                                "spec": {
+                                    "url": "http://thanos-querier-data-science-thanos-querier.redhat-ods-monitoring.svc.cluster.local:10902"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastTransitionTime": "2026-08-10T18:21:09Z",
+                        "message": "something wrong happened with the request to the API. Error: Get \"http://data-science-perses.redhat-ods-monitoring.svc.cluster.local:8080/api/v1/projects/redhat-ods-monitoring\": dial tcp 172.30.227.118:8080: connect: connection refused",
+                        "reason": "PersesBackendError",
+                        "status": "False",
+                        "type": "Available"
+                    },
+                    {
+                        "lastTransitionTime": "2026-08-10T18:21:09Z",
+                        "message": "something wrong happened with the request to the API. Error: Get \"http://data-science-perses.redhat-ods-monitoring.svc.cluster.local:8080/api/v1/projects/redhat-ods-monitoring\": dial tcp 172.30.227.118:8080: connect: connection refused",
+                        "reason": "PersesBackendError",
+                        "status": "True",
+                        "type": "Degraded"
+                    }
+                ]
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": "",
+        "selfLink": ""
+    }
+}

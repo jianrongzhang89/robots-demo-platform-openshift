@@ -1,0 +1,87 @@
+{
+  "gate": "G1",
+  "status": "HOLD",
+  "recorded_at": "2026-10-30T23:23:46.619421+00:00",
+  "reviewer": null,
+  "accepted": false,
+  "commit": "ca60315af0a586967ae7137433659245862429b8",
+  "working_tree_dirty": true,
+  "source_hashes": "source-hashes.json",
+  "runtime_image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+  "base_image_digest": "sha256:478ec01a7a47fbb0c862fbbef495c71b4a512ff59ed8d6ed5b7234422cc35686",
+  "model_sha256": "9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e",
+  "policy": "avoid-target/v1",
+  "prompt": "red mat",
+  "threshold": 0.5,
+  "precision": "bfloat16",
+  "cluster_versions": {
+    "ocp": "4.21.16",
+    "ai": [
+      {
+        "name": "rhods-operator.3.4.2",
+        "version": "3.4.2",
+        "phase": "Succeeded"
+      }
+    ],
+    "kserve_images": [
+      "registry.redhat.io/rhoai/odh-kserve-controller-rhel9@sha256:e046443ba557cb4c6c1dec0edb366752f7be0ba146caa2a341ee473c67443a99"
+    ]
+  },
+  "hardware_profile": {
+    "gpu": "NVIDIA L40S",
+    "cpu_request": 3,
+    "cpu_limit": 6,
+    "memory_request": "12Gi",
+    "memory_limit": "24Gi"
+  },
+  "evaluation_set_sha256": null,
+  "selection_sha256": "dbd801e002f9be34f5ae54b138a7512f75fc7720491bad5782fc7e7f8e7cd7f0",
+  "gpu_replay_sample_count": 0,
+  "gpu_replay_duration_seconds": 0,
+  "measured_parity": null,
+  "cold_start_cycles": 0,
+  "tests": {
+    "server_and_qualification": {
+      "passed": 19,
+      "evidence": "../S0/g0-completion-20261030/server-tests.txt"
+    },
+    "shared_perception": {
+      "passed": 27,
+      "evidence": "shared-regression-tests.txt"
+    }
+  },
+  "fault_outcomes": {
+    "local_tests": "PASS with deterministic runner and real TLS",
+    "live_endpoint_tests": "NOT_RUN",
+    "g0_transport_only_probe": "PASS; no model loaded, does not substitute for G1 live endpoint tests"
+  },
+  "upstream_gate": "G0 PASS; user approved 2026-10-31",
+  "hold_reasons": [
+    "No deployed InferenceService; GPU parity, three cold starts, dashboard visibility and model-loaded endpoint security/recovery checks remain."
+  ],
+  "deviations": [
+    "Container source provenance is inherited from pinned Phase 6 base; runtime digest is supplied by deployment and must be checked against Pod imageID."
+  ],
+  "waivers": [
+    "Standing demo recognition waiver remains; backend parity does not establish recognition accuracy."
+  ],
+  "evidence": [
+    "report.md",
+    "build-results.json",
+    "build-1.log",
+    "build-2.log",
+    "server-dry-run-2.txt",
+    "build-dry-run-2.txt",
+    "rendered-built-image.json",
+    "../S0/inventory-20261030.json",
+    "../S0/checkpoint-sha256.txt",
+    "../S0/runtime-hardware.json",
+    "server-dry-run-final.txt",
+    "../S0/perses-reconciliation-20261030/after-coo153/verification.json",
+    "../S0/perses-reconciliation-20261030/after-coo153/maas-memory-increase.json",
+    "../S0/platform-ready-20261030.json",
+    "../S0/g0-completion-20261030/report.md"
+  ],
+  "latest_platform_verification": "../S0/platform-ready-20261030.json",
+  "last_prerequisite_update": "2026-10-31T03:14:07.021730+00:00"
+}

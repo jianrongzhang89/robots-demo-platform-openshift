@@ -1,0 +1,132 @@
+{
+  "fixture_passed": false,
+  "native_reason_transitions": [
+    {
+      "reason": "startup_disarmed",
+      "wall_ns": 1793808562012161607,
+      "steady_ns": 13833432751056400,
+      "armed": false,
+      "applied_vx": 0.0,
+      "applied_wz": 0.0,
+      "trigger_steady_ns": 0,
+      "stop_applied_steady_ns": 0,
+      "stop_applied_trigger_ns": 0
+    },
+    {
+      "reason": "awaiting_first_packet",
+      "wall_ns": 1793808760558982224,
+      "steady_ns": 13833631297877027,
+      "armed": false,
+      "applied_vx": 0.0,
+      "applied_wz": 0.0,
+      "trigger_steady_ns": 0,
+      "stop_applied_steady_ns": 0,
+      "stop_applied_trigger_ns": 0
+    },
+    {
+      "reason": "armed",
+      "wall_ns": 1793808760567968553,
+      "steady_ns": 13833631306863326,
+      "armed": true,
+      "applied_vx": 0.0,
+      "applied_wz": 0.0,
+      "trigger_steady_ns": 0,
+      "stop_applied_steady_ns": 0,
+      "stop_applied_trigger_ns": 0
+    },
+    {
+      "reason": "packet_invalid",
+      "wall_ns": 1793808839610238069,
+      "steady_ns": 13833710349132832,
+      "armed": false,
+      "applied_vx": 0.15,
+      "applied_wz": 0.028004358749913777,
+      "trigger_steady_ns": 13833710346829555,
+      "stop_applied_steady_ns": 0,
+      "stop_applied_trigger_ns": 0
+    }
+  ],
+  "clock_events": [
+    {
+      "event": "bound_while_disarmed",
+      "wall_ns": 1793808740156996867,
+      "sim_ns": 87600000000
+    },
+    {
+      "event": "latched_clock_fault",
+      "reason": "native_capture_stale",
+      "sim_ns": 132850000000,
+      "capture_wall_ns": 1793808840922935914,
+      "status_wall_ns": 1793808840922935914,
+      "callback_wall_ns": 1793808840925069007,
+      "processed_wall_ns": 1793808841026227921,
+      "capture_age_at_native_publish_ms": 0.0,
+      "capture_age_at_callback_ms": 2.133093,
+      "capture_age_at_processing_ms": 103.292007
+    }
+  ],
+  "physical_path_length_m": 5.214309283623284,
+  "minimum_hull_clearance_m": -0.05505133387824418,
+  "hull_exposure_m": 0.33058081097075304,
+  "final_goal_geometry": {
+    "final": {
+      "sim_ns": 132222000000,
+      "belief_truth_divergence_m": 1.386,
+      "physical_goal_distance_m": 0.676,
+      "belief_goal_distance_m": 1.178
+    }
+  },
+  "viewer_fps_after_startup": {
+    "count": 289,
+    "median": 20.97,
+    "min": 18.33
+  },
+  "checks": [
+    {
+      "case": "phase6_semantic_costs_at_target",
+      "passed": true,
+      "global_soft_cells": 883,
+      "global_soft_cells_inside_target": 883,
+      "local_soft_cells": 0,
+      "soft_cost_value": 254,
+      "histograms": {
+        "global": {
+          "255": 584702,
+          "254": 883
+        }
+      },
+      "contract": "target-cost-254 cells in the global costmap, all inside the ground-truth rectangle (+0.15 m), no value other than free/target/unknown on the layer grid, and no semantic layer in the local costmap",
+      "outside_target_cells": []
+    },
+    {
+      "case": "native_stationary_after_task",
+      "passed": true
+    },
+    {
+      "case": "guarded_real_hotel_one_meter_goal",
+      "passed": false,
+      "terminal_status": 5,
+      "reason": "native_session_lost"
+    },
+    {
+      "case": "baseline_contact_window",
+      "start_sim": 97460000000,
+      "end_sim": 132572000000,
+      "passed": true,
+      "reason": "clear",
+      "unexpected": [],
+      "samples": 1530,
+      "steps": 17651,
+      "qualification": "exact allowlisted support contacts only; no force/depth exemption"
+    },
+    {
+      "case": "sam3_observation_timing",
+      "passed": true,
+      "p95_capture_age_ms": 255.917688,
+      "p95_capture_age_limit_ms": 500.0,
+      "results_per_second": 6.986193360947141,
+      "rate_limit_per_s": 5.0,
+      "records": 1949
+    }
+  ]
+}

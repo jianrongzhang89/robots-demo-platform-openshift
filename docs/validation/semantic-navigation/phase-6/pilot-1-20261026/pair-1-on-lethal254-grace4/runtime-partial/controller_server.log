@@ -1,0 +1,48 @@
+[INFO] [1793144171.935798147] [robot_1.controller_server]: 
+	controller_server lifecycle node launched. 
+	Waiting on external lifecycle transitions to activate
+	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[INFO] [1793144171.970303630] [robot_1.controller_server]: Creating controller server
+[INFO] [1793144171.999101803] [robot_1.local_costmap.local_costmap]: 
+	local_costmap lifecycle node launched. 
+	Waiting on external lifecycle transitions to activate
+	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[INFO] [1793144172.000300696] [robot_1.local_costmap.local_costmap]: Creating Costmap
+[INFO] [1793144172.006395663] [robot_1.controller_server]: Configuring controller interface
+[INFO] [1793144172.006617197] [robot_1.controller_server]: getting progress checker plugins..
+[INFO] [1793144172.006954294] [robot_1.controller_server]: getting goal checker plugins..
+[INFO] [1793144172.008041025] [robot_1.controller_server]: Controller frequency set to 40.0000Hz
+[INFO] [1793144172.008200148] [robot_1.local_costmap.local_costmap]: Configuring
+[INFO] [1793144172.041774923] [robot_1.local_costmap.local_costmap]: Using plugin "voxel_layer"
+[INFO] [1793144172.058265190] [robot_1.local_costmap.local_costmap]: Subscribed to Topics: scan
+[INFO] [1793144172.068539657] [robot_1.local_costmap.local_costmap]: Initialized plugin "voxel_layer"
+[INFO] [1793144172.068587728] [robot_1.local_costmap.local_costmap]: Using plugin "inflation_layer"
+[INFO] [1793144172.071078046] [robot_1.local_costmap.local_costmap]: Initialized plugin "inflation_layer"
+[INFO] [1793144172.094726170] [robot_1.controller_server]: Created progress_checker : progress_checker of type nav2_controller::SimpleProgressChecker
+[INFO] [1793144172.095787330] [robot_1.controller_server]: Controller Server has progress_checker  progress checkers available.
+[INFO] [1793144172.096825140] [robot_1.controller_server]: Created goal checker : general_goal_checker of type nav2_controller::SimpleGoalChecker
+[INFO] [1793144172.098230587] [robot_1.controller_server]: Controller Server has general_goal_checker  goal checkers available.
+[INFO] [1793144172.099969991] [robot_1.controller_server]: Created controller : FollowPath of type nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController
+[INFO] [1793144172.116747143] [robot_1.controller_server]: Controller Server has FollowPath  controllers available.
+[INFO] [1793144172.189864977] [robot_1.controller_server]: Activating
+[INFO] [1793144172.189924688] [robot_1.local_costmap.local_costmap]: Activating
+[INFO] [1793144172.189940099] [robot_1.local_costmap.local_costmap]: Checking transform
+[INFO] [1793144172.190202364] [robot_1.local_costmap.local_costmap]: start
+[INFO] [1793144172.290881698] [robot_1.controller_server]: Activating controller: FollowPath of type regulated_pure_pursuit_controller::RegulatedPurePursuitController
+[INFO] [1793144172.290952009] [robot_1.controller_server]: Creating bond (controller_server) to lifecycle manager.
+[INFO] [1793144181.722931318] [robot_1.controller_server]: Received a goal, begin computing control effort.
+[WARN] [1793144181.723015000] [robot_1.controller_server]: No goal checker was specified in parameter 'current_goal_checker'. Server will use only plugin loaded general_goal_checker . This warning will appear once.
+[WARN] [1793144181.723040950] [robot_1.controller_server]: No progress checker was specified in parameter 'current_progress_checker'. Server will use only plugin loaded progress_checker . This warning will appear once.
+[INFO] [1793144231.273295767] [robot_1.controller_server]: Reached the goal!
+[INFO] [1793144236.183688276] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[INFO] [1793144236.183740767] [robot_1.controller_server]: Running Nav2 LifecycleNode rcl preshutdown (controller_server)
+[INFO] [1793144236.183792408] [robot_1.controller_server]: Deactivating
+[INFO] [1793144236.183816268] [robot_1.controller_server]: Deactivating controller: FollowPath of type regulated_pure_pursuit_controller::RegulatedPurePursuitController
+[INFO] [1793144236.183873949] [robot_1.local_costmap.local_costmap]: Deactivating
+[INFO] [1793144236.190753361] [robot_1.controller_server]: Destroying bond (controller_server) to lifecycle manager.
+[INFO] [1793144236.201101760] [robot_1.controller_server]: Cleaning up
+[INFO] [1793144236.201165641] [robot_1.controller_server]: Cleaning up controller: FollowPath of type regulated_pure_pursuit_controller::RegulatedPurePursuitController
+[INFO] [1793144236.201261143] [robot_1.local_costmap.local_costmap]: Cleaning up
+[INFO] [1793144236.266669198] [robot_1.controller_server]: Destroying bond (controller_server) to lifecycle manager.
+[INFO] [1793144236.280452052] [robot_1.local_costmap.local_costmap]: Destroying
+[INFO] [1793144236.386152641] [robot_1.controller_server]: Destroying

@@ -1,0 +1,53 @@
+{
+  "status": "SCORED_NOT_ACCEPTED",
+  "split": "development",
+  "model": "facebook/sam3 (local checkpoint)",
+  "checkpoint_sha256": "9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e",
+  "device": "cuda",
+  "device_name": "NVIDIA L40S",
+  "prompt": "red floor mat",
+  "confidence_threshold": 0.5,
+  "image_count": 3,
+  "positive_count": 3,
+  "negative_count": 0,
+  "positive_recall_iou_ge_0_5": 0.6666666666666666,
+  "positive_median_iou_including_misses": 0.9298584298584298,
+  "negative_false_positive_frame_rate": null,
+  "inference_seconds_median": 0.099453,
+  "inference_seconds_p95": 0.7972446,
+  "peak_gpu_allocated_bytes": 5451386880,
+  "peak_gpu_reserved_bytes": 5676990464,
+  "results": [
+    {
+      "image": "/phase2-data/ep2-yaw-unoccluded/ep2-yaw-unoccluded-0000.jpg",
+      "presence": "positive",
+      "iou": 0.94281,
+      "detected": true,
+      "scores": [
+        0.74609375
+      ],
+      "inference_seconds": 0.874777,
+      "prediction_mask": "/phase2-out/0000-prediction.png"
+    },
+    {
+      "image": "/phase2-data/ep2-yaw-moderate/ep2-yaw-moderate-0000.jpg",
+      "presence": "positive",
+      "iou": 0.929858,
+      "detected": true,
+      "scores": [
+        0.78515625
+      ],
+      "inference_seconds": 0.098283,
+      "prediction_mask": "/phase2-out/0001-prediction.png"
+    },
+    {
+      "image": "/phase2-data/ep2-yaw-severe/ep2-yaw-severe-0000.jpg",
+      "presence": "positive",
+      "iou": 0.0,
+      "detected": false,
+      "scores": [],
+      "inference_seconds": 0.099453,
+      "prediction_mask": "/phase2-out/0002-prediction.png"
+    }
+  ]
+}

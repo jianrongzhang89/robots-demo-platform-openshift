@@ -1,0 +1,313 @@
+{
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+        "annotations": {
+            "k8s.ovn.org/pod-networks": "{\"default\":{\"ip_addresses\":[\"10.131.3.119/23\"],\"mac_address\":\"0a:58:0a:83:03:77\",\"gateway_ips\":[\"10.131.2.1\"],\"routes\":[{\"dest\":\"10.128.0.0/14\",\"nextHop\":\"10.131.2.1\"},{\"dest\":\"172.30.0.0/16\",\"nextHop\":\"10.131.2.1\"},{\"dest\":\"169.254.0.5/32\",\"nextHop\":\"10.131.2.1\"},{\"dest\":\"100.64.0.0/16\",\"nextHop\":\"10.131.2.1\"}],\"ip_address\":\"10.131.3.119/23\",\"gateway_ip\":\"10.131.2.1\",\"role\":\"primary\"}}",
+            "k8s.v1.cni.cncf.io/network-status": "[{\n    \"name\": \"ovn-kubernetes\",\n    \"interface\": \"eth0\",\n    \"ips\": [\n        \"10.131.3.119\"\n    ],\n    \"mac\": \"0a:58:0a:83:03:77\",\n    \"default\": true,\n    \"dns\": {}\n}]",
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Pod\",\"metadata\":{\"annotations\":{},\"labels\":{\"component\":\"predictor\",\"serving.kserve.io/inferenceservice\":\"sam3-mat-v1\"},\"name\":\"sam3-g0-transport\",\"namespace\":\"semantic-model-serving\"},\"spec\":{\"automountServiceAccountToken\":false,\"containers\":[{\"args\":[\"import ssl,json; from pathlib import Path; from server import ModelService,BoundedServer; s=ModelService(json.loads(Path(\\\"/policy/clients.json\\\").read_text())); t=ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER); t.minimum_version=ssl.TLSVersion.TLSv1_2; t.verify_mode=ssl.CERT_REQUIRED; t.load_cert_chain(\\\"/tls/tls.crt\\\",\\\"/tls/tls.key\\\"); t.load_verify_locations(\\\"/tls/client-ca.crt\\\"); print(\\\"G0 transport-only probe; no model loaded\\\",flush=True); BoundedServer((\\\"0.0.0.0\\\",8443),s,tls=t).serve_forever()\"],\"command\":[\"/opt/sam3-venv/bin/python\",\"-u\",\"-c\"],\"env\":[{\"name\":\"RUNTIME_IMAGE_DIGEST\",\"value\":\"sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e\"},{\"name\":\"MODEL_DIR\",\"value\":\"/models\"},{\"name\":\"TLS_CERT\",\"value\":\"/tls/tls.crt\"},{\"name\":\"TLS_KEY\",\"value\":\"/tls/tls.key\"},{\"name\":\"CLIENT_CA\",\"value\":\"/tls/client-ca.crt\"},{\"name\":\"CLIENT_POLICY\",\"value\":\"/policy/clients.json\"},{\"name\":\"HOME\",\"value\":\"/tmp\"},{\"name\":\"HF_HUB_OFFLINE\",\"value\":\"1\"},{\"name\":\"TRANSFORMERS_OFFLINE\",\"value\":\"1\"}],\"image\":\"image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e\",\"name\":\"transport\",\"ports\":[{\"containerPort\":8443,\"name\":\"https\"},{\"containerPort\":8080,\"name\":\"health\"}],\"resources\":{\"limits\":{\"cpu\":\"1\",\"memory\":\"2Gi\"},\"requests\":{\"cpu\":\"100m\",\"memory\":\"512Mi\"}},\"securityContext\":{\"allowPrivilegeEscalation\":false,\"capabilities\":{\"drop\":[\"ALL\"]},\"readOnlyRootFilesystem\":true,\"runAsNonRoot\":true,\"seccompProfile\":{\"type\":\"RuntimeDefault\"}},\"volumeMounts\":[{\"mountPath\":\"/tls\",\"name\":\"tls\",\"readOnly\":true},{\"mountPath\":\"/policy\",\"name\":\"policy\",\"readOnly\":true},{\"mountPath\":\"/tmp\",\"name\":\"tmp\"}]}],\"restartPolicy\":\"Never\",\"serviceAccountName\":\"sam3-serving\",\"volumes\":[{\"name\":\"tls\",\"secret\":{\"secretName\":\"sam3-serving-tls\"}},{\"configMap\":{\"name\":\"sam3-client-policy\"},\"name\":\"policy\"},{\"emptyDir\":{\"sizeLimit\":\"2Gi\"},\"name\":\"tmp\"}]}}\n",
+            "openshift.io/scc": "openshift-ai-llminferenceservice-scc",
+            "seccomp.security.alpha.kubernetes.io/pod": "runtime/default",
+            "security.openshift.io/validated-scc-subject-type": "user",
+            "serving.kserve.io/enable-metric-aggregation": "false",
+            "serving.kserve.io/enable-prometheus-scraping": "false"
+        },
+        "creationTimestamp": "2026-10-31T02:59:28Z",
+        "generation": 1,
+        "labels": {
+            "component": "predictor",
+            "serving.kserve.io/inferenceservice": "sam3-mat-v1"
+        },
+        "name": "sam3-g0-transport",
+        "namespace": "semantic-model-serving",
+        "resourceVersion": "490829040",
+        "uid": "f3414c29-8bb8-42a4-b0b7-5c8c60a197ae"
+    },
+    "spec": {
+        "automountServiceAccountToken": false,
+        "containers": [
+            {
+                "args": [
+                    "import ssl,json; from pathlib import Path; from server import ModelService,BoundedServer; s=ModelService(json.loads(Path(\"/policy/clients.json\").read_text())); t=ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER); t.minimum_version=ssl.TLSVersion.TLSv1_2; t.verify_mode=ssl.CERT_REQUIRED; t.load_cert_chain(\"/tls/tls.crt\",\"/tls/tls.key\"); t.load_verify_locations(\"/tls/client-ca.crt\"); print(\"G0 transport-only probe; no model loaded\",flush=True); BoundedServer((\"0.0.0.0\",8443),s,tls=t).serve_forever()"
+                ],
+                "command": [
+                    "/opt/sam3-venv/bin/python",
+                    "-u",
+                    "-c"
+                ],
+                "env": [
+                    {
+                        "name": "RUNTIME_IMAGE_DIGEST",
+                        "value": "sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e"
+                    },
+                    {
+                        "name": "MODEL_DIR",
+                        "value": "/models"
+                    },
+                    {
+                        "name": "TLS_CERT",
+                        "value": "/tls/tls.crt"
+                    },
+                    {
+                        "name": "TLS_KEY",
+                        "value": "/tls/tls.key"
+                    },
+                    {
+                        "name": "CLIENT_CA",
+                        "value": "/tls/client-ca.crt"
+                    },
+                    {
+                        "name": "CLIENT_POLICY",
+                        "value": "/policy/clients.json"
+                    },
+                    {
+                        "name": "HOME",
+                        "value": "/tmp"
+                    },
+                    {
+                        "name": "HF_HUB_OFFLINE",
+                        "value": "1"
+                    },
+                    {
+                        "name": "TRANSFORMERS_OFFLINE",
+                        "value": "1"
+                    }
+                ],
+                "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+                "imagePullPolicy": "IfNotPresent",
+                "name": "transport",
+                "ports": [
+                    {
+                        "containerPort": 8443,
+                        "name": "https",
+                        "protocol": "TCP"
+                    },
+                    {
+                        "containerPort": 8080,
+                        "name": "health",
+                        "protocol": "TCP"
+                    }
+                ],
+                "resources": {
+                    "limits": {
+                        "cpu": "1",
+                        "memory": "2Gi"
+                    },
+                    "requests": {
+                        "cpu": "100m",
+                        "memory": "512Mi"
+                    }
+                },
+                "securityContext": {
+                    "allowPrivilegeEscalation": false,
+                    "capabilities": {
+                        "drop": [
+                            "ALL"
+                        ]
+                    },
+                    "readOnlyRootFilesystem": true,
+                    "runAsNonRoot": true,
+                    "runAsUser": 1000840000,
+                    "seccompProfile": {
+                        "type": "RuntimeDefault"
+                    }
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "File",
+                "volumeMounts": [
+                    {
+                        "mountPath": "/tls",
+                        "name": "tls",
+                        "readOnly": true
+                    },
+                    {
+                        "mountPath": "/policy",
+                        "name": "policy",
+                        "readOnly": true
+                    },
+                    {
+                        "mountPath": "/tmp",
+                        "name": "tmp"
+                    }
+                ]
+            }
+        ],
+        "dnsPolicy": "ClusterFirst",
+        "enableServiceLinks": true,
+        "imagePullSecrets": [
+            {
+                "name": "sam3-serving-dockercfg-vxfls"
+            }
+        ],
+        "nodeName": "ip-10-0-53-174.ec2.internal",
+        "preemptionPolicy": "PreemptLowerPriority",
+        "priority": 0,
+        "restartPolicy": "Never",
+        "schedulerName": "default-scheduler",
+        "securityContext": {
+            "seLinuxOptions": {
+                "level": "s0:c29,c14"
+            },
+            "seccompProfile": {
+                "type": "RuntimeDefault"
+            }
+        },
+        "serviceAccount": "sam3-serving",
+        "serviceAccountName": "sam3-serving",
+        "terminationGracePeriodSeconds": 30,
+        "tolerations": [
+            {
+                "effect": "NoExecute",
+                "key": "node.kubernetes.io/not-ready",
+                "operator": "Exists",
+                "tolerationSeconds": 300
+            },
+            {
+                "effect": "NoExecute",
+                "key": "node.kubernetes.io/unreachable",
+                "operator": "Exists",
+                "tolerationSeconds": 300
+            },
+            {
+                "effect": "NoSchedule",
+                "key": "node.kubernetes.io/memory-pressure",
+                "operator": "Exists"
+            }
+        ],
+        "volumes": [
+            {
+                "name": "tls",
+                "secret": {
+                    "defaultMode": 420,
+                    "secretName": "sam3-serving-tls"
+                }
+            },
+            {
+                "configMap": {
+                    "defaultMode": 420,
+                    "name": "sam3-client-policy"
+                },
+                "name": "policy"
+            },
+            {
+                "emptyDir": {
+                    "sizeLimit": "2Gi"
+                },
+                "name": "tmp"
+            }
+        ]
+    },
+    "status": {
+        "conditions": [
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-31T03:02:31Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "PodReadyToStartContainers"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-31T02:59:28Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "Initialized"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-31T03:02:31Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "Ready"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-31T03:02:31Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "ContainersReady"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-31T02:59:28Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "PodScheduled"
+            }
+        ],
+        "containerStatuses": [
+            {
+                "allocatedResources": {
+                    "cpu": "100m",
+                    "memory": "512Mi"
+                },
+                "containerID": "cri-o://1049f1a03dd9fb653a0cfd42862e46c6cddb1c65e77e83101e6102c25f41dff3",
+                "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+                "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+                "lastState": {},
+                "name": "transport",
+                "ready": true,
+                "resources": {
+                    "limits": {
+                        "cpu": "1",
+                        "memory": "2Gi"
+                    },
+                    "requests": {
+                        "cpu": "100m",
+                        "memory": "512Mi"
+                    }
+                },
+                "restartCount": 0,
+                "started": true,
+                "state": {
+                    "running": {
+                        "startedAt": "2026-10-31T03:02:30Z"
+                    }
+                },
+                "user": {
+                    "linux": {
+                        "gid": 0,
+                        "supplementalGroups": [
+                            0
+                        ],
+                        "uid": 1000840000
+                    }
+                },
+                "volumeMounts": [
+                    {
+                        "mountPath": "/tls",
+                        "name": "tls",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    },
+                    {
+                        "mountPath": "/policy",
+                        "name": "policy",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    },
+                    {
+                        "mountPath": "/tmp",
+                        "name": "tmp"
+                    }
+                ]
+            }
+        ],
+        "hostIP": "10.0.53.174",
+        "hostIPs": [
+            {
+                "ip": "10.0.53.174"
+            }
+        ],
+        "observedGeneration": 1,
+        "phase": "Running",
+        "podIP": "10.131.3.119",
+        "podIPs": [
+            {
+                "ip": "10.131.3.119"
+            }
+        ],
+        "qosClass": "Burstable",
+        "startTime": "2026-10-31T02:59:28Z"
+    }
+}

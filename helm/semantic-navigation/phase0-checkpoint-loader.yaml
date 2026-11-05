@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sam3-checkpoint-loader
+  namespace: semantic-navigation
+  labels:
+    app.kubernetes.io/name: sam3-checkpoint-loader
+spec:
+  restartPolicy: Never
+  securityContext:
+    fsGroup: 1001340000
+    fsGroupChangePolicy: OnRootMismatch
+  nodeSelector:
+    nvidia.com/gpu.product: NVIDIA-L40S
+  tolerations:
+    - key: g6e-gpu
+      operator: Equal
+      value: "true"
+      effect: NoSchedule
+  containers:
+    - name: loader
+      image: registry.access.redhat.com/ubi9/ubi:9.6
+      command: ["sh", "-c", "sleep 7200"]
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: ["ALL"]
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      volumeMounts:
+        - name: checkpoint
+          mountPath: /models
+  volumes:
+    - name: checkpoint
+      persistentVolumeClaim:
+        claimName: sam3-checkpoint

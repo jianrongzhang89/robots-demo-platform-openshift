@@ -1,0 +1,161 @@
+{
+  "apiVersion": "build.openshift.io/v1",
+  "kind": "Build",
+  "metadata": {
+    "annotations": {
+      "openshift.io/build-config.name": "semantic-safety-console-phase6",
+      "openshift.io/build.number": "1",
+      "openshift.io/build.pod-name": "semantic-safety-console-phase6-1-build"
+    },
+    "creationTimestamp": "2026-10-27T01:55:56Z",
+    "generation": 2,
+    "labels": {
+      "buildconfig": "semantic-safety-console-phase6",
+      "openshift.io/build-config.name": "semantic-safety-console-phase6",
+      "openshift.io/build.start-policy": "Serial"
+    },
+    "name": "semantic-safety-console-phase6-1",
+    "namespace": "semantic-navigation",
+    "ownerReferences": [
+      {
+        "apiVersion": "build.openshift.io/v1",
+        "controller": true,
+        "kind": "BuildConfig",
+        "name": "semantic-safety-console-phase6",
+        "uid": "db8b50ae-f77f-45d0-b508-1599869d8227"
+      }
+    ],
+    "resourceVersion": "473903460",
+    "uid": "ad7d7a1c-7742-465e-92d7-6bbb20beaac8"
+  },
+  "spec": {
+    "nodeSelector": null,
+    "output": {
+      "pushSecret": {
+        "name": "builder-dockercfg-htt4p"
+      },
+      "to": {
+        "kind": "ImageStreamTag",
+        "name": "semantic-safety:phase6-console-candidate"
+      }
+    },
+    "postCommit": {},
+    "resources": {
+      "limits": {
+        "cpu": "4",
+        "memory": "8Gi"
+      },
+      "requests": {
+        "cpu": "2",
+        "memory": "4Gi"
+      }
+    },
+    "revision": {
+      "git": {
+        "author": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "commit": "81a98a80b6fa8debc8b4cad433e850b93af02190",
+        "committer": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "message": "Implement the Phase 6 semantic-on guarded profile and stationary smoke\n\nThe on-arm candidate differs from the Phase 5 guarded candidate only by\nthe additive cost-200 semantic layer in both costmaps (arm identity\nproven by test_phase6_params.py). The plugin builds as an overlay on the\nfrozen console image (semantic-safety-console-phase6), sourced only for\nPhase 6 arms. The fixture gains PHASE6_SEMANTIC_ARM wiring checks, a\nservice-pulled semantic-grid verification (no steady-state subscription\nload on the safety pump), and the disarmed stationary smoke: fresh soft\ncosts at the mat, target removal through the pre-warmed mover, and\nclearing within the Phase 4 expiry bound. A domain-85 semantic bridge\nsidecar (own CPU quota) runs in both arms for identical load; the\nrunner validates the frozen guarded GPU profile for every Phase 6 arm.\nphase6_topology.py factors the private SAM3 topology lifecycle for\npilots. 209 safety + 119 script tests pass."
+      },
+      "type": "Git"
+    },
+    "serviceAccount": "builder",
+    "source": {
+      "binary": {},
+      "type": "Binary"
+    },
+    "strategy": {
+      "dockerStrategy": {
+        "dockerfilePath": "Containerfile.phase6-console"
+      },
+      "type": "Docker"
+    }
+  },
+  "status": {
+    "completionTimestamp": "2026-10-27T01:58:53Z",
+    "conditions": [
+      {
+        "lastTransitionTime": "2026-10-27T01:55:57Z",
+        "lastUpdateTime": "2026-10-27T01:55:57Z",
+        "status": "False",
+        "type": "New"
+      },
+      {
+        "lastTransitionTime": "2026-10-27T01:55:58Z",
+        "lastUpdateTime": "2026-10-27T01:55:58Z",
+        "status": "False",
+        "type": "Pending"
+      },
+      {
+        "lastTransitionTime": "2026-10-27T01:58:53Z",
+        "lastUpdateTime": "2026-10-27T01:58:53Z",
+        "status": "False",
+        "type": "Running"
+      },
+      {
+        "lastTransitionTime": "2026-10-27T01:58:53Z",
+        "lastUpdateTime": "2026-10-27T01:58:53Z",
+        "status": "True",
+        "type": "Complete"
+      }
+    ],
+    "config": {
+      "kind": "BuildConfig",
+      "name": "semantic-safety-console-phase6",
+      "namespace": "semantic-navigation"
+    },
+    "duration": 176000000000,
+    "output": {
+      "to": {
+        "imageDigest": "sha256:4b91594f761369d769d658ae7c3888644a47dcd82db492a2b5b586769b1a171a"
+      }
+    },
+    "outputDockerImageReference": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety:phase6-console-candidate",
+    "phase": "Complete",
+    "stages": [
+      {
+        "durationMilliseconds": 114230,
+        "name": "PullImages",
+        "startTime": "2026-10-27T01:56:00Z",
+        "steps": [
+          {
+            "durationMilliseconds": 114230,
+            "name": "PullBaseImage",
+            "startTime": "2026-10-27T01:56:00Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 53024,
+        "name": "Build",
+        "startTime": "2026-10-27T01:57:54Z",
+        "steps": [
+          {
+            "durationMilliseconds": 53024,
+            "name": "DockerBuild",
+            "startTime": "2026-10-27T01:57:54Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 3583,
+        "name": "PushImage",
+        "startTime": "2026-10-27T01:58:47Z",
+        "steps": [
+          {
+            "durationMilliseconds": 3583,
+            "name": "PushDockerImage",
+            "startTime": "2026-10-27T01:58:47Z"
+          }
+        ]
+      }
+    ],
+    "startTimestamp": "2026-10-27T01:55:57Z"
+  }
+}

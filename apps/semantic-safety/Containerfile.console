@@ -1,0 +1,68 @@
+FROM image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:125cbd5aa1a1e65c6324c520e15c3560cf2a102ceabfdd915641688ec16db6c9
+USER 0
+RUN apt-get update && apt-get install -y --no-install-recommends gdb \
+    && apt-get clean
+COPY console-launcher /opt/semantic-safety/console-launcher
+COPY instrument_nav2_collision_monitor.py /opt/semantic-safety/instrument_nav2_collision_monitor.py
+COPY patch_tf2_polling.py /opt/semantic-safety/patch_tf2_polling.py
+# Capture-trace override for the RGB-D sensor: identical inputs and pinned
+# gz-sensors commit as the Phase 3/6D capture-timing build
+# (scripts/semantic-navigation/Containerfile.capture-timing), recompiled
+# against THIS image's exact installed gz-sensors ABI (already present as
+# libgz-sensors8-dev; do not apt-install it, which would upgrade the
+# runtime). The drop-in library is preferred via LD_LIBRARY_PATH by the
+# console server when SEMANTIC_CAPTURE_TRACE=1, so render-time capture
+# traces are published on the private Gazebo partition exactly as in the
+# qualified Phase 3 path.
+COPY SemanticCaptureTrace.hh gz-capture-trace.patch /tmp/capture-build/
+RUN git init /tmp/capture-build/gz-sensors \
+    && cd /tmp/capture-build/gz-sensors \
+    && git remote add origin https://github.com/gazebosim/gz-sensors.git \
+    && for attempt in 1 2 3; do git fetch --depth 1 origin 9348f9fe8a11b9d50381819f51e17e136aedab8a && break; sleep 5; done \
+    && git checkout FETCH_HEAD \
+    && test "$(git rev-parse HEAD)" = 9348f9fe8a11b9d50381819f51e17e136aedab8a \
+    && patch -p1 < /tmp/capture-build/gz-capture-trace.patch \
+    && mkdir -p /opt/semantic-safety/capture-lib \
+    && g++ -std=c++17 -O2 -fPIC -shared -DRgbdCameraSensor_EXPORTS \
+        -I/tmp/capture-build -Isrc src/RgbdCameraSensor.cc \
+        $(pkg-config --cflags --libs gz-sensors8-camera gz-sensors8-rendering gz-common5-profiler) \
+        -lgz-sensors8-camera -lgz-sensors8-rendering \
+        -Wl,-z,defs -Wl,-soname,libgz-sensors8-rgbd_camera.so.8 \
+        -o /opt/semantic-safety/capture-lib/libgz-sensors8-rgbd_camera.so.8 \
+    && ldd /opt/semantic-safety/capture-lib/libgz-sensors8-rgbd_camera.so.8 \
+    && rm -rf /tmp/capture-build
+ARG PHASE5_TF2_POLL_1MS=1
+RUN if [ "$PHASE5_TF2_POLL_1MS" = "1" ]; then \
+      git clone --depth 1 --branch 0.36.22 https://github.com/ros2/geometry2.git /opt/geometry2-src \
+      && test "$(git -C /opt/geometry2-src rev-parse HEAD)" = 62335b1e1506785a283ba121f451bb962e9b6db3 \
+      && python3 /opt/semantic-safety/patch_tf2_polling.py /opt/geometry2-src/tf2_ros/src/buffer.cpp \
+      && . /opt/ros/jazzy/setup.sh \
+      && CMAKE_BUILD_PARALLEL_LEVEL=2 MAKEFLAGS=-j2 colcon build --parallel-workers 2 \
+           --base-paths /opt/geometry2-src/tf2_ros --packages-select tf2_ros --merge-install \
+           --build-base /opt/tf2-poll-build --install-base /opt/tf2-poll-overlay \
+           --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF \
+      && test -f /opt/tf2-poll-overlay/lib/libtf2_ros.so \
+      && . /opt/tf2-poll-overlay/local_setup.sh \
+      && test "$(ros2 pkg prefix tf2_ros)" = /opt/tf2-poll-overlay; \
+    elif [ "$PHASE5_TF2_POLL_1MS" = "0" ]; then \
+      echo "Using the pinned image's stock Jazzy tf2_ros package"; \
+    else \
+      echo "PHASE5_TF2_POLL_1MS must be 0 or 1" >&2; exit 2; \
+    fi
+RUN test "$(git -C /opt/nav2-smoother-src rev-parse HEAD)" = f4108e5b1c2bce804a1aa0c7be6673a8eb4a1501 \
+    && git -C /opt/nav2-smoother-src sparse-checkout add nav2_collision_monitor \
+    && python3 /opt/semantic-safety/instrument_nav2_collision_monitor.py \
+    && git -C /opt/nav2-smoother-src diff --check \
+    && . /opt/ros/jazzy/setup.sh \
+    && CMAKE_BUILD_PARALLEL_LEVEL=2 MAKEFLAGS=-j2 colcon build --parallel-workers 2 \
+         --base-paths /opt/nav2-smoother-src/nav2_collision_monitor \
+         --packages-select nav2_collision_monitor --merge-install \
+         --build-base /opt/nav2-collision-monitor-build \
+         --install-base /opt/nav2-collision-monitor-overlay \
+         --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF \
+    && . /opt/nav2-collision-monitor-overlay/local_setup.sh \
+    && cmake -S /opt/semantic-safety/console-launcher -B /opt/semantic-safety/console-build \
+         -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/semantic-safety \
+    && cmake --build /opt/semantic-safety/console-build -j2 \
+    && cmake --install /opt/semantic-safety/console-build
+USER 1001

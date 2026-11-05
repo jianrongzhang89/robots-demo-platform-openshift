@@ -1,0 +1,595 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: semantic-phase5-preflight
+  namespace: semantic-navigation
+data:
+  audit_geometry.py: "#!/usr/bin/env python3\n\"\"\"Audit collision XY bounds in the\
+    \ installed hotel SDF, without modifying it.\"\"\"\nimport hashlib\nimport json\n\
+    import math\nfrom pathlib import Path\nimport xml.etree.ElementTree as ET\n\n\n\
+    def rotation(roll, pitch, yaw):\n    cr, sr, cp, sp, cy, sy = math.cos(roll),\
+    \ math.sin(roll), math.cos(pitch), math.sin(pitch), math.cos(yaw), math.sin(yaw)\n\
+    \    return [[cy*cp, cy*sp*sr-sy*cr, cy*sp*cr+sy*sr],\n            [sy*cp, sy*sp*sr+cy*cr,\
+    \ sy*sp*cr-cy*sr], [-sp, cp*sr, cp*cr]]\n\n\ndef pose(element):\n    p = element.find(\"\
+    pose\")\n    if p is not None and p.get(\"relative_to\"):\n        raise ValueError(\"\
+    explicit relative_to needs frame-graph resolution\")\n    values = [float(v) for\
+    \ v in (p.text if p is not None else \"0 0 0 0 0 0\").split()]\n    return values[:3],\
+    \ rotation(*values[3:])\n\n\ndef audit(world_path, urdf_path):\n    raw = Path(world_path).read_bytes()\n\
+    \    model = ET.fromstring(raw).find(\".//model[@name='robot_1']\")\n    if model\
+    \ is None:\n        raise ValueError(\"robot_1 missing\")\n    origin, basis =\
+    \ pose(model.find(\"link[@name='base_footprint']\"))\n    if origin != [0, 0,\
+    \ 0] or basis != rotation(0, 0, 0):\n        raise ValueError(\"audit requires\
+    \ base_footprint coincident with model frame\")\n    boxes = []\n    for link\
+    \ in model.findall(\"link\"):\n        if not link.findall(\"collision\"):\n \
+    \           continue\n        translation, orient = pose(link)\n        for collision\
+    \ in link.findall(\"collision\"):\n            offset, rot = pose(collision)\n\
+    \            center = [translation[i] + sum(orient[i][j]*offset[j] for j in range(3))\
+    \ for i in range(3)]\n            combined = [[sum(orient[i][k]*rot[k][j] for\
+    \ k in range(3)) for j in range(3)] for i in range(3)]\n            geometry =\
+    \ collision.find(\"geometry\")\n            if geometry.find(\"box\") is not None:\n\
+    \                half = [float(v)/2 for v in geometry.findtext(\"box/size\").split()]\n\
+    \                extent = [sum(abs(combined[i][j])*half[j] for j in range(3))\
+    \ for i in range(3)]\n            elif geometry.find(\"cylinder\") is not None:\n\
+    \                radius, half_length = float(geometry.findtext(\"cylinder/radius\"\
+    )), float(geometry.findtext(\"cylinder/length\"))/2\n                extent =\
+    \ [radius*math.sqrt(max(0, 1-combined[i][2]**2)) + half_length*abs(combined[i][2])\
+    \ for i in range(3)]\n            else:\n                raise ValueError(\"unsupported\
+    \ collision geometry; manual review required\")\n            boxes.append({\"\
+    link\": link.get(\"name\"), \"collision\": collision.get(\"name\"),\n        \
+    \                  \"min\": [center[i]-extent[i] for i in range(3)],\n       \
+    \                   \"max\": [center[i]+extent[i] for i in range(3)]})\n    bounds\
+    \ = {\"min\": [min(b[\"min\"][i] for b in boxes) for i in range(3)],\n       \
+    \       \"max\": [max(b[\"max\"][i] for b in boxes) for i in range(3)]}\n    corner_radius\
+    \ = max(math.hypot(x, y) for x in (bounds[\"min\"][0], bounds[\"max\"][0])\n \
+    \                       for y in (bounds[\"min\"][1], bounds[\"max\"][1]))\n \
+    \   urdf_raw = Path(urdf_path).read_bytes()\n    urdf = ET.fromstring(urdf_raw)\n\
+    \    base_joint = next(j for j in urdf.findall(\"joint\") if j.find(\"child\"\
+    ).get(\"link\") == \"base_link\")\n    return {\"world_sha256\": hashlib.sha256(raw).hexdigest(),\n\
+    \            \"robot_sdf\": ET.tostring(model, encoding=\"unicode\"), \"collisions\"\
+    : boxes,\n            \"xy_bounds\": {k: v[:2] for k, v in bounds.items()},\n\
+    \            \"bounding_rectangle_radius_m\": corner_radius, \"canonical_radius_m\"\
+    : 0.22,\n            \"canonical_radius_covers_rectangle\": 0.22 >= corner_radius,\n\
+    \            \"urdf_sha256\": hashlib.sha256(urdf_raw).hexdigest(),\n        \
+    \    \"urdf_base_joint_xyz\": base_joint.find(\"origin\").get(\"xyz\"),\n    \
+    \        \"sdf_base_link_pose\": model.find(\"link[@name='base_link']\").findtext(\"\
+    pose\", \"0 0 0 0 0 0\"),\n            \"diff_drive_plugin\": ET.tostring(next(p\
+    \ for p in model.findall(\"plugin\") if \"DiffDrive\" in p.get(\"name\", \"\"\
+    )), encoding=\"unicode\"),\n            \"qualification\": \"static SDF audit\
+    \ only; moving TF and physical stop tests still required\"}\n\n\nif __name__ ==\
+    \ \"__main__\":\n    print(json.dumps(audit(\"/opt/ros2-demo/hotel-assets/hotel.world\"\
+    , \"/opt/ros2-demo/robot/turtlebot3_waffle.urdf\"), sort_keys=True))\n"
+  safety_core.py: "\"\"\"Phase 5 candidate: ROS-independent, fail-latched command\
+    \ admission.\n\nThis is not a safety-certified controller or an actuator watchdog.\
+    \ Adapters must\nvalidate/bind payloads before submitting Evidence, cancel tasks\
+    \ on a trip, and\nindependently establish stationary + idle before explicit rearm.\
+    \ A final receiver\nmust run next to the actuator; its own death still requires\
+    \ an actuator-side\nwatchdog. No functions in this module publish commands or\
+    \ automatically rearm.\nAll times are integer nanoseconds; monotonic clocks never\
+    \ cross machines.\n\"\"\"\nfrom dataclasses import dataclass\nimport math\nimport\
+    \ uuid\n\nMS = 1_000_000\nSTALE_NS = 500 * MS\nCOMMAND_NS = 100 * MS\nLEASE_NS\
+    \ = 80 * MS\nUNCERTAINTY_NS = 2 * MS\nTICK_NS = 20 * MS\nZERO = (0.0, 0.0, 0.0)\
+    \  # x, y, yaw; diff-drive only\n\n\n@dataclass(frozen=True)\nclass Now:\n   \
+    \ steady: int\n    wall: int\n    ros: int\n\n\n@dataclass(frozen=True)\nclass\
+    \ Evidence:\n    epoch: str\n    sequence: int\n    wall: int\n    ros: int\n\n\
+    \n@dataclass(frozen=True)\nclass Lease:\n    evidence: Evidence\n    deadline:\
+    \ int\n\n\n@dataclass(frozen=True)\nclass Command:\n    session: str\n    sequence:\
+    \ int\n    issued_wall: int\n    expires_wall: int\n    velocity: tuple[float,\
+    \ float, float]\n\n\ndef integer(value):\n    return type(value) is int and value\
+    \ >= 0\n\n\ndef velocity_ok(value):\n    return (isinstance(value, (tuple, list))\
+    \ and len(value) == 3\n            and all(type(v) in (int, float) and math.isfinite(v)\
+    \ for v in value)\n            and -0.10 <= value[0] <= 0.15 and value[1] == 0.0\n\
+    \            and abs(value[2]) <= 0.5)\n\n\nclass SafetyGate:\n    \"\"\"Pure\
+    \ state machine. Call tick on a wall/steady timer, never a ROS timer.\"\"\"\n\n\
+    \    def __init__(self, *, require_semantics=True):\n        self.required = (\"\
+    clock\", \"scan\", \"odom\", \"tf\") + (\n            (\"camera\", \"semantic\"\
+    , \"inference_heartbeat\") if require_semantics else ())\n        self.leases\
+    \ = {}\n        self.last_time = None\n        self.barrier_wall = -1\n      \
+    \  self.armed = False\n        self.reason = \"startup_disarmed\"\n        self.trigger_steady\
+    \ = None\n        self.session = None\n        self.sequence = -1\n        self.command_sequence\
+    \ = -1\n        self.command_deadline = None\n        self.command_wall = -1\n\
+    \        self.velocity = ZERO\n\n    def trip(self, reason, now):\n        # Retain\
+    \ the first trigger/reason; subsequent late successes or faults\n        # must\
+    \ not move its stopping-latency origin or silently clear it.\n        if self.armed\
+    \ or self.trigger_steady is None:\n            self.reason = reason\n        \
+    \    self.trigger_steady = now.steady\n        # A second fault during recovery\
+    \ invalidates partially refreshed input\n        # too, without rewriting the\
+    \ original stop reason/latency origin.\n        self.barrier_wall = now.wall\n\
+    \        self.leases.clear()\n        self.armed = False\n        self.velocity\
+    \ = ZERO\n        self.command_deadline = None\n        self.session = None\n\n\
+    \    def _advance(self, now):\n        if not all(integer(v) for v in (now.steady,\
+    \ now.wall, now.ros)):\n            raise ValueError(\"invalid local clock\")\n\
+    \        previous, self.last_time = self.last_time, now\n        if previous is\
+    \ not None:\n            if now.steady < previous.steady or now.ros < previous.ros:\n\
+    \                self.trip(\"clock_rollback\", now)\n                self.leases.clear()\n\
+    \                self.barrier_wall = now.wall\n                return False\n\
+    \            if abs((now.wall - previous.wall) - (now.steady - previous.steady))\
+    \ > 20 * MS:\n                self.trip(\"wall_clock_discontinuity\", now)\n \
+    \               self.leases.clear()\n                self.barrier_wall = now.wall\n\
+    \                return False\n        if self.armed:\n            # Check BEFORE\
+    \ accepting callbacks; late refreshed inputs cannot\n            # conceal a missed\
+    \ deadline if the event loop was delayed.\n            failures = []\n       \
+    \     for key in self.required:\n                item = self.leases.get(key)\n\
+    \                if item is None:\n                    failures.append((now.steady,\
+    \ key + \"_missing\"))\n                elif self._expired(item, now):\n     \
+    \               failures.append((min(now.steady, item.deadline), key + \"_stale\"\
+    ))\n            if now.steady >= self.command_deadline:\n                failures.append((self.command_deadline,\
+    \ \"command_expired\"))\n            if failures:\n                trigger, reason\
+    \ = min(failures)\n                self.trip(reason, now)\n                self.trigger_steady\
+    \ = trigger\n        return True\n\n    @staticmethod\n    def _expired(item,\
+    \ now):\n        return (now.steady >= item.deadline\n                or now.wall\
+    \ - item.evidence.wall + UNCERTAINTY_NS >= STALE_NS\n                or not 0\
+    \ <= now.ros - item.evidence.ros < STALE_NS)\n\n    def observe(self, key, evidence,\
+    \ now):\n        if key not in self.required:\n            raise ValueError(\"\
+    unconfigured safety input\")\n        if not self._advance(now):\n           \
+    \ return False\n        if (not isinstance(evidence.epoch, str) or not 1 <= len(evidence.epoch)\
+    \ <= 128\n                or not all(integer(v) for v in (evidence.sequence, evidence.wall,\
+    \ evidence.ros))):\n            self.trip(key + \"_invalid\", now)\n         \
+    \   return False\n        age = now.wall - evidence.wall\n        if (evidence.wall\
+    \ - UNCERTAINTY_NS <= self.barrier_wall or age < -UNCERTAINTY_NS\n           \
+    \     or age + UNCERTAINTY_NS >= STALE_NS\n                or not 0 <= now.ros\
+    \ - evidence.ros < STALE_NS):\n            self.trip(key + \"_invalid_age\", now)\n\
+    \            return False\n        prior = self.leases.get(key)\n        if prior:\n\
+    \            if evidence.epoch != prior.evidence.epoch:\n                self.trip(key\
+    \ + \"_epoch_changed\", now)\n                return False\n            if (evidence.sequence\
+    \ <= prior.evidence.sequence\n                    or evidence.wall <= prior.evidence.wall\n\
+    \                    or evidence.ros < prior.evidence.ros):\n                #\
+    \ Duplicate reception cannot renew a capture lease.\n                return False\n\
+    \        remaining = STALE_NS - max(0, age + UNCERTAINTY_NS)\n        self.leases[key]\
+    \ = Lease(evidence, now.steady + remaining)\n        return True\n\n    def arm(self,\
+    \ now, *, stationary, tasks_idle, neutral_command):\n        \"\"\"Trusted coordinator\
+    \ must independently verify all three conditions.\n\n        Disallow repeated\
+    \ arm while moving; a fresh session is required for\n        every downstream\
+    \ command and independent receiver rearm.\n        \"\"\"\n        if not self._advance(now)\
+    \ or self.armed:\n            return None\n        if not (stationary is True\
+    \ and tasks_idle is True and neutral_command is True):\n            return None\n\
+    \        if any(k not in self.leases or self._expired(self.leases[k], now) for\
+    \ k in self.required):\n            return None\n        self.session = str(uuid.uuid4())\n\
+    \        self.armed, self.reason, self.trigger_steady = True, \"armed\", None\n\
+    \        self.sequence = self.command_sequence = -1\n        self.command_deadline\
+    \ = now.steady + COMMAND_NS\n        self.command_wall = now.wall\n        self.velocity\
+    \ = ZERO\n        return self.session\n\n    def command(self, session, sequence,\
+    \ issued_wall, velocity, now):\n        self._advance(now)\n        if not self.armed:\n\
+    \            return False\n        if (session != self.session or not integer(sequence)\
+    \ or sequence <= self.command_sequence\n                or not integer(issued_wall)\
+    \ or issued_wall < self.command_wall\n                or not -UNCERTAINTY_NS <=\
+    \ now.wall - issued_wall < COMMAND_NS - UNCERTAINTY_NS\n                or not\
+    \ velocity_ok(velocity)):\n            self.trip(\"command_invalid\", now)\n \
+    \           return False\n        self.command_sequence = sequence\n        self.command_wall\
+    \ = issued_wall\n        self.command_deadline = now.steady + COMMAND_NS - max(0,\
+    \ now.wall - issued_wall + UNCERTAINTY_NS)\n        self.velocity = tuple(velocity)\n\
+    \        return True\n\n    def tick(self, now):\n        self._advance(now)\n\
+    \        return self.velocity if self.armed else ZERO\n\n    def packet(self,\
+    \ now):\n        \"\"\"None means revoke/zero, never a live lease with an old\
+    \ session.\"\"\"\n        self.tick(now)\n        if not self.armed:\n       \
+    \     return None\n        self.sequence += 1\n        # Do not extend a command/input's\
+    \ authority by periodically republishing.\n        remaining = min(LEASE_NS, self.command_deadline\
+    \ - now.steady,\n                        *(v.deadline - now.steady for v in self.leases.values()))\n\
+    \        return Command(self.session, self.sequence, now.wall, now.wall + remaining,\
+    \ self.velocity)\n\n\nclass FinalReceiver:\n    \"\"\"Receiver-side, independently\
+    \ fail-latched short lease (no ROS/Gazebo I/O).\n\n    Must be rearmed explicitly\
+    \ together with SafetyGate; never adopt a session\n    from a command packet.\
+    \ Requires a local 20 ms steady timer and synchronized\n    wall clocks with <=2\
+    \ ms allowance, same as the existing capture contract.\n    \"\"\"\n\n    def\
+    \ __init__(self):\n        self.session = None\n        self.sequence = -1\n \
+    \       self.deadline = None\n        self.expires_wall = None\n        self.reason\
+    \ = \"startup_disarmed\"\n        self.velocity = ZERO\n        self.last_time\
+    \ = None\n        self.used_sessions = set()\n\n    def stop(self, reason):\n\
+    \        self.session = None\n        self.velocity = ZERO\n        self.reason\
+    \ = reason\n        self.deadline = self.expires_wall = None\n\n    def arm(self,\
+    \ session, now, *, stationary):\n        self.tick(now)\n        if (self.session\
+    \ is not None or stationary is not True\n                or not isinstance(session,\
+    \ str) or len(session) != 36\n                or session in self.used_sessions\
+    \ or len(self.used_sessions) >= 1024):\n            return False\n        self.used_sessions.add(session)\n\
+    \        self.session, self.sequence = session, -1\n        self.reason = \"armed_waiting_first_packet\"\
+    \n        self.deadline = now.steady + LEASE_NS\n        self.expires_wall = now.wall\
+    \ + LEASE_NS\n        return True\n\n    def tick(self, now):\n        if not\
+    \ all(integer(v) for v in (now.steady, now.wall, now.ros)):\n            raise\
+    \ ValueError(\"invalid local clock\")\n        prior, self.last_time = self.last_time,\
+    \ now\n        if prior and (now.steady < prior.steady or now.ros < prior.ros\n\
+    \                      or abs(now.wall-prior.wall-now.steady+prior.steady) > 20\
+    \ * MS):\n            self.stop(\"clock_discontinuity\")\n        if self.session\
+    \ is not None and (now.steady >= self.deadline\n                             \
+    \            or now.wall >= self.expires_wall):\n            self.stop(\"lease_expired\"\
+    )\n        return self.velocity if self.session is not None else ZERO\n\n    def\
+    \ receive(self, packet, now):\n        self.tick(now)\n        if packet is None:\n\
+    \            self.stop(\"supervisor_revoked\")\n            return False\n   \
+    \     if self.session is None:\n            return False\n        if (packet.session\
+    \ != self.session or not integer(packet.sequence)\n                or packet.sequence\
+    \ <= self.sequence or not velocity_ok(packet.velocity)\n                or not\
+    \ all(integer(v) for v in (packet.issued_wall, packet.expires_wall))\n       \
+    \         or not 0 < packet.expires_wall-packet.issued_wall <= LEASE_NS\n    \
+    \            or packet.issued_wall > now.wall + UNCERTAINTY_NS\n             \
+    \   or packet.expires_wall <= now.wall + UNCERTAINTY_NS):\n            self.stop(\"\
+    packet_invalid\")\n            return False\n        self.sequence = packet.sequence\n\
+    \        self.expires_wall = packet.expires_wall - UNCERTAINTY_NS\n        self.deadline\
+    \ = now.steady + self.expires_wall - now.wall\n        self.velocity = tuple(packet.velocity)\n\
+    \        self.reason = \"armed\"\n        return True\n"
+  test_safety_core.py: "import dataclasses\nimport unittest\n\nfrom safety_core import\
+    \ (COMMAND_NS, LEASE_NS, MS, TICK_NS, ZERO, Command,\n                       \
+    \  Evidence, FinalReceiver, Now, SafetyGate)\n\n\ndef instant(ms=0, *, ros_ms=None,\
+    \ wall_ms=None):\n    return Now(10_000 * MS + round(ms * MS),\n             \
+    \  100_000 * MS + round((ms if wall_ms is None else wall_ms) * MS),\n        \
+    \       20_000 * MS + round((ms if ros_ms is None else ros_ms) * MS))\n\n\ndef\
+    \ refresh(gate, ms, *, exclude=(), epoch=\"stream-1\"):\n    now = instant(ms)\n\
+    \    for key in gate.required:\n        if key not in exclude:\n            gate.observe(key,\
+    \ Evidence(epoch, int(ms) + 1, now.wall, now.ros), now)\n\n\ndef armed(semantics=True):\n\
+    \    gate = SafetyGate(require_semantics=semantics)\n    refresh(gate, 0)\n  \
+    \  session = gate.arm(instant(), stationary=True, tasks_idle=True, neutral_command=True)\n\
+    \    assert session\n    return gate, session\n\n\ndef command(gate, session,\
+    \ ms, velocity=(0.1, 0.0, 0.0)):\n    return gate.command(session, int(ms), instant(ms).wall,\
+    \ velocity, instant(ms))\n\n\nclass SafetyGateTests(unittest.TestCase):\n    def\
+    \ test_startup_never_moves(self):\n        gate = SafetyGate()\n        self.assertEqual(gate.tick(instant()),\
+    \ ZERO)\n        self.assertIsNone(gate.packet(instant()))\n        self.assertFalse(command(gate,\
+    \ \"unarmed\", 0))\n\n    def test_arm_requires_all_inputs_and_idle_stationary_neutral(self):\n\
+    \        gate = SafetyGate()\n        conditions = dict(stationary=True, tasks_idle=True,\
+    \ neutral_command=True)\n        self.assertIsNone(gate.arm(instant(), **conditions))\n\
+    \        refresh(gate, 0)\n        for key in conditions:\n            self.assertIsNone(gate.arm(instant(),\
+    \ **{**conditions, key: False}))\n        self.assertTrue(gate.arm(instant(),\
+    \ **conditions))\n        self.assertIsNone(gate.arm(instant(), **conditions))\n\
+    \n    def test_normal_motion_and_bounds(self):\n        gate, session = armed()\n\
+    \        self.assertTrue(command(gate, session, 1, (0.15, 0.0, 0.5)))\n      \
+    \  self.assertEqual(gate.tick(instant(10)), (0.15, 0.0, 0.5))\n        self.assertTrue(command(gate,\
+    \ session, 50, (-0.1, 0.0, -0.5)))\n\n    def test_invalid_velocity_latches(self):\n\
+    \        for velocity in ((float(\"nan\"), 0, 0), (float(\"inf\"), 0, 0),\n  \
+    \                       (0.151, 0, 0), (-0.101, 0, 0), (0, .001, 0), (0, 0, .501),\n\
+    \                         (True, 0, 0), (0, 0)):\n            with self.subTest(velocity=velocity):\n\
+    \                gate, session = armed()\n                self.assertFalse(command(gate,\
+    \ session, 1, velocity))\n                self.assertEqual(gate.reason, \"command_invalid\"\
+    )\n                self.assertEqual(gate.tick(instant(2)), ZERO)\n\n    def test_command_expiry_and_late_command_cannot_resume(self):\n\
+    \        gate, session = armed()\n        command(gate, session, 1)\n        self.assertEqual(gate.tick(instant(99)),\
+    \ ZERO)  # 2 ms uncertainty\n        self.assertEqual(gate.reason, \"command_expired\"\
+    )\n        self.assertFalse(command(gate, session, 100))\n\n    def test_delayed_callback_cannot_conceal_command_expiry(self):\n\
+    \        gate, session = armed()\n        command(gate, session, 1)\n        self.assertFalse(command(gate,\
+    \ session, 101))\n        self.assertEqual(gate.trigger_steady, instant(99).steady)\n\
+    \n    def test_each_missing_input_stops_by_deadline(self):\n        for missing\
+    \ in SafetyGate().required:\n            with self.subTest(missing=missing):\n\
+    \                gate, session = armed()\n                for ms in range(1, 498,\
+    \ 20):\n                    refresh(gate, ms, exclude=(missing,))\n          \
+    \          self.assertTrue(command(gate, session, ms))\n                self.assertEqual(gate.tick(instant(498)),\
+    \ ZERO)\n                self.assertEqual(gate.reason, missing + \"_stale\")\n\
+    \n    def test_repeated_capture_does_not_refresh_lease(self):\n        gate, session\
+    \ = armed()\n        old = Evidence(\"stream-1\", 1, instant().wall, instant().ros)\n\
+    \        for ms in range(1, 498, 20):\n            refresh(gate, ms, exclude=(\"\
+    semantic\",))\n            command(gate, session, ms)\n            self.assertFalse(gate.observe(\"\
+    semantic\", old, instant(ms)))\n        self.assertEqual(gate.tick(instant(498)),\
+    \ ZERO)\n        self.assertEqual(gate.reason, \"semantic_stale\")\n\n    def\
+    \ test_late_success_cannot_hide_input_deadline(self):\n        gate, session =\
+    \ armed()\n        for ms in range(1, 498, 20):\n            refresh(gate, ms,\
+    \ exclude=(\"semantic\",))\n            command(gate, session, ms)\n        refresh(gate,\
+    \ 499)  # callbacks, without an intervening timer\n        self.assertFalse(gate.armed)\n\
+    \        self.assertEqual(gate.reason, \"semantic_stale\")\n\n    def test_capture_age_not_arrival_age(self):\n\
+    \        gate = SafetyGate()\n        now = instant(450)\n        gate.observe(\"\
+    semantic\", Evidence(\"e\", 1, instant().wall, instant().ros), now)\n        self.assertEqual(gate.leases[\"\
+    semantic\"].deadline, instant(498).steady)\n\n    def test_future_expired_and_malformed_inputs(self):\n\
+    \        for ev in (Evidence(\"e\", 1, instant(3).wall, instant().ros),\n    \
+    \               Evidence(\"e\", 1, instant(-500).wall, instant().ros),\n     \
+    \              Evidence(\"e\", 1, instant().wall, instant(1).ros),\n         \
+    \          Evidence(\"\", 1, instant().wall, instant().ros),\n               \
+    \    Evidence(\"e\", True, instant().wall, instant().ros)):\n            gate,\
+    \ _ = armed()\n            self.assertFalse(gate.observe(\"semantic\", ev, instant()))\n\
+    \            self.assertFalse(gate.armed)\n\n    def test_paused_simulation_still_expires(self):\n\
+    \        gate, session = armed()\n        command(gate, session, 1)\n        self.assertEqual(gate.tick(instant(501,\
+    \ ros_ms=1)), ZERO)\n        self.assertFalse(gate.armed)\n\n    def test_clock_rollback_latches_and_clears(self):\n\
+    \        gate, session = armed()\n        command(gate, session, 10)\n       \
+    \ self.assertEqual(gate.tick(instant(11, ros_ms=0)), ZERO)\n        self.assertEqual(gate.reason,\
+    \ \"clock_rollback\")\n        self.assertFalse(gate.leases)\n\n    def test_wall_jump_latches(self):\n\
+    \        for wall_ms in (-100, 100):\n            gate, session = armed()\n  \
+    \          command(gate, session, 1)\n            self.assertEqual(gate.tick(instant(2,\
+    \ wall_ms=wall_ms)), ZERO)\n            self.assertEqual(gate.reason, \"wall_clock_discontinuity\"\
+    )\n\n    def test_epoch_change_latches(self):\n        gate, _ = armed()\n   \
+    \     now = instant(1)\n        self.assertFalse(gate.observe(\"semantic\", Evidence(\"\
+    new\", 2, now.wall, now.ros), now))\n        self.assertEqual(gate.reason, \"\
+    semantic_epoch_changed\")\n\n    def test_local_and_remote_faults_share_stop_path(self):\n\
+    \        for reason in (\"camera_loss\", \"tf_loss\", \"stale_mask\", \"hung_inference\"\
+    ,\n                       \"backend:timeout\", \"backend:overload\", \"backend:connection_loss\"\
+    ,\n                       \"cancel\", \"collision_intervention\", \"node_restart\"\
+    ):\n            with self.subTest(reason=reason):\n                gate, session\
+    \ = armed()\n                command(gate, session, 1)\n                gate.trip(reason,\
+    \ instant(2))\n                refresh(gate, 3)\n                self.assertFalse(command(gate,\
+    \ session, 4))\n                self.assertEqual(gate.tick(instant(4)), ZERO)\n\
+    \                self.assertEqual(gate.reason, reason)\n\n    def test_rearm_requires_new_evidence_and_changes_session(self):\n\
+    \        gate, old = armed()\n        gate.trip(\"cancel\", instant(1))\n    \
+    \    args = dict(stationary=True, tasks_idle=True, neutral_command=True)\n   \
+    \     self.assertIsNone(gate.arm(instant(2), **args))\n        refresh(gate, 5)\n\
+    \        new = gate.arm(instant(5), **args)\n        self.assertTrue(new)\n  \
+    \      self.assertNotEqual(old, new)\n        self.assertFalse(command(gate, old,\
+    \ 6))\n\n    def test_second_fault_during_recovery_clears_partial_inputs(self):\n\
+    \        gate, _ = armed()\n        gate.trip(\"cancel\", instant(1))\n      \
+    \  refresh(gate, 5)\n        gate.trip(\"backend:connection_loss\", instant(6))\n\
+    \        self.assertFalse(gate.leases)\n        self.assertEqual(gate.reason,\
+    \ \"cancel\")\n        self.assertEqual(gate.trigger_steady, instant(1).steady)\n\
+    \        refresh(gate, 10, epoch=\"restarted\")\n        self.assertTrue(gate.arm(instant(10),\
+    \ stationary=True, tasks_idle=True, neutral_command=True))\n\n    def test_reset_capture_barrier_includes_clock_uncertainty(self):\n\
+    \        gate, _ = armed()\n        gate.trip(\"cancel\", instant(1))\n      \
+    \  almost = Evidence(\"stream-1\", 3, instant(3).wall, instant(3).ros)\n     \
+    \   self.assertFalse(gate.observe(\"semantic\", almost, instant(3)))\n\n    def\
+    \ test_geometry_baseline_is_separate_startup_policy(self):\n        gate, session\
+    \ = armed(semantics=False)\n        self.assertNotIn(\"semantic\", gate.required)\n\
+    \        self.assertTrue(command(gate, session, 1))\n        with self.assertRaises(ValueError):\n\
+    \            gate.observe(\"semantic\", Evidence(\"e\", 1, 0, 0), instant(1))\n\
+    \n    def test_packet_cannot_extend_command_authority(self):\n        gate, session\
+    \ = armed()\n        command(gate, session, 1)\n        packet = gate.packet(instant(90))\n\
+    \        self.assertEqual(packet.expires_wall, instant(99).wall)\n\n\nclass ReceiverTests(unittest.TestCase):\n\
+    \    def setup_motion(self):\n        gate, session = armed()\n        receiver\
+    \ = FinalReceiver()\n        self.assertTrue(receiver.arm(session, instant(),\
+    \ stationary=True))\n        command(gate, session, 1)\n        packet = gate.packet(instant(1))\n\
+    \        self.assertTrue(receiver.receive(packet, instant(2)))\n        return\
+    \ gate, session, receiver, packet\n\n    def test_startup_packet_does_not_arm(self):\n\
+    \        gate, session = armed()\n        command(gate, session, 1)\n        receiver\
+    \ = FinalReceiver()\n        self.assertFalse(receiver.receive(gate.packet(instant(1)),\
+    \ instant(1)))\n        self.assertEqual(receiver.tick(instant(2)), ZERO)\n\n\
+    \    def test_lost_supervisor_or_transport_expires_locally(self):\n        _,\
+    \ _, receiver, packet = self.setup_motion()\n        self.assertEqual(receiver.tick(instant(78)),\
+    \ (0.1, 0, 0))\n        self.assertEqual(receiver.tick(instant(79)), ZERO)\n \
+    \       self.assertEqual(receiver.reason, \"lease_expired\")\n        self.assertFalse(receiver.receive(packet,\
+    \ instant(80)))\n\n    def test_renewals_and_explicit_revoke(self):\n        gate,\
+    \ session, receiver, _ = self.setup_motion()\n        for ms in range(20, 201,\
+    \ 20):\n            refresh(gate, ms)\n            command(gate, session, ms)\n\
+    \            self.assertTrue(receiver.receive(gate.packet(instant(ms)), instant(ms)))\n\
+    \        self.assertFalse(receiver.receive(None, instant(201)))\n        self.assertEqual(receiver.tick(instant(201)),\
+    \ ZERO)\n\n    def test_late_packet_never_renews_expired_receiver(self):\n   \
+    \     gate, session, receiver, _ = self.setup_motion()\n        command(gate,\
+    \ session, 79)\n        self.assertFalse(receiver.receive(gate.packet(instant(79)),\
+    \ instant(79)))\n        self.assertEqual(receiver.tick(instant(80)), ZERO)\n\n\
+    \    def test_replay_wrong_session_bad_velocity_and_deadline_latch(self):\n  \
+    \      for change in ({\"session\": \"another\"}, {\"sequence\": 0},\n       \
+    \                {\"velocity\": (9, 0, 0)}, {\"issued_wall\": instant(20).wall},\n\
+    \                       {\"expires_wall\": instant(200).wall}, {\"expires_wall\"\
+    : instant(3).wall},\n                       {\"sequence\": True}):\n         \
+    \   _, _, receiver, packet = self.setup_motion()\n            bad = dataclasses.replace(packet,\
+    \ sequence=1)\n            bad = dataclasses.replace(bad, **change)\n        \
+    \    self.assertFalse(receiver.receive(bad, instant(3)))\n            self.assertEqual(receiver.reason,\
+    \ \"packet_invalid\")\n\n    def test_no_session_reuse_or_rearm_while_running(self):\n\
+    \        _, session, receiver, _ = self.setup_motion()\n        self.assertFalse(receiver.arm(session,\
+    \ instant(3), stationary=True))\n        receiver.stop(\"cancel\")\n        self.assertFalse(receiver.arm(session,\
+    \ instant(4), stationary=True))\n        self.assertFalse(receiver.arm(\"a\" *\
+    \ 36, instant(4), stationary=False))\n\n    def test_clock_jump_and_restart_stop(self):\n\
+    \        _, _, receiver, packet = self.setup_motion()\n        self.assertEqual(receiver.tick(instant(3,\
+    \ wall_ms=-100)), ZERO)\n        self.assertEqual(receiver.reason, \"clock_discontinuity\"\
+    )\n        receiver = FinalReceiver()\n        self.assertFalse(receiver.receive(packet,\
+    \ instant(4)))\n\n    def test_worst_timer_phase_is_within_100ms_lease_budget(self):\n\
+    \        # Exhaust all integer-ms positions within one 20 ms timer period.\n \
+    \       for phase in range(20):\n            _, _, receiver, _ = self.setup_motion()\n\
+    \            zero_at = None\n            for ms in range(3 + phase, 121, 20):\n\
+    \                if receiver.tick(instant(ms)) == ZERO:\n                    zero_at\
+    \ = ms\n                    break\n            self.assertIsNotNone(zero_at)\n\
+    \            self.assertLessEqual(zero_at - 1, 100)\n        self.assertLessEqual(LEASE_NS\
+    \ + TICK_NS, 100 * MS)\n\n\nif __name__ == \"__main__\":\n    unittest.main(verbosity=2)\n"
+  verify_collision_monitor.py: "#!/usr/bin/env python3\n\"\"\"Non-actuating Jazzy\
+    \ smoke test with synthetic scan/TF/footprint/commands.\n\nRun only in the isolated\
+    \ test pod (domain 85, loopback DDS, no bridge). This is\nnot a physical stop,\
+    \ geometric localization or live SAM3 fault qualification.\n\"\"\"\nimport json\n\
+    import math\nimport os\nfrom pathlib import Path\nimport signal\nimport subprocess\n\
+    import tempfile\nimport time\n\nimport rclpy\nfrom geometry_msgs.msg import Point32,\
+    \ PolygonStamped, TransformStamped, Twist\nfrom lifecycle_msgs.srv import ChangeState\n\
+    from nav2_msgs.msg import CollisionMonitorState\nfrom rclpy.node import Node\n\
+    from sensor_msgs.msg import LaserScan\nfrom tf2_ros import StaticTransformBroadcaster\n\
+    import yaml\n\n\ndef main():\n    if os.getenv(\"ROS_DOMAIN_ID\") != \"85\" or\
+    \ \"phase5\" not in os.getenv(\"CYCLONEDDS_URI\", \"\"):\n        raise RuntimeError(\"\
+    refusing to run outside isolated Phase 5 fixture\")\n    params = yaml.safe_load(Path(\"\
+    /phase5/phase5-nav2-candidate.yaml\").read_text())[\"collision_monitor\"][\"ros__parameters\"\
+    ]\n    params[\"use_sim_time\"] = False  # synthetic fixture uses wall stamps,\
+    \ no simulator\n    with tempfile.TemporaryDirectory(prefix=\"phase5-collision-\"\
+    ) as directory:\n        config = Path(directory) / \"params.yaml\"\n        config.write_text(yaml.safe_dump({\"\
+    collision_monitor\": {\"ros__parameters\": params}}))\n        with (Path(directory)\
+    \ / \"monitor.log\").open(\"w+\") as log:\n            process = subprocess.Popen([\"\
+    /opt/ros/jazzy/lib/nav2_collision_monitor/collision_monitor\",\n             \
+    \                           \"--ros-args\", \"--params-file\", str(config)], stdout=log,\
+    \ stderr=subprocess.STDOUT)\n            rclpy.init()\n            node = Node(\"\
+    phase5_non_actuating_fixture\")\n            records, states, checks = [], [],\
+    \ []\n            node.create_subscription(Twist, \"/phase5/collision_checked\"\
+    ,\n                                     lambda m: records.append({\"wall_ns\"\
+    : time.time_ns(), \"steady_ns\": time.monotonic_ns(),\n                      \
+    \                                         \"x\": m.linear.x, \"yaw\": m.angular.z}),\
+    \ 10)\n            node.create_subscription(CollisionMonitorState, \"/collision_monitor_state\"\
+    ,\n                                     lambda m: states.append({\"steady_ns\"\
+    : time.monotonic_ns(), \"state\": str(m)}), 10)\n            commands = node.create_publisher(Twist,\
+    \ \"/cmd_vel_smoothed\", 10)\n            scans = node.create_publisher(LaserScan,\
+    \ \"/scan_fixed\", 10)\n            footprints = node.create_publisher(PolygonStamped,\
+    \ \"/local_costmap/published_footprint\", 10)\n            transforms = StaticTransformBroadcaster(node)\n\
+    \            tfs = []\n            for parent, child, z in ((\"odom\", \"base_footprint\"\
+    , 0.0), (\"base_footprint\", \"base_scan\", .25)):\n                tf = TransformStamped()\n\
+    \                tf.header.stamp = node.get_clock().now().to_msg()\n         \
+    \       tf.header.frame_id, tf.child_frame_id = parent, child\n              \
+    \  tf.transform.translation.z, tf.transform.rotation.w = z, 1.0\n            \
+    \    tfs.append(tf)\n            transforms.sendTransform(tfs)\n            client\
+    \ = node.create_client(ChangeState, \"/collision_monitor/change_state\")\n\n \
+    \           def drive(duration, obstacle=False, publish_scan=True, speed=.1):\n\
+    \                started = time.monotonic_ns()\n                while time.monotonic_ns()\
+    \ - started < int(duration * 1e9):\n                    stamp = node.get_clock().now().to_msg()\n\
+    \                    footprint = PolygonStamped()\n                    footprint.header.stamp,\
+    \ footprint.header.frame_id = stamp, \"base_footprint\"\n                    footprint.polygon.points\
+    \ = [Point32(x=x, y=y, z=0.0) for x, y in\n                                  \
+    \              ((-.182, -.165), (.118, -.165), (.118, .165), (-.182, .165))]\n\
+    \                    footprints.publish(footprint)\n                    if publish_scan:\n\
+    \                        scan = LaserScan()\n                        scan.header.stamp,\
+    \ scan.header.frame_id = stamp, \"base_scan\"\n                        scan.angle_min,\
+    \ scan.angle_max, scan.angle_increment = 0.0, 2*math.pi, 2*math.pi/359\n     \
+    \                   scan.range_min, scan.range_max = .12, 3.5\n              \
+    \          scan.ranges = [float(\"inf\")] * 360\n                        scan.ranges[0]\
+    \ = .22 if obstacle else 2.0\n                        scans.publish(scan)\n  \
+    \                  message = Twist()\n                    message.linear.x = speed\n\
+    \                    commands.publish(message)\n                    rclpy.spin_once(node,\
+    \ timeout_sec=.01)\n                    time.sleep(.01)\n                return\
+    \ started, [r for r in records if r[\"steady_ns\"] >= started]\n\n           \
+    \ try:\n                if not client.wait_for_service(timeout_sec=20):\n    \
+    \                raise RuntimeError(\"collision monitor lifecycle service missing\"\
+    )\n                for transition in (1, 3):\n                    req = ChangeState.Request()\n\
+    \                    req.transition.id = transition\n                    future\
+    \ = client.call_async(req)\n                    rclpy.spin_until_future_complete(node,\
+    \ future, timeout_sec=10)\n                    if not future.done() or not future.result().success:\n\
+    \                        raise RuntimeError(f\"lifecycle transition {transition}\
+    \ failed\")\n                start, output = drive(2.0)\n                assert\
+    \ any(r[\"x\"] > .09 for r in output), \"nominal command blocked\"\n         \
+    \       checks.append({\"case\": \"clear_scan_passes_command\", \"passed\": True})\n\
+    \                start, output = drive(1.0, obstacle=True)\n                zeros\
+    \ = [r for r in output if r[\"x\"] == 0 and r[\"yaw\"] == 0]\n               \
+    \ assert zeros, \"stop polygon failed\"\n                latency_ms = (zeros[0][\"\
+    steady_ns\"] - start)/1e6\n                assert latency_ms <= 100, f\"fixture\
+    \ intervention took {latency_ms} ms\"\n                assert all(r[\"x\"] ==\
+    \ 0 for r in output if r[\"steady_ns\"] >= start + 200_000_000)\n            \
+    \    checks.append({\"case\": \"stop_polygon_intervenes\", \"passed\": True, \"\
+    fixture_first_zero_ms\": latency_ms})\n                _, output = drive(1.0)\n\
+    \                assert any(r[\"x\"] > .09 for r in output), \"clear scan did\
+    \ not restore native monitor output\"\n                checks.append({\"case\"\
+    : \"native_monitor_can_resume_requires_external_latch\", \"passed\": True})\n\
+    \                start, output = drive(1.5, publish_scan=False)\n            \
+    \    late = [r for r in output if r[\"steady_ns\"] >= start + 650_000_000]\n \
+    \               assert late and all(r[\"x\"] == 0 for r in late), \"expired scan\
+    \ did not stop\"\n                checks.append({\"case\": \"source_timeout_stops_with_continuing_commands\"\
+    , \"passed\": True})\n                graph = dict(node.get_topic_names_and_types())\n\
+    \                assert \"/robot_1/cmd_vel\" not in graph and \"/cmd_vel\" not\
+    \ in graph\n                checks.append({\"case\": \"no_actuator_topic\", \"\
+    passed\": True})\n                print(json.dumps({\"event\": \"phase5_native_collision_fixture\"\
+    , \"passed\": True,\n                                  \"checks\": checks, \"\
+    outputs\": records, \"states\": states,\n                                  \"\
+    topics\": graph, \"params\": params}, sort_keys=True), flush=True)\n         \
+    \   finally:\n                node.destroy_node()\n                rclpy.shutdown()\n\
+    \                process.send_signal(signal.SIGINT)\n                try:\n  \
+    \                  process.wait(timeout=10)\n                except subprocess.TimeoutExpired:\n\
+    \                    process.kill()\n                    process.wait(timeout=5)\n\
+    \                log.seek(0)\n                print(\"NATIVE_MONITOR_LOG_BEGIN\\\
+    n\" + log.read() + \"NATIVE_MONITOR_LOG_END\", flush=True)\n\n\nif __name__ ==\
+    \ \"__main__\":\n    main()\n"
+  phase5-nav2-candidate.yaml: "# GENERATED Phase 5 candidate; NOT motion-qualified.\
+    \ Semantics excluded.\namcl:\n  ros__parameters:\n    use_sim_time: true\n   \
+    \ alpha1: 0.2\n    alpha2: 0.2\n    alpha3: 0.2\n    alpha4: 0.2\n    alpha5:\
+    \ 0.2\n    base_frame_id: base_footprint\n    global_frame_id: map\n    odom_frame_id:\
+    \ odom\n    scan_topic: scan_fixed\n    set_initial_pose: false\n    first_map_only:\
+    \ false\n    tf_broadcast: true\n    transform_tolerance: 0.2\n    min_particles:\
+    \ 500\n    max_particles: 2000\n    laser_model_type: likelihood_field\n    laser_min_range:\
+    \ 0.12\n    laser_max_range: 12.0\n    max_beams: 60\n    update_min_d: 0.05\n\
+    \    update_min_a: 0.1\nbt_navigator:\n  ros__parameters:\n    use_sim_time: true\n\
+    \    global_frame: map\n    robot_base_frame: base_footprint\n    odom_topic:\
+    \ odom\n    bt_loop_duration: 10\n    default_server_timeout: 5000\n    wait_for_service_timeout:\
+    \ 1000\n    navigators:\n    - navigate_to_pose\n    - navigate_through_poses\n\
+    \    navigate_to_pose:\n      plugin: nav2_bt_navigator::NavigateToPoseNavigator\n\
+    \    navigate_through_poses:\n      plugin: nav2_bt_navigator::NavigateThroughPosesNavigator\n\
+    controller_server:\n  ros__parameters:\n    use_sim_time: true\n    controller_frequency:\
+    \ 20.0\n    min_x_velocity_threshold: 0.001\n    min_y_velocity_threshold: 0.5\n\
+    \    min_theta_velocity_threshold: 0.001\n    progress_checker_plugins:\n    -\
+    \ progress_checker\n    goal_checker_plugins:\n    - general_goal_checker\n  \
+    \  controller_plugins:\n    - FollowPath\n    progress_checker:\n      plugin:\
+    \ nav2_controller::SimpleProgressChecker\n      required_movement_radius: 0.05\n\
+    \      movement_time_allowance: 90.0\n    general_goal_checker:\n      plugin:\
+    \ nav2_controller::SimpleGoalChecker\n      stateful: true\n      xy_goal_tolerance:\
+    \ 0.2\n      yaw_goal_tolerance: 0.35\n    FollowPath:\n      plugin: nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController\n\
+    \      desired_linear_vel: 0.15\n      lookahead_dist: 0.6\n      min_lookahead_dist:\
+    \ 0.3\n      max_lookahead_dist: 0.9\n      transform_tolerance: 0.2\n      use_collision_detection:\
+    \ true\n      allow_reversing: false\n      rotate_to_heading_angular_vel: 0.5\n\
+    \      max_angular_accel: 1.0\n    enable_stamped_cmd_vel: false\nplanner_server:\n\
+    \  ros__parameters:\n    use_sim_time: true\n    planner_plugins:\n    - GridBased\n\
+    \    GridBased:\n      plugin: nav2_navfn_planner::NavfnPlanner\n      tolerance:\
+    \ 0.25\n      use_astar: true\n      allow_unknown: false\nlocal_costmap:\n  local_costmap:\n\
+    \    ros__parameters:\n      use_sim_time: true\n      global_frame: odom\n  \
+    \    robot_base_frame: base_footprint\n      rolling_window: true\n      width:\
+    \ 4\n      height: 4\n      resolution: 0.05\n      plugins:\n      - voxel_layer\n\
+    \      - inflation_layer\n      voxel_layer:\n        plugin: nav2_costmap_2d::VoxelLayer\n\
+    \        enabled: true\n        observation_sources: scan\n        scan:\n   \
+    \       topic: scan_fixed\n          data_type: LaserScan\n          marking:\
+    \ true\n          clearing: true\n          obstacle_max_range: 3.5\n        \
+    \  raytrace_max_range: 3.5\n          expected_update_rate: 0.5\n      inflation_layer:\n\
+    \        plugin: nav2_costmap_2d::InflationLayer\n        inflation_radius: 0.35\n\
+    \        cost_scaling_factor: 3.0\n        enabled: true\n      footprint: '[[-0.172,\
+    \ -0.155], [0.108, -0.155], [0.108, 0.155], [-0.172, 0.155]]'\n      footprint_padding:\
+    \ 0.01\n      update_frequency: 10.0\n      publish_frequency: 5.0\n      transform_tolerance:\
+    \ 0.2\n      always_send_full_costmap: true\nglobal_costmap:\n  global_costmap:\n\
+    \    ros__parameters:\n      use_sim_time: true\n      global_frame: map\n   \
+    \   robot_base_frame: base_footprint\n      resolution: 0.05\n      track_unknown_space:\
+    \ true\n      plugins:\n      - static_layer\n      - obstacle_layer\n      -\
+    \ inflation_layer\n      static_layer:\n        plugin: nav2_costmap_2d::StaticLayer\n\
+    \        map_subscribe_transient_local: true\n      obstacle_layer:\n        plugin:\
+    \ nav2_costmap_2d::ObstacleLayer\n        enabled: true\n        observation_sources:\
+    \ scan\n        scan:\n          topic: scan_fixed\n          data_type: LaserScan\n\
+    \          marking: true\n          clearing: true\n          obstacle_max_range:\
+    \ 3.5\n          raytrace_max_range: 3.5\n          expected_update_rate: 0.5\n\
+    \      inflation_layer:\n        plugin: nav2_costmap_2d::InflationLayer\n   \
+    \     enabled: true\n        inflation_radius: 0.35\n        cost_scaling_factor:\
+    \ 3.0\n      footprint: '[[-0.172, -0.155], [0.108, -0.155], [0.108, 0.155], [-0.172,\
+    \ 0.155]]'\n      footprint_padding: 0.01\n      update_frequency: 10.0\n    \
+    \  publish_frequency: 5.0\n      transform_tolerance: 0.2\n      always_send_full_costmap:\
+    \ true\nbehavior_server:\n  ros__parameters:\n    use_sim_time: true\n    behavior_plugins:\n\
+    \    - spin\n    - backup\n    - drive_on_heading\n    - wait\n    spin:\n   \
+    \   plugin: nav2_behaviors::Spin\n    backup:\n      plugin: nav2_behaviors::BackUp\n\
+    \    drive_on_heading:\n      plugin: nav2_behaviors::DriveOnHeading\n    wait:\n\
+    \      plugin: nav2_behaviors::Wait\n    enable_stamped_cmd_vel: false\n    local_frame:\
+    \ odom\n    global_frame: map\n    robot_base_frame: base_footprint\n    max_rotational_vel:\
+    \ 0.5\n    min_rotational_vel: 0.1\n    rotational_acc_lim: 1.0\nsmoother_server:\n\
+    \  ros__parameters:\n    use_sim_time: true\n    smoother_plugins:\n    - simple_smoother\n\
+    \    simple_smoother:\n      plugin: nav2_smoother::SimpleSmoother\nwaypoint_follower:\n\
+    \  ros__parameters:\n    use_sim_time: true\n    stop_on_failure: true\nvelocity_smoother:\n\
+    \  ros__parameters:\n    use_sim_time: true\n    smoothing_frequency: 50.0\n \
+    \   feedback: OPEN_LOOP\n    max_velocity:\n    - 0.15\n    - 0.0\n    - 0.5\n\
+    \    min_velocity:\n    - -0.1\n    - 0.0\n    - -0.5\n    max_accel:\n    - 0.5\n\
+    \    - 0.0\n    - 1.0\n    max_decel:\n    - -0.8\n    - 0.0\n    - -1.5\n   \
+    \ odom_topic: odom\n    velocity_timeout: 0.1\n    enable_stamped_cmd_vel: false\n\
+    collision_monitor:\n  ros__parameters:\n    base_frame_id: base_footprint\n  \
+    \  odom_frame_id: odom\n    cmd_vel_in_topic: cmd_vel_smoothed\n    cmd_vel_out_topic:\
+    \ phase5/collision_checked\n    state_topic: collision_monitor_state\n    transform_tolerance:\
+    \ 0.1\n    source_timeout: 0.5\n    base_shift_correction: true\n    stop_pub_timeout:\
+    \ 2.0\n    polygons:\n    - StopEnvelope\n    - FootprintApproach\n    FootprintApproach:\n\
+    \      type: polygon\n      action_type: approach\n      footprint_topic: local_costmap/published_footprint\n\
+    \      time_before_collision: 1.0\n      simulation_time_step: 0.02\n      min_points:\
+    \ 1\n      visualize: false\n      enabled: true\n    observation_sources:\n \
+    \   - scan\n    scan:\n      type: scan\n      topic: scan_fixed\n      min_height:\
+    \ 0.15\n      max_height: 2.0\n      enabled: true\n    use_sim_time: true\n \
+    \   enable_stamped_cmd_vel: false\n    StopEnvelope:\n      type: polygon\n  \
+    \    action_type: stop\n      points: '[[-0.332, -0.315], [0.268, -0.315], [0.268,\
+    \ 0.315], [-0.332, 0.315]]'\n      min_points: 1\n      visualize: true\n    \
+    \  polygon_pub_topic: phase5/stop_polygon\n      enabled: true\n"
+  cyclonedds-phase5.xml: <CycloneDDS><Domain id="any"><General><Interfaces><NetworkInterface
+    name="lo"/></Interfaces><AllowMulticast>false</AllowMulticast></General><Discovery><ParticipantIndex>auto</ParticipantIndex></Discovery></Domain></CycloneDDS>
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: semantic-phase5-preflight
+  namespace: semantic-navigation
+spec:
+  restartPolicy: Never
+  activeDeadlineSeconds: 300
+  automountServiceAccountToken: false
+  containers:
+  - name: preflight
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-costmap@sha256:447c6ee36d2eff0707a69133881c4131e0033dab5c38099750844173d416c92f
+    command:
+    - /bin/bash
+    - -ec
+    args:
+    - source /opt/ros/jazzy/setup.bash; cd /phase5; python3 -m unittest discover -s
+      /phase5 -p 'test_*.py' -v; python3 /phase5/audit_geometry.py; dpkg-query -W
+      ros-jazzy-nav2-collision-monitor ros-jazzy-nav2-controller; python3 /phase5/verify_collision_monitor.py
+    env:
+    - name: ROS_DOMAIN_ID
+      value: '85'
+    - name: RMW_IMPLEMENTATION
+      value: rmw_cyclonedds_cpp
+    - name: CYCLONEDDS_URI
+      value: file:///phase5/cyclonedds-phase5.xml
+    - name: ROS_LOG_DIR
+      value: /tmp/phase5-ros-logs
+    - name: PYTHONDONTWRITEBYTECODE
+      value: '1'
+    volumeMounts:
+    - name: source
+      mountPath: /phase5
+      readOnly: true
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: '1'
+        memory: 1Gi
+    securityContext:
+      runAsNonRoot: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      seccompProfile:
+        type: RuntimeDefault
+  volumes:
+  - name: source
+    configMap:
+      name: semantic-phase5-preflight

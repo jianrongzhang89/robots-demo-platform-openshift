@@ -1,0 +1,24 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: semantic-hotel-sim-phase2-pairer-qosdiag
+  namespace: semantic-navigation
+spec:
+  runPolicy: Serial
+  source:
+    binary: {}
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Containerfile.qosdiag
+  output:
+    to:
+      kind: ImageStreamTag
+      name: semantic-hotel-sim:phase2-pairer-qosdiag
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: "2"
+      memory: 3Gi

@@ -1,0 +1,60 @@
+{
+  "gate": "G3",
+  "frozen_at": "2026-10-31T18:38:56.455195+00:00",
+  "status": "PLAN",
+  "criteria": {
+    "independent_runs": 3,
+    "run_duration_s": 600,
+    "fresh_results_hz_min": 5,
+    "capture_result_p95_ms_max": 250,
+    "mask_depth_pairing_fraction_min": 0.95,
+    "wrong_pair_acceptance_max": 0,
+    "capture_costmap_p95_ms_max": 300,
+    "unexplained_healthy_publication_gaps_over_500ms_max": 0,
+    "validated_consumer_p95_ms_max": 250
+  },
+  "profiles": [
+    "stationary",
+    "bounded moving observation",
+    "bounded moving observation"
+  ],
+  "isolation": "Private ROS domains 190/191 and private Zenoh; diagnostic costmap observers only, no semantic navigation influence.",
+  "placement": {
+    "rendering": "ip-10-0-44-146.ec2.internal/A10G",
+    "adapter": "ip-10-0-53-174.ec2.internal/CPU",
+    "serving": "ip-10-0-55-175.ec2.internal/L40S"
+  },
+  "resources": {
+    "adapter": {
+      "requests": {
+        "cpu": "1",
+        "memory": "1Gi"
+      },
+      "limits": {
+        "cpu": "2",
+        "memory": "2Gi"
+      }
+    },
+    "server": "G1 unchanged: requests 3 CPU/12Gi, limits 6 CPU/24Gi, one GPU",
+    "costmap": "requests 1 CPU/1Gi, limits 3 CPU/3Gi",
+    "simulator": "requests 3 CPU/3Gi, limits 6 CPU/8Gi, one GPU"
+  },
+  "background_load": "0.5 CPU sidecar plus actual dual costmaps, bridges, RGB-D compressor, TF/odometry/lidar and existing cluster load",
+  "preflight": "Short diagnostic pilots may identify setup or performance issues. All attempts retained. No ten-minute run starts until pipeline and projection preflight pass.",
+  "retry_policy": "No failed measurements erased. Configuration changes require new qualification runs; no threshold relaxation. Infrastructure failures are labeled, diagnosed, and retained.",
+  "geometry": "Keep installed qualified semantic plugin; add observer-only odom fixed frame. Re-run installed plugin projection/clearing tests and real-world pause/reset/clear lifecycle; moving TF derives original odometry stamp, never arrival time.",
+  "model_identity": "../S2/g2-qualification-20261031/expected-identity.json",
+  "g2_accepted": true,
+  "acceptance_clarification": "Require p95 <=250ms at both publication and observer-validated mask/cloud pair; this is stricter than publication-only timing and is frozen before ten-minute runs.",
+  "final_tuning": {
+    "max_work_wait_ms": 60,
+    "dds_requested_receive_buffer_bytes": 4194304,
+    "node_rmem_max": 8388608,
+    "tuned_profile": "semantic-g3-adapter",
+    "scope": "Only CPU adapter worker; inherited openshift-node; no kernel boot arguments or MachineConfig."
+  },
+  "observer_validation": "Equivalent vector checks replace repeated row reductions; 729 finite/NaN/Inf/range combinations and 10 full-size randomized clouds matched original checks. Actual payload SHA-256 binding checked for each mask/cloud pair.",
+  "source_references": [
+    "https://cyclonedds.io/docs/cyclonedds/latest/config/config_file_reference.html#cyclonedds-domain-internal-socketreceivebuffersize"
+  ]
+}

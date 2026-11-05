@@ -1,0 +1,28 @@
+{
+ "event": "qualification-19 setup",
+ "date": "2026-11-02",
+ "preconditions": {
+  "S1": "PASS accepted",
+  "S2": "PASS accepted",
+  "S3": "PASS accepted",
+  "leftover_g4_or_fixture_resources": "none",
+  "pilot": "serving-transport-pilot-10 PASS (all five fault-stop modes at 0.3 m injection)",
+  "prior_attempt": "qualification-18 stopped on trial-03 (overload-r1) to the coincident-jitter tail (third occurrence at 30 Hz, fatal margin +3.5 ms against a 162 ms backend spike). The native-link instrumentation gap (import-time env read silently disabled enqueue logging) is fixed with lazy resolution; user approved continued re-running with disclosed odds (~10-20% per full-suite attempt from the two residual pinned-component tails)."
+ },
+ "candidate": "unchanged from qualification-18 plus the lazy instrumentation path resolution",
+ "environment": "adapter node ip-10-0-53-174 freed (hotel-sim at 0 replicas); keep hotel-sim at 0 while G4 runs",
+ "rendering_reservation": "deleted to free the A10G for the G4 fixture; run_g4_suite.py finally restores it from rendering-reservation-saved.json",
+ "proxy_certificate": {
+  "secret": "semantic-g4-proxy-tls",
+  "subject": "CN=localhost",
+  "notBefore": "Nov 2 19:06:15 2026 GMT",
+  "notAfter": "Nov 5 19:06:15 2026 GMT",
+  "sha256_fingerprint": "8B:1D:6B:B6:66:8B:D5:E3:D3:8B:FB:BB:4C:BC:11:25:90:B6:F5:D1:22:D1:39:A0:C4:3F:BD:E1:24:66:43:6C",
+  "key_material_retained": false
+ },
+ "sampler": {
+  "output": "serving-resources-qualification-19.jsonl",
+  "stop_file": "/tmp/g4-qualification-19-monitor-stop"
+ },
+ "command": "run_g4_suite.py --output-dir qualification-19 --reservation rendering-reservation-saved.json"
+}

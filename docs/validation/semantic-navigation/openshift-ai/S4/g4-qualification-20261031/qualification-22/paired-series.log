@@ -1,0 +1,27 @@
+{"passed": true, "evidence": "docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/qualification-22/paired-series/trial-runs/trial-000-off-nominal"}
+{"trial": "000-off-nominal", "completed": true}
+{"passed": true, "evidence": "docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/qualification-22/paired-series/trial-runs/trial-000-on-nominal"}
+{"trial": "000-on-nominal", "completed": true}
+{"passed": true, "evidence": "docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/qualification-22/paired-series/trial-runs/trial-001-off-nominal"}
+{"trial": "001-off-nominal", "completed": true}
+{"passed": true, "evidence": "docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/qualification-22/paired-series/trial-runs/trial-001-on-nominal"}
+{"trial": "001-on-nominal", "completed": true}
+{"passed": true, "evidence": "docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/qualification-22/paired-series/trial-runs/trial-002-off-nominal"}
+{"trial": "002-off-nominal", "completed": true}
+{"passed": true, "evidence": "docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/qualification-22/paired-series/trial-runs/trial-002-on-nominal"}
+{"trial": "002-on-nominal", "completed": true}
+{"passed": true, "evidence": "docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/qualification-22/paired-series/trial-runs/trial-003-off-nominal"}
+{"trial": "003-off-nominal", "completed": true}
+{"passed": true, "evidence": "docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/qualification-22/paired-series/trial-runs/trial-003-on-nominal"}
+{"trial": "003-on-nominal", "completed": true}
+{"passed": true, "evidence": "docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/qualification-22/paired-series/trial-runs/trial-004-off-nominal"}
+{"trial": "004-off-nominal", "completed": true}
+Traceback (most recent call last):
+  File "/Users/zhangj/devt/src/robots-demo-platform-openshift/scripts/semantic-navigation/run_phase5_native.py", line 912, in <module>
+    main()
+    ~~~~^^
+  File "/Users/zhangj/devt/src/robots-demo-platform-openshift/scripts/semantic-navigation/run_phase5_native.py", line 867, in main
+    raise RuntimeError("native fixture failed; retained evidence")
+RuntimeError: native fixture failed; retained evidence
+{"trial": "004-on-nominal", "completed": false}
+{"passed": false, "problems": ["off arm has 5 nominal trials; 20 required", "on arm has 5 nominal trials; 20 required", "on arm incomplete trials: ['004-on-nominal']"], "aggregate_hull_exposure_m": {"off": 7.017215696421978, "on": 0.0}}

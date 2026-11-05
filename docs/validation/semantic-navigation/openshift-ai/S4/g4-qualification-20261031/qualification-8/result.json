@@ -1,0 +1,40 @@
+{
+  "gate": "G4",
+  "status": "HOLD",
+  "accepted": false,
+  "stages": [
+    {
+      "stage": "serving-faults",
+      "passed": true,
+      "returncode": 0,
+      "evidence": "docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/qualification-8/serving-faults/summary.json"
+    },
+    {
+      "stage": "observation",
+      "passed": false,
+      "returncode": 1,
+      "evidence": "docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/qualification-8/observation/summary.json"
+    }
+  ],
+  "cleanup": [
+    {
+      "action": "remove G4 topology",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "action": "remove fault injector certificate",
+      "returncode": 0
+    },
+    {
+      "action": "restore rendering reservation",
+      "returncode": 0,
+      "stderr": ""
+    },
+    {
+      "action": "reservation Ready",
+      "returncode": 0
+    }
+  ]
+}

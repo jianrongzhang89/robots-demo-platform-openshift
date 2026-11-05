@@ -1,0 +1,93 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "case": "wrong_domain",
+      "passed": true,
+      "returncode": 2,
+      "stdout": "",
+      "stderr": "private fixture world and new console directory required\n"
+    },
+    {
+      "case": "wrong_transport",
+      "passed": true,
+      "returncode": 2,
+      "stdout": "",
+      "stderr": "private fixture world and new console directory required\n"
+    },
+    {
+      "case": "wrong_partition",
+      "passed": true,
+      "returncode": 2,
+      "stdout": "",
+      "stderr": "private fixture world and new console directory required\n"
+    },
+    {
+      "case": "missing_world",
+      "passed": true,
+      "returncode": 2,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "case": "invalid_console_path",
+      "passed": true,
+      "returncode": 2,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "case": "existing_console_path",
+      "passed": true,
+      "returncode": 2,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "case": "existing_log_preserved",
+      "passed": true
+    },
+    {
+      "case": "valid_server_stays_alive",
+      "passed": true
+    },
+    {
+      "case": "non_stop_request_rejected",
+      "passed": true,
+      "reply": {
+        "passed": false,
+        "returncode": 0,
+        "stdout": "\n",
+        "stderr": ""
+      }
+    },
+    {
+      "case": "bounded_serialized_shutdown",
+      "passed": true,
+      "returncode": 0,
+      "reply": {
+        "passed": true,
+        "returncode": 0,
+        "stdout": "data: true\n\n",
+        "stderr": ""
+      },
+      "lifecycle": {
+        "passed": true,
+        "marker_positions": {
+          "stop_begin": 813,
+          "stop_end": 842,
+          "stop_worker_joined": 909,
+          "destructor_begin": 946,
+          "destructor_end": 981
+        },
+        "run_returned_position": 869
+      }
+    },
+    {
+      "case": "no_world_recording",
+      "passed": true,
+      "recording_files": [],
+      "recording_libraries": []
+    }
+  ]
+}

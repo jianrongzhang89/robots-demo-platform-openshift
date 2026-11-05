@@ -1,0 +1,12 @@
+cmake_minimum_required(VERSION 3.16)
+project(phase5_console_server)
+set(CMAKE_CXX_STANDARD 17)
+find_package(gz-sim8 REQUIRED)
+find_package(gz-common5 REQUIRED)
+find_package(gz-transport13 REQUIRED)
+find_package(gz-msgs10 REQUIRED)
+add_executable(phase5_console_server console_server.cc)
+target_link_libraries(phase5_console_server gz-sim8::gz-sim8 gz-common5::gz-common5
+  gz-transport13::gz-transport13 gz-msgs10::gz-msgs10)
+target_compile_options(phase5_console_server PRIVATE -Wall -Wextra -Werror)
+install(TARGETS phase5_console_server RUNTIME DESTINATION bin)

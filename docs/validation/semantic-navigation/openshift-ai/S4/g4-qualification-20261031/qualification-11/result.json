@@ -1,0 +1,9 @@
+{
+ "gate": "G4",
+ "status": "INTERRUPTED",
+ "accepted": false,
+ "event": "qualification-11 interrupted by a workstation session restart (November 2)",
+ "detail": "The suite runner and serving sampler were cancelled when the controlling session restarted. The first serving trial (trial-01-auth-r1) had already failed at its own preflight (an oc get configmap command returned non-zero during the same window) before any fixture pod was created — no trial started, nothing armed, no fault injected. The suite's finally cleanup did not run; the orphaned G4 topology and proxy secret were removed and the A10G rendering reservation restored manually (g4_topology down, secret delete, create -f rendering-reservation-saved.json, wait Ready — all succeeded).",
+ "attempts": 0,
+ "follow_up": "qualification-12 restarts the suite fresh in a new output directory with a new certificate and sampler stop file; qualification-11 is retained as an interruption record only."
+}

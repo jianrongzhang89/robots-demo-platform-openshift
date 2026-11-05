@@ -1,0 +1,19 @@
+{
+  "qualification": "offline optimistic command-authority coverage; NOT actuator or publisher qualification",
+  "window": "first eligible checked command to last eligible checked command before terminal raw zero",
+  "terminal_zero_source_wall": 1792200239722319750,
+  "checked_before_terminal_zero": 1244,
+  "eligible_checked_before_terminal_zero": 1235,
+  "source_lifetime_ms": 100.0,
+  "uncertainty_ms": 2.0,
+  "gaps": [
+    {
+      "from_wall": 1792200237871233483,
+      "to_wall": 1792200237874006810,
+      "duration_ms": 2.773327
+    }
+  ],
+  "maximum_gap_ms": 2.773327,
+  "continuous_coverage": false,
+  "limitation": "uses original wall capture bounds; omits later supervisor/lease scheduling, so coverage is optimistic"
+}

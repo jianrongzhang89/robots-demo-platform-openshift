@@ -1,0 +1,161 @@
+{
+  "apiVersion": "build.openshift.io/v1",
+  "kind": "Build",
+  "metadata": {
+    "annotations": {
+      "openshift.io/build-config.name": "semantic-safety-console-phase6",
+      "openshift.io/build.number": "12",
+      "openshift.io/build.pod-name": "semantic-safety-console-phase6-12-build"
+    },
+    "creationTimestamp": "2026-10-28T04:25:56Z",
+    "generation": 2,
+    "labels": {
+      "buildconfig": "semantic-safety-console-phase6",
+      "openshift.io/build-config.name": "semantic-safety-console-phase6",
+      "openshift.io/build.start-policy": "Serial"
+    },
+    "name": "semantic-safety-console-phase6-12",
+    "namespace": "semantic-navigation",
+    "ownerReferences": [
+      {
+        "apiVersion": "build.openshift.io/v1",
+        "controller": true,
+        "kind": "BuildConfig",
+        "name": "semantic-safety-console-phase6",
+        "uid": "db8b50ae-f77f-45d0-b508-1599869d8227"
+      }
+    ],
+    "resourceVersion": "478421108",
+    "uid": "0252e84e-7613-41a3-9888-6d17bae4ea4b"
+  },
+  "spec": {
+    "nodeSelector": null,
+    "output": {
+      "pushSecret": {
+        "name": "builder-dockercfg-htt4p"
+      },
+      "to": {
+        "kind": "ImageStreamTag",
+        "name": "semantic-safety:phase6-console-candidate"
+      }
+    },
+    "postCommit": {},
+    "resources": {
+      "limits": {
+        "cpu": "4",
+        "memory": "8Gi"
+      },
+      "requests": {
+        "cpu": "2",
+        "memory": "4Gi"
+      }
+    },
+    "revision": {
+      "git": {
+        "author": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "commit": "14fa27d9b2f8a9d3243802e0519346ef6e15505c",
+        "committer": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "message": "Set running before any watchdog thread starts (series-11 trial 000-off)\n\nThe first trial on the actually-rebuilt watchdog failed with the armed\nsession expiring at its 5 s first-command timeout and\nreceived_packets=0 on every status row: the lease listener's\nwhile(running) entry check saw running==false and exited instantly \u2014\na pre-existing startup race that the sender thread's creation between\nthe listener's start and the flag widened enough to flip. running is\nnow set before any thread starts. Series-11's failed trial retained."
+      },
+      "type": "Git"
+    },
+    "serviceAccount": "builder",
+    "source": {
+      "binary": {},
+      "type": "Binary"
+    },
+    "strategy": {
+      "dockerStrategy": {
+        "dockerfilePath": "Containerfile.phase6-console"
+      },
+      "type": "Docker"
+    }
+  },
+  "status": {
+    "completionTimestamp": "2026-10-28T04:29:14Z",
+    "conditions": [
+      {
+        "lastTransitionTime": "2026-10-28T04:25:56Z",
+        "lastUpdateTime": "2026-10-28T04:25:56Z",
+        "status": "False",
+        "type": "New"
+      },
+      {
+        "lastTransitionTime": "2026-10-28T04:25:57Z",
+        "lastUpdateTime": "2026-10-28T04:25:57Z",
+        "status": "False",
+        "type": "Pending"
+      },
+      {
+        "lastTransitionTime": "2026-10-28T04:29:14Z",
+        "lastUpdateTime": "2026-10-28T04:29:14Z",
+        "status": "False",
+        "type": "Running"
+      },
+      {
+        "lastTransitionTime": "2026-10-28T04:29:14Z",
+        "lastUpdateTime": "2026-10-28T04:29:14Z",
+        "status": "True",
+        "type": "Complete"
+      }
+    ],
+    "config": {
+      "kind": "BuildConfig",
+      "name": "semantic-safety-console-phase6",
+      "namespace": "semantic-navigation"
+    },
+    "duration": 198000000000,
+    "output": {
+      "to": {
+        "imageDigest": "sha256:f62bf0c423baa11855bbe2f019135805be6abcfa75059f7c1f56a60733aa24c2"
+      }
+    },
+    "outputDockerImageReference": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety:phase6-console-candidate",
+    "phase": "Complete",
+    "stages": [
+      {
+        "durationMilliseconds": 114552,
+        "name": "PullImages",
+        "startTime": "2026-10-28T04:25:59Z",
+        "steps": [
+          {
+            "durationMilliseconds": 114552,
+            "name": "PullBaseImage",
+            "startTime": "2026-10-28T04:25:59Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 74537,
+        "name": "Build",
+        "startTime": "2026-10-28T04:27:54Z",
+        "steps": [
+          {
+            "durationMilliseconds": 74537,
+            "name": "DockerBuild",
+            "startTime": "2026-10-28T04:27:54Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 2900,
+        "name": "PushImage",
+        "startTime": "2026-10-28T04:29:09Z",
+        "steps": [
+          {
+            "durationMilliseconds": 2900,
+            "name": "PushDockerImage",
+            "startTime": "2026-10-28T04:29:09Z"
+          }
+        ]
+      }
+    ],
+    "startTimestamp": "2026-10-28T04:25:56Z"
+  }
+}

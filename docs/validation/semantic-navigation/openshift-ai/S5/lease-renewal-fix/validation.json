@@ -1,0 +1,24 @@
+{
+  "local_safety_tests": 237,
+  "before_regressions_failed": 4,
+  "after_regressions_passed": 4,
+  "old_source": "git HEAD versions of safety_core, guarded_coordinator, priority_pump; unchanged from pre-fix versions",
+  "tests": [
+    "test_safety_core.SafetyGateTests.test_same_source_copy_preserves_grace_and_remains_native_admissible",
+    "test_guarded_coordinator.CoordinatorTests.test_checked_applies_proven_grace_before_forwarding_short_lease",
+    "test_guarded_coordinator.CoordinatorTests.test_no_newer_source_revokes_instead_of_sending_inadmissible_lease",
+    "test_priority_pump.PriorityPumpTests.test_pending_renewal_precedes_slow_observers_and_survives_native_deadline"
+  ],
+  "sha256": {
+    "safety_core.py": "16e843f4a9d4bed46c3d695a0466743656ee052cf5b00e2e8334b7c9d80116e9",
+    "guarded_coordinator.py": "9536e7e5181f41e324d60feb540180cfe859557174355dbfdd4b6b96d975c31b",
+    "priority_pump.py": "67e05c14369a847af1b26b91e33955b27b646de5ae55c94894b131c55e107a15",
+    "hotel_guard_adapter.py": "8e811b381e1a88224bbfd9ebac96ad728b6da5228e1fa14d539fca5607b5e85e",
+    "verify_hotel_stack.py": "1479facfb2c813af1dbb0974ac9058bb0e9b7f01b14480ec145f9af266d73c35",
+    "test_safety_core.py": "2caa7fa4b015ee11311f9fe2203c19285034ec21fb55be36356ab60f6790f360",
+    "test_guarded_coordinator.py": "b08ffcef2a1b0f9121c8d149f614f4113149dd561f92818ad0a1b84209cb43b6",
+    "test_priority_pump.py": "007ef09d5e888c938ae7b393fe1367cad7f175406cf9c5f1701cb30480617c12"
+  },
+  "native_guard_modified": false,
+  "live_navigation": "pending run7 explicit operator release"
+}

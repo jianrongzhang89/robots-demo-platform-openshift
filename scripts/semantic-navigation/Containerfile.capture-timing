@@ -1,0 +1,21 @@
+FROM image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:c01a04605c5400cf910738e0337c8f884a366bc273f5b68d8d36e34976848f1f
+USER 0
+COPY SemanticCaptureTrace.hh gz-capture-trace.patch /tmp/capture-build/
+# Recompile only the RGB-D component against the exact installed ABI. The
+# unmodified core/camera/rendering libraries and the original sensor remain.
+RUN git clone https://github.com/gazebosim/gz-sensors.git /tmp/capture-build/gz-sensors \
+    && cd /tmp/capture-build/gz-sensors \
+    && git checkout 9348f9fe8a11b9d50381819f51e17e136aedab8a \
+    && patch -p1 < /tmp/capture-build/gz-capture-trace.patch \
+    && mkdir -p /opt/semantic-navigation/capture-lib \
+    && g++ -std=c++17 -O2 -fPIC -shared -DRgbdCameraSensor_EXPORTS \
+        -I/tmp/capture-build -Isrc src/RgbdCameraSensor.cc \
+        $(pkg-config --cflags --libs gz-sensors8-camera gz-sensors8-rendering gz-common5-profiler) \
+        -lgz-sensors8-camera -lgz-sensors8-rendering \
+        -Wl,-z,defs -Wl,-soname,libgz-sensors8-rgbd_camera.so.8 \
+        -o /opt/semantic-navigation/capture-lib/libgz-sensors8-rgbd_camera.so.8 \
+    && ldd /opt/semantic-navigation/capture-lib/libgz-sensors8-rgbd_camera.so.8 \
+    && rm -rf /tmp/capture-build
+COPY entrypoint-phase1.sh /entrypoint-semantic-navigation-phase1.sh
+COPY camera_compressor.py rgbd_pairing.py camera_qos.py /opt/semantic-navigation/
+COPY rgbd-camera-timing-bridge.yaml /opt/ros2-demo/config/semantic-camera-bridge.yaml

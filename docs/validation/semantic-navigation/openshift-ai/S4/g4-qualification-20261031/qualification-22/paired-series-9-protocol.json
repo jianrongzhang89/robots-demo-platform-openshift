@@ -1,0 +1,14 @@
+{
+ "event": "standalone paired-series re-run 9 (November 3)",
+ "context": "Series 8 stopped on its first trial to the same workstation DNS outage as series 7 - the affected trial actually passed (retained log: native_suite_finished with every returncode 0), but the outage spanned the retrieval window. The user cleaned the /etc/hosts glue, DNS resolves correctly again (100.48.161.35, verified stable), and the cluster is reachable; the user chose plain DNS over pinning.",
+ "setup": {
+  "topology": "G4 topology up from series 8 (direct endpoint); the series' per-trial recycle manages it; reservation remains deleted",
+  "series_output": "qualification-22/paired-series-9",
+  "phase5_evidence": "qualification-22/served-phase5-qualification.json",
+  "sampler": {
+   "output": "serving-resources-paired-series-9.jsonl",
+   "stop_file": "/tmp/g4-paired-series-9-monitor-stop"
+  }
+ },
+ "command": "run_phase6_series.py --output-dir qualification-22/paired-series-9 (same arguments as series 2-8)"
+}

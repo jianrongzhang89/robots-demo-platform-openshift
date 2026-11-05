@@ -1,0 +1,54 @@
+{"event": "measurement_started", "timestamp": "2026-10-31T18:38:23.005127862Z"}
+{"event": "progress", "records": 889, "elapsed_s": 29.38893837499927}
+{"event": "progress", "records": 1801, "elapsed_s": 59.40037512500567}
+{
+  "collected_at": "2026-10-31T18:39:13.445826+00:00",
+  "duration_s": 60.10116874999949,
+  "records": 1820,
+  "period_ms": {
+    "p95": 36.537859149999996,
+    "max": 44.295491
+  },
+  "maps": {
+    "global_semantic": {
+      "applied_unique": 351,
+      "applied_rate_hz": 5.840152650941634,
+      "capture_to_costmap_ms": {
+        "p50": 207.79872,
+        "p95": 263.416122,
+        "max": 274.964851
+      },
+      "accepted_delta": 350,
+      "rejected_delta": 0,
+      "evicted_delta": 0,
+      "marked_cells_min": 269,
+      "marked_cells_max": 279,
+      "pending_max": 1,
+      "cells_max": 279,
+      "not_current_updates": 0,
+      "epoch_changes": 0,
+      "update_ms_p95": 0.51498685
+    },
+    "local_semantic": {
+      "applied_unique": 351,
+      "applied_rate_hz": 5.840152650941634,
+      "capture_to_costmap_ms": {
+        "p50": 208.360368,
+        "p95": 263.9980335,
+        "max": 275.919125
+      },
+      "accepted_delta": 350,
+      "rejected_delta": 0,
+      "evicted_delta": 0,
+      "marked_cells_min": 143,
+      "marked_cells_max": 145,
+      "pending_max": 1,
+      "cells_max": 145,
+      "not_current_updates": 0,
+      "epoch_changes": 0,
+      "update_ms_p95": 0.12790455
+    }
+  },
+  "raw_sha256": "c5c8250787a8d12cedc62da116cd4c90aeb6c218901c9c33c6096a5a976b2728",
+  "nominal_timing_pass": true
+}

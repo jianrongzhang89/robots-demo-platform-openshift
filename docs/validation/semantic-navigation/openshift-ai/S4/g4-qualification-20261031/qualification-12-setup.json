@@ -1,0 +1,28 @@
+{
+ "event": "qualification-12 setup",
+ "date": "2026-11-02",
+ "preconditions": {
+  "S1": "PASS accepted",
+  "S2": "PASS accepted",
+  "S3": "PASS accepted",
+  "leftover_g4_or_fixture_resources": "none",
+  "pilot": "serving-transport-pilot-9 PASS (wrong_version: restore_flow_verified attempt 1)",
+  "prior_attempt": "qualification-11 INTERRUPTED by a workstation session restart before any trial started (nothing armed); orphaned topology cleaned up manually and reservation restored; see qualification-11/result.json"
+ },
+ "candidate": "30 simulation-Hz camera cadence; zenoh bridge CPU limits 1 core; SAM3-readiness bound 120 s; sam3_readiness_death ladder signature; ordered restore with up to three verified client replacements; wait-ownership cap 2.5 s wall; adapter and router evidence collection",
+ "environment": "adapter node ip-10-0-53-174 freed (hotel-sim at 0 replicas); keep hotel-sim at 0 while G4 runs",
+ "rendering_reservation": "deleted to free the A10G for the G4 fixture; run_g4_suite.py finally restores it from rendering-reservation-saved.json",
+ "proxy_certificate": {
+  "secret": "semantic-g4-proxy-tls",
+  "subject": "CN=localhost",
+  "notBefore": "Nov 2 14:04:13 2026 GMT",
+  "notAfter": "Nov 5 14:04:13 2026 GMT",
+  "sha256_fingerprint": "D0:6A:35:34:2B:DA:B3:84:DE:D6:1E:FD:C6:90:5F:8C:58:2B:03:B9:F3:AA:DE:B9:D0:4F:F9:B2:44:48:BF:68",
+  "key_material_retained": false
+ },
+ "sampler": {
+  "output": "serving-resources-qualification-12.jsonl",
+  "stop_file": "/tmp/g4-qualification-12-monitor-stop"
+ },
+ "command": "run_g4_suite.py --output-dir qualification-12 --reservation rendering-reservation-saved.json"
+}

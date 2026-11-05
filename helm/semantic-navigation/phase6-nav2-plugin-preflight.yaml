@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: semantic-phase6-nav2-plugin-preflight-7
+  namespace: semantic-navigation
+  labels:
+    app: semantic-phase6-nav2-plugin-preflight
+spec:
+  restartPolicy: Never
+  nodeSelector:
+    kubernetes.io/hostname: ip-10-0-38-113.ec2.internal
+  tolerations:
+  - key: cpu-taint
+    operator: Equal
+    value: 'true'
+    effect: NoSchedule
+  containers:
+  - name: nav2-plugin-preflight
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:578f86b69f11b064887028af2f347aaac2d72682bfa934db59fc3ab231933a90
+    imagePullPolicy: Always
+    command:
+    - /bin/bash
+    args:
+    - /phase6-nav2/run_nav2_plugin_preflight.sh
+    env:
+    - name: ROS_DOMAIN_ID
+      value: '86'
+    - name: RMW_IMPLEMENTATION
+      value: rmw_cyclonedds_cpp
+    - name: ROS_DISTRO
+      value: jazzy
+    - name: HOME
+      value: /tmp/phase6-nav2-home
+    - name: ROS_LOG_DIR
+      value: /tmp/phase6-nav2-logs
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: '1'
+        memory: 2Gi
+    volumeMounts:
+    - name: params
+      mountPath: /phase6-nav2
+      readOnly: true
+  volumes:
+  - name: params
+    configMap:
+      name: semantic-phase6-nav2-preflight-v6

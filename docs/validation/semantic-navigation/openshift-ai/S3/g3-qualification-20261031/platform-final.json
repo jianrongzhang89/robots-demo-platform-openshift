@@ -1,0 +1,371 @@
+{
+    "apiVersion": "datasciencecluster.opendatahub.io/v2",
+    "kind": "DataScienceCluster",
+    "metadata": {
+        "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"datasciencecluster.opendatahub.io/v2\",\"kind\":\"DataScienceCluster\",\"metadata\":{\"annotations\":{},\"name\":\"default-dsc\"},\"spec\":{\"components\":{\"dashboard\":{\"managementState\":\"Managed\"},\"kserve\":{\"managementState\":\"Managed\",\"modelsAsService\":{\"managementState\":\"Managed\"}},\"llamastackoperator\":{\"managementState\":\"Managed\"}}}}\n"
+        },
+        "creationTimestamp": "2026-05-28T05:09:25Z",
+        "generation": 10,
+        "labels": {
+            "app.kubernetes.io/name": "datasciencecluster"
+        },
+        "name": "default-dsc",
+        "resourceVersion": "494913452",
+        "uid": "49a5f2bb-a166-43b6-94c9-7ea579621c74"
+    },
+    "spec": {
+        "components": {
+            "aipipelines": {
+                "managementState": "Managed"
+            },
+            "dashboard": {
+                "managementState": "Managed"
+            },
+            "feastoperator": {
+                "managementState": "Managed"
+            },
+            "kserve": {
+                "managementState": "Managed",
+                "modelsAsService": {
+                    "managementState": "Managed"
+                },
+                "rawDeploymentServiceConfig": "Headed"
+            },
+            "kueue": {
+                "defaultClusterQueueName": "default",
+                "defaultLocalQueueName": "default",
+                "managementState": "Unmanaged"
+            },
+            "llamastackoperator": {
+                "managementState": "Managed"
+            },
+            "mlflowoperator": {
+                "managementState": "Managed"
+            },
+            "modelregistry": {
+                "managementState": "Managed",
+                "registriesNamespace": "rhoai-model-registries"
+            },
+            "ray": {
+                "managementState": "Managed"
+            },
+            "sparkoperator": {
+                "managementState": "Removed"
+            },
+            "trainer": {
+                "managementState": "Managed"
+            },
+            "trainingoperator": {
+                "managementState": "Managed"
+            },
+            "trustyai": {
+                "managementState": "Managed",
+                "mcpGuardrailsMode": false
+            },
+            "workbenches": {
+                "managementState": "Managed",
+                "workbenchNamespace": "rhods-notebooks"
+            }
+        }
+    },
+    "status": {
+        "components": {
+            "aipipelines": {
+                "managementState": "Managed",
+                "releases": [
+                    {
+                        "name": "Kubeflow Pipelines",
+                        "repoUrl": "https://github.com/kubeflow/pipelines",
+                        "version": "2.16.0"
+                    }
+                ]
+            },
+            "dashboard": {
+                "managementState": "Managed"
+            },
+            "feastoperator": {
+                "managementState": "Managed",
+                "releases": [
+                    {
+                        "name": "Feast",
+                        "repoUrl": "https://github.com/feast-dev/feast",
+                        "version": "0.62.0"
+                    }
+                ]
+            },
+            "kserve": {
+                "managementState": "Managed",
+                "releases": [
+                    {
+                        "name": "KServe",
+                        "repoUrl": "https://github.com/kserve/kserve/",
+                        "version": "v0.17.0"
+                    },
+                    {
+                        "name": "vLLM",
+                        "repoUrl": "https://github.com/vllm-project/vllm",
+                        "version": "v0.18.0"
+                    },
+                    {
+                        "name": "llm-d-inference-scheduler",
+                        "repoUrl": "https://github.com/llm-d/llm-d-inference-scheduler",
+                        "version": "v0.7.1"
+                    },
+                    {
+                        "name": "llm-d-workload-variant-autoscaler",
+                        "repoUrl": "https://github.com/llm-d/llm-d-workload-variant-autoscaler",
+                        "version": "v0.6.0"
+                    }
+                ]
+            },
+            "kueue": {
+                "managementState": "Unmanaged"
+            },
+            "llamastackoperator": {
+                "managementState": "Managed",
+                "releases": [
+                    {
+                        "name": "Llama Stack",
+                        "repoUrl": "https://github.com/opendatahub-io/llama-stack-distribution",
+                        "version": "v0.7.1"
+                    },
+                    {
+                        "name": "Llama Stack Operator",
+                        "repoUrl": "https://github.com/opendatahub-io/llama-stack-k8s-operator",
+                        "version": "v0.9.0"
+                    }
+                ]
+            },
+            "mlflowoperator": {
+                "managementState": "Managed",
+                "releases": [
+                    {
+                        "name": "MLflow",
+                        "repoUrl": "https://github.com/mlflow/mlflow",
+                        "version": "v3.10.1"
+                    }
+                ]
+            },
+            "modelregistry": {
+                "managementState": "Managed",
+                "registriesNamespace": "rhoai-model-registries",
+                "releases": [
+                    {
+                        "name": "Kubeflow Model Registry",
+                        "repoUrl": "https://github.com/kubeflow/model-registry",
+                        "version": "latest"
+                    },
+                    {
+                        "name": "Open Data Hub Model Registry Operator",
+                        "repoUrl": "https://github.com/opendatahub-io/model-registry-operator",
+                        "version": "latest"
+                    }
+                ]
+            },
+            "ray": {
+                "managementState": "Managed",
+                "releases": [
+                    {
+                        "name": "KubeRay",
+                        "repoUrl": "https://github.com/ray-project/kuberay",
+                        "version": "1.4.2"
+                    }
+                ]
+            },
+            "sparkoperator": {
+                "managementState": "Removed"
+            },
+            "trainer": {
+                "managementState": "Managed",
+                "releases": [
+                    {
+                        "name": "Kubeflow Trainer",
+                        "repoUrl": "https://github.com/kubeflow/trainer",
+                        "version": "2.1.0"
+                    }
+                ]
+            },
+            "trainingoperator": {
+                "managementState": "Managed",
+                "releases": [
+                    {
+                        "name": "Kubeflow Training Operator",
+                        "repoUrl": "https://github.com/kubeflow/trainer",
+                        "version": "1.9.0"
+                    }
+                ]
+            },
+            "trustyai": {
+                "managementState": "Managed",
+                "releases": [
+                    {
+                        "name": "TrustyAI operator",
+                        "repoUrl": "https://github.com/trustyai-explainability/trustyai-service-operator",
+                        "version": "v1.37.0"
+                    },
+                    {
+                        "name": "TrustyAI service",
+                        "repoUrl": "https://github.com/trustyai-explainability/trustyai-explainability",
+                        "version": "v0.28.0"
+                    },
+                    {
+                        "name": "TrustyAI LMEval driver",
+                        "repoUrl": "https://github.com/trustyai-explainability/trustyai-service-operator",
+                        "version": "v1.37.0"
+                    },
+                    {
+                        "name": "TrustyAI LMEval job",
+                        "repoUrl": "https://github.com/EleutherAI/lm-evaluation-harness",
+                        "version": "v0.4.8"
+                    },
+                    {
+                        "name": "TrustyAI Guardrails orchestrator",
+                        "repoUrl": "https://github.com/foundation-model-stack/fms-guardrails-orchestrator",
+                        "version": "0.9.4"
+                    },
+                    {
+                        "name": "TrustyAI builtin detectors",
+                        "repoUrl": "https://github.com/trustyai-explainability/guardrails-regex-detector",
+                        "version": "v0.2.0"
+                    },
+                    {
+                        "name": "TrustyAI sidecar gateway",
+                        "repoUrl": "https://github.com/trustyai-explainability/vllm-orchestrator-gateway",
+                        "version": "v0.2.1"
+                    }
+                ]
+            },
+            "workbenches": {
+                "managementState": "Managed",
+                "releases": [
+                    {
+                        "name": "Kubeflow Notebook Controller",
+                        "repoUrl": "https://github.com/kubeflow/kubeflow",
+                        "version": "1.10.0"
+                    }
+                ],
+                "workbenchNamespace": "rhods-notebooks"
+            }
+        },
+        "conditions": [
+            {
+                "lastTransitionTime": "2026-10-31T19:16:45Z",
+                "status": "True",
+                "type": "Ready"
+            },
+            {
+                "lastTransitionTime": "2026-10-31T19:16:45Z",
+                "observedGeneration": 10,
+                "status": "True",
+                "type": "ProvisioningSucceeded"
+            },
+            {
+                "lastTransitionTime": "2026-10-31T19:16:45Z",
+                "status": "True",
+                "type": "ComponentsReady"
+            },
+            {
+                "lastTransitionTime": "2026-10-31T19:16:45Z",
+                "status": "True",
+                "type": "AIPipelinesReady"
+            },
+            {
+                "lastTransitionTime": "2026-10-31T19:16:45Z",
+                "status": "True",
+                "type": "DashboardReady"
+            },
+            {
+                "lastTransitionTime": "2026-10-31T19:16:45Z",
+                "status": "True",
+                "type": "FeastOperatorReady"
+            },
+            {
+                "lastTransitionTime": "2026-10-31T19:16:45Z",
+                "status": "True",
+                "type": "KserveLLMInferenceServiceDependencies"
+            },
+            {
+                "lastTransitionTime": "2026-10-31T19:16:45Z",
+                "status": "True",
+                "type": "KserveLLMInferenceServiceWideEPDependencies"
+            },
+            {
+                "lastTransitionTime": "2026-10-31T19:16:45Z",
+                "status": "True",
+                "type": "KserveReady"
+            },
+            {
+                "lastTransitionTime": "2026-10-31T19:16:45Z",
+                "status": "True",
+                "type": "KueueReady"
+            },
+            {
+                "lastTransitionTime": "2026-10-31T19:16:45Z",
+                "status": "True",
+                "type": "LlamaStackOperatorReady"
+            },
+            {
+                "lastTransitionTime": "2026-10-31T19:16:45Z",
+                "status": "True",
+                "type": "MLflowOperatorReady"
+            },
+            {
+                "lastTransitionTime": "2026-10-31T19:16:45Z",
+                "status": "True",
+                "type": "ModelControllerReady"
+            },
+            {
+                "lastTransitionTime": "2026-10-31T19:16:45Z",
+                "status": "True",
+                "type": "ModelRegistryReady"
+            },
+            {
+                "lastTransitionTime": "2026-10-31T19:16:45Z",
+                "message": "MaaS platform manifests applied and maas-api deployment is available",
+                "reason": "Reconciled",
+                "status": "True",
+                "type": "ModelsAsServiceReady"
+            },
+            {
+                "lastTransitionTime": "2026-10-31T19:16:45Z",
+                "status": "True",
+                "type": "RayReady"
+            },
+            {
+                "lastTransitionTime": "2026-10-31T19:16:45Z",
+                "message": "Component ManagementState is set to Removed",
+                "reason": "Removed",
+                "severity": "Info",
+                "status": "False",
+                "type": "SparkOperatorReady"
+            },
+            {
+                "lastTransitionTime": "2026-10-31T19:16:45Z",
+                "status": "True",
+                "type": "TrainerReady"
+            },
+            {
+                "lastTransitionTime": "2026-10-31T19:16:45Z",
+                "status": "True",
+                "type": "TrainingOperatorReady"
+            },
+            {
+                "lastTransitionTime": "2026-10-31T19:16:45Z",
+                "status": "True",
+                "type": "TrustyAIReady"
+            },
+            {
+                "lastTransitionTime": "2026-10-31T19:16:45Z",
+                "status": "True",
+                "type": "WorkbenchesReady"
+            }
+        ],
+        "observedGeneration": 10,
+        "phase": "Ready",
+        "release": {
+            "name": "OpenShift AI Self-Managed",
+            "version": "3.4.2"
+        }
+    }
+}

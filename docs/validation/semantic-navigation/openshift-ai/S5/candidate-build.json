@@ -1,0 +1,87 @@
+{
+  "build": "semantic-model-server-g5-1",
+  "phase": "Complete",
+  "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:af5cb7325f08fd137380d488745cba3a229857cb57d059d31befce93e25246c9",
+  "baseline_shared_code_matches": true,
+  "status": {
+    "completionTimestamp": "2026-11-04T14:06:03Z",
+    "conditions": [
+      {
+        "lastTransitionTime": "2026-11-04T14:01:36Z",
+        "lastUpdateTime": "2026-11-04T14:01:36Z",
+        "status": "False",
+        "type": "New"
+      },
+      {
+        "lastTransitionTime": "2026-11-04T14:01:38Z",
+        "lastUpdateTime": "2026-11-04T14:01:38Z",
+        "status": "False",
+        "type": "Pending"
+      },
+      {
+        "lastTransitionTime": "2026-11-04T14:06:03Z",
+        "lastUpdateTime": "2026-11-04T14:06:03Z",
+        "status": "False",
+        "type": "Running"
+      },
+      {
+        "lastTransitionTime": "2026-11-04T14:06:03Z",
+        "lastUpdateTime": "2026-11-04T14:06:03Z",
+        "status": "True",
+        "type": "Complete"
+      }
+    ],
+    "config": {
+      "kind": "BuildConfig",
+      "name": "semantic-model-server-g5",
+      "namespace": "semantic-navigation"
+    },
+    "duration": 267000000000,
+    "output": {
+      "to": {
+        "imageDigest": "sha256:af5cb7325f08fd137380d488745cba3a229857cb57d059d31befce93e25246c9"
+      }
+    },
+    "outputDockerImageReference": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server:g5",
+    "phase": "Complete",
+    "stages": [
+      {
+        "durationMilliseconds": 243275,
+        "name": "PullImages",
+        "startTime": "2026-11-04T14:01:40Z",
+        "steps": [
+          {
+            "durationMilliseconds": 243275,
+            "name": "PullBaseImage",
+            "startTime": "2026-11-04T14:01:40Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 14892,
+        "name": "Build",
+        "startTime": "2026-11-04T14:05:43Z",
+        "steps": [
+          {
+            "durationMilliseconds": 14892,
+            "name": "DockerBuild",
+            "startTime": "2026-11-04T14:05:43Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 2615,
+        "name": "PushImage",
+        "startTime": "2026-11-04T14:05:58Z",
+        "steps": [
+          {
+            "durationMilliseconds": 2615,
+            "name": "PushDockerImage",
+            "startTime": "2026-11-04T14:05:58Z"
+          }
+        ]
+      }
+    ],
+    "startTimestamp": "2026-11-04T14:01:36Z"
+  }
+}

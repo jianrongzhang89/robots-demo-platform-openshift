@@ -1,0 +1,279 @@
+{
+  "counts": {
+    "cloud": 105,
+    "duplicates": 0,
+    "invalid": 0,
+    "mask": 105,
+    "matched": 105,
+    "out_of_order": 0,
+    "ready_false": 0,
+    "ready_true": 60,
+    "source_rgb": 150
+  },
+  "duration_s": 15.00003417301923,
+  "final_state": {
+    "labels": {
+      "active_labels": [
+        0,
+        2
+      ],
+      "generation": 1,
+      "labels": {
+        "0": "unobserved",
+        "1": "traversable",
+        "2": "avoid_target"
+      },
+      "policy": "avoid-target/v1",
+      "prompt": "red mat"
+    },
+    "ready": true,
+    "status": {
+      "confidence_threshold": 0.5,
+      "emitted_results": 107,
+      "input_queue_depths": {
+        "camera_info": 1,
+        "depth": 0,
+        "rgb": 0
+      },
+      "input_queue_drops": 0,
+      "last_result": {
+        "capture": {
+          "frame_id": "camera_color_optical_frame",
+          "stamp_ns": 1104100000000
+        },
+        "identity": {
+          "epoch": "0e19e0b6-2eed-4283-928d-cf1db7727f2a",
+          "generation": 1,
+          "request_id": "28d28ed0-26ee-4415-9e8b-61e9efcee6c7",
+          "robot": "robot_1",
+          "sequence": 255,
+          "stream": "camera/color"
+        },
+        "receiver_processing_age_ms": 146.9155140221119,
+        "result_wall_ns": 1792164991503664600
+      },
+      "last_valid_result_age_ms": 33.84,
+      "model": "facebook/sam3-original",
+      "model_revision": "3c879f39826c281e95690f02c7821c4de09afae7",
+      "paired_triplets": 256,
+      "policy": "avoid-target/v1",
+      "policy_generation": 1,
+      "prompt": "red mat",
+      "ready": true,
+      "reason": null,
+      "state": "ready",
+      "stream_epoch": "0e19e0b6-2eed-4283-928d-cf1db7727f2a",
+      "timestamp_discards": {
+        "depth": 1,
+        "info": 0,
+        "rgb": 1
+      },
+      "versions": {
+        "decoder": "sam3-binary-instances/v1",
+        "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+        "preprocess": "sam3-pil-rgb/v1"
+      },
+      "work_queue_depth": 0,
+      "work_queue_drops": 148
+    }
+  },
+  "full_capture_to_result_age": "NOT_MEASURED",
+  "initial_status": {
+    "confidence_threshold": 0.5,
+    "emitted_results": 2,
+    "input_queue_depths": {
+      "camera_info": 1,
+      "depth": 0,
+      "rgb": 0
+    },
+    "input_queue_drops": 0,
+    "last_result": {
+      "capture": {
+        "frame_id": "camera_color_optical_frame",
+        "stamp_ns": 1089100000000
+      },
+      "identity": {
+        "epoch": "0e19e0b6-2eed-4283-928d-cf1db7727f2a",
+        "generation": 1,
+        "request_id": "bfc49931-2c6c-474e-ad03-6b1383ce94ed",
+        "robot": "robot_1",
+        "sequence": 105,
+        "stream": "camera/color"
+      },
+      "receiver_processing_age_ms": 135.32189396210015,
+      "result_wall_ns": 1792164976492319000
+    },
+    "last_valid_result_age_ms": 45.17,
+    "model": "facebook/sam3-original",
+    "model_revision": "3c879f39826c281e95690f02c7821c4de09afae7",
+    "paired_triplets": 106,
+    "policy": "avoid-target/v1",
+    "policy_generation": 1,
+    "prompt": "red mat",
+    "ready": true,
+    "reason": null,
+    "state": "ready",
+    "stream_epoch": "0e19e0b6-2eed-4283-928d-cf1db7727f2a",
+    "timestamp_discards": {
+      "depth": 1,
+      "info": 0,
+      "rgb": 1
+    },
+    "versions": {
+      "decoder": "sam3-binary-instances/v1",
+      "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+      "preprocess": "sam3-pil-rgb/v1"
+    },
+    "work_queue_depth": 0,
+    "work_queue_drops": 103
+  },
+  "matched_percent": 100,
+  "observer_rgb_receipt_to_mask_ms_NOT_capture_age": {
+    "max": 230.0080331042409,
+    "p50": 144.28068907000124,
+    "p95": 225.42862938717008,
+    "samples": 104
+  },
+  "outputs_per_s": 6.999984052627357,
+  "pending": {
+    "cloud": 0,
+    "mask": 0
+  },
+  "resources": [
+    {
+      "at_s": 0.07,
+      "mask_count": 1,
+      "runtime_rss_bytes": 2099167232,
+      "status": {
+        "confidence_threshold": 0.5,
+        "emitted_results": 2,
+        "input_queue_depths": {
+          "camera_info": 1,
+          "depth": 0,
+          "rgb": 0
+        },
+        "input_queue_drops": 0,
+        "last_result": {
+          "capture": {
+            "frame_id": "camera_color_optical_frame",
+            "stamp_ns": 1089100000000
+          },
+          "identity": {
+            "epoch": "0e19e0b6-2eed-4283-928d-cf1db7727f2a",
+            "generation": 1,
+            "request_id": "bfc49931-2c6c-474e-ad03-6b1383ce94ed",
+            "robot": "robot_1",
+            "sequence": 105,
+            "stream": "camera/color"
+          },
+          "receiver_processing_age_ms": 135.32189396210015,
+          "result_wall_ns": 1792164976492319000
+        },
+        "last_valid_result_age_ms": 45.17,
+        "model": "facebook/sam3-original",
+        "model_revision": "3c879f39826c281e95690f02c7821c4de09afae7",
+        "paired_triplets": 106,
+        "policy": "avoid-target/v1",
+        "policy_generation": 1,
+        "prompt": "red mat",
+        "ready": true,
+        "reason": null,
+        "state": "ready",
+        "stream_epoch": "0e19e0b6-2eed-4283-928d-cf1db7727f2a",
+        "timestamp_discards": {
+          "depth": 1,
+          "info": 0,
+          "rgb": 1
+        },
+        "versions": {
+          "decoder": "sam3-binary-instances/v1",
+          "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+          "preprocess": "sam3-pil-rgb/v1"
+        },
+        "work_queue_depth": 0,
+        "work_queue_drops": 103
+      }
+    },
+    {
+      "at_s": 10.16,
+      "mask_count": 76,
+      "runtime_rss_bytes": 2101788672,
+      "status": {
+        "confidence_threshold": 0.5,
+        "emitted_results": 76,
+        "input_queue_depths": {
+          "camera_info": 2,
+          "depth": 0,
+          "rgb": 0
+        },
+        "input_queue_drops": 0,
+        "last_result": {
+          "capture": {
+            "frame_id": "camera_color_optical_frame",
+            "stamp_ns": 1099000000000
+          },
+          "identity": {
+            "epoch": "0e19e0b6-2eed-4283-928d-cf1db7727f2a",
+            "generation": 1,
+            "request_id": "3555439c-1177-4f62-aff5-259c912b37e8",
+            "robot": "robot_1",
+            "sequence": 204,
+            "stream": "camera/color"
+          },
+          "receiver_processing_age_ms": 116.81838100776076,
+          "result_wall_ns": 1792164986462894800
+        },
+        "last_valid_result_age_ms": 74.59,
+        "model": "facebook/sam3-original",
+        "model_revision": "3c879f39826c281e95690f02c7821c4de09afae7",
+        "paired_triplets": 205,
+        "policy": "avoid-target/v1",
+        "policy_generation": 1,
+        "prompt": "red mat",
+        "ready": true,
+        "reason": null,
+        "state": "ready",
+        "stream_epoch": "0e19e0b6-2eed-4283-928d-cf1db7727f2a",
+        "timestamp_discards": {
+          "depth": 1,
+          "info": 0,
+          "rgb": 1
+        },
+        "versions": {
+          "decoder": "sam3-binary-instances/v1",
+          "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+          "preprocess": "sam3-pil-rgb/v1"
+        },
+        "work_queue_depth": 0,
+        "work_queue_drops": 128
+      }
+    }
+  ],
+  "sampled_receiver_processing_ms_NOT_capture_age": {
+    "max": 228.83322602137923,
+    "p50": 141.303668031469,
+    "p95": 222.00235878117383,
+    "samples": 59
+  },
+  "startup_states": [
+    {
+      "ready": false,
+      "reason": "model_loading",
+      "state": "loading",
+      "stream_epoch": "0e19e0b6-2eed-4283-928d-cf1db7727f2a"
+    },
+    {
+      "ready": false,
+      "reason": "awaiting_first_valid_result",
+      "state": "not_ready",
+      "stream_epoch": "0e19e0b6-2eed-4283-928d-cf1db7727f2a"
+    },
+    {
+      "ready": true,
+      "reason": null,
+      "state": "ready",
+      "stream_epoch": "0e19e0b6-2eed-4283-928d-cf1db7727f2a"
+    }
+  ],
+  "transitions": []
+}

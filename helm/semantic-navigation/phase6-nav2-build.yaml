@@ -1,0 +1,33 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: semantic-nav2
+  namespace: semantic-navigation
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: semantic-nav2-phase6-plugin
+  namespace: semantic-navigation
+spec:
+  runPolicy: Serial
+  source:
+    type: Binary
+    binary: {}
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Containerfile.phase6-nav2
+  output:
+    to:
+      kind: ImageStreamTag
+      name: semantic-nav2:phase6-plugin-entrypoint
+  resources:
+    requests:
+      cpu: '2'
+      memory: 4Gi
+    limits:
+      cpu: '4'
+      memory: 6Gi
+  nodeSelector:
+    kubernetes.io/hostname: ip-10-0-53-182.ec2.internal

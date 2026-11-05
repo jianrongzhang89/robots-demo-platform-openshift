@@ -1,0 +1,49 @@
+FFFF
+======================================================================
+FAIL: test_same_source_copy_preserves_grace_and_remains_native_admissible (test_safety_core.SafetyGateTests.test_same_source_copy_preserves_grace_and_remains_native_admissible)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/var/folders/h5/rrdx60797v1dsz1ggq0tg81m0000gp/T/g5-lease-regression-qvz_9xyw/test_safety_core.py", line 154, in test_same_source_copy_preserves_grace_and_remains_native_admissible
+    self.assertEqual(gate.command_deadline,granted)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 10099000000 != 10124000000
+
+======================================================================
+FAIL: test_checked_applies_proven_grace_before_forwarding_short_lease (test_guarded_coordinator.CoordinatorTests.test_checked_applies_proven_grace_before_forwarding_short_lease)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/var/folders/h5/rrdx60797v1dsz1ggq0tg81m0000gp/T/g5-lease-regression-qvz_9xyw/test_guarded_coordinator.py", line 120, in test_checked_applies_proven_grace_before_forwarding_short_lease
+    self.assertEqual(packet["expires_wall"]-packet["issued_wall"],26*MS)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1000000 != 26000000
+
+======================================================================
+FAIL: test_no_newer_source_revokes_instead_of_sending_inadmissible_lease (test_guarded_coordinator.CoordinatorTests.test_no_newer_source_revokes_instead_of_sending_inadmissible_lease)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/var/folders/h5/rrdx60797v1dsz1ggq0tg81m0000gp/T/g5-lease-regression-qvz_9xyw/test_guarded_coordinator.py", line 134, in test_no_newer_source_revokes_instead_of_sending_inadmissible_lease
+    self.assertFalse(self.co.checked(stamp,velocity))
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false
+
+======================================================================
+FAIL: test_pending_renewal_precedes_slow_observers_and_survives_native_deadline (test_priority_pump.PriorityPumpTests.test_pending_renewal_precedes_slow_observers_and_survives_native_deadline)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/var/folders/h5/rrdx60797v1dsz1ggq0tg81m0000gp/T/g5-lease-regression-qvz_9xyw/test_priority_pump.py", line 58, in test_pending_renewal_precedes_slow_observers_and_survives_native_deadline
+    pump_round(ingress=lambda:None,task=lambda:None,native=lambda:None,
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+               guard=guard,observer=observer,diagnostics=lambda:None)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/var/folders/h5/rrdx60797v1dsz1ggq0tg81m0000gp/T/g5-lease-regression-qvz_9xyw/priority_pump.py", line 57, in pump_round
+    guard()
+    ~~~~~^^
+  File "/private/var/folders/h5/rrdx60797v1dsz1ggq0tg81m0000gp/T/g5-lease-regression-qvz_9xyw/test_priority_pump.py", line 57, in guard
+    self.assertTrue(receiver.receive(renewal,now()))
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.001s
+
+FAILED (failures=4)

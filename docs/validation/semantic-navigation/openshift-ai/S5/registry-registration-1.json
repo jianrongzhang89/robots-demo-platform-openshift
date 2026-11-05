@@ -1,0 +1,101 @@
+{
+  "recorded_at": "2026-11-04T13:59:57.066226+00:00",
+  "endpoint": "https://ryans-model-registry-rest.apps.ai-dev02.kni.syseng.devcluster.openshift.com",
+  "status": "PASS",
+  "operations": [
+    {
+      "collection": "/registered_models",
+      "id": "3",
+      "created": true
+    },
+    {
+      "collection": "/registered_models/3/versions",
+      "id": "4",
+      "created": true
+    },
+    {
+      "collection": "/model_versions/4/artifacts",
+      "id": "2",
+      "created": true
+    }
+  ],
+  "readback": {
+    "/registered_models": {
+      "createTimeSinceEpoch": "1793800809277",
+      "customProperties": {
+        "owner": {
+          "metadataType": "MetadataStringValue",
+          "string_value": "robots-demo-platform-openshift"
+        },
+        "scope": {
+          "metadataType": "MetadataStringValue",
+          "string_value": "semantic-navigation"
+        }
+      },
+      "description": "Semantic navigation SAM3 demonstration. Recognition waiver retained; G5 pending.",
+      "id": "3",
+      "lastUpdateTimeSinceEpoch": "1793800809277",
+      "name": "SAM3 semantic navigation",
+      "state": "LIVE"
+    },
+    "/model_versions": {
+      "createTimeSinceEpoch": "1793800809646",
+      "customProperties": {
+        "deployment_identity": {
+          "metadataType": "MetadataStringValue",
+          "string_value": "{\"container_digest\": \"sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e\", \"model_name\": \"sam3-mat-v1\", \"policy\": \"avoid-target/v1\", \"precision\": \"bfloat16\", \"prompt\": \"red mat\", \"schema\": \"semantic-deployment/v1\", \"shared_sha256\": {\"inference_contract.py\": \"d238d2490f826b6fbb70f07aa5579492dc425e8c858b780c8216679f121ffdef\", \"sam3_backend.py\": \"3d83819971704e8ce642db98972194996307b314bb73cbb44257384e45714761\", \"sam3_runtime_core.py\": \"683cf53a5b6378fa72d0cefe404bd899039b1420b4d5a2e7cfe3faecaf57085f\"}, \"source_revision\": \"0570b3a5be9c4e694f23d85232fb55f4a6f1f7fc\", \"threshold\": 0.5, \"versions\": {\"decoder\": \"sam3-binary-instances/v1\", \"model\": \"3c879f39826c281e95690f02c7821c4de09afae7\", \"preprocess\": \"sam3-pil-rgb/v1\"}, \"weights_sha256\": \"9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e\"}"
+        },
+        "evaluation_status": {
+          "metadataType": "MetadataStringValue",
+          "string_value": "{\"G1\": \"PASS_ACCEPTED\", \"G2\": \"PASS_ACCEPTED\", \"G3\": \"PASS_ACCEPTED\", \"G4\": \"PASS_ACCEPTED_WITH_RECORDED_RESIDUALS\", \"G5\": \"HOLD\", \"G6\": \"NOT_RUN\", \"recognition\": \"WAIVED_NOT_ESTABLISHED\"}"
+        },
+        "evidence_uris": {
+          "metadataType": "MetadataStringValue",
+          "string_value": "{\"G1\": \"https://github.com/jianrongzhang89/robots-demo-platform-openshift/blob/be091bd2/docs/validation/semantic-navigation/openshift-ai/S1/gate-result.json\", \"G2\": \"https://github.com/jianrongzhang89/robots-demo-platform-openshift/blob/be091bd2/docs/validation/semantic-navigation/openshift-ai/S2/gate-result.json\", \"G3\": \"https://github.com/jianrongzhang89/robots-demo-platform-openshift/blob/be091bd2/docs/validation/semantic-navigation/openshift-ai/S3/gate-result.json\", \"G4\": \"https://github.com/jianrongzhang89/robots-demo-platform-openshift/blob/be091bd2/docs/validation/semantic-navigation/openshift-ai/S4/gate-result.json\"}"
+        },
+        "limitations": {
+          "metadataType": "MetadataStringValue",
+          "string_value": "[\"Standing recognition waiver retained; serving parity does not establish recognition accuracy.\", \"G4 acceptance is based on qualification-22, three nominal sweeps, exposure reduction and characterized residuals, not a completed 110/110 series.\"]"
+        },
+        "prompt_policy": {
+          "metadataType": "MetadataStringValue",
+          "string_value": "{\"policy\": \"avoid-target/v1\", \"prompt\": \"red mat\", \"threshold\": 0.5}"
+        },
+        "runtime_manifest": {
+          "metadataType": "MetadataStringValue",
+          "string_value": "helm/semantic-navigation/openshift-ai/render.py"
+        }
+      },
+      "id": "4",
+      "lastUpdateTimeSinceEpoch": "1793800809646",
+      "name": "g4-accepted-f9bcc273a164",
+      "registeredModelId": "3",
+      "state": "LIVE"
+    },
+    "/model_artifacts": {
+      "artifactType": "model-artifact",
+      "createTimeSinceEpoch": "1793800810011",
+      "customProperties": {
+        "locator_note": {
+          "metadataType": "MetadataStringValue",
+          "string_value": "Descriptive cluster-local locator; not a registry download URL. Weights remain on the PVC."
+        },
+        "weights_sha256": {
+          "metadataType": "MetadataStringValue",
+          "string_value": "9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e"
+        }
+      },
+      "id": "2",
+      "lastUpdateTimeSinceEpoch": "1793800810011",
+      "modelFormatName": "sam3",
+      "modelFormatVersion": "1",
+      "name": "sam3-9999e2341cee",
+      "uri": "pvc://semantic-model-serving/sam3-checkpoint/sam3.pt"
+    }
+  },
+  "ids": {
+    "registered_model": "3",
+    "model_version": "4",
+    "artifact": "2"
+  }
+}

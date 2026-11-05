@@ -1,0 +1,161 @@
+{
+  "apiVersion": "build.openshift.io/v1",
+  "kind": "Build",
+  "metadata": {
+    "annotations": {
+      "openshift.io/build-config.name": "semantic-safety-console-phase6",
+      "openshift.io/build.number": "17",
+      "openshift.io/build.pod-name": "semantic-safety-console-phase6-17-build"
+    },
+    "creationTimestamp": "2026-10-28T14:42:33Z",
+    "generation": 2,
+    "labels": {
+      "buildconfig": "semantic-safety-console-phase6",
+      "openshift.io/build-config.name": "semantic-safety-console-phase6",
+      "openshift.io/build.start-policy": "Serial"
+    },
+    "name": "semantic-safety-console-phase6-17",
+    "namespace": "semantic-navigation",
+    "ownerReferences": [
+      {
+        "apiVersion": "build.openshift.io/v1",
+        "controller": true,
+        "kind": "BuildConfig",
+        "name": "semantic-safety-console-phase6",
+        "uid": "db8b50ae-f77f-45d0-b508-1599869d8227"
+      }
+    ],
+    "resourceVersion": "480252771",
+    "uid": "c747ace6-c83c-416b-8c28-6795f8a0996f"
+  },
+  "spec": {
+    "nodeSelector": null,
+    "output": {
+      "pushSecret": {
+        "name": "builder-dockercfg-htt4p"
+      },
+      "to": {
+        "kind": "ImageStreamTag",
+        "name": "semantic-safety:phase6-console-candidate"
+      }
+    },
+    "postCommit": {},
+    "resources": {
+      "limits": {
+        "cpu": "4",
+        "memory": "8Gi"
+      },
+      "requests": {
+        "cpu": "2",
+        "memory": "4Gi"
+      }
+    },
+    "revision": {
+      "git": {
+        "author": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "commit": "1e5e67345e9ca3abf6d7673224202f3c1529c5f6",
+        "committer": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "message": "Sensors override v4: lock-free busy check \u2014 the render thread holds renderMutex around the ENTIRE sensorManager.RunOnce\n\nsensors-override-stallprobe-1 (thread probe with per-thread\nwchan/syscall) pinned the final blocking site: through the ~109 ms\nstall the physics thread futex-waits on the HEAP renderMutex\n(0x55cdcf5f82b4) while the render thread burns a full core \u2014 because\nRunOnce holds renderMutex around the ENTIRE sensorManager.RunOnce()\n(render + publish), and the v3 busy check still acquired that mutex\nbefore reading the flag. Same acquisition-class bug as v2, second\nmutex.\n\nv4: the busy flags (running, updateAvailable) are std::atomic \u2014 the\ncheck reads them WITHOUT the mutex. The arm block still takes\nrenderMutex, but only when no render is in flight (the render thread\nthen sits in its 1 ms poll with the mutex released), so that\nacquisition is bounded. All three physics/render coupling points are\nnow genuinely non-blocking: ECM sync (try_to_lock renderUtilMutex),\nbusy check (lock-free atomics), arming (reached only when idle)."
+      },
+      "type": "Git"
+    },
+    "serviceAccount": "builder",
+    "source": {
+      "binary": {},
+      "type": "Binary"
+    },
+    "strategy": {
+      "dockerStrategy": {
+        "dockerfilePath": "Containerfile.phase6-console"
+      },
+      "type": "Docker"
+    }
+  },
+  "status": {
+    "completionTimestamp": "2026-10-28T14:45:51Z",
+    "conditions": [
+      {
+        "lastTransitionTime": "2026-10-28T14:42:33Z",
+        "lastUpdateTime": "2026-10-28T14:42:33Z",
+        "status": "False",
+        "type": "New"
+      },
+      {
+        "lastTransitionTime": "2026-10-28T14:42:34Z",
+        "lastUpdateTime": "2026-10-28T14:42:34Z",
+        "status": "False",
+        "type": "Pending"
+      },
+      {
+        "lastTransitionTime": "2026-10-28T14:45:51Z",
+        "lastUpdateTime": "2026-10-28T14:45:51Z",
+        "status": "False",
+        "type": "Running"
+      },
+      {
+        "lastTransitionTime": "2026-10-28T14:45:51Z",
+        "lastUpdateTime": "2026-10-28T14:45:51Z",
+        "status": "True",
+        "type": "Complete"
+      }
+    ],
+    "config": {
+      "kind": "BuildConfig",
+      "name": "semantic-safety-console-phase6",
+      "namespace": "semantic-navigation"
+    },
+    "duration": 198000000000,
+    "output": {
+      "to": {
+        "imageDigest": "sha256:a788757d3904d5d275f450ca0a8d94dc3ac8380fbc47349dc8f5d3cbde3a4eac"
+      }
+    },
+    "outputDockerImageReference": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety:phase6-console-candidate",
+    "phase": "Complete",
+    "stages": [
+      {
+        "durationMilliseconds": 114289,
+        "name": "PullImages",
+        "startTime": "2026-10-28T14:42:37Z",
+        "steps": [
+          {
+            "durationMilliseconds": 114289,
+            "name": "PullBaseImage",
+            "startTime": "2026-10-28T14:42:37Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 74603,
+        "name": "Build",
+        "startTime": "2026-10-28T14:44:31Z",
+        "steps": [
+          {
+            "durationMilliseconds": 74603,
+            "name": "DockerBuild",
+            "startTime": "2026-10-28T14:44:31Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 3377,
+        "name": "PushImage",
+        "startTime": "2026-10-28T14:45:46Z",
+        "steps": [
+          {
+            "durationMilliseconds": 3377,
+            "name": "PushDockerImage",
+            "startTime": "2026-10-28T14:45:46Z"
+          }
+        ]
+      }
+    ],
+    "startTimestamp": "2026-10-28T14:42:33Z"
+  }
+}

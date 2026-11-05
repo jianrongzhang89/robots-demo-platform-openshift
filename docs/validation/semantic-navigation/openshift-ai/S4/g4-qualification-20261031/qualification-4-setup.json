@@ -1,0 +1,31 @@
+{
+ "event": "qualification-4 setup",
+ "date": "2026-11-01",
+ "preconditions": {
+  "S1": "PASS accepted",
+  "S2": "PASS accepted",
+  "S3": "PASS accepted",
+  "leftover_g4_or_fixture_resources": "none",
+  "pilot": "serving-transport-pilot-2 PASS with clean cleanup; trial-01-serving-r1 passed with real injected 503 wire proof, zero command 1.55 ms after trigger, late success without motion resume"
+ },
+ "rendering_reservation": "deleted to free the A10G for the G4 fixture; run_g4_suite.py finally restores it from rendering-reservation-saved.json",
+ "proxy_certificate": {
+  "secret": "semantic-g4-proxy-tls",
+  "subject": "CN=localhost",
+  "issuer": "CN=localhost",
+  "notBefore": "Nov 1 15:05:38 2026 GMT",
+  "notAfter": "Nov 4 15:05:38 2026 GMT",
+  "sha256_fingerprint": "61:19:3B:47:7D:B1:59:1B:DC:34:7F:B6:82:83:A9:7C:94:C8:78:BD:C9:49:D7:81:E9:4F:A7:5C:55:63:FD:F0",
+  "key_material_retained": false
+ },
+ "sampler": {
+  "output": "serving-resources-qualification-4.jsonl",
+  "stop_file": "/tmp/g4-qualification-4-monitor-stop"
+ },
+ "source_changes_vs_qualification_3": {
+  "apps/semantic-safety/sam3_observer_worker.py": "f1b7a11c8ceddb2b4d9b17bc5b6717133d7eb998389a0d00d20c1c2a8a42bd22 (immediate status write on semantic-lease renewal in served topology)",
+  "apps/semantic-safety/verify_hotel_stack.py": "170ec957ddffdb9e5f8d1fc7062fda525636c77b94a63c04809ccd9291ff5e9e (semantic_lease_poll throttle 20 ms -> 5 ms)",
+  "rationale": "serving-transport-pilot-1-rationale.md"
+ },
+ "command": "run_g4_suite.py --output-dir qualification-4 --reservation rendering-reservation-saved.json"
+}

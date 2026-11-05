@@ -1,0 +1,106 @@
+{
+  "fixture_passed": false,
+  "native_first_fault": "lease_expired",
+  "zero_latency_ms": 1.992332,
+  "first_fault": {
+    "applied_steady_ns": 13834361031238868,
+    "applied_vx": 0.0,
+    "applied_wz": 0.0,
+    "armed": false,
+    "clock_epoch": "1793809344359298134-1779574326",
+    "last_packet_wall_ns": 1793809490293750793,
+    "pending": false,
+    "physical": {
+      "angular_speed": 0.13022705842179155,
+      "paused": false,
+      "sequence": 34674,
+      "sim_ns": 69348000000,
+      "speed": 0.10791682999721866,
+      "steady_ns": 13834361033036524,
+      "velocity_valid": true,
+      "wall_ns": 1793809490294141681,
+      "x": 17.601126292681702,
+      "y": -30.22090947744904,
+      "yaw": -0.16597891342138354,
+      "z": 0.010007094402921649
+    },
+    "reason": "lease_expired",
+    "received_packets": 4133,
+    "schema": "phase5-drive-status/v1",
+    "sequence": 4129,
+    "session": "",
+    "steady_ns": 13834361033036524,
+    "stop_applied_steady_ns": 13834361026639624,
+    "stop_applied_trigger_ns": 13834361024647292,
+    "trigger_steady_ns": 13834361024647292,
+    "vx": 0.0,
+    "wall_ns": 1793809490294141681,
+    "wz": 0.0,
+    "observer_received_wall_ns": 1793809490297743284
+  },
+  "summary_clock_fault": null,
+  "physical_path_length_m": 2.7606340810682903,
+  "minimum_hull_clearance_m": -0.0062170095758019295,
+  "hull_exposure_m": 0.12143563857666785,
+  "final_goal_geometry": {
+    "final": {
+      "sim_ns": 69348000000,
+      "belief_truth_divergence_m": 0.376,
+      "physical_goal_distance_m": 2.265,
+      "belief_goal_distance_m": 2.635
+    }
+  },
+  "viewer_fps_after_startup": {
+    "count": 157,
+    "median": 20.86,
+    "min": 18.1
+  },
+  "checks": [
+    {
+      "case": "phase6_semantic_costs_at_target",
+      "passed": true,
+      "global_soft_cells": 883,
+      "global_soft_cells_inside_target": 883,
+      "local_soft_cells": 0,
+      "soft_cost_value": 254,
+      "histograms": {
+        "global": {
+          "255": 584702,
+          "254": 883
+        }
+      },
+      "contract": "target-cost-254 cells in the global costmap, all inside the ground-truth rectangle (+0.15 m), no value other than free/target/unknown on the layer grid, and no semantic layer in the local costmap",
+      "outside_target_cells": []
+    },
+    {
+      "case": "native_stationary_after_task",
+      "passed": true
+    },
+    {
+      "case": "guarded_real_hotel_one_meter_goal",
+      "passed": false,
+      "terminal_status": 5,
+      "reason": "native_session_lost"
+    },
+    {
+      "case": "baseline_contact_window",
+      "start_sim": 50862000000,
+      "end_sim": 69650000000,
+      "passed": true,
+      "reason": "clear",
+      "unexpected": [],
+      "samples": 816,
+      "steps": 9474,
+      "qualification": "exact allowlisted support contacts only; no force/depth exemption"
+    },
+    {
+      "case": "sam3_observation_timing",
+      "passed": true,
+      "p95_capture_age_ms": 253.760488,
+      "p95_capture_age_limit_ms": 500.0,
+      "results_per_second": 6.986257185994071,
+      "rate_limit_per_s": 5.0,
+      "records": 1024
+    }
+  ]
+}

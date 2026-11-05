@@ -1,0 +1,16 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: sam3-runtime-phase4-binding
+  namespace: semantic-navigation
+spec:
+  runPolicy: Serial
+  source: { binary: {} }
+  strategy:
+    type: Docker
+    dockerStrategy: { dockerfilePath: Containerfile.phase4-binding }
+  output:
+    to: { kind: ImageStreamTag, name: 'sam3-runtime:phase4-binding' }
+  resources:
+    requests: { cpu: '1', memory: 2Gi }
+    limits: { cpu: '4', memory: 8Gi }

@@ -1,0 +1,161 @@
+{
+  "apiVersion": "build.openshift.io/v1",
+  "kind": "Build",
+  "metadata": {
+    "annotations": {
+      "openshift.io/build-config.name": "semantic-safety-console-phase6",
+      "openshift.io/build.number": "15",
+      "openshift.io/build.pod-name": "semantic-safety-console-phase6-15-build"
+    },
+    "creationTimestamp": "2026-10-28T13:53:58Z",
+    "generation": 2,
+    "labels": {
+      "buildconfig": "semantic-safety-console-phase6",
+      "openshift.io/build-config.name": "semantic-safety-console-phase6",
+      "openshift.io/build.start-policy": "Serial"
+    },
+    "name": "semantic-safety-console-phase6-15",
+    "namespace": "semantic-navigation",
+    "ownerReferences": [
+      {
+        "apiVersion": "build.openshift.io/v1",
+        "controller": true,
+        "kind": "BuildConfig",
+        "name": "semantic-safety-console-phase6",
+        "uid": "db8b50ae-f77f-45d0-b508-1599869d8227"
+      }
+    ],
+    "resourceVersion": "480104736",
+    "uid": "67ecae1c-f925-4707-ab29-b70c982ac3f0"
+  },
+  "spec": {
+    "nodeSelector": null,
+    "output": {
+      "pushSecret": {
+        "name": "builder-dockercfg-htt4p"
+      },
+      "to": {
+        "kind": "ImageStreamTag",
+        "name": "semantic-safety:phase6-console-candidate"
+      }
+    },
+    "postCommit": {},
+    "resources": {
+      "limits": {
+        "cpu": "4",
+        "memory": "8Gi"
+      },
+      "requests": {
+        "cpu": "2",
+        "memory": "4Gi"
+      }
+    },
+    "revision": {
+      "git": {
+        "author": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "commit": "01fcd187c4c26eea13de4880ecbc77f5ab8d93a1",
+        "committer": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "message": "Extend the Sensors override to the second coupling wait: skip the ECM update when the render thread has not consumed it\n\nsensors-override-pair-on-1 (on-arm lethal, witness, override loaded and\nverified) still tripped command_expired at the goal-approach turn: ONE\n106.1 ms physics stall (sim 50.200 -> 50.202), the controller\nrepublishing the frozen stamp 50.200 at 40 Hz, and the camera frame at\n50.2 never captured \u2014 the same class, now isolated to the SECOND\nrender/physics coupling wait in Sensors::PostUpdate: updateTimeCv,\nwhich blocks the physics thread until the render thread's\nrenderUtil.Update() (the CPU-heavy ECM->scene application at a\nviewpoint change) consumes the pending update. The first wait (arming)\nwas already non-blocking, which is why only one stall remained and the\noff arm's armed window was clean (<30 ms max gap).\n\nThe extension follows the same approved design: when the previous ECM\nupdate is unconsumed, SKIP this cycle's UpdateFromECM instead of\nwaiting. The in-flight render keeps its already-buffered state; the\nnext cycle refreshes from the current ECM; the scene lags at most one\nrender iteration and sensor stamps stay simulation-correct. Patch\nregenerated against the pristine gz-sim8_8.15.0 tag with all hunks,\ndry-run verified."
+      },
+      "type": "Git"
+    },
+    "serviceAccount": "builder",
+    "source": {
+      "binary": {},
+      "type": "Binary"
+    },
+    "strategy": {
+      "dockerStrategy": {
+        "dockerfilePath": "Containerfile.phase6-console"
+      },
+      "type": "Docker"
+    }
+  },
+  "status": {
+    "completionTimestamp": "2026-10-28T13:56:52Z",
+    "conditions": [
+      {
+        "lastTransitionTime": "2026-10-28T13:53:58Z",
+        "lastUpdateTime": "2026-10-28T13:53:58Z",
+        "status": "False",
+        "type": "New"
+      },
+      {
+        "lastTransitionTime": "2026-10-28T13:53:59Z",
+        "lastUpdateTime": "2026-10-28T13:53:59Z",
+        "status": "False",
+        "type": "Pending"
+      },
+      {
+        "lastTransitionTime": "2026-10-28T13:56:52Z",
+        "lastUpdateTime": "2026-10-28T13:56:52Z",
+        "status": "False",
+        "type": "Running"
+      },
+      {
+        "lastTransitionTime": "2026-10-28T13:56:52Z",
+        "lastUpdateTime": "2026-10-28T13:56:52Z",
+        "status": "True",
+        "type": "Complete"
+      }
+    ],
+    "config": {
+      "kind": "BuildConfig",
+      "name": "semantic-safety-console-phase6",
+      "namespace": "semantic-navigation"
+    },
+    "duration": 174000000000,
+    "output": {
+      "to": {
+        "imageDigest": "sha256:f3f13d1b436420f353ceb5094a4d7fa73d0fd150a0f7ba17e03238c5c1396085"
+      }
+    },
+    "outputDockerImageReference": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety:phase6-console-candidate",
+    "phase": "Complete",
+    "stages": [
+      {
+        "durationMilliseconds": 113040,
+        "name": "PullImages",
+        "startTime": "2026-10-28T13:54:01Z",
+        "steps": [
+          {
+            "durationMilliseconds": 113040,
+            "name": "PullBaseImage",
+            "startTime": "2026-10-28T13:54:01Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 53425,
+        "name": "Build",
+        "startTime": "2026-10-28T13:55:54Z",
+        "steps": [
+          {
+            "durationMilliseconds": 53425,
+            "name": "DockerBuild",
+            "startTime": "2026-10-28T13:55:54Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 3259,
+        "name": "PushImage",
+        "startTime": "2026-10-28T13:56:48Z",
+        "steps": [
+          {
+            "durationMilliseconds": 3259,
+            "name": "PushDockerImage",
+            "startTime": "2026-10-28T13:56:48Z"
+          }
+        ]
+      }
+    ],
+    "startTimestamp": "2026-10-28T13:53:58Z"
+  }
+}

@@ -1,0 +1,46 @@
+[
+  {
+    "apiVersion": "v1",
+    "kind": "Service",
+    "metadata": {
+      "name": "semantic-g5-demo-novnc",
+      "namespace": "semantic-navigation"
+    },
+    "spec": {
+      "selector": {
+        "semantic-g5-demo": "viewer"
+      },
+      "ports": [
+        {
+          "name": "novnc",
+          "port": 6080,
+          "targetPort": "novnc"
+        }
+      ]
+    }
+  },
+  {
+    "apiVersion": "route.openshift.io/v1",
+    "kind": "Route",
+    "metadata": {
+      "name": "semantic-g5-demo-novnc",
+      "namespace": "semantic-navigation",
+      "annotations": {
+        "haproxy.router.openshift.io/timeout": "10m"
+      }
+    },
+    "spec": {
+      "to": {
+        "kind": "Service",
+        "name": "semantic-g5-demo-novnc"
+      },
+      "port": {
+        "targetPort": "novnc"
+      },
+      "tls": {
+        "termination": "edge",
+        "insecureEdgeTerminationPolicy": "Redirect"
+      }
+    }
+  }
+]

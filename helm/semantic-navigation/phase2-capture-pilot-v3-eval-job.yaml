@@ -1,0 +1,86 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: sam3-phase2-capture-pilot-v3-eval-20261014
+  namespace: semantic-navigation
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 1800
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: sam3-phase2-capture-pilot-v3-eval
+    spec:
+      restartPolicy: Never
+      securityContext:
+        fsGroup: 1001340000
+        fsGroupChangePolicy: OnRootMismatch
+      nodeSelector:
+        nvidia.com/gpu.product: NVIDIA-L40S
+      tolerations:
+        - key: g6e-gpu
+          operator: Equal
+          value: "true"
+          effect: NoSchedule
+      containers:
+        - name: evaluator
+          image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/sam3-eval:phase2
+          imagePullPolicy: Always
+          command: ["/bin/bash", "-lc"]
+          args:
+            - >-
+              set -e;
+              export HOME=/tmp/sam3-home TORCHINDUCTOR_CACHE_DIR=/tmp/torchinductor;
+              mkdir -p "$HOME" "$TORCHINDUCTOR_CACHE_DIR" /phase2-data;
+              tar --touch --no-same-owner --no-same-permissions --no-overwrite-dir -xzf /archive/data.tar.gz -C /phase2-data;
+              python /opt/sam3/sam3_eval.py
+              --checkpoint /models/sam3.pt
+              --manifest /phase2-data/pilot-manifest.jsonl
+              --split development
+              --prompt "red floor mat"
+              --confidence-threshold 0.5
+              --device cuda
+              --output /phase2-out;
+              cat /phase2-out/report.json;
+              sleep 300
+          env:
+            - name: HF_HUB_OFFLINE
+              value: "1"
+          resources:
+            requests:
+              cpu: "4"
+              memory: 16Gi
+              nvidia.com/gpu: "1"
+            limits:
+              cpu: "8"
+              memory: 32Gi
+              nvidia.com/gpu: "1"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - name: model
+              mountPath: /models
+              readOnly: true
+            - name: archive
+              mountPath: /archive
+              readOnly: true
+            - name: dataset
+              mountPath: /phase2-data
+            - name: output
+              mountPath: /phase2-out
+      volumes:
+        - name: model
+          persistentVolumeClaim:
+            claimName: sam3-checkpoint
+        - name: archive
+          configMap:
+            name: phase2-capture-pilot-v3-data-20261014
+        - name: dataset
+          emptyDir: {}
+        - name: output
+          emptyDir: {}

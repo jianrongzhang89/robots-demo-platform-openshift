@@ -1,0 +1,24 @@
+FROM python:3.12-slim
+
+ARG SAM3_COMMIT=0570b3a5be9c4e694f23d85232fb55f4a6f1f7fc
+WORKDIR /opt/sam3
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git ca-certificates curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && python -m pip install --no-cache-dir --upgrade pip \
+    && python -m pip install --no-cache-dir \
+        torch==2.10.0 torchvision==0.25.0 \
+        --index-url https://download.pytorch.org/whl/cu128 \
+    && git clone https://github.com/facebookresearch/sam3.git /opt/sam3-src \
+    && git -C /opt/sam3-src checkout "${SAM3_COMMIT}" \
+    && python -m pip install --no-cache-dir \
+        /opt/sam3-src einops==0.8.1 pycocotools==2.0.10 psutil==7.2.2 \
+    && curl -fL "https://raw.githubusercontent.com/facebookresearch/sam3/${SAM3_COMMIT}/assets/images/test_image.jpg" \
+        -o /opt/sam3/test_image.jpg \
+    && rm -rf /opt/sam3-src/.git
+
+COPY sam3_smoke.py /opt/sam3/sam3_smoke.py
+
+USER 1001
+ENTRYPOINT ["python", "/opt/sam3/sam3_smoke.py"]

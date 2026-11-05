@@ -1,0 +1,161 @@
+{
+  "apiVersion": "build.openshift.io/v1",
+  "kind": "Build",
+  "metadata": {
+    "annotations": {
+      "openshift.io/build-config.name": "semantic-safety-console-phase6",
+      "openshift.io/build.number": "4",
+      "openshift.io/build.pod-name": "semantic-safety-console-phase6-4-build"
+    },
+    "creationTimestamp": "2026-10-27T20:10:09Z",
+    "generation": 2,
+    "labels": {
+      "buildconfig": "semantic-safety-console-phase6",
+      "openshift.io/build-config.name": "semantic-safety-console-phase6",
+      "openshift.io/build.start-policy": "Serial"
+    },
+    "name": "semantic-safety-console-phase6-4",
+    "namespace": "semantic-navigation",
+    "ownerReferences": [
+      {
+        "apiVersion": "build.openshift.io/v1",
+        "controller": true,
+        "kind": "BuildConfig",
+        "name": "semantic-safety-console-phase6",
+        "uid": "db8b50ae-f77f-45d0-b508-1599869d8227"
+      }
+    ],
+    "resourceVersion": "476957020",
+    "uid": "6ec50cbb-89cf-4b90-999f-65f7b3406734"
+  },
+  "spec": {
+    "nodeSelector": null,
+    "output": {
+      "pushSecret": {
+        "name": "builder-dockercfg-htt4p"
+      },
+      "to": {
+        "kind": "ImageStreamTag",
+        "name": "semantic-safety:phase6-console-candidate"
+      }
+    },
+    "postCommit": {},
+    "resources": {
+      "limits": {
+        "cpu": "4",
+        "memory": "8Gi"
+      },
+      "requests": {
+        "cpu": "2",
+        "memory": "4Gi"
+      }
+    },
+    "revision": {
+      "git": {
+        "author": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "commit": "34cebddd3dabec966175379d66b2f87cc0eb73fc",
+        "committer": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "message": "Instrument the semantic layer's observation and update timing\n\nPair-1-on-tfwitness follow-up (user-approved instrument-first): the\non-arm controller cycle blocked ~160 ms wall at motion start and the\ncommand chain correctly failed command_expired; the suspects are the\nobservation callback's digest/projection work under state_mutex_ and\nits contention with updateBounds on the costmap update thread (the\ncontroller reads the costmap under the master map mutex). Added\ndiagnostics only, no behavior change: per-observation segment timings\n(total, digest, TF lookup, projection) logged on every accepted\nobservation at ~7/s, and updateBounds lock-wait and total duration\nlogged when slow (>=15 ms total or >=5 ms lock wait)."
+      },
+      "type": "Git"
+    },
+    "serviceAccount": "builder",
+    "source": {
+      "binary": {},
+      "type": "Binary"
+    },
+    "strategy": {
+      "dockerStrategy": {
+        "dockerfilePath": "Containerfile.phase6-console"
+      },
+      "type": "Docker"
+    }
+  },
+  "status": {
+    "completionTimestamp": "2026-10-27T20:13:33Z",
+    "conditions": [
+      {
+        "lastTransitionTime": "2026-10-27T20:10:09Z",
+        "lastUpdateTime": "2026-10-27T20:10:09Z",
+        "status": "False",
+        "type": "New"
+      },
+      {
+        "lastTransitionTime": "2026-10-27T20:10:11Z",
+        "lastUpdateTime": "2026-10-27T20:10:11Z",
+        "status": "False",
+        "type": "Pending"
+      },
+      {
+        "lastTransitionTime": "2026-10-27T20:13:33Z",
+        "lastUpdateTime": "2026-10-27T20:13:33Z",
+        "status": "False",
+        "type": "Running"
+      },
+      {
+        "lastTransitionTime": "2026-10-27T20:13:33Z",
+        "lastUpdateTime": "2026-10-27T20:13:33Z",
+        "status": "True",
+        "type": "Complete"
+      }
+    ],
+    "config": {
+      "kind": "BuildConfig",
+      "name": "semantic-safety-console-phase6",
+      "namespace": "semantic-navigation"
+    },
+    "duration": 204000000000,
+    "output": {
+      "to": {
+        "imageDigest": "sha256:b122c2a3535aff03e9c204eaa32a4f0968c912fb41022c02d86acb56192e3842"
+      }
+    },
+    "outputDockerImageReference": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety:phase6-console-candidate",
+    "phase": "Complete",
+    "stages": [
+      {
+        "durationMilliseconds": 119428,
+        "name": "PullImages",
+        "startTime": "2026-10-27T20:10:13Z",
+        "steps": [
+          {
+            "durationMilliseconds": 119428,
+            "name": "PullBaseImage",
+            "startTime": "2026-10-27T20:10:13Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 75291,
+        "name": "Build",
+        "startTime": "2026-10-27T20:12:12Z",
+        "steps": [
+          {
+            "durationMilliseconds": 75291,
+            "name": "DockerBuild",
+            "startTime": "2026-10-27T20:12:12Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 3026,
+        "name": "PushImage",
+        "startTime": "2026-10-27T20:13:28Z",
+        "steps": [
+          {
+            "durationMilliseconds": 3026,
+            "name": "PushDockerImage",
+            "startTime": "2026-10-27T20:13:28Z"
+          }
+        ]
+      }
+    ],
+    "startTimestamp": "2026-10-27T20:10:09Z"
+  }
+}

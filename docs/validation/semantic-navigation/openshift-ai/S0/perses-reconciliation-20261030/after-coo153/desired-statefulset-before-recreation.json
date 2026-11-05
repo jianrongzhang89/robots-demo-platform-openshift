@@ -1,0 +1,195 @@
+{
+  "apiVersion": "apps/v1",
+  "kind": "StatefulSet",
+  "metadata": {
+    "creationTimestamp": "2026-08-10T18:21:09Z",
+    "generation": 4,
+    "labels": {
+      "app.kubernetes.io/created-by": "controller-manager",
+      "app.kubernetes.io/instance": "data-science-perses",
+      "app.kubernetes.io/managed-by": "perses-operator",
+      "app.kubernetes.io/name": "data-science-perses",
+      "app.kubernetes.io/part-of": "perses-operator",
+      "instance": "data-science-perses"
+    },
+    "name": "data-science-perses",
+    "namespace": "redhat-ods-monitoring",
+    "ownerReferences": [
+      {
+        "apiVersion": "perses.dev/v1alpha2",
+        "blockOwnerDeletion": true,
+        "controller": true,
+        "kind": "Perses",
+        "name": "data-science-perses",
+        "uid": "2f2fb326-1c68-4045-b7a9-090727ad8d12"
+      }
+    ],
+    "resourceVersion": "490706117",
+    "uid": "0802bbb3-a14e-4d7b-84f4-8d99ab167544"
+  },
+  "spec": {
+    "persistentVolumeClaimRetentionPolicy": {
+      "whenDeleted": "Retain",
+      "whenScaled": "Retain"
+    },
+    "podManagementPolicy": "OrderedReady",
+    "replicas": 1,
+    "revisionHistoryLimit": 10,
+    "selector": {
+      "matchLabels": {
+        "app.kubernetes.io/created-by": "controller-manager",
+        "app.kubernetes.io/instance": "data-science-perses",
+        "app.kubernetes.io/managed-by": "perses-operator",
+        "app.kubernetes.io/name": "data-science-perses",
+        "app.kubernetes.io/part-of": "perses-operator",
+        "instance": "data-science-perses"
+      }
+    },
+    "serviceName": "",
+    "template": {
+      "metadata": {
+        "labels": {
+          "app.kubernetes.io/created-by": "controller-manager",
+          "app.kubernetes.io/instance": "data-science-perses",
+          "app.kubernetes.io/managed-by": "perses-operator",
+          "app.kubernetes.io/name": "data-science-perses",
+          "app.kubernetes.io/part-of": "perses-operator",
+          "instance": "data-science-perses"
+        }
+      },
+      "spec": {
+        "containers": [
+          {
+            "args": [
+              "--config=/etc/perses/config/config.yaml",
+              "--web.listen-address=:8080",
+              "--web.tls-min-version=1.2",
+              "--web.tls-cipher-suites=TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_CHACHA20_POLY1305_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256"
+            ],
+            "image": "registry.redhat.io/cluster-observability-operator/perses-rhel9@sha256:27553fd6d4b4983475a0d9a4ccc7d7fa63b1bd4b48f0e5cb2d18963fe232cfd5",
+            "imagePullPolicy": "IfNotPresent",
+            "livenessProbe": {
+              "failureThreshold": 5,
+              "httpGet": {
+                "path": "/metrics",
+                "port": 8080,
+                "scheme": "HTTP"
+              },
+              "initialDelaySeconds": 10,
+              "periodSeconds": 10,
+              "successThreshold": 1,
+              "timeoutSeconds": 5
+            },
+            "name": "perses",
+            "ports": [
+              {
+                "containerPort": 8080,
+                "name": "perses",
+                "protocol": "TCP"
+              }
+            ],
+            "readinessProbe": {
+              "failureThreshold": 5,
+              "httpGet": {
+                "path": "/metrics",
+                "port": 8080,
+                "scheme": "HTTP"
+              },
+              "initialDelaySeconds": 10,
+              "periodSeconds": 10,
+              "successThreshold": 1,
+              "timeoutSeconds": 5
+            },
+            "resources": {},
+            "securityContext": {
+              "allowPrivilegeEscalation": false,
+              "capabilities": {
+                "drop": [
+                  "ALL"
+                ]
+              }
+            },
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File",
+            "volumeMounts": [
+              {
+                "mountPath": "/etc/perses/config",
+                "name": "config",
+                "readOnly": true
+              },
+              {
+                "mountPath": "/etc/perses/plugins",
+                "name": "plugins"
+              },
+              {
+                "mountPath": "/perses",
+                "name": "storage"
+              }
+            ]
+          }
+        ],
+        "dnsPolicy": "ClusterFirst",
+        "restartPolicy": "Always",
+        "schedulerName": "default-scheduler",
+        "securityContext": {},
+        "terminationGracePeriodSeconds": 30,
+        "volumes": [
+          {
+            "configMap": {
+              "defaultMode": 420,
+              "name": "data-science-perses-config"
+            },
+            "name": "config"
+          },
+          {
+            "emptyDir": {},
+            "name": "plugins"
+          },
+          {
+            "name": "storage",
+            "persistentVolumeClaim": {
+              "claimName": "data-science-perses-storage"
+            }
+          }
+        ]
+      }
+    },
+    "updateStrategy": {
+      "rollingUpdate": {
+        "partition": 0
+      },
+      "type": "RollingUpdate"
+    },
+    "volumeClaimTemplates": [
+      {
+        "apiVersion": "v1",
+        "kind": "PersistentVolumeClaim",
+        "metadata": {
+          "name": "storage"
+        },
+        "spec": {
+          "accessModes": [
+            "ReadWriteOnce"
+          ],
+          "resources": {
+            "requests": {
+              "storage": "1Gi"
+            }
+          },
+          "volumeMode": "Filesystem"
+        },
+        "status": {
+          "phase": "Pending"
+        }
+      }
+    ]
+  },
+  "status": {
+    "availableReplicas": 0,
+    "collisionCount": 0,
+    "currentRevision": "data-science-perses-6cc4b6bdc",
+    "observedGeneration": 4,
+    "replicas": 1,
+    "updateRevision": "data-science-perses-54575bc787"
+  }
+}

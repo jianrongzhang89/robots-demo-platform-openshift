@@ -1,0 +1,22 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: semantic-costmap
+  namespace: semantic-navigation
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: semantic-costmap-phase4
+  namespace: semantic-navigation
+spec:
+  runPolicy: Serial
+  source: { binary: {} }
+  strategy:
+    type: Docker
+    dockerStrategy: { dockerfilePath: Containerfile }
+  output:
+    to: { kind: ImageStreamTag, name: 'semantic-costmap:phase4' }
+  resources:
+    requests: { cpu: '1', memory: 2Gi }
+    limits: { cpu: '4', memory: 6Gi }

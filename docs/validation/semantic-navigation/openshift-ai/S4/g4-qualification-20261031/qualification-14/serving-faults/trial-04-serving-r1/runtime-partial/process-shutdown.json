@@ -1,0 +1,214 @@
+{
+  "alive_at_shutdown": {
+    "resource_probe": true,
+    "gazebo": true,
+    "sensor_bridge": true,
+    "camera_bridge": true,
+    "robot_state_publisher": true,
+    "frames": true,
+    "command_observer": true,
+    "map_server": true,
+    "amcl": true,
+    "controller_server": true,
+    "smoother_server": true,
+    "planner_server": true,
+    "behavior_server": true,
+    "velocity_smoother": true,
+    "collision_monitor": true,
+    "bt_navigator": true
+  },
+  "forced": [],
+  "events": [
+    {
+      "event": "sigint",
+      "name": "bt_navigator",
+      "steady_ns": 13660129997355836
+    },
+    {
+      "event": "sigint",
+      "name": "collision_monitor",
+      "steady_ns": 13660129997367646
+    },
+    {
+      "event": "sigint",
+      "name": "velocity_smoother",
+      "steady_ns": 13660129997374866
+    },
+    {
+      "event": "sigint",
+      "name": "behavior_server",
+      "steady_ns": 13660129997387546
+    },
+    {
+      "event": "sigint",
+      "name": "planner_server",
+      "steady_ns": 13660129997395217
+    },
+    {
+      "event": "sigint",
+      "name": "smoother_server",
+      "steady_ns": 13660129997402297
+    },
+    {
+      "event": "sigint",
+      "name": "controller_server",
+      "steady_ns": 13660129997408607
+    },
+    {
+      "event": "sigint",
+      "name": "amcl",
+      "steady_ns": 13660129997414487
+    },
+    {
+      "event": "sigint",
+      "name": "map_server",
+      "steady_ns": 13660129997420787
+    },
+    {
+      "event": "sigint",
+      "name": "command_observer",
+      "steady_ns": 13660129997427557
+    },
+    {
+      "event": "sigint",
+      "name": "frames",
+      "steady_ns": 13660129997434607
+    },
+    {
+      "event": "sigint",
+      "name": "robot_state_publisher",
+      "steady_ns": 13660129997440707
+    },
+    {
+      "event": "sigint",
+      "name": "camera_bridge",
+      "steady_ns": 13660129997446697
+    },
+    {
+      "event": "sigint",
+      "name": "sensor_bridge",
+      "steady_ns": 13660129997453128
+    },
+    {
+      "event": "graceful_request",
+      "name": "gazebo",
+      "result": {
+        "passed": true,
+        "returncode": 0,
+        "stdout": "data: true\n\n",
+        "stderr": ""
+      },
+      "steady_ns": 13660130428608239
+    },
+    {
+      "event": "reaped",
+      "name": "bt_navigator",
+      "returncode": 0,
+      "steady_ns": 13660131243635756
+    },
+    {
+      "event": "reaped",
+      "name": "collision_monitor",
+      "returncode": 0,
+      "steady_ns": 13660131243690567
+    },
+    {
+      "event": "reaped",
+      "name": "velocity_smoother",
+      "returncode": 0,
+      "steady_ns": 13660131243737137
+    },
+    {
+      "event": "reaped",
+      "name": "behavior_server",
+      "returncode": 0,
+      "steady_ns": 13660131243783328
+    },
+    {
+      "event": "reaped",
+      "name": "planner_server",
+      "returncode": 0,
+      "steady_ns": 13660131243828159
+    },
+    {
+      "event": "reaped",
+      "name": "smoother_server",
+      "returncode": 0,
+      "steady_ns": 13660131243872990
+    },
+    {
+      "event": "reaped",
+      "name": "controller_server",
+      "returncode": 0,
+      "steady_ns": 13660131243918131
+    },
+    {
+      "event": "reaped",
+      "name": "amcl",
+      "returncode": 0,
+      "steady_ns": 13660131243964022
+    },
+    {
+      "event": "reaped",
+      "name": "map_server",
+      "returncode": 0,
+      "steady_ns": 13660131244035103
+    },
+    {
+      "event": "reaped",
+      "name": "command_observer",
+      "returncode": 0,
+      "steady_ns": 13660131244084234
+    },
+    {
+      "event": "reaped",
+      "name": "frames",
+      "returncode": 1,
+      "steady_ns": 13660131244130605
+    },
+    {
+      "event": "reaped",
+      "name": "robot_state_publisher",
+      "returncode": 0,
+      "steady_ns": 13660131244174886
+    },
+    {
+      "event": "reaped",
+      "name": "camera_bridge",
+      "returncode": 0,
+      "steady_ns": 13660131244249487
+    },
+    {
+      "event": "reaped",
+      "name": "sensor_bridge",
+      "returncode": 0,
+      "steady_ns": 13660131244320418
+    },
+    {
+      "event": "reaped",
+      "name": "gazebo",
+      "returncode": 0,
+      "steady_ns": 13660132109238490
+    },
+    {
+      "event": "sigint",
+      "name": "resource_probe",
+      "steady_ns": 13660132109261391
+    },
+    {
+      "event": "reaped",
+      "name": "resource_probe",
+      "returncode": 0,
+      "steady_ns": 13660132322991457
+    }
+  ],
+  "graceful": {
+    "gazebo": {
+      "passed": true,
+      "returncode": 0,
+      "stdout": "data: true\n\n",
+      "stderr": ""
+    }
+  },
+  "timeout_evidence": {}
+}

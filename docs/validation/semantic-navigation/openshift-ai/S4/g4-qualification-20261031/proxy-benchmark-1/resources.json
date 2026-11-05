@@ -1,0 +1,383 @@
+[
+  {
+    "apiVersion": "v1",
+    "kind": "ConfigMap",
+    "metadata": {
+      "name": "semantic-g4-sam3-config",
+      "namespace": "semantic-navigation",
+      "labels": {
+        "app": "semantic-g4-sam3-router"
+      }
+    },
+    "data": {
+      "cyclonedds.xml": "<CycloneDDS><Domain id=\"any\"><General><Interfaces><NetworkInterface name=\"lo\"/></Interfaces><AllowMulticast>false</AllowMulticast></General><Discovery><ParticipantIndex>auto</ParticipantIndex></Discovery><Internal><SocketReceiveBufferSize min=\"4 MiB\" max=\"4 MiB\"/><NackDelay>1ms</NackDelay></Internal></Domain></CycloneDDS>",
+      "router.json5": "{\n  \"mode\": \"router\",\n  \"listen\": { \"endpoints\": [\"tcp/0.0.0.0:17448\"] },\n  \"scouting\": { \"multicast\": { \"enabled\": false } }\n}\n",
+      "sam3-bridge.json5": "{\n  \"plugins\": { \"ros2dds\": { \"allow\": {\n      \"publishers\": [\n        \"^/robot_1/semantic/mask$\",\n        \"^/robot_1/semantic/points$\",\n        \"^/robot_1/semantic/timing$\",\n        \"^/robot_1/semantic/label_info$\",\n        \"^/robot_1/semantic/status$\",\n        \"^/robot_1/semantic/ready$\"\n      ],\n      \"subscribers\": [\n        \"^/clock$\",\n        \"^/robot_1/camera/color/image_compressed$\",\n        \"^/robot_1/camera/depth/image_compressed$\",\n        \"^/robot_1/camera/color/camera_info$\",\n        \"^/robot_1/camera/capture_trace$\",\n        \"^/robot_1/camera/compression_trace$\"\n      ]\n    } } },\n  \"mode\": \"client\",\n  \"connect\": { \"endpoints\": [\"tcp/semantic-g4-sam3-router:17448\"], \"exit_on_failure\": false, \"timeout_ms\": -1 },\n  \"scouting\": { \"multicast\": { \"enabled\": false } }\n}\n",
+      "identity.json": "{\n  \"schema\": \"semantic-deployment/v1\",\n  \"model_name\": \"sam3-mat-v1\",\n  \"weights_sha256\": \"9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e\",\n  \"source_revision\": \"0570b3a5be9c4e694f23d85232fb55f4a6f1f7fc\",\n  \"container_digest\": \"sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e\",\n  \"shared_sha256\": {\n    \"inference_contract.py\": \"d238d2490f826b6fbb70f07aa5579492dc425e8c858b780c8216679f121ffdef\",\n    \"sam3_backend.py\": \"3d83819971704e8ce642db98972194996307b314bb73cbb44257384e45714761\",\n    \"sam3_runtime_core.py\": \"683cf53a5b6378fa72d0cefe404bd899039b1420b4d5a2e7cfe3faecaf57085f\"\n  },\n  \"versions\": {\n    \"model\": \"3c879f39826c281e95690f02c7821c4de09afae7\",\n    \"preprocess\": \"sam3-pil-rgb/v1\",\n    \"decoder\": \"sam3-binary-instances/v1\"\n  },\n  \"precision\": \"bfloat16\",\n  \"policy\": \"avoid-target/v1\",\n  \"prompt\": \"red mat\",\n  \"threshold\": 0.5\n}\n",
+      "g4_fault_proxy.py": "#!/usr/bin/env python3\n\"\"\"Loopback-only G4 mTLS fault injector; healthy calls reach the pinned model.\n\nUsed only for fault qualification, never for the nominal paired series.\nHTTP failure modes are explicit response injections, not claims of changing\nproduction auth/admission policy. Each prediction records the active mode.\n\"\"\"\nimport http.client\nfrom concurrent.futures import ThreadPoolExecutor\nfrom http.server import BaseHTTPRequestHandler, ThreadingHTTPServer\nimport json\nfrom pathlib import Path\nimport socket\nimport ssl\nimport threading\nimport time\n\nMODES = ('healthy', 'serving', 'network', 'auth', 'overload', 'hang', 'wrong_version')\nMODE = Path('/tmp/g4-fault-mode')\nEVENTS = Path('/tmp/g4-proxy-events.jsonl')\nUPSTREAM = 'sam3-mat-v1-tls.semantic-model-serving.svc'\nLOCK = threading.Lock()\n\n\ndef response_fault(mode, code, body):\n    if mode == 'serving':\n        return 503, json.dumps({'error':'g4_injected_'+mode}).encode()\n    if mode == 'wrong_version' and code == 200:\n        data=json.loads(body)\n        data['deployment']['versions']['model']='g4-injected-wrong-version'\n        return code, json.dumps(data).encode()\n    return code, body\n\n\nclass Handler(BaseHTTPRequestHandler):\n    protocol_version='HTTP/1.1'\n    def log_message(self,*args): pass\n    def handle_request(self):\n        self.connection.settimeout(3)\n        self.connection.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)\n        mode=MODE.read_text().strip() if MODE.exists() else 'healthy'\n        if mode not in MODES: mode='serving'\n        prediction=self.command=='POST'\n        if not prediction: mode='healthy'\n        event={'wall_ns':time.time_ns(),'mode':mode,'method':self.command,'path':self.path}\n        try:\n            size=int(self.headers.get('Content-Length','0'))\n            if not 0<=size<=16*1024*1024: raise ValueError('request too large')\n            body=self.rfile.read(size)\n            if prediction and mode=='network':\n                self.connection.shutdown(socket.SHUT_RDWR); self.close_connection=True; return\n            if prediction and mode=='hang':\n                time.sleep(1.5); self.close_connection=True; return\n            if prediction and mode=='auth':\n                request=json.loads(body)\n                request['identity']['robot']='g4_unauthorized_robot'\n                body=json.dumps(request).encode()\n            def forward():\n                conn=http.client.HTTPSConnection(UPSTREAM,8443,context=self.server.upstream_context,timeout=1)\n                try:\n                    conn.request(self.command,self.path,body,{'Content-Type':'application/json','Connection':'close'})\n                    reply=conn.getresponse(); status=reply.status\n                    size=int(reply.getheader('Content-Length','-1'))\n                    if not 0<=size<=28*1024*1024: raise ValueError('response too large')\n                    output=bytearray()\n                    while len(output)<size:\n                        chunk=reply.read1(min(65536,size-len(output)))\n                        if not chunk:raise ValueError('truncated response')\n                        output.extend(chunk)\n                    output=bytes(output)\n                    return status, output\n                finally: conn.close()\n            if mode=='serving':\n                code,output=response_fault(mode,200,b'{}')\n            elif mode=='overload':\n                # Two simultaneous real requests exercise the server's single\n                # admission slot. Only its real 429 is delivered to the adapter.\n                barrier=threading.Barrier(2)\n                def competing():\n                    barrier.wait(timeout=1)\n                    return forward()\n                with ThreadPoolExecutor(max_workers=2) as pool:\n                    futures=[pool.submit(competing) for _ in range(2)]\n                    replies=[f.result() for f in futures]\n                event['upstream_statuses']=[r[0] for r in replies]\n                rejected=next((r for r in replies if r[0]==429),None)\n                if rejected is None: raise RuntimeError('overload injection did not obtain real 429')\n                code,output=rejected\n            else:\n                code,output=forward()\n                event['upstream_status']=code\n                code,output=response_fault(mode,code,output)\n            event['status']=code\n            self.send_response(code);self.send_header('Content-Type','application/json')\n            self.send_header('Content-Length',str(len(output)));self.send_header('Connection','close');self.end_headers()\n            self.wfile.write(output);self.close_connection=True\n        except Exception as exc:\n            event['error']=type(exc).__name__;self.close_connection=True\n        finally:\n            event['finished_wall_ns']=time.time_ns()\n            with LOCK:\n                with EVENTS.open('a') as f:f.write(json.dumps(event)+'\\n')\n    do_GET=handle_request\n    do_POST=handle_request\n\n\nif __name__=='__main__':\n    server=ThreadingHTTPServer(('127.0.0.1',9443),Handler)\n    server.upstream_context=ssl.create_default_context(cafile='/cert/ca.crt')\n    server.upstream_context.load_cert_chain('/cert/tls.crt','/cert/tls.key')\n    ctx=ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)\n    ctx.load_cert_chain('/proxy-tls/tls.crt','/proxy-tls/tls.key')\n    ctx.load_verify_locations('/cert/ca.crt');ctx.verify_mode=ssl.CERT_REQUIRED\n    server.socket=ctx.wrap_socket(server.socket,server_side=True)\n    server.serve_forever()\n"
+    }
+  },
+  {
+    "apiVersion": "v1",
+    "kind": "Service",
+    "metadata": {
+      "name": "semantic-g4-sam3-router",
+      "namespace": "semantic-navigation",
+      "labels": {
+        "app": "semantic-g4-sam3-router"
+      }
+    },
+    "spec": {
+      "selector": {
+        "app": "semantic-g4-sam3-router"
+      },
+      "ports": [
+        {
+          "name": "zenoh",
+          "port": 17448,
+          "targetPort": 17448
+        }
+      ]
+    }
+  },
+  {
+    "apiVersion": "apps/v1",
+    "kind": "Deployment",
+    "metadata": {
+      "name": "semantic-g4-sam3-router",
+      "namespace": "semantic-navigation",
+      "labels": {
+        "app": "semantic-g4-sam3-router"
+      }
+    },
+    "spec": {
+      "replicas": 1,
+      "selector": {
+        "matchLabels": {
+          "app": "semantic-g4-sam3-router"
+        }
+      },
+      "template": {
+        "metadata": {
+          "labels": {
+            "app": "semantic-g4-sam3-router"
+          }
+        },
+        "spec": {
+          "containers": [
+            {
+              "name": "router",
+              "image": "docker.io/eclipse/zenoh@sha256:137310456cc7a75d955063513207c737f25071fbb74fd7641835c50ab8e3369f",
+              "imagePullPolicy": "IfNotPresent",
+              "args": [
+                "-c",
+                "/phase5-config/router.json5"
+              ],
+              "ports": [
+                {
+                  "name": "zenoh",
+                  "containerPort": 17448
+                }
+              ],
+              "resources": {
+                "requests": {
+                  "cpu": "100m",
+                  "memory": "128Mi"
+                },
+                "limits": {
+                  "cpu": "500m",
+                  "memory": "512Mi"
+                }
+              },
+              "volumeMounts": [
+                {
+                  "name": "config",
+                  "mountPath": "/phase5-config",
+                  "readOnly": true
+                }
+              ]
+            }
+          ],
+          "volumes": [
+            {
+              "name": "config",
+              "configMap": {
+                "name": "semantic-g4-sam3-config"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "name": "semantic-g4-sam3",
+      "namespace": "semantic-navigation",
+      "labels": {
+        "app": "semantic-g4-sam3",
+        "semantic-serving-client": "sam3-mat-v1",
+        "semantic-qualification": "g4",
+        "g4-fault-proxy": "true"
+      }
+    },
+    "spec": {
+      "nodeSelector": {
+        "kubernetes.io/hostname": "ip-10-0-53-174.ec2.internal"
+      },
+      "serviceAccountName": "sam3-replay",
+      "automountServiceAccountToken": false,
+      "terminationGracePeriodSeconds": 10,
+      "containers": [
+        {
+          "name": "sam3-zenoh-bridge",
+          "image": "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+          "args": [
+            "-c",
+            "/phase5-bridges/sam3-bridge.json5"
+          ],
+          "env": [
+            {
+              "name": "ROS_DOMAIN_ID",
+              "value": "86"
+            },
+            {
+              "name": "ROS_DISTRO",
+              "value": "jazzy"
+            },
+            {
+              "name": "RMW_IMPLEMENTATION",
+              "value": "rmw_cyclonedds_cpp"
+            },
+            {
+              "name": "CYCLONEDDS_URI",
+              "value": "file:///phase5-bridges/cyclonedds.xml"
+            }
+          ],
+          "volumeMounts": [
+            {
+              "name": "config",
+              "mountPath": "/phase5-bridges",
+              "readOnly": true
+            }
+          ],
+          "resources": {
+            "requests": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            },
+            "limits": {
+              "cpu": "500m",
+              "memory": "512Mi"
+            }
+          }
+        },
+        {
+          "name": "sam3-inference",
+          "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-cpu-adapter@sha256:20ea4f5e6bc30646f48b29895eb071d40403f8c20b0c1526aeacf06dce716d4b",
+          "command": [
+            "/bin/bash",
+            "-ec"
+          ],
+          "args": [
+            "until python3 -c 'import socket; socket.create_connection((\"127.0.0.1\",9443),1).close()' 2>/dev/null; do sleep 1; done; source /opt/ros/jazzy/setup.bash; python3 /opt/semantic-perception/sam3_ros_node.py --ros-args -p backend:=http -p robot_id:=robot_1 -p stream_id:=camera/color & echo $! > /tmp/sam3-python.pid; wait $(cat /tmp/sam3-python.pid)"
+          ],
+          "env": [
+            {
+              "name": "SEMANTIC_BACKEND",
+              "value": "http"
+            },
+            {
+              "name": "SEMANTIC_ENDPOINT",
+              "value": "https://localhost:9443"
+            },
+            {
+              "name": "SEMANTIC_TLS_CA",
+              "value": "/proxy-tls/tls.crt"
+            },
+            {
+              "name": "SEMANTIC_TLS_CERT",
+              "value": "/cert/tls.crt"
+            },
+            {
+              "name": "SEMANTIC_TLS_KEY",
+              "value": "/cert/tls.key"
+            },
+            {
+              "name": "SEMANTIC_DEPLOYMENT_IDENTITY",
+              "value": "/config/identity.json"
+            },
+            {
+              "name": "SEMANTIC_REQUIRE_CAPTURE_TRACE",
+              "value": "1"
+            },
+            {
+              "name": "SEMANTIC_CLOCK_UNCERTAINTY_MS",
+              "value": "2"
+            },
+            {
+              "name": "SEMANTIC_MAX_WORK_WAIT_MS",
+              "value": "60"
+            },
+            {
+              "name": "SEMANTIC_STATUS_FILE",
+              "value": "/tmp/semantic-status.json"
+            },
+            {
+              "name": "ROS_DOMAIN_ID",
+              "value": "86"
+            },
+            {
+              "name": "CYCLONEDDS_URI",
+              "value": "file:///config/cyclonedds.xml"
+            },
+            {
+              "name": "HOME",
+              "value": "/tmp/g4-home"
+            },
+            {
+              "name": "ROS_LOG_DIR",
+              "value": "/tmp/g4-logs"
+            }
+          ],
+          "resources": {
+            "requests": {
+              "cpu": "1",
+              "memory": "1Gi"
+            },
+            "limits": {
+              "cpu": "2",
+              "memory": "2Gi"
+            }
+          },
+          "securityContext": {
+            "allowPrivilegeEscalation": false,
+            "readOnlyRootFilesystem": true,
+            "capabilities": {
+              "drop": [
+                "ALL"
+              ]
+            },
+            "seccompProfile": {
+              "type": "RuntimeDefault"
+            }
+          },
+          "readinessProbe": {
+            "exec": {
+              "command": [
+                "python3",
+                "-c",
+                "import json,time; s=json.load(open(\"/tmp/semantic-status.json\")); assert s[\"ready\"] and 0 <= time.time_ns()-s[\"status_wall_ns\"] < 500000000"
+              ]
+            },
+            "periodSeconds": 1,
+            "timeoutSeconds": 1,
+            "failureThreshold": 1
+          },
+          "volumeMounts": [
+            {
+              "name": "config",
+              "mountPath": "/config",
+              "readOnly": true
+            },
+            {
+              "name": "tls",
+              "mountPath": "/cert",
+              "readOnly": true
+            },
+            {
+              "name": "tmp",
+              "mountPath": "/tmp"
+            },
+            {
+              "name": "proxy-tls",
+              "mountPath": "/proxy-tls",
+              "readOnly": true
+            }
+          ]
+        },
+        {
+          "name": "fault-proxy",
+          "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-cpu-adapter@sha256:20ea4f5e6bc30646f48b29895eb071d40403f8c20b0c1526aeacf06dce716d4b",
+          "command": [
+            "python3",
+            "/config/g4_fault_proxy.py"
+          ],
+          "volumeMounts": [
+            {
+              "name": "config",
+              "mountPath": "/config",
+              "readOnly": true
+            },
+            {
+              "name": "tls",
+              "mountPath": "/cert",
+              "readOnly": true
+            },
+            {
+              "name": "tmp",
+              "mountPath": "/tmp"
+            },
+            {
+              "name": "proxy-tls",
+              "mountPath": "/proxy-tls",
+              "readOnly": true
+            }
+          ],
+          "securityContext": {
+            "allowPrivilegeEscalation": false,
+            "readOnlyRootFilesystem": true,
+            "capabilities": {
+              "drop": [
+                "ALL"
+              ]
+            },
+            "seccompProfile": {
+              "type": "RuntimeDefault"
+            }
+          },
+          "resources": {
+            "requests": {
+              "cpu": "100m",
+              "memory": "64Mi"
+            },
+            "limits": {
+              "cpu": "1",
+              "memory": "256Mi"
+            }
+          }
+        }
+      ],
+      "volumes": [
+        {
+          "name": "config",
+          "configMap": {
+            "name": "semantic-g4-sam3-config"
+          }
+        },
+        {
+          "name": "tls",
+          "secret": {
+            "secretName": "sam3-replay-tls",
+            "defaultMode": 288
+          }
+        },
+        {
+          "name": "tmp",
+          "emptyDir": {
+            "sizeLimit": "256Mi"
+          }
+        },
+        {
+          "name": "proxy-tls",
+          "secret": {
+            "secretName": "semantic-g4-proxy-tls",
+            "defaultMode": 288
+          }
+        }
+      ]
+    }
+  }
+]

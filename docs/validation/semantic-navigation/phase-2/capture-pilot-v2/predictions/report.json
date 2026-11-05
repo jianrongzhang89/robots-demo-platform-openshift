@@ -1,0 +1,80 @@
+{
+  "status": "SCORED_NOT_ACCEPTED",
+  "split": "development",
+  "model": "facebook/sam3 (local checkpoint)",
+  "checkpoint_sha256": "9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e",
+  "device": "cuda",
+  "device_name": "NVIDIA L40S",
+  "prompt": "red floor mat",
+  "confidence_threshold": 0.5,
+  "image_count": 6,
+  "positive_count": 5,
+  "negative_count": 1,
+  "positive_recall_iou_ge_0_5": 0.4,
+  "positive_median_iou_including_misses": 0.0,
+  "negative_false_positive_frame_rate": 0.0,
+  "inference_seconds_median": 0.097635,
+  "inference_seconds_p95": 0.6855884999999999,
+  "peak_gpu_allocated_bytes": 5449551872,
+  "peak_gpu_reserved_bytes": 5676990464,
+  "results": [
+    {
+      "image": "/phase2-data/initial/initial-0000.jpg",
+      "presence": "positive",
+      "iou": 0.0,
+      "detected": false,
+      "scores": [],
+      "inference_seconds": 0.881127,
+      "prediction_mask": "/phase2-out/0000-prediction.png"
+    },
+    {
+      "image": "/phase2-data/moved/moved-0000.jpg",
+      "presence": "positive",
+      "iou": 0.0,
+      "detected": false,
+      "scores": [],
+      "inference_seconds": 0.098973,
+      "prediction_mask": "/phase2-out/0001-prediction.png"
+    },
+    {
+      "image": "/phase2-data/oblique/oblique-0000.jpg",
+      "presence": "positive",
+      "iou": 0.0,
+      "detected": false,
+      "scores": [],
+      "inference_seconds": 0.097647,
+      "prediction_mask": "/phase2-out/0002-prediction.png"
+    },
+    {
+      "image": "/phase2-data/tile-negative/tile-negative-0000.jpg",
+      "presence": "negative",
+      "iou": 0.0,
+      "detected": false,
+      "scores": [],
+      "inference_seconds": 0.095875,
+      "prediction_mask": "/phase2-out/0003-prediction.png"
+    },
+    {
+      "image": "/phase2-data/unoccluded-control/unoccluded-0000.jpg",
+      "presence": "positive",
+      "iou": 0.901454,
+      "detected": true,
+      "scores": [
+        0.890625
+      ],
+      "inference_seconds": 0.097623,
+      "prediction_mask": "/phase2-out/0004-prediction.png"
+    },
+    {
+      "image": "/phase2-data/moderate-occlusion/moderate-0000.jpg",
+      "presence": "positive",
+      "iou": 0.903495,
+      "detected": true,
+      "scores": [
+        0.8984375
+      ],
+      "inference_seconds": 0.095917,
+      "prediction_mask": "/phase2-out/0005-prediction.png"
+    }
+  ]
+}

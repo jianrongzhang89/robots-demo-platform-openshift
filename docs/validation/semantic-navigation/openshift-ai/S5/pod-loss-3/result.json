@@ -1,0 +1,61 @@
+{
+  "started_at": "2026-11-04T14:48:02.217533+00:00",
+  "passed": false,
+  "injected": false,
+  "replacement_ready": false,
+  "events": [],
+  "returncode": 1,
+  "fixture_passed": false,
+  "cleanup": [
+    {
+      "command": [
+        "/Users/zhangj/bin/oc",
+        "-n",
+        "semantic-navigation",
+        "delete",
+        "pod",
+        "semantic-phase5-native",
+        "--ignore-not-found",
+        "--wait=true",
+        "--timeout=90s"
+      ],
+      "returncode": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/Users/zhangj/devt/src/robots-demo-platform-openshift/scripts/semantic-navigation/g4_topology.py",
+        "down"
+      ],
+      "returncode": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/Users/zhangj/bin/oc",
+        "-n",
+        "semantic-navigation",
+        "create",
+        "-f",
+        "docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/rendering-reservation-saved.json"
+      ],
+      "returncode": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/Users/zhangj/bin/oc",
+        "-n",
+        "semantic-navigation",
+        "wait",
+        "pod/sam3-g0-rendering-reservation",
+        "--for=condition=Ready",
+        "--timeout=120s"
+      ],
+      "returncode": 0,
+      "stderr": ""
+    }
+  ],
+  "cleanup_ok": true
+}

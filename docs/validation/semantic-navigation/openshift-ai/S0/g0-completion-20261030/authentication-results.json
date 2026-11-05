@@ -1,0 +1,27 @@
+{
+  "authorized_metadata": {
+    "code": 503,
+    "body": "{\"ready\":false,\"deployment\":null}"
+  },
+  "missing_certificate": {
+    "tls_rejected": true,
+    "reason": "[SSL: TLSV13_ALERT_CERTIFICATE_REQUIRED] tlsv13 alert certificate required (_ssl.c:2570)"
+  },
+  "unbound_principal": {
+    "code": 403,
+    "body": "{\"status\":\"forbidden\"}"
+  },
+  "wrong_server_identity": {
+    "tls_rejected": true,
+    "reason": "[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: IP address mismatch, certificate is not valid for '172.30.228.182'. (_ssl.c:1000)"
+  },
+  "authorized_predict": {
+    "code": 503,
+    "body": "{\"schema\":\"semantic-inference/v1\",\"identity\":{\"request_id\":\"3d5fb532-de7b-496a-810f-6935fbbd3d0d\",\"robot\":\"robot_1\",\"stream\":\"camera/color\",\"sequence\":1,\"epoch\":\"g0\",\"generation\":1},\"capture\":{\"stamp_ns\":100,\"frame_id\":\"optical\"},\"versions\":{\"model\":\"3c879f39826c281e95690f02c7821c4de09afae7\",\"preprocess\":\"sam3-pil-rgb/v1\",\"decoder\":\"sam3-binary-instances/v1\"},\"policy\":\"avoid-target/v1\",\"width\":3,\"height\":2,\"status\":\"not_ready\",\"reason\":\"not_ready\"}"
+  },
+  "spoofed_robot": {
+    "code": 403,
+    "body": "{\"schema\":\"semantic-inference/v1\",\"status\":\"forbidden\"}"
+  },
+  "passed": true
+}

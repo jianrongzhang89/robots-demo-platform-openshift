@@ -1,0 +1,13 @@
+{
+  "scope": "Summary of initial console test run; not a replacement for raw successful rerun logs",
+  "command": "PYTHONPATH=apps/semantic-model-server:apps/semantic-perception python3 -m unittest discover -s apps/semantic-model-server/tests -v",
+  "tests": 13,
+  "errors": 3,
+  "error": "ssl.SSLCertVerificationError: CA cert does not include key usage extension",
+  "failed_tests": [
+    "test_https_parity_and_reuse",
+    "test_no_certificate_and_unbound_certificate",
+    "test_oversized_malformed_and_chunked"
+  ],
+  "fix": "Add explicit CA basicConstraints/keyUsage and leaf basicConstraints/keyUsage to ephemeral test certificates; retain full certificate verification."
+}

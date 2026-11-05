@@ -1,0 +1,28 @@
+{
+ "event": "qualification-14 setup",
+ "date": "2026-11-02",
+ "preconditions": {
+  "S1": "PASS accepted",
+  "S2": "PASS accepted",
+  "S3": "PASS accepted",
+  "leftover_g4_or_fixture_resources": "none",
+  "pilot": "serving-transport-pilot-10 PASS (all five fault-stop modes at 0.3 m injection)",
+  "prior_attempt": "qualification-13 stopped on trial-01: the known coincident-jitter tail (~2% per trial, 1 in 50 at the 30 Hz candidate) hit during the first second of armed motion; environment verified clean; user approved re-running unchanged"
+ },
+ "candidate": "unchanged from qualification-13 (30 simulation-Hz camera cadence; zenoh bridge CPU limits 1 core; SAM3-readiness bound 120 s; sam3_readiness_death ladder signature; ordered restore with up to three verified client replacements; wait-ownership cap 2.5 s wall; fault-stop injection at 0.3 m established motion; adapter and router evidence collection)",
+ "environment": "adapter node ip-10-0-53-174 freed (hotel-sim at 0 replicas); keep hotel-sim at 0 while G4 runs",
+ "rendering_reservation": "deleted to free the A10G for the G4 fixture; run_g4_suite.py finally restores it from rendering-reservation-saved.json",
+ "proxy_certificate": {
+  "secret": "semantic-g4-proxy-tls",
+  "subject": "CN=localhost",
+  "notBefore": "Nov 2 15:49:28 2026 GMT",
+  "notAfter": "Nov 5 15:49:28 2026 GMT",
+  "sha256_fingerprint": "DC:8B:C2:40:BA:80:31:C1:76:D8:A0:1A:09:CE:98:79:22:82:77:13:95:DD:0A:1B:0F:6B:0E:09:3A:FB:E1:65",
+  "key_material_retained": false
+ },
+ "sampler": {
+  "output": "serving-resources-qualification-14.jsonl",
+  "stop_file": "/tmp/g4-qualification-14-monitor-stop"
+ },
+ "command": "run_g4_suite.py --output-dir qualification-14 --reservation rendering-reservation-saved.json"
+}

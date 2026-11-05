@@ -1,0 +1,36 @@
+{
+  "pilot": "serving-unavailable lease-transport fix",
+  "passed": false,
+  "trial_passed": false,
+  "cleanup_ok": true,
+  "events": [
+    {
+      "event": "model_serving_preflight",
+      "running_ready": 1
+    },
+    {
+      "event": "rendering_reservation_removed"
+    }
+  ],
+  "cleanup": [
+    {
+      "action": "remove G4 topology",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "action": "remove fault injector certificate",
+      "returncode": 0
+    },
+    {
+      "action": "restore rendering reservation",
+      "returncode": 0,
+      "stderr": ""
+    },
+    {
+      "action": "reservation Ready",
+      "returncode": 0
+    }
+  ]
+}

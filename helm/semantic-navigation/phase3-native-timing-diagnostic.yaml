@@ -1,0 +1,211 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: semantic-phase3-inference-config
+  namespace: semantic-navigation
+data:
+  cyclonedds.xml: |
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <CycloneDDS xmlns="https://cdds.io/config">
+      <Domain id="any">
+        <General><Interfaces><NetworkInterface name="lo" /></Interfaces><AllowMulticast>false</AllowMulticast></General>
+        <Discovery><ParticipantIndex>auto</ParticipantIndex></Discovery>
+      </Domain>
+    </CycloneDDS>
+  router.json5: |
+    { mode: "router", listen: { endpoints: ["tcp/0.0.0.0:17448"] }, scouting: { multicast: { enabled: false } } }
+  sim-bridge.json5: |
+    {
+      plugins: { ros2dds: { allow: { publishers: [".*/camera/color/image_compressed", ".*/camera/depth/image_compressed", ".*/camera/color/camera_info", ".*/tf", ".*/tf_static", ".*/camera/capture_trace", ".*/camera/compression_trace", ".*clock"], subscribers: [] } } },
+      mode: "client",
+      connect: { endpoints: ["tcp/semantic-phase3-router:17448"], exit_on_failure: false },
+      scouting: { multicast: { enabled: false } }
+    }
+  inference-bridge.json5: |
+    {
+      plugins: { ros2dds: { allow: { publishers: [], subscribers: [".*/camera/color/image_compressed", ".*/camera/depth/image_compressed", ".*/camera/color/camera_info", ".*/tf", ".*/tf_static", ".*/camera/capture_trace", ".*/camera/compression_trace", ".*clock"] } } },
+      mode: "client",
+      connect: { endpoints: ["tcp/semantic-phase3-router:17448"], exit_on_failure: false },
+      scouting: { multicast: { enabled: false } }
+    }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: semantic-phase3-router
+  namespace: semantic-navigation
+spec:
+  selector: { app: semantic-phase3-router }
+  ports: [{ name: zenoh, port: 17448, targetPort: 17448 }]
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: semantic-phase3-router
+  namespace: semantic-navigation
+  labels: { app: semantic-phase3-router }
+spec:
+  restartPolicy: Always
+  containers:
+    - name: router
+      image: eclipse/zenoh:1.5.0
+      args: ["-c", "/phase3-config/router.json5"]
+      volumeMounts:
+        - { name: config, mountPath: /phase3-config, readOnly: true }
+      resources:
+        requests: { cpu: 100m, memory: 128Mi }
+        limits: { cpu: 500m, memory: 512Mi }
+  volumes:
+    - name: config
+      configMap: { name: semantic-phase3-inference-config }
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: semantic-phase3-simulator
+  namespace: semantic-navigation
+  labels: { app: semantic-phase3-simulator }
+spec:
+  restartPolicy: Always
+  nodeSelector:
+    kubernetes.io/hostname: ip-10-0-38-113.ec2.internal
+  tolerations:
+    - key: cpu-taint
+      operator: Equal
+      value: "true"
+      effect: NoSchedule
+  containers:
+    - name: simulator
+      image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:d417c9f252d1f89dd859290a4bca1f634bcfd7d3cde6d1702c409d432bd48894
+      imagePullPolicy: Always
+      command: ["/bin/bash", "/entrypoint-semantic-navigation-phase1.sh"]
+      env:
+        - { name: ROS_DISTRO, value: jazzy }
+        - { name: ROS_DOMAIN_ID, value: "79" }
+        - { name: RMW_IMPLEMENTATION, value: rmw_cyclonedds_cpp }
+        - { name: CYCLONEDDS_URI, value: file:///phase3-config/cyclonedds.xml }
+        - { name: GZ_PARTITION, value: semantic_phase3_inference }
+        - { name: GZ_IP, value: 127.0.0.1 }
+        - { name: RESOLUTION, value: 1600x900x24 }
+        - { name: SEMANTIC_PHASE2_SCENE, value: "1" }
+        - { name: SEMANTIC_CAPTURE_TRACE, value: "1" }
+      volumeMounts:
+        - { name: config, mountPath: /phase3-config, readOnly: true }
+      resources:
+        requests: { cpu: "1", memory: 3Gi }
+        limits: { cpu: "12", memory: 8Gi }
+    - name: camera-compressor
+      image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:7caaece0947254dd45c0d85d5fb77a3ebfd8fad4a63f7fe5c7cafed8ee3d2cc1
+      imagePullPolicy: Always
+      command: ["/bin/bash", "-lc"]
+      args:
+        - >-
+          export HOME=/tmp/ros-home ROS_LOG_DIR=/tmp/ros-home/.ros/log;
+          mkdir -p "$ROS_LOG_DIR";
+          source /opt/ros/jazzy/setup.bash;
+          source /opt/rmf_demos_ws/install/setup.bash;
+          for attempt in {1..90}; do
+            color_info=$(ros2 topic info /robot_1/camera/color/image_raw 2>/dev/null || true);
+            depth_info=$(ros2 topic info /robot_1/camera/depth/image_raw 2>/dev/null || true);
+            if printf '%s' "$color_info" | grep -q 'Publisher count: 1' && printf '%s' "$depth_info" | grep -q 'Publisher count: 1'; then break; fi;
+            sleep 1;
+          done;
+          exec python3 /opt/semantic-navigation/camera_compressor.py
+      env:
+        - { name: ROS_DISTRO, value: jazzy }
+        - { name: ROS_DOMAIN_ID, value: "79" }
+        - { name: RMW_IMPLEMENTATION, value: rmw_cyclonedds_cpp }
+        - { name: CYCLONEDDS_URI, value: file:///phase3-config/cyclonedds.xml }
+        - { name: SEMANTIC_CAMERA_SUBSCRIPTION_DEPTH, value: "20" }
+        - { name: SEMANTIC_COMPRESSION_TRACE, value: "1" }
+        - { name: SEMANTIC_RAW_INPUT, value: gz }
+        - { name: GZ_PARTITION, value: semantic_phase3_inference }
+        - { name: GZ_IP, value: 127.0.0.1 }
+      volumeMounts:
+        - { name: config, mountPath: /phase3-config, readOnly: true }
+      resources:
+        requests: { cpu: 250m, memory: 512Mi }
+        limits: { cpu: "2", memory: 2Gi }
+    - name: sim-zenoh-bridge
+      image: eclipse/zenoh-bridge-ros2dds:1.5.0
+      args: ["-c", "/phase3-config/sim-bridge.json5"]
+      env:
+        - { name: ROS_DOMAIN_ID, value: "79" }
+        - { name: ROS_DISTRO, value: jazzy }
+        - { name: RMW_IMPLEMENTATION, value: rmw_cyclonedds_cpp }
+        - { name: CYCLONEDDS_URI, value: file:///phase3-config/cyclonedds.xml }
+      volumeMounts:
+        - { name: config, mountPath: /phase3-config, readOnly: true }
+      resources:
+        requests: { cpu: 100m, memory: 128Mi }
+        limits: { cpu: "1", memory: 1Gi }
+  volumes:
+    - name: config
+      configMap: { name: semantic-phase3-inference-config }
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: semantic-phase3-inference
+  namespace: semantic-navigation
+  labels: { app: semantic-phase3-inference }
+spec:
+  restartPolicy: Always
+  securityContext:
+    fsGroup: 1001340000
+    fsGroupChangePolicy: OnRootMismatch
+  nodeSelector:
+    kubernetes.io/hostname: ip-10-0-18-251.ec2.internal
+  tolerations:
+    - key: g6e-gpu
+      operator: Equal
+      value: "true"
+      effect: NoSchedule
+  containers:
+    - name: inference-zenoh-bridge
+      image: eclipse/zenoh-bridge-ros2dds:1.5.0
+      args: ["-c", "/phase3-config/inference-bridge.json5"]
+      env:
+        - { name: ROS_DOMAIN_ID, value: "80" }
+        - { name: ROS_DISTRO, value: jazzy }
+        - { name: HOME, value: /tmp/sam3-home }
+        - { name: ROS_LOG_DIR, value: /tmp/ros-log }
+        - { name: RMW_IMPLEMENTATION, value: rmw_cyclonedds_cpp }
+        - { name: CYCLONEDDS_URI, value: file:///phase3-config/cyclonedds.xml }
+      volumeMounts:
+        - { name: config, mountPath: /phase3-config, readOnly: true }
+      resources:
+        requests: { cpu: 100m, memory: 128Mi }
+        limits: { cpu: 500m, memory: 512Mi }
+    - name: sam3-inference
+      image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/sam3-runtime@sha256:10cee0ad265d8ee0ae280a78d0183e032b1044046b43560f48516b86f4097bb0
+      imagePullPolicy: Always
+      env:
+        - { name: ROS_DOMAIN_ID, value: "80" }
+        - { name: ROS_DISTRO, value: jazzy }
+        - { name: HOME, value: /tmp/sam3-home }
+        - { name: ROS_LOG_DIR, value: /tmp/ros-log }
+        - { name: RMW_IMPLEMENTATION, value: rmw_cyclonedds_cpp }
+        - { name: CYCLONEDDS_URI, value: file:///phase3-config/cyclonedds.xml }
+        - { name: SAM3_PROMPT, value: "red mat" }
+        - { name: SEMANTIC_REQUIRE_CAPTURE_TRACE, value: "1" }
+        - { name: SEMANTIC_CLOCK_UNCERTAINTY_MS, value: "2" }
+        # Test-only hook; absent from a normal runtime deployment.
+        - { name: PHASE3_DIAGNOSTIC_FAULT_FILE, value: /tmp/phase3-inference-fault.json }
+      volumeMounts:
+        - { name: config, mountPath: /phase3-config, readOnly: true }
+        - { name: model, mountPath: /models, readOnly: true }
+      resources:
+        requests: { cpu: "3", memory: 12Gi, nvidia.com/gpu: "1" }
+        limits: { cpu: "6", memory: 24Gi, nvidia.com/gpu: "1" }
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities: { drop: ["ALL"] }
+        runAsNonRoot: true
+        seccompProfile: { type: RuntimeDefault }
+  volumes:
+    - name: config
+      configMap: { name: semantic-phase3-inference-config }
+    - name: model
+      persistentVolumeClaim:
+        claimName: sam3-checkpoint

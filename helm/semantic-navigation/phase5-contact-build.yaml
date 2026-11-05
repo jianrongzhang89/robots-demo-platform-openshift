@@ -1,0 +1,16 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: semantic-safety-contacts-phase5
+  namespace: semantic-navigation
+spec:
+  runPolicy: Serial
+  source: {binary: {}}
+  strategy:
+    type: Docker
+    dockerStrategy: {dockerfilePath: Containerfile.contacts}
+  output:
+    to: {kind: ImageStreamTag, name: 'semantic-safety:phase5-contacts'}
+  resources:
+    requests: {cpu: '1', memory: 2Gi}
+    limits: {cpu: '4', memory: 6Gi}

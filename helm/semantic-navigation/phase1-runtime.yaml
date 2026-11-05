@@ -1,0 +1,184 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: semantic-navigation-phase1-config
+  namespace: semantic-navigation
+data:
+  cyclonedds.xml: |
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <CycloneDDS xmlns="https://cdds.io/config">
+      <Domain id="any">
+        <General><Interfaces><NetworkInterface name="lo" /></Interfaces><AllowMulticast>false</AllowMulticast></General>
+        <Discovery><ParticipantIndex>auto</ParticipantIndex></Discovery>
+      </Domain>
+    </CycloneDDS>
+  router.json5: |
+    { mode: "router", listen: { endpoints: ["tcp/0.0.0.0:7447"] }, scouting: { multicast: { enabled: false } } }
+  sim-bridge.json5: |
+    {
+      plugins: { ros2dds: { allow: { publishers: [".*"], subscribers: [".*/(cmd_vel|lift_requests|door_requests)"] } } },
+      mode: "client",
+      connect: { endpoints: ["tcp/semantic-zenoh-router:7447"], exit_on_failure: false },
+      scouting: { multicast: { enabled: false } }
+    }
+  receiver-bridge.json5: |
+    {
+      plugins: { ros2dds: { allow: { publishers: [], subscribers: [".*/camera/color/image_compressed", ".*/camera/depth/image_compressed", ".*/camera/color/camera_info", ".*/tf", ".*/tf_static"] } } },
+      mode: "client",
+      connect: { endpoints: ["tcp/semantic-zenoh-router:7447"], exit_on_failure: false },
+      scouting: { multicast: { enabled: false } }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: semantic-zenoh-router
+  namespace: semantic-navigation
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: semantic-zenoh-router }
+  template:
+    metadata:
+      labels: { app: semantic-zenoh-router }
+    spec:
+      containers:
+        - name: router
+          image: eclipse/zenoh:1.5.0
+          args: ["-c", "/zenoh-config/router.json5"]
+          ports: [{ name: zenoh, containerPort: 7447 }]
+          volumeMounts: [{ name: config, mountPath: /zenoh-config, readOnly: true }]
+          resources:
+            requests: { cpu: 100m, memory: 128Mi }
+            limits: { cpu: 500m, memory: 512Mi }
+      volumes:
+        - name: config
+          configMap: { name: semantic-navigation-phase1-config }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: semantic-zenoh-router
+  namespace: semantic-navigation
+spec:
+  selector: { app: semantic-zenoh-router }
+  ports: [{ name: zenoh, port: 7447, targetPort: 7447 }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: semantic-hotel-sim
+  namespace: semantic-navigation
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: semantic-hotel-sim }
+  template:
+    metadata:
+      labels: { app: semantic-hotel-sim }
+    spec:
+      containers:
+        - name: simulator
+          image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim:phase1
+          imagePullPolicy: Always
+          command: ["/bin/bash", "/entrypoint-semantic-navigation-phase1.sh"]
+          env:
+            - { name: ROS_DISTRO, value: jazzy }
+            - { name: ROS_DOMAIN_ID, value: "0" }
+            - { name: RMW_IMPLEMENTATION, value: rmw_cyclonedds_cpp }
+            - { name: CYCLONEDDS_URI, value: file:///phase1-config/cyclonedds.xml }
+            - { name: GZ_PARTITION, value: semantic_navigation_phase1 }
+            - { name: RESOLUTION, value: 1600x900x24 }
+          ports: [{ name: novnc, containerPort: 6080 }]
+          volumeMounts: [{ name: config, mountPath: /phase1-config, readOnly: true }]
+          resources:
+            requests: { cpu: "1", memory: 3Gi }
+            limits: { cpu: "12", memory: 8Gi }
+        - name: camera-compressor
+          image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim:phase1
+          imagePullPolicy: Always
+          command: ["/bin/bash", "-lc"]
+          args:
+            - >-
+              export HOME=/tmp/ros-home ROS_LOG_DIR=/tmp/ros-home/.ros/log;
+              mkdir -p "$ROS_LOG_DIR";
+              source /opt/ros/jazzy/setup.bash;
+              source /opt/rmf_demos_ws/install/setup.bash;
+              for attempt in {1..60}; do
+                color_info=$(ros2 topic info /robot_1/camera/color/image_raw 2>/dev/null || true);
+                depth_info=$(ros2 topic info /robot_1/camera/depth/image_raw 2>/dev/null || true);
+                if printf '%s' "$color_info" | grep -q 'Publisher count: 1' && printf '%s' "$depth_info" | grep -q 'Publisher count: 1'; then break; fi;
+                sleep 1;
+              done;
+              exec python3 /opt/semantic-navigation/camera_compressor.py
+          env:
+            - { name: ROS_DISTRO, value: jazzy }
+            - { name: ROS_DOMAIN_ID, value: "0" }
+            - { name: RMW_IMPLEMENTATION, value: rmw_cyclonedds_cpp }
+            - { name: CYCLONEDDS_URI, value: file:///phase1-config/cyclonedds.xml }
+          volumeMounts: [{ name: config, mountPath: /phase1-config, readOnly: true }]
+          resources:
+            requests: { cpu: 250m, memory: 512Mi }
+            limits: { cpu: "2", memory: 2Gi }
+        - name: zenoh-bridge
+          image: eclipse/zenoh-bridge-ros2dds:1.5.0
+          args: ["-c", "/zenoh-config/sim-bridge.json5"]
+          env:
+            - { name: ROS_DOMAIN_ID, value: "0" }
+            - { name: ROS_DISTRO, value: jazzy }
+            - { name: RMW_IMPLEMENTATION, value: rmw_cyclonedds_cpp }
+            - { name: CYCLONEDDS_URI, value: file:///zenoh-config/cyclonedds.xml }
+          volumeMounts: [{ name: config, mountPath: /zenoh-config, readOnly: true }]
+          resources:
+            requests: { cpu: 100m, memory: 128Mi }
+            limits: { cpu: "1", memory: 1Gi }
+      volumes:
+        - name: config
+          configMap: { name: semantic-navigation-phase1-config }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: semantic-camera-probe
+  namespace: semantic-navigation
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: semantic-camera-probe }
+  template:
+    metadata:
+      labels: { app: semantic-camera-probe }
+    spec:
+      containers:
+        - name: probe
+          image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim:phase1
+          imagePullPolicy: Always
+          command: ["/bin/bash", "-lc"]
+          args:
+            - source /opt/ros/jazzy/setup.bash; python3 /opt/semantic-navigation/camera_stream_probe.py --duration 600
+          env:
+            - { name: ROS_DISTRO, value: jazzy }
+            - { name: ROS_DOMAIN_ID, value: "0" }
+            - { name: RMW_IMPLEMENTATION, value: rmw_cyclonedds_cpp }
+            - { name: HOME, value: /tmp/ros-home }
+            - { name: ROS_LOG_DIR, value: /tmp/ros-home/.ros/log }
+            - { name: CYCLONEDDS_URI, value: file:///phase1-config/cyclonedds.xml }
+          volumeMounts: [{ name: config, mountPath: /phase1-config, readOnly: true }]
+          resources:
+            requests: { cpu: 100m, memory: 512Mi }
+            limits: { cpu: "1", memory: 2Gi }
+        - name: zenoh-bridge
+          image: eclipse/zenoh-bridge-ros2dds:1.5.0
+          args: ["-c", "/zenoh-config/receiver-bridge.json5"]
+          env:
+            - { name: ROS_DOMAIN_ID, value: "0" }
+            - { name: ROS_DISTRO, value: jazzy }
+            - { name: RMW_IMPLEMENTATION, value: rmw_cyclonedds_cpp }
+            - { name: CYCLONEDDS_URI, value: file:///zenoh-config/cyclonedds.xml }
+          volumeMounts: [{ name: config, mountPath: /zenoh-config, readOnly: true }]
+          resources:
+            requests: { cpu: 100m, memory: 128Mi }
+            limits: { cpu: "1", memory: 1Gi }
+      volumes:
+        - name: config
+          configMap: { name: semantic-navigation-phase1-config }

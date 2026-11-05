@@ -1,0 +1,22 @@
+[
+  {
+    "event": "motion_helper_log_directory",
+    "affected_attempt": "pilot-2",
+    "outcome": "Failed before node initialization or command publication",
+    "evidence": "pilot-2-motion.log",
+    "fix": "Set ROS_LOG_DIR to writable private /tmp/g3-motion-logs; pilots 3/4 and full moving runs retain stop evidence."
+  },
+  {
+    "event": "pod_deletion_wait",
+    "affected_attempt": "preflight pod recreation",
+    "outcome": "30-second wait reached the pod termination-grace boundary; subsequent create succeeded before measurement",
+    "fix": "Independent-run runner waits up to 50 seconds; failed measurements are not retried."
+  },
+  {
+    "event": "metrics_endpoint",
+    "affected_attempt": "initial serving monitor",
+    "outcome": "HTTP 404 on health-port /metrics; no inference mutation",
+    "evidence": "serving-resource-samples.jsonl",
+    "fix": "Use the authenticated TLS /metrics endpoint from the client pod; evidence retained in serving-resource-samples-2.jsonl."
+  }
+]

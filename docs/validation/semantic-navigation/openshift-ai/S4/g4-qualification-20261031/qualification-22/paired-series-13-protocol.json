@@ -1,0 +1,15 @@
+{
+ "event": "standalone paired-series re-run 13 (November 3)",
+ "context": "Series 12 passed 46 trials - ALL 40 nominal pairs, all 6 target-absent, deeper than any previous series - then stopped on trial 020-off-target_removal, which PASSED (its own sensor timestamps prove the full trial ran 21:03:34-21:05:05; the off-arm navigation is legitimately fast). The loss: a workstation network outage (~21:05-21:15, the fifth of the day at ~2.5-3 h intervals) spanned the marker-retrieval window and outlasted even the 500 s linger. With outages that regular, every ~8 h series crosses 2-3 of them.",
+ "changes": "User-approved log-based evidence recovery (harness-only, byte-faithful to the copy path's bytes): (1) the fixture tees the physical trajectory rows phase6_trial needs to stdout as compact TRACE_PHYS lines (verify_hotel_stack.py, at the evidence dump); (2) run_phase5_native's poll no longer raises away the retrieval - retrieval_lost defers to the finally, where (3) recover_evidence_from_log reconstructs suite.json (native_suite_finished event), runtime/summary.json (the verify's own final JSON line) and runtime/trace.jsonl (TRACE_PHYS lines) from the collected pod log, which survives outages on the node; the verdict now runs after the finally and a recovered passing trial exits 0. Validated against the real series-12 log (36 checks, passed:true) and a synthetic full case. No gate, check, or metric semantics change - the exposure metric computes from the same trajectory bytes.",
+ "setup": {
+  "topology": "G4 topology up (direct endpoint); the series' per-trial recycle manages it; reservation remains deleted",
+  "series_output": "qualification-22/paired-series-13",
+  "phase5_evidence": "qualification-22/served-phase5-qualification.json",
+  "sampler": {
+   "output": "serving-resources-paired-series-13.jsonl",
+   "stop_file": "/tmp/g4-paired-series-13-monitor-stop"
+  }
+ },
+ "command": "run_phase6_series.py --output-dir qualification-22/paired-series-13 (same arguments as series 2-12)"
+}

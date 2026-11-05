@@ -1,0 +1,195 @@
+test_missing_evidence_does_not_pass (test_baseline_metrics.MetricsTests.test_missing_evidence_does_not_pass) ... ok
+test_quiet_must_persist (test_baseline_metrics.MetricsTests.test_quiet_must_persist) ... ok
+test_capacity_and_session_barriers (test_capture_joiner.JoinerTests.test_capacity_and_session_barriers) ... ok
+test_checked_before_source_is_joined (test_capture_joiner.JoinerTests.test_checked_before_source_is_joined) ... ok
+test_pending_cannot_renew_expired_source (test_capture_joiner.JoinerTests.test_pending_cannot_renew_expired_source) ... ok
+test_reset_does_not_deliver_pending_runtime_command (test_capture_joiner.JoinerTests.test_reset_does_not_deliver_pending_runtime_command) ... ok
+test_runtime_delivery_is_once_and_raw_precedes_checked (test_capture_joiner.JoinerTests.test_runtime_delivery_is_once_and_raw_precedes_checked) ... ok
+test_wait_bound_cannot_be_extended (test_capture_joiner.JoinerTests.test_wait_bound_cannot_be_extended) ... ok
+test_waits_for_native_upper_bracket (test_capture_joiner.JoinerTests.test_waits_for_native_upper_bracket) ... ok
+test_duplicate_named_publisher_not_hidden_by_set (test_command_audit.AuditTests.test_duplicate_named_publisher_not_hidden_by_set) ... ok
+test_future_capture_bound_and_missing_source_time (test_command_audit.AuditTests.test_future_capture_bound_and_missing_source_time) ... ok
+test_missing_evidence_rejected (test_command_audit.AuditTests.test_missing_evidence_rejected) ... ok
+test_no_receipt_time_substitution_required_for_unmapped_evidence (test_command_audit.AuditTests.test_no_receipt_time_substitution_required_for_unmapped_evidence) ... ok
+test_publisher_binding_is_separate_from_command_semantics (test_command_audit.AuditTests.test_publisher_binding_is_separate_from_command_semantics) ... ok
+test_real_profile_shape (test_command_audit.AuditTests.test_real_profile_shape) ... ok
+test_restarted_writer_requires_new_discovered_identity (test_command_audit.AuditTests.test_restarted_writer_requires_new_discovered_identity) ... ok
+test_reused_gid (test_command_audit.AuditTests.test_reused_gid) ... ok
+test_unexpected_writer_rejected (test_command_audit.AuditTests.test_unexpected_writer_rejected) ... ok
+test_wrong_topic_source_or_frame (test_command_audit.AuditTests.test_wrong_topic_source_or_frame) ... ok
+test_delayed_raw_and_invalid_velocity_rejected (test_command_ledger.LedgerTests.test_delayed_raw_and_invalid_velocity_rejected) ... ok
+test_duplicate_cannot_change_wall_capture (test_command_ledger.LedgerTests.test_duplicate_cannot_change_wall_capture) ... ok
+test_old_capture_and_pre_rearm_commands_rejected (test_command_ledger.LedgerTests.test_old_capture_and_pre_rearm_commands_rejected) ... ok
+test_smoothing_does_not_renew_deadline (test_command_ledger.LedgerTests.test_smoothing_does_not_renew_deadline) ... ok
+test_stamp_and_session_required (test_command_ledger.LedgerTests.test_stamp_and_session_required) ... ok
+test_wall_capture_cannot_be_hidden_by_slow_simulation (test_command_ledger.LedgerTests.test_wall_capture_cannot_be_hidden_by_slow_simulation) ... ok
+test_caster_inventory_requires_explicit_mode_and_all_six_names (test_contact_evidence.ContactTests.test_caster_inventory_requires_explicit_mode_and_all_six_names) ... ok
+test_chassis_floor_is_not_accepted_as_support (test_contact_evidence.ContactTests.test_chassis_floor_is_not_accepted_as_support) ... ok
+test_contact_is_not_hidden_by_floor_substring (test_contact_evidence.ContactTests.test_contact_is_not_hidden_by_floor_substring) ... ok
+test_covered_support_only (test_contact_evidence.ContactTests.test_covered_support_only) ... ok
+test_instrument_only_robot_and_reject_double_patch (test_contact_evidence.ContactTests.test_instrument_only_robot_and_reject_double_patch) ... ok
+test_missing_component_and_rollback_fail (test_contact_evidence.ContactTests.test_missing_component_and_rollback_fail) ... ok
+test_silence_and_unbracketed_window_fail (test_contact_evidence.ContactTests.test_silence_and_unbracketed_window_fail) ... ok
+test_wall_stall_and_malformed_evidence_fail_closed (test_contact_evidence.ContactTests.test_wall_stall_and_malformed_evidence_fail_closed) ... ok
+test_checked_forwards_immediately_without_extending_deadline (test_guarded_coordinator.CoordinatorTests.test_checked_forwards_immediately_without_extending_deadline) ... ok
+test_cold_start_needs_native_zero_not_idle_nav2_heartbeat (test_guarded_coordinator.CoordinatorTests.test_cold_start_needs_native_zero_not_idle_nav2_heartbeat) ... ok
+test_collision_stop_does_not_resume_when_clear (test_guarded_coordinator.CoordinatorTests.test_collision_stop_does_not_resume_when_clear) ... ok
+test_expired_gate_retains_native_stop_token (test_guarded_coordinator.CoordinatorTests.test_expired_gate_retains_native_stop_token) ... ok
+test_idle_race_before_dispatch (test_guarded_coordinator.CoordinatorTests.test_idle_race_before_dispatch) ... ok
+test_late_arm_ack_after_cancel_never_dispatches_goal (test_guarded_coordinator.CoordinatorTests.test_late_arm_ack_after_cancel_never_dispatches_goal) ... ok
+test_live_preconditions_not_caller_boolean_arm (test_guarded_coordinator.CoordinatorTests.test_live_preconditions_not_caller_boolean_arm) ... ok
+test_missing_sensor_evidence_blocks_arm (test_guarded_coordinator.CoordinatorTests.test_missing_sensor_evidence_blocks_arm) ... ok
+test_native_ack_and_matching_session_both_required (test_guarded_coordinator.CoordinatorTests.test_native_ack_and_matching_session_both_required) ... ok
+test_native_loss_stops_pending_task (test_guarded_coordinator.CoordinatorTests.test_native_loss_stops_pending_task) ... ok
+test_negative_or_wrong_session_ack_cannot_activate (test_guarded_coordinator.CoordinatorTests.test_negative_or_wrong_session_ack_cannot_activate) ... ok
+test_old_command_drained_by_session_barrier (test_guarded_coordinator.CoordinatorTests.test_old_command_drained_by_session_barrier) ... ok
+test_ownership_loss_before_admission (test_guarded_coordinator.CoordinatorTests.test_ownership_loss_before_admission) ... ok
+test_queue_failure_revokes_without_blocking (test_guarded_coordinator.CoordinatorTests.test_queue_failure_revokes_without_blocking) ... ok
+test_unowned_active_task_revokes (test_guarded_coordinator.CoordinatorTests.test_unowned_active_task_revokes) ... ok
+test_empty_nan_and_unknown_geometry_fail (test_hotel_sensor_validation.SensorValidationTests.test_empty_nan_and_unknown_geometry_fail) ... ok
+test_odom_nonfinite_and_bad_quaternion_fail (test_hotel_sensor_validation.SensorValidationTests.test_odom_nonfinite_and_bad_quaternion_fail) ... ok
+test_scan_valid_and_infinity_is_no_return (test_hotel_sensor_validation.SensorValidationTests.test_scan_valid_and_infinity_is_no_return) ... ok
+test_virtual_sensor_range_requires_explicit_matching_contract (test_hotel_sensor_validation.SensorValidationTests.test_virtual_sensor_range_requires_explicit_matching_contract) ... ok
+test_cancel_ack_or_empty_status_does_not_clear_active (test_hotel_task_registry.RegistryTests.test_cancel_ack_or_empty_status_does_not_clear_active) ... ok
+test_graph_loss_revokes (test_hotel_task_registry.RegistryTests.test_graph_loss_revokes) ... ok
+test_legitimate_child_uuid_differs_from_parent (test_hotel_task_registry.RegistryTests.test_legitimate_child_uuid_differs_from_parent) ... ok
+test_only_expected_private_clients_may_be_frozen (test_hotel_task_registry.RegistryTests.test_only_expected_private_clients_may_be_frozen) ... ok
+test_other_parent_is_rejected (test_hotel_task_registry.RegistryTests.test_other_parent_is_rejected) ... ok
+test_recovery_not_in_baseline_tree_is_rejected (test_hotel_task_registry.RegistryTests.test_recovery_not_in_baseline_tree_is_rejected) ... ok
+test_terminal_reactivation_fault_latches (test_hotel_task_registry.RegistryTests.test_terminal_reactivation_fault_latches) ... ok
+test_unknown_endpoint_is_not_silently_inventoried (test_hotel_task_registry.RegistryTests.test_unknown_endpoint_is_not_silently_inventoried) ... ok
+test_unprimed_is_not_idle (test_hotel_task_registry.RegistryTests.test_unprimed_is_not_idle) ... ok
+test_clock_jump_rejected (test_native_clock.ClockTests.test_clock_jump_rejected) ... ok
+test_duplicate_does_not_refresh (test_native_clock.ClockTests.test_duplicate_does_not_refresh) ... ok
+test_large_bracket_rejected (test_native_clock.ClockTests.test_large_bracket_rejected) ... ok
+test_malformed_velocity_and_future_capture_rejected (test_native_clock.ClockTests.test_malformed_velocity_and_future_capture_rejected) ... ok
+test_mapping_strictly_earlier_not_interpolated_or_receipt (test_native_clock.ClockTests.test_mapping_strictly_earlier_not_interpolated_or_receipt) ... ok
+test_moving_invalidates_stationary (test_native_clock.ClockTests.test_moving_invalidates_stationary) ... ok
+test_pause_and_rollback_latch (test_native_clock.ClockTests.test_pause_and_rollback_latch) ... ok
+test_restart_latches_until_explicit_new_binding (test_native_clock.ClockTests.test_restart_latches_until_explicit_new_binding) ... ok
+test_stationary_requires_contiguous_fresh_capture (test_native_clock.ClockTests.test_stationary_requires_contiguous_fresh_capture) ... ok
+test_extrinsics (test_prepare_assets.AssetsTests.test_extrinsics) ... ok
+test_micro_world_preserves_robot_but_removes_sensors (test_prepare_assets.AssetsTests.test_micro_world_preserves_robot_but_removes_sensors) ... ok
+test_only_private_drive_topic_and_one_watchdog (test_prepare_assets.AssetsTests.test_only_private_drive_topic_and_one_watchdog) ... ok
+test_private_lidar_rate_override (test_prepare_assets.AssetsTests.test_private_lidar_rate_override) ... ok
+test_private_step_and_virtual_range_preserve_sensor_pose_and_drive (test_prepare_assets.AssetsTests.test_private_step_and_virtual_range_preserve_sensor_pose_and_drive) ... ok
+test_unknown_geometry_and_double_patch_rejected (test_prepare_assets.AssetsTests.test_unknown_geometry_and_double_patch_rejected) ... ok
+test_clock_jump_and_restart_stop (test_safety_core.ReceiverTests.test_clock_jump_and_restart_stop) ... ok
+test_late_packet_never_renews_expired_receiver (test_safety_core.ReceiverTests.test_late_packet_never_renews_expired_receiver) ... ok
+test_lost_supervisor_or_transport_expires_locally (test_safety_core.ReceiverTests.test_lost_supervisor_or_transport_expires_locally) ... ok
+test_no_session_reuse_or_rearm_while_running (test_safety_core.ReceiverTests.test_no_session_reuse_or_rearm_while_running) ... ok
+test_renewals_and_explicit_revoke (test_safety_core.ReceiverTests.test_renewals_and_explicit_revoke) ... ok
+test_replay_wrong_session_bad_velocity_and_deadline_latch (test_safety_core.ReceiverTests.test_replay_wrong_session_bad_velocity_and_deadline_latch) ... ok
+test_startup_packet_does_not_arm (test_safety_core.ReceiverTests.test_startup_packet_does_not_arm) ... ok
+test_worst_timer_phase_is_within_100ms_lease_budget (test_safety_core.ReceiverTests.test_worst_timer_phase_is_within_100ms_lease_budget) ... ok
+test_arm_requires_all_inputs_and_idle_stationary_neutral (test_safety_core.SafetyGateTests.test_arm_requires_all_inputs_and_idle_stationary_neutral) ... ok
+test_bounded_zero_motion_setup_does_not_extend_first_real_command (test_safety_core.SafetyGateTests.test_bounded_zero_motion_setup_does_not_extend_first_real_command) ... ok
+test_capture_age_not_arrival_age (test_safety_core.SafetyGateTests.test_capture_age_not_arrival_age) ... ok
+test_clock_rollback_latches_and_clears (test_safety_core.SafetyGateTests.test_clock_rollback_latches_and_clears) ... ok
+test_command_expiry_and_late_command_cannot_resume (test_safety_core.SafetyGateTests.test_command_expiry_and_late_command_cannot_resume) ... ok
+test_delayed_callback_cannot_conceal_command_expiry (test_safety_core.SafetyGateTests.test_delayed_callback_cannot_conceal_command_expiry) ... ok
+test_delayed_inputs_during_recovery_do_not_chase_barrier (test_safety_core.SafetyGateTests.test_delayed_inputs_during_recovery_do_not_chase_barrier) ... ok
+test_each_missing_input_stops_by_deadline (test_safety_core.SafetyGateTests.test_each_missing_input_stops_by_deadline) ... ok
+test_epoch_change_latches (test_safety_core.SafetyGateTests.test_epoch_change_latches) ... ok
+test_future_expired_and_malformed_inputs (test_safety_core.SafetyGateTests.test_future_expired_and_malformed_inputs) ... ok
+test_geometry_baseline_is_separate_startup_policy (test_safety_core.SafetyGateTests.test_geometry_baseline_is_separate_startup_policy) ... ok
+test_invalid_velocity_latches (test_safety_core.SafetyGateTests.test_invalid_velocity_latches) ... ok
+test_late_success_cannot_hide_input_deadline (test_safety_core.SafetyGateTests.test_late_success_cannot_hide_input_deadline) ... ok
+test_local_and_remote_faults_share_stop_path (test_safety_core.SafetyGateTests.test_local_and_remote_faults_share_stop_path) ... ok
+test_normal_motion_and_bounds (test_safety_core.SafetyGateTests.test_normal_motion_and_bounds) ... ok
+test_packet_cannot_extend_command_authority (test_safety_core.SafetyGateTests.test_packet_cannot_extend_command_authority) ... ok
+test_paused_simulation_still_expires (test_safety_core.SafetyGateTests.test_paused_simulation_still_expires) ... ok
+test_rearm_requires_new_evidence_and_changes_session (test_safety_core.SafetyGateTests.test_rearm_requires_new_evidence_and_changes_session) ... ok
+test_repeated_capture_does_not_refresh_lease (test_safety_core.SafetyGateTests.test_repeated_capture_does_not_refresh_lease) ... ok
+test_reset_capture_barrier_includes_clock_uncertainty (test_safety_core.SafetyGateTests.test_reset_capture_barrier_includes_clock_uncertainty) ... ok
+test_second_fault_during_recovery_clears_partial_inputs (test_safety_core.SafetyGateTests.test_second_fault_during_recovery_clears_partial_inputs) ... ok
+test_setup_still_requires_fresh_inputs_and_has_fixed_end (test_safety_core.SafetyGateTests.test_setup_still_requires_fresh_inputs_and_has_fixed_end) ... ok
+test_startup_never_moves (test_safety_core.SafetyGateTests.test_startup_never_moves) ... ok
+test_unbounded_setup_rejected (test_safety_core.SafetyGateTests.test_unbounded_setup_rejected) ... ok
+test_wall_jump_latches (test_safety_core.SafetyGateTests.test_wall_jump_latches) ... ok
+test_preserves_original_links_and_adds_rolling_supports_within_hull (test_support_geometry.SupportTests.test_preserves_original_links_and_adds_rolling_supports_within_hull) ... ok
+test_refuses_double_patch_and_unknown_geometry (test_support_geometry.SupportTests.test_refuses_double_patch_and_unknown_geometry) ... ok
+test_cancel_ack_does_not_clear_task (test_task_session.TaskTests.test_cancel_ack_does_not_clear_task) ... ok
+test_cancel_before_acceptance_cancels_late_handle (test_task_session.TaskTests.test_cancel_before_acceptance_cancels_late_handle) ... ok
+test_cancel_rejection_and_invalid_result_stay_blocked (test_task_session.TaskTests.test_cancel_rejection_and_invalid_result_stay_blocked) ... ok
+test_duplicate_request_denied (test_task_session.TaskTests.test_duplicate_request_denied) ... ok
+test_late_acceptance_does_not_hide_timeout (test_task_session.TaskTests.test_late_acceptance_does_not_hide_timeout) ... ok
+test_late_success_preserves_fault_and_does_not_resume (test_task_session.TaskTests.test_late_success_preserves_fault_and_does_not_resume) ... ok
+test_old_callbacks_cannot_change_new_session (test_task_session.TaskTests.test_old_callbacks_cannot_change_new_session) ... ok
+test_only_accepted_current_goal_allows_command (test_task_session.TaskTests.test_only_accepted_current_goal_allows_command) ... ok
+test_success_revokes_and_requires_new_explicit_request (test_task_session.TaskTests.test_success_revokes_and_requires_new_explicit_request) ... ok
+
+----------------------------------------------------------------------
+Ran 120 tests in 0.029s
+
+OK
+test_delayed_capture_does_not_restart_deadline (__main__.FrameTests.test_delayed_capture_does_not_restart_deadline) ... ok
+test_pose_and_stamp_preserved_no_map_edge (__main__.FrameTests.test_pose_and_stamp_preserved_no_map_edge) ... ok
+test_rollback_latches (__main__.FrameTests.test_rollback_latches) ... ok
+test_scan_stamp_preserved_and_sensor_offset_frame_used (__main__.FrameTests.test_scan_stamp_preserved_and_sensor_offset_frame_used) ... ok
+test_stale_and_missing_clock_rejected (__main__.FrameTests.test_stale_and_missing_clock_rejected) ... ok
+test_unknown_frames_and_invalid_pose_fail_closed (__main__.FrameTests.test_unknown_frames_and_invalid_pose_fail_closed) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.089s
+
+OK
+test_collision_message_is_delivered_to_latched_coordinator (__main__.AdapterTests.test_collision_message_is_delivered_to_latched_coordinator) ... ok
+test_foreign_writer_never_enters_joiner (__main__.AdapterTests.test_foreign_writer_never_enters_joiner) ... ok
+test_no_admission_when_task_not_authorized (__main__.AdapterTests.test_no_admission_when_task_not_authorized) ... ok
+test_odometry_capture_not_receipt_time (__main__.AdapterTests.test_odometry_capture_not_receipt_time) ... ok
+test_valid_command_enqueued_with_original_stamp (__main__.AdapterTests.test_valid_command_enqueued_with_original_stamp) ... ok
+test_wrong_frame_rejected_before_admission (__main__.AdapterTests.test_wrong_frame_rejected_before_admission) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.040s
+
+OK
+Running main() from ./googletest/src/gtest_main.cc
+[==========] Running 15 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 15 tests from Lease
+[ RUN      ] Lease.Startup
+[       OK ] Lease.Startup (0 ms)
+[ RUN      ] Lease.StationaryRequired
+[       OK ] Lease.StationaryRequired (0 ms)
+[ RUN      ] Lease.Expiration
+[       OK ] Lease.Expiration (0 ms)
+[ RUN      ] Lease.LateCallback
+[       OK ] Lease.LateCallback (0 ms)
+[ RUN      ] Lease.NoSessionReuse
+[       OK ] Lease.NoSessionReuse (0 ms)
+[ RUN      ] Lease.NewSessionExplicit
+[       OK ] Lease.NewSessionExplicit (0 ms)
+[ RUN      ] Lease.InvalidPacketsLatch
+[       OK ] Lease.InvalidPacketsLatch (0 ms)
+[ RUN      ] Lease.Replay
+[       OK ] Lease.Replay (0 ms)
+[ RUN      ] Lease.ClockJump
+[       OK ] Lease.ClockJump (0 ms)
+[ RUN      ] Lease.Malformed
+[       OK ] Lease.Malformed (0 ms)
+[ RUN      ] Lease.UpstreamShorterDeadline
+[       OK ] Lease.UpstreamShorterDeadline (0 ms)
+[ RUN      ] Lease.StopRetainsFirstReason
+[       OK ] Lease.StopRetainsFirstReason (0 ms)
+[ RUN      ] Lease.PendingHandshakeNeverGrantsMotion
+[       OK ] Lease.PendingHandshakeNeverGrantsMotion (0 ms)
+[ RUN      ] Lease.HandshakeTimeoutAndCancelInvalidateSession
+[       OK ] Lease.HandshakeTimeoutAndCancelInvalidateSession (0 ms)
+[ RUN      ] Lease.ExpiredPreArmTrafficCannotBlockFreshFirstPacket
+[       OK ] Lease.ExpiredPreArmTrafficCannotBlockFreshFirstPacket (0 ms)
+[----------] 15 tests from Lease (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 15 tests from 1 test suite ran. (0 ms total)
+[  PASSED  ] 15 tests.
+{"passed": false, "checks": [{"case": "real_hotel_rgbd_scan_odom_clock", "passed": true, "sensors": {"depth": {"stamp": 600000000, "frame": "camera_color_optical_frame", "wall_received": 1792270859925580690, "width": 640, "height": 480, "transport": "native_gazebo", "pixel_format": 13, "count": 7, "rollback": false}, "rgb": {"stamp": 600000000, "frame": "camera_color_optical_frame", "wall_received": 1792270859926760016, "width": 640, "height": 480, "transport": "native_gazebo", "pixel_format": 3, "count": 7, "rollback": false}, "odom": {"stamp": 680000000, "frame": "odom", "wall_received": 1792270859920113262, "count": 34, "rollback": false}, "scan": {"stamp": 600000000, "frame": "lidar_frame", "wall_received": 1792270859932833842, "count": 5, "rollback": false, "samples": 360, "finite": 277}}}, {"case": "native_contact_components_live", "passed": true}, {"case": "settled_support_geometry", "enforced_before_arm": true, "passed": true, "reason": "clear", "unexpected": [], "samples": 14, "steps": 308, "qualification": "exact allowlisted support contacts only; no force/depth exemption"}, {"case": "amcl_and_corrected_static_sensor_frames", "passed": true, "amcl": {"stamp": 1800000000, "x": 15.408923195776582, "y": -31.602554404893414, "covariance": [0.009394656194103845, -0.00023218179694595165, 0.0, 0.0, 0.0, 0.0, -0.00023218179694595165, 0.009843578624440852, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.009231561644809762]}}, {"case": "nav2_action_endpoint_inventory_recorded", "passed": true, "action_names": ["/robot_1/backup", "/robot_1/compute_path_through_poses", "/robot_1/compute_path_to_pose", "/robot_1/drive_on_heading", "/robot_1/follow_path", "/robot_1/navigate_through_poses", "/robot_1/navigate_to_pose", "/robot_1/smooth_path", "/robot_1/spin", "/robot_1/wait"]}, {"case": "actual_candidate_lifecycle_active", "passed": true, "states": {"map_server": {"id": 3, "label": "active"}, "amcl": {"id": 3, "label": "active"}, "controller_server": {"id": 3, "label": "active"}, "smoother_server": {"id": 3, "label": "active"}, "planner_server": {"id": 3, "label": "active"}, "behavior_server": {"id": 3, "label": "active"}, "velocity_smoother": {"id": 3, "label": "active"}, "collision_monitor": {"id": 3, "label": "active"}, "bt_navigator": {"id": 3, "label": "active"}}}, {"case": "actual_costmaps_subscribe_to_corrected_lidar", "passed": true}, {"case": "actual_command_publisher_routes", "passed": true}, {"case": "unexpected_writer_and_publisher_restart_binding", "passed": true, "first_guid": [1, 16, 63, 0, 136, 61, 139, 156, 214, 78, 48, 87, 0, 0, 116, 3], "replacement_guid": [1, 16, 63, 0, 136, 61, 139, 156, 214, 78, 48, 87, 0, 0, 133, 3], "both_resolved_and_rejected": true}, {"case": "actual_hotel_plan_one_meter", "passed": true, "points": 39}, {"case": "guarded_real_hotel_one_meter_goal", "passed": false, "terminal_status": 5, "reason": "native_session_lost"}, {"case": "closed_graph_and_descendants_terminal", "passed": true}, {"case": "real_nav2_nonzero_chain_and_terminal_result", "passed": true, "positive_checked": 286, "terminal_status": 5}, {"case": "real_command_capture_mapping", "passed": true, "matched_positive_checked": 283, "clock_fault": null}, {"case": "per_message_publisher_binding", "passed": true}, {"case": "command_frame_and_axes", "passed": true}, {"case": "actual_capture_time_sensor_to_map_transforms", "passed": true}, {"case": "independent_native_motion_observed", "passed": true}, {"case": "baseline_native_stop_metrics", "passed": false, "reason": "missing_stop_samples"}, {"case": "baseline_contact_window", "start_sim": 8720000000, "end_sim": 14812000000, "passed": true, "reason": "clear", "unexpected": [], "samples": 135, "steps": 3122, "qualification": "exact allowlisted support contacts only; no force/depth exemption"}], "sensors": {"depth": {"stamp": 15200000000, "frame": "camera_color_optical_frame", "wall_received": 1792270875880963799, "width": 640, "height": 480, "transport": "native_gazebo", "pixel_format": 13, "count": 153, "rollback": false}, "rgb": {"stamp": 15200000000, "frame": "camera_color_optical_frame", "wall_received": 1792270875884181023, "width": 640, "height": 480, "transport": "native_gazebo", "pixel_format": 3, "count": 153, "rollback": false}, "odom": {"stamp": 15320000000, "frame": "odom", "wall_received": 1792270875908343986, "count": 762, "rollback": false}, "scan": {"stamp": 15200000000, "frame": "lidar_frame", "wall_received": 1792270875891683846, "count": 151, "rollback": false, "samples": 360, "finite": 284}}, "states": {"map_server": {"id": 3, "label": "active"}, "amcl": {"id": 3, "label": "active"}, "controller_server": {"id": 3, "label": "active"}, "smoother_server": {"id": 3, "label": "active"}, "planner_server": {"id": 3, "label": "active"}, "behavior_server": {"id": 3, "label": "active"}, "velocity_smoother": {"id": 3, "label": "active"}, "collision_monitor": {"id": 3, "label": "active"}, "bt_navigator": {"id": 3, "label": "active"}}, "clock_fault": null, "qualification": "private guarded hotel no-recovery integration; NOT full baseline or SAM3"}
+Traceback (most recent call last):
+  File "/phase5-native/..2026_10_17_21_00_50.588146911/verify_hotel_stack.py", line 594, in <module>
+    if __name__=="__main__": main()
+                             ^^^^^^
+  File "/phase5-native/..2026_10_17_21_00_50.588146911/verify_hotel_stack.py", line 591, in main
+    raise RuntimeError("hotel subgates failed; retained independent checks and native trace")
+RuntimeError: hotel subgates failed; retained independent checks and native trace
+{"event": "native_suite_finished", "results": [{"command": ["/usr/bin/python3", "-m", "unittest", "discover", "-s", "/phase5-native/..2026_10_17_21_00_50.588146911", "-p", "test_*.py", "-v"], "returncode": 0}, {"command": ["/usr/bin/python3", "/phase5-native/..2026_10_17_21_00_50.588146911/verify_frame_bridge.py"], "returncode": 0}, {"command": ["/usr/bin/python3", "/phase5-native/..2026_10_17_21_00_50.588146911/verify_hotel_adapter.py"], "returncode": 0}, {"command": ["/opt/semantic-safety/build/test_native_lease"], "returncode": 0}, {"command": ["/usr/bin/python3", "/phase5-native/..2026_10_17_21_00_50.588146911/verify_hotel_stack.py"], "returncode": 1}]}

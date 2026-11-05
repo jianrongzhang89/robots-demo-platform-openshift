@@ -1,0 +1,466 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "action": "Binding",
+            "apiVersion": "v1",
+            "eventTime": "2026-10-31T14:09:54.229024Z",
+            "firstTimestamp": null,
+            "involvedObject": {
+                "apiVersion": "v1",
+                "kind": "Pod",
+                "name": "sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493625229",
+                "uid": "53394104-6568-4945-86f9-708e263b8deb"
+            },
+            "kind": "Event",
+            "lastTimestamp": null,
+            "message": "Successfully assigned semantic-model-serving/sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc to ip-10-0-55-175.ec2.internal",
+            "metadata": {
+                "creationTimestamp": "2026-10-31T14:09:54Z",
+                "name": "sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc.18e3a28aef63231d",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493625235",
+                "uid": "5951cffa-e2ef-4869-8d3c-71f6a463380e"
+            },
+            "reason": "Scheduled",
+            "reportingComponent": "default-scheduler",
+            "reportingInstance": "default-scheduler-ip-10-0-7-34",
+            "source": {},
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 1,
+            "eventTime": null,
+            "firstTimestamp": "2026-10-31T14:09:54Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "kind": "Pod",
+                "name": "sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493625238",
+                "uid": "53394104-6568-4945-86f9-708e263b8deb"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-10-31T14:09:54Z",
+            "message": "Add eth0 [10.129.8.230/23] from ovn-kubernetes",
+            "metadata": {
+                "creationTimestamp": "2026-10-31T14:09:54Z",
+                "name": "sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc.18e3a28b14b2e0da",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493625270",
+                "uid": "d20e259a-8a91-4193-b87a-cb95a4b8308c"
+            },
+            "reason": "AddedInterface",
+            "reportingComponent": "multus",
+            "reportingInstance": "",
+            "source": {
+                "component": "multus"
+            },
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 2,
+            "eventTime": null,
+            "firstTimestamp": "2026-10-31T14:09:54Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{kserve-container}",
+                "kind": "Pod",
+                "name": "sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493625231",
+                "uid": "53394104-6568-4945-86f9-708e263b8deb"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-10-31T14:13:05Z",
+            "message": "Container image \"image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e\" already present on machine",
+            "metadata": {
+                "creationTimestamp": "2026-10-31T14:09:54Z",
+                "name": "sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc.18e3a28b160a2cc0",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493639373",
+                "uid": "597fa030-9179-4688-b52c-5243cbb1d535"
+            },
+            "reason": "Pulled",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "ip-10-0-55-175.ec2.internal",
+            "source": {
+                "component": "kubelet",
+                "host": "ip-10-0-55-175.ec2.internal"
+            },
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 2,
+            "eventTime": null,
+            "firstTimestamp": "2026-10-31T14:09:55Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{kserve-container}",
+                "kind": "Pod",
+                "name": "sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493625231",
+                "uid": "53394104-6568-4945-86f9-708e263b8deb"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-10-31T14:13:05Z",
+            "message": "Created container: kserve-container",
+            "metadata": {
+                "creationTimestamp": "2026-10-31T14:09:55Z",
+                "name": "sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc.18e3a28b1edcd3a5",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493639385",
+                "uid": "979a338f-8f7a-44e5-81da-1bc23e3d1d98"
+            },
+            "reason": "Created",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "ip-10-0-55-175.ec2.internal",
+            "source": {
+                "component": "kubelet",
+                "host": "ip-10-0-55-175.ec2.internal"
+            },
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 2,
+            "eventTime": null,
+            "firstTimestamp": "2026-10-31T14:09:55Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{kserve-container}",
+                "kind": "Pod",
+                "name": "sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493625231",
+                "uid": "53394104-6568-4945-86f9-708e263b8deb"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-10-31T14:13:05Z",
+            "message": "Started container kserve-container",
+            "metadata": {
+                "creationTimestamp": "2026-10-31T14:09:55Z",
+                "name": "sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc.18e3a28b1f55fdb5",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493639386",
+                "uid": "be7eb477-78a8-4355-87b9-dd37ddaeb5c3"
+            },
+            "reason": "Started",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "ip-10-0-55-175.ec2.internal",
+            "source": {
+                "component": "kubelet",
+                "host": "ip-10-0-55-175.ec2.internal"
+            },
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 1,
+            "eventTime": null,
+            "firstTimestamp": "2026-10-31T14:09:55Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{agent}",
+                "kind": "Pod",
+                "name": "sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493625231",
+                "uid": "53394104-6568-4945-86f9-708e263b8deb"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-10-31T14:09:55Z",
+            "message": "Container image \"registry.redhat.io/rhoai/odh-kserve-agent-rhel9@sha256:00869f9eb48fe189feb9659fd53d8e881b089fea9c81a467112a5fd23e1dfe84\" already present on machine",
+            "metadata": {
+                "creationTimestamp": "2026-10-31T14:09:55Z",
+                "name": "sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc.18e3a28b1f604573",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493625284",
+                "uid": "70031776-4c1f-44e8-b4c4-a457c92f746a"
+            },
+            "reason": "Pulled",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "ip-10-0-55-175.ec2.internal",
+            "source": {
+                "component": "kubelet",
+                "host": "ip-10-0-55-175.ec2.internal"
+            },
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 1,
+            "eventTime": null,
+            "firstTimestamp": "2026-10-31T14:09:55Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{agent}",
+                "kind": "Pod",
+                "name": "sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493625231",
+                "uid": "53394104-6568-4945-86f9-708e263b8deb"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-10-31T14:09:55Z",
+            "message": "Created container: agent",
+            "metadata": {
+                "creationTimestamp": "2026-10-31T14:09:55Z",
+                "name": "sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc.18e3a28b227eba5c",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493625288",
+                "uid": "0cd8c4bc-4749-47c9-a3ff-e45a1bdcedd4"
+            },
+            "reason": "Created",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "ip-10-0-55-175.ec2.internal",
+            "source": {
+                "component": "kubelet",
+                "host": "ip-10-0-55-175.ec2.internal"
+            },
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 1,
+            "eventTime": null,
+            "firstTimestamp": "2026-10-31T14:09:55Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{agent}",
+                "kind": "Pod",
+                "name": "sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493625231",
+                "uid": "53394104-6568-4945-86f9-708e263b8deb"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-10-31T14:09:55Z",
+            "message": "Started container agent",
+            "metadata": {
+                "creationTimestamp": "2026-10-31T14:09:55Z",
+                "name": "sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc.18e3a28b22eaf91d",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493625292",
+                "uid": "9367f046-21fe-454b-bf5f-a6f296bb613e"
+            },
+            "reason": "Started",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "ip-10-0-55-175.ec2.internal",
+            "source": {
+                "component": "kubelet",
+                "host": "ip-10-0-55-175.ec2.internal"
+            },
+            "type": "Normal"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 4,
+            "eventTime": null,
+            "firstTimestamp": "2026-10-31T14:09:55Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{agent}",
+                "kind": "Pod",
+                "name": "sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493625231",
+                "uid": "53394104-6568-4945-86f9-708e263b8deb"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-10-31T14:09:59Z",
+            "message": "Readiness probe failed: HTTP probe failed with statuscode: 503",
+            "metadata": {
+                "creationTimestamp": "2026-10-31T14:09:55Z",
+                "name": "sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc.18e3a28b420ddbe8",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493625570",
+                "uid": "48c9292c-096e-416e-80c3-ed55d5041695"
+            },
+            "reason": "Unhealthy",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "ip-10-0-55-175.ec2.internal",
+            "source": {
+                "component": "kubelet",
+                "host": "ip-10-0-55-175.ec2.internal"
+            },
+            "type": "Warning"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 2,
+            "eventTime": null,
+            "firstTimestamp": "2026-10-31T14:09:59Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{kserve-container}",
+                "kind": "Pod",
+                "name": "sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493625231",
+                "uid": "53394104-6568-4945-86f9-708e263b8deb"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-10-31T14:10:04Z",
+            "message": "Startup probe failed: HTTP probe failed with statuscode: 503",
+            "metadata": {
+                "creationTimestamp": "2026-10-31T14:09:59Z",
+                "name": "sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc.18e3a28c2c697d22",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493625862",
+                "uid": "dca54d0f-2975-4e33-8ece-399ad166526c"
+            },
+            "reason": "Unhealthy",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "ip-10-0-55-175.ec2.internal",
+            "source": {
+                "component": "kubelet",
+                "host": "ip-10-0-55-175.ec2.internal"
+            },
+            "type": "Warning"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 3,
+            "eventTime": null,
+            "firstTimestamp": "2026-10-31T14:12:30Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{agent}",
+                "kind": "Pod",
+                "name": "sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493625231",
+                "uid": "53394104-6568-4945-86f9-708e263b8deb"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-10-31T14:12:50Z",
+            "message": "Readiness probe failed: Get \"http://10.129.8.230:9081/\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)",
+            "metadata": {
+                "creationTimestamp": "2026-10-31T14:12:30Z",
+                "name": "sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc.18e3a2af54db7b07",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493638463",
+                "uid": "b4170534-6f0c-4938-93d1-050c8e43bc9f"
+            },
+            "reason": "Unhealthy",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "ip-10-0-55-175.ec2.internal",
+            "source": {
+                "component": "kubelet",
+                "host": "ip-10-0-55-175.ec2.internal"
+            },
+            "type": "Warning"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 13,
+            "eventTime": null,
+            "firstTimestamp": "2026-10-31T14:12:30Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{kserve-container}",
+                "kind": "Pod",
+                "name": "sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493625231",
+                "uid": "53394104-6568-4945-86f9-708e263b8deb"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-10-31T14:12:52Z",
+            "message": "Readiness probe failed: Get \"http://10.129.8.230:8080/ready\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)",
+            "metadata": {
+                "creationTimestamp": "2026-10-31T14:12:30Z",
+                "name": "sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc.18e3a2af572e2920",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493638598",
+                "uid": "782269eb-a4cb-437a-a53a-56515b4bcc45"
+            },
+            "reason": "Unhealthy",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "ip-10-0-55-175.ec2.internal",
+            "source": {
+                "component": "kubelet",
+                "host": "ip-10-0-55-175.ec2.internal"
+            },
+            "type": "Warning"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 3,
+            "eventTime": null,
+            "firstTimestamp": "2026-10-31T14:12:31Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{kserve-container}",
+                "kind": "Pod",
+                "name": "sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493625231",
+                "uid": "53394104-6568-4945-86f9-708e263b8deb"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-10-31T14:12:35Z",
+            "message": "Liveness probe failed: Get \"http://10.129.8.230:8080/live\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)",
+            "metadata": {
+                "creationTimestamp": "2026-10-31T14:12:31Z",
+                "name": "sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc.18e3a2af92badc04",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493637241",
+                "uid": "79c661e0-6478-4b14-9aa7-38d912078e02"
+            },
+            "reason": "Unhealthy",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "ip-10-0-55-175.ec2.internal",
+            "source": {
+                "component": "kubelet",
+                "host": "ip-10-0-55-175.ec2.internal"
+            },
+            "type": "Warning"
+        },
+        {
+            "apiVersion": "v1",
+            "count": 1,
+            "eventTime": null,
+            "firstTimestamp": "2026-10-31T14:12:35Z",
+            "involvedObject": {
+                "apiVersion": "v1",
+                "fieldPath": "spec.containers{kserve-container}",
+                "kind": "Pod",
+                "name": "sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493625231",
+                "uid": "53394104-6568-4945-86f9-708e263b8deb"
+            },
+            "kind": "Event",
+            "lastTimestamp": "2026-10-31T14:12:35Z",
+            "message": "Container kserve-container failed liveness probe, will be restarted",
+            "metadata": {
+                "creationTimestamp": "2026-10-31T14:12:35Z",
+                "name": "sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc.18e3a2b0811df385",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493637243",
+                "uid": "61912575-2db0-42a9-9cea-78f61e347500"
+            },
+            "reason": "Killing",
+            "reportingComponent": "kubelet",
+            "reportingInstance": "ip-10-0-55-175.ec2.internal",
+            "source": {
+                "component": "kubelet",
+                "host": "ip-10-0-55-175.ec2.internal"
+            },
+            "type": "Normal"
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": "",
+        "selfLink": ""
+    }
+}

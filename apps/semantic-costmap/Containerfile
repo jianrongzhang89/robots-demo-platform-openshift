@@ -1,0 +1,6 @@
+FROM image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:c3ba94bbcbbe2283f1c46ea0f2baba398da313ffe83d2b59a63272ef91d95ebf
+USER 0
+COPY . /opt/semantic-costmap-ws/src/demo_semantic_costmap
+RUN /bin/bash -ec 'source /opt/ros/jazzy/setup.bash; cd /opt/semantic-costmap-ws; colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON'
+RUN /bin/bash -ec 'source /opt/semantic-costmap-ws/install/setup.bash; cd /opt/semantic-costmap-ws; ROS_DOMAIN_ID=87 colcon test --event-handlers console_direct+; colcon test-result --verbose'
+USER 1001

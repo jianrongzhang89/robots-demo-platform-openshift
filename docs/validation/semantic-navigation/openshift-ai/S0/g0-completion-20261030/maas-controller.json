@@ -1,0 +1,229 @@
+{
+    "apiVersion": "apps/v1",
+    "kind": "Deployment",
+    "metadata": {
+        "annotations": {
+            "deployment.kubernetes.io/revision": "3",
+            "internal.config.kubernetes.io/previousKinds": "Deployment",
+            "internal.config.kubernetes.io/previousNames": "maas-controller",
+            "internal.config.kubernetes.io/previousNamespaces": "opendatahub",
+            "platform.opendatahub.io/instance.generation": "10",
+            "platform.opendatahub.io/instance.name": "default-dsc",
+            "platform.opendatahub.io/instance.uid": "49a5f2bb-a166-43b6-94c9-7ea579621c74",
+            "platform.opendatahub.io/type": "OpenShift AI Self-Managed",
+            "platform.opendatahub.io/version": "3.4.2"
+        },
+        "creationTimestamp": "2026-08-10T18:21:10Z",
+        "generation": 4,
+        "labels": {
+            "app": "maas-controller",
+            "app.kubernetes.io/part-of": "modelsasservice",
+            "app.opendatahub.io/modelsasservice": "true",
+            "control-plane": "maas-controller",
+            "platform.opendatahub.io/part-of": "datasciencecluster"
+        },
+        "name": "maas-controller",
+        "namespace": "redhat-ods-applications",
+        "resourceVersion": "490777935",
+        "uid": "98d10c28-06c1-4e9b-a693-9149d2af5070"
+    },
+    "spec": {
+        "progressDeadlineSeconds": 600,
+        "replicas": 1,
+        "revisionHistoryLimit": 10,
+        "selector": {
+            "matchLabels": {
+                "app.kubernetes.io/part-of": "modelsasservice",
+                "app.opendatahub.io/modelsasservice": "true",
+                "control-plane": "maas-controller"
+            }
+        },
+        "strategy": {
+            "rollingUpdate": {
+                "maxSurge": "25%",
+                "maxUnavailable": "25%"
+            },
+            "type": "RollingUpdate"
+        },
+        "template": {
+            "metadata": {
+                "labels": {
+                    "app": "maas-controller",
+                    "app.kubernetes.io/part-of": "modelsasservice",
+                    "app.opendatahub.io/modelsasservice": "true",
+                    "control-plane": "maas-controller"
+                }
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "args": [
+                            "--leader-elect",
+                            "--health-probe-bind-address=:8081",
+                            "--gateway-name=$(GATEWAY_NAME)",
+                            "--gateway-namespace=$(GATEWAY_NAMESPACE)",
+                            "--maas-api-namespace=$(MAAS_API_NAMESPACE)",
+                            "--maas-subscription-namespace=$(MAAS_SUBSCRIPTION_NAMESPACE)",
+                            "--metadata-cache-ttl=60",
+                            "--authz-cache-ttl=60"
+                        ],
+                        "command": [
+                            "/manager"
+                        ],
+                        "env": [
+                            {
+                                "name": "GATEWAY_NAME",
+                                "value": "maas-default-gateway"
+                            },
+                            {
+                                "name": "GATEWAY_NAMESPACE",
+                                "value": "openshift-ingress"
+                            },
+                            {
+                                "name": "MAAS_API_NAMESPACE",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.namespace"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "MAAS_SUBSCRIPTION_NAMESPACE",
+                                "value": "models-as-a-service"
+                            },
+                            {
+                                "name": "RELATED_IMAGE_ODH_MAAS_API_IMAGE",
+                                "valueFrom": {
+                                    "configMapKeyRef": {
+                                        "key": "maas-api-image",
+                                        "name": "maas-parameters",
+                                        "optional": true
+                                    }
+                                }
+                            },
+                            {
+                                "name": "RELATED_IMAGE_ODH_MAAS_CONTROLLER_IMAGE",
+                                "valueFrom": {
+                                    "configMapKeyRef": {
+                                        "key": "maas-controller-image",
+                                        "name": "maas-parameters",
+                                        "optional": true
+                                    }
+                                }
+                            },
+                            {
+                                "name": "RELATED_IMAGE_ODH_AI_GATEWAY_PAYLOAD_PROCESSING_IMAGE",
+                                "valueFrom": {
+                                    "configMapKeyRef": {
+                                        "key": "payload-processing-image",
+                                        "name": "maas-parameters",
+                                        "optional": true
+                                    }
+                                }
+                            },
+                            {
+                                "name": "RELATED_IMAGE_UBI_MINIMAL_IMAGE",
+                                "valueFrom": {
+                                    "configMapKeyRef": {
+                                        "key": "maas-api-key-cleanup-image",
+                                        "name": "maas-parameters",
+                                        "optional": true
+                                    }
+                                }
+                            }
+                        ],
+                        "image": "registry.redhat.io/rhoai/odh-maas-controller-rhel9@sha256:745da3f2220415b37e099e0067fe73d6080c6bd16cc340d432666b606a232686",
+                        "imagePullPolicy": "Always",
+                        "livenessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/healthz",
+                                "port": 8081,
+                                "scheme": "HTTP"
+                            },
+                            "initialDelaySeconds": 15,
+                            "periodSeconds": 20,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 1
+                        },
+                        "name": "manager",
+                        "ports": [
+                            {
+                                "containerPort": 8080,
+                                "name": "metrics",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "readinessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/readyz",
+                                "port": 8081,
+                                "scheme": "HTTP"
+                            },
+                            "initialDelaySeconds": 5,
+                            "periodSeconds": 10,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 1
+                        },
+                        "resources": {
+                            "limits": {
+                                "cpu": "500m",
+                                "memory": "1Gi"
+                            },
+                            "requests": {
+                                "cpu": "10m",
+                                "memory": "64Mi"
+                            }
+                        },
+                        "securityContext": {
+                            "allowPrivilegeEscalation": false,
+                            "capabilities": {
+                                "drop": [
+                                    "ALL"
+                                ]
+                            }
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File"
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {
+                    "runAsNonRoot": true
+                },
+                "serviceAccount": "maas-controller",
+                "serviceAccountName": "maas-controller",
+                "terminationGracePeriodSeconds": 10
+            }
+        }
+    },
+    "status": {
+        "availableReplicas": 1,
+        "conditions": [
+            {
+                "lastTransitionTime": "2026-10-31T02:50:19Z",
+                "lastUpdateTime": "2026-10-31T02:50:19Z",
+                "message": "Deployment has minimum availability.",
+                "reason": "MinimumReplicasAvailable",
+                "status": "True",
+                "type": "Available"
+            },
+            {
+                "lastTransitionTime": "2026-08-10T18:21:10Z",
+                "lastUpdateTime": "2026-10-31T02:50:19Z",
+                "message": "ReplicaSet \"maas-controller-7d85d8d678\" has successfully progressed.",
+                "reason": "NewReplicaSetAvailable",
+                "status": "True",
+                "type": "Progressing"
+            }
+        ],
+        "observedGeneration": 4,
+        "readyReplicas": 1,
+        "replicas": 1,
+        "updatedReplicas": 1
+    }
+}

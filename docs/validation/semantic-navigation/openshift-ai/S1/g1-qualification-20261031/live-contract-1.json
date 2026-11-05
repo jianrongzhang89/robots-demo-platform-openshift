@@ -1,0 +1,276 @@
+{
+  "scope": "G1 live model endpoint contract/security; no navigation claim",
+  "status": "PASS",
+  "checks": [
+    {
+      "case": "loaded_identity",
+      "passed": true,
+      "detail": {
+        "http_status": 200,
+        "identity_matches": true
+      },
+      "duration_seconds": 0.065
+    },
+    {
+      "case": "authorized_full_resolution_prediction",
+      "passed": true,
+      "detail": {
+        "http_status": 200,
+        "occupied_pixels": 11740,
+        "elapsed_ms": 121.919
+      },
+      "duration_seconds": 0.133
+    },
+    {
+      "case": "missing_client_certificate",
+      "passed": true,
+      "detail": {
+        "tls_rejected": true
+      },
+      "duration_seconds": 0.01
+    },
+    {
+      "case": "issuer_signed_unbound_principal",
+      "passed": true,
+      "detail": {
+        "http_status": 403,
+        "status": "forbidden",
+        "elapsed_ms": 52.634
+      },
+      "duration_seconds": 0.055
+    },
+    {
+      "case": "wrong_server_identity",
+      "passed": true,
+      "detail": {
+        "hostname_verification_rejected": true
+      },
+      "duration_seconds": 0.008
+    },
+    {
+      "case": "unauthorized_robot",
+      "passed": true,
+      "detail": {
+        "http_status": 403,
+        "status": "forbidden",
+        "elapsed_ms": 56.941
+      },
+      "duration_seconds": 0.065
+    },
+    {
+      "case": "unauthorized_stream",
+      "passed": true,
+      "detail": {
+        "http_status": 403,
+        "status": "forbidden",
+        "elapsed_ms": 57.864
+      },
+      "duration_seconds": 0.065
+    },
+    {
+      "case": "malformed_json",
+      "passed": true,
+      "detail": {
+        "http_status": 400,
+        "status": "invalid_input",
+        "elapsed_ms": 10.59
+      },
+      "duration_seconds": 0.012
+    },
+    {
+      "case": "nonfinite_json",
+      "passed": true,
+      "detail": {
+        "http_status": 400,
+        "status": "invalid_input",
+        "elapsed_ms": 16.612
+      },
+      "duration_seconds": 0.019
+    },
+    {
+      "case": "invalid_envelope",
+      "passed": true,
+      "detail": {
+        "http_status": 400,
+        "status": "invalid_input",
+        "elapsed_ms": 55.226
+      },
+      "duration_seconds": 0.058
+    },
+    {
+      "case": "wrong_content_type",
+      "passed": true,
+      "detail": {
+        "http_status": 415,
+        "status": "invalid_input",
+        "elapsed_ms": 7.958
+      },
+      "duration_seconds": 0.01
+    },
+    {
+      "case": "wrong_model_version",
+      "passed": true,
+      "detail": {
+        "http_status": 400,
+        "status": "invalid_input",
+        "elapsed_ms": 61.986
+      },
+      "duration_seconds": 0.069
+    },
+    {
+      "case": "wrong_policy",
+      "passed": true,
+      "detail": {
+        "http_status": 400,
+        "status": "invalid_input",
+        "elapsed_ms": 55.49
+      },
+      "duration_seconds": 0.062
+    },
+    {
+      "case": "wrong_prompt",
+      "passed": true,
+      "detail": {
+        "http_status": 400,
+        "status": "invalid_input",
+        "elapsed_ms": 55.073
+      },
+      "duration_seconds": 0.062
+    },
+    {
+      "case": "too_many_pixels",
+      "passed": true,
+      "detail": {
+        "http_status": 400,
+        "status": "invalid_input",
+        "elapsed_ms": 53.56
+      },
+      "duration_seconds": 0.059
+    },
+    {
+      "case": "expired_budget",
+      "passed": true,
+      "detail": {
+        "http_status": 504,
+        "status": "timeout",
+        "elapsed_ms": 55.198
+      },
+      "duration_seconds": 0.062
+    },
+    {
+      "case": "over_wire_limit",
+      "passed": true,
+      "detail": {
+        "http_status": 413,
+        "status": "invalid_input",
+        "elapsed_ms": 9.631
+      },
+      "duration_seconds": 0.012
+    },
+    {
+      "case": "slow_upload_timeout",
+      "passed": true,
+      "detail": {
+        "http_status": 408,
+        "status": "timeout",
+        "elapsed_ms": 2010.003
+      },
+      "duration_seconds": 2.012
+    },
+    {
+      "case": "exact_wire_limit",
+      "passed": true,
+      "detail": {
+        "request_bytes": 29360128,
+        "http_status": 200,
+        "elapsed_ms": 208.098
+      },
+      "duration_seconds": 0.369
+    },
+    {
+      "case": "bounded_concurrent_admission",
+      "passed": true,
+      "detail": {
+        "concurrent_requests": 16,
+        "results": [
+          {
+            "transport_rejected": "SSLEOFError"
+          },
+          {
+            "http_status": 429,
+            "elapsed_ms": 125.202
+          },
+          {
+            "transport_rejected": "SSLEOFError"
+          },
+          {
+            "http_status": 429,
+            "elapsed_ms": 103.197
+          },
+          {
+            "http_status": 429,
+            "elapsed_ms": 87.855
+          },
+          {
+            "http_status": 429,
+            "elapsed_ms": 97.666
+          },
+          {
+            "transport_rejected": "SSLEOFError"
+          },
+          {
+            "transport_rejected": "SSLEOFError"
+          },
+          {
+            "http_status": 200,
+            "elapsed_ms": 183.503
+          },
+          {
+            "transport_rejected": "SSLEOFError"
+          },
+          {
+            "http_status": 429,
+            "elapsed_ms": 117.591
+          },
+          {
+            "transport_rejected": "SSLEOFError"
+          },
+          {
+            "http_status": 429,
+            "elapsed_ms": 112.776
+          },
+          {
+            "transport_rejected": "SSLEOFError"
+          },
+          {
+            "http_status": 429,
+            "elapsed_ms": 106.246
+          },
+          {
+            "transport_rejected": "SSLEOFError"
+          }
+        ]
+      },
+      "duration_seconds": 0.306
+    },
+    {
+      "case": "healthy_after_negative_tests",
+      "passed": true,
+      "detail": {
+        "http_status": 200,
+        "identity_matches": true
+      },
+      "duration_seconds": 0.054
+    },
+    {
+      "case": "prediction_after_negative_tests",
+      "passed": true,
+      "detail": {
+        "http_status": 200,
+        "occupied_pixels": 11740,
+        "elapsed_ms": 116.848
+      },
+      "duration_seconds": 0.124
+    }
+  ]
+}

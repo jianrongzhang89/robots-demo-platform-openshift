@@ -1,0 +1,14 @@
+{
+ "event": "standalone paired-series re-run 11 (November 3)",
+ "context": "Series 10 stopped on trial 001-on (4th trial) to the goal-abort class resurfacing at a new location: the robot completed the full route (118 s, 5.32 m) but the goal checker did not accept before a TF hiccup pruned the final plan and the controller aborted. The transform-tolerance recalibration moved this failure from mid-route (~89 s, series 1/2) to the goal line; the residual rate is ~3-4% per on-arm trial.",
+ "setup": {
+  "topology": "G4 topology up (direct endpoint); the series' per-trial recycle manages it; reservation remains deleted",
+  "series_output": "qualification-22/paired-series-11",
+  "phase5_evidence": "qualification-22/served-phase5-qualification.json",
+  "sampler": {
+   "output": "serving-resources-paired-series-11.jsonl",
+   "stop_file": "/tmp/g4-paired-series-11-monitor-stop"
+  }
+ },
+ "command": "run_phase6_series.py --output-dir qualification-22/paired-series-11 (same arguments as series 2-10)"
+}

@@ -1,0 +1,28 @@
+{
+ "event": "qualification-22 setup",
+ "date": "2026-11-02",
+ "preconditions": {
+  "S1": "PASS accepted",
+  "S2": "PASS accepted",
+  "S3": "PASS accepted",
+  "leftover_g4_or_fixture_resources": "none",
+  "pilot": "serving-transport-pilot-10 PASS (all five fault-stop modes at 0.3 m injection)",
+  "prior_attempt": "qualification-21 passed seven serving trials cleanly then stopped on trial-08 (wrong_version-r2) to the jitter tail (sixth occurrence; a 2.2 ms worker-side margin from moderate multi-component elevation, backend healthy at 127 ms - landing at the urgency fast-poll's ~1-3 ms delivery floor)"
+ },
+ "candidate": "unchanged",
+ "environment": "adapter node ip-10-0-53-174 freed (hotel-sim at 0 replicas); keep hotel-sim at 0 while G4 runs",
+ "rendering_reservation": "deleted to free the A10G for the G4 fixture; run_g4_suite.py finally restores it from rendering-reservation-saved.json",
+ "proxy_certificate": {
+  "secret": "semantic-g4-proxy-tls",
+  "subject": "CN=localhost",
+  "notBefore": "Nov 2 19:38:21 2026 GMT",
+  "notAfter": "Nov 5 19:38:21 2026 GMT",
+  "sha256_fingerprint": "8D:AC:00:24:AC:B9:1E:BA:E9:9E:E7:67:76:CA:EE:0A:42:DA:37:6A:FD:51:30:18:8E:88:F3:DE:89:33:B4:73",
+  "key_material_retained": false
+ },
+ "sampler": {
+  "output": "serving-resources-qualification-22.jsonl",
+  "stop_file": "/tmp/g4-qualification-22-monitor-stop"
+ },
+ "command": "run_g4_suite.py --output-dir qualification-22 --reservation rendering-reservation-saved.json"
+}

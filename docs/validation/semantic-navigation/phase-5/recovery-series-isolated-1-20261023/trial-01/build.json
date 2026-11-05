@@ -1,0 +1,161 @@
+{
+  "apiVersion": "build.openshift.io/v1",
+  "kind": "Build",
+  "metadata": {
+    "annotations": {
+      "openshift.io/build-config.name": "semantic-safety-console-phase5",
+      "openshift.io/build.number": "15",
+      "openshift.io/build.pod-name": "semantic-safety-console-phase5-15-build"
+    },
+    "creationTimestamp": "2026-10-23T16:38:26Z",
+    "generation": 2,
+    "labels": {
+      "buildconfig": "semantic-safety-console-phase5",
+      "openshift.io/build-config.name": "semantic-safety-console-phase5",
+      "openshift.io/build.start-policy": "Serial"
+    },
+    "name": "semantic-safety-console-phase5-15",
+    "namespace": "semantic-navigation",
+    "ownerReferences": [
+      {
+        "apiVersion": "build.openshift.io/v1",
+        "controller": true,
+        "kind": "BuildConfig",
+        "name": "semantic-safety-console-phase5",
+        "uid": "22e3050b-68bd-4c47-818b-c6b3a771ca22"
+      }
+    ],
+    "resourceVersion": "460361877",
+    "uid": "795d0cbd-9991-48a0-ae14-2b76f8dc881d"
+  },
+  "spec": {
+    "nodeSelector": null,
+    "output": {
+      "pushSecret": {
+        "name": "builder-dockercfg-htt4p"
+      },
+      "to": {
+        "kind": "ImageStreamTag",
+        "name": "semantic-safety:phase5-console-candidate"
+      }
+    },
+    "postCommit": {},
+    "resources": {
+      "limits": {
+        "cpu": "2",
+        "memory": "4Gi"
+      },
+      "requests": {
+        "cpu": "1",
+        "memory": "2Gi"
+      }
+    },
+    "revision": {
+      "git": {
+        "author": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "commit": "bc1c7e04ab017aeb2a9e3025c93f1a367603c103",
+        "committer": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "message": "Allow the non-GPU placement guard for any pinned Phase 5 trial\n\n--require-non-gpu-node previously required --moving-timing-trace, which\ncontradicts the fixed recovery-series runner committed earlier: the\nseries propagates --node-name and --require-non-gpu-node to all ten\ntrials, none of which is a timing trace. The guard now requires a pinned\nnode for any trial and still refuses to combine with --allow-g5-node;\nthe fail-closed Ready/GPU-free node check before resource creation is\nunchanged. This widens enforcement to more trials; no guard is weakened."
+      },
+      "type": "Git"
+    },
+    "serviceAccount": "builder",
+    "source": {
+      "binary": {},
+      "type": "Binary"
+    },
+    "strategy": {
+      "dockerStrategy": {
+        "dockerfilePath": "Containerfile.console"
+      },
+      "type": "Docker"
+    }
+  },
+  "status": {
+    "completionTimestamp": "2026-10-23T16:43:49Z",
+    "conditions": [
+      {
+        "lastTransitionTime": "2026-10-23T16:38:26Z",
+        "lastUpdateTime": "2026-10-23T16:38:26Z",
+        "status": "False",
+        "type": "New"
+      },
+      {
+        "lastTransitionTime": "2026-10-23T16:38:28Z",
+        "lastUpdateTime": "2026-10-23T16:38:28Z",
+        "status": "False",
+        "type": "Pending"
+      },
+      {
+        "lastTransitionTime": "2026-10-23T16:43:49Z",
+        "lastUpdateTime": "2026-10-23T16:43:49Z",
+        "status": "False",
+        "type": "Running"
+      },
+      {
+        "lastTransitionTime": "2026-10-23T16:43:49Z",
+        "lastUpdateTime": "2026-10-23T16:43:49Z",
+        "status": "True",
+        "type": "Complete"
+      }
+    ],
+    "config": {
+      "kind": "BuildConfig",
+      "name": "semantic-safety-console-phase5",
+      "namespace": "semantic-navigation"
+    },
+    "duration": 323000000000,
+    "output": {
+      "to": {
+        "imageDigest": "sha256:db3cd6ea1c79b95ce99631a18800dfbbbba44b7375202e5bc758b809fcb1b27e"
+      }
+    },
+    "outputDockerImageReference": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety:phase5-console-candidate",
+    "phase": "Complete",
+    "stages": [
+      {
+        "durationMilliseconds": 125713,
+        "name": "PullImages",
+        "startTime": "2026-10-23T16:38:30Z",
+        "steps": [
+          {
+            "durationMilliseconds": 125713,
+            "name": "PullBaseImage",
+            "startTime": "2026-10-23T16:38:30Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 185795,
+        "name": "Build",
+        "startTime": "2026-10-23T16:40:36Z",
+        "steps": [
+          {
+            "durationMilliseconds": 185795,
+            "name": "DockerBuild",
+            "startTime": "2026-10-23T16:40:36Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 6275,
+        "name": "PushImage",
+        "startTime": "2026-10-23T16:43:42Z",
+        "steps": [
+          {
+            "durationMilliseconds": 6275,
+            "name": "PushDockerImage",
+            "startTime": "2026-10-23T16:43:42Z"
+          }
+        ]
+      }
+    ],
+    "startTimestamp": "2026-10-23T16:38:26Z"
+  }
+}

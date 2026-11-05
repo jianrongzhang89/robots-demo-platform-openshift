@@ -1,0 +1,14 @@
+{
+ "event": "standalone paired-series re-run 18 (November 4)",
+ "context": "Series 17 passed 19 trials then stopped on 009-on to the watchdog command-boundary race (native_session_lost; the ~1.6% residual in the pinned command-deadline semantics).",
+ "setup": {
+  "topology": "G4 topology up (direct endpoint); the series' per-trial recycle manages it; reservation remains deleted",
+  "series_output": "qualification-22/paired-series-18",
+  "phase5_evidence": "qualification-22/served-phase5-qualification.json",
+  "sampler": {
+   "output": "serving-resources-paired-series-18.jsonl",
+   "stop_file": "/tmp/g4-paired-series-18-monitor-stop"
+  }
+ },
+ "command": "run_phase6_series.py --output-dir qualification-22/paired-series-18 (same arguments as series 2-17)"
+}

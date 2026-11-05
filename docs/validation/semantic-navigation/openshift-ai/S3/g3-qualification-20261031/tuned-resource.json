@@ -1,0 +1,46 @@
+{
+    "apiVersion": "tuned.openshift.io/v1",
+    "kind": "Tuned",
+    "metadata": {
+        "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"tuned.openshift.io/v1\",\"kind\":\"Tuned\",\"metadata\":{\"annotations\":{},\"name\":\"semantic-g3-adapter\",\"namespace\":\"openshift-cluster-node-tuning-operator\"},\"spec\":{\"profile\":[{\"data\":\"[main]\\nsummary=Bounded DDS receive buffers for the qualified semantic CPU adapter\\ninclude=openshift-node\\n[sysctl]\\nnet.core.rmem_max=8388608\\n\",\"name\":\"semantic-g3-adapter\"}],\"recommend\":[{\"match\":[{\"label\":\"kubernetes.io/hostname\",\"type\":\"node\",\"value\":\"ip-10-0-53-174.ec2.internal\"}],\"priority\":19,\"profile\":\"semantic-g3-adapter\"}]}}\n"
+        },
+        "creationTimestamp": "2026-10-31T18:36:50Z",
+        "generation": 1,
+        "name": "semantic-g3-adapter",
+        "namespace": "openshift-cluster-node-tuning-operator",
+        "resourceVersion": "494745046",
+        "uid": "9750d598-7e29-4d3c-94e8-0e49fb2fb48d"
+    },
+    "spec": {
+        "profile": [
+            {
+                "data": "[main]\nsummary=Bounded DDS receive buffers for the qualified semantic CPU adapter\ninclude=openshift-node\n[sysctl]\nnet.core.rmem_max=8388608\n",
+                "name": "semantic-g3-adapter"
+            }
+        ],
+        "recommend": [
+            {
+                "match": [
+                    {
+                        "label": "kubernetes.io/hostname",
+                        "type": "node",
+                        "value": "ip-10-0-53-174.ec2.internal"
+                    }
+                ],
+                "priority": 19,
+                "profile": "semantic-g3-adapter"
+            }
+        ]
+    },
+    "status": {
+        "conditions": [
+            {
+                "lastTransitionTime": "2026-10-31T18:36:50Z",
+                "reason": "AsExpected",
+                "status": "True",
+                "type": "Valid"
+            }
+        ]
+    }
+}

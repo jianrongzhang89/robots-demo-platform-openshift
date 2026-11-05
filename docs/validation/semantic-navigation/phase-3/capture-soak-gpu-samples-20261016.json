@@ -1,0 +1,23 @@
+{
+  "fields": [
+    "timestamp_utc",
+    "gpu_name",
+    "used_mib",
+    "total_mib",
+    "utilization_percent"
+  ],
+  "note": "Intermittent nvidia-smi samples, not continuous per-kernel monitoring.",
+  "default_receiver_run": [
+    "2026/10/16 16:44:50.670, NVIDIA L40S, 5855, 46068, 46",
+    "2026/10/16 16:46:50.250, NVIDIA L40S, 5855, 46068, 64",
+    "2026/10/16 16:49:20.942, NVIDIA L40S, 5855, 46068, 52",
+    "2026/10/16 16:51:47.622, NVIDIA L40S, 5855, 46068, 39",
+    "2026/10/16 16:54:07.882, NVIDIA L40S, 5855, 46068, 56"
+  ],
+  "fast_recovery_receiver_run": [
+    "2026/10/16 17:05:55.706, NVIDIA L40S, 5855, 46068, 35",
+    "2026/10/16 17:09:11.808, NVIDIA L40S, 5855, 46068, 63",
+    "2026/10/16 17:13:23.084, NVIDIA L40S, 5855, 46068, 6",
+    "2026/10/16 17:17:57.701, NVIDIA L40S, 5855, 46068, 49"
+  ]
+}

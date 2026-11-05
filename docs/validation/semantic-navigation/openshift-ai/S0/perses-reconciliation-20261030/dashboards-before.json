@@ -1,0 +1,2035 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "perses.dev/v1alpha2",
+            "kind": "PersesDashboard",
+            "metadata": {
+                "creationTimestamp": "2026-08-10T18:21:22Z",
+                "generation": 11,
+                "labels": {
+                    "app.kubernetes.io/component": "api",
+                    "app.kubernetes.io/managed-by": "maas-observability",
+                    "app.kubernetes.io/name": "maas-api",
+                    "app.kubernetes.io/part-of": "models-as-a-service",
+                    "app.opendatahub.io/modelsasservice": "true",
+                    "maas.opendatahub.io/tenant-name": "default-tenant",
+                    "maas.opendatahub.io/tenant-namespace": "models-as-a-service"
+                },
+                "name": "dashboard-3-maas-usage-admin",
+                "namespace": "redhat-ods-applications",
+                "resourceVersion": "197036761",
+                "uid": "1ead8dad-d782-428c-adee-e29a5d9e85f9"
+            },
+            "spec": {
+                "config": {
+                    "display": {
+                        "description": "Token consumption overview and per-user usage breakdown",
+                        "name": "Usage"
+                    },
+                    "duration": "168h",
+                    "layouts": [
+                        {
+                            "kind": "Grid",
+                            "spec": {
+                                "display": {
+                                    "collapse": {
+                                        "open": true
+                                    },
+                                    "title": "Overview"
+                                },
+                                "items": [
+                                    {
+                                        "content": {
+                                            "$ref": "#/spec/panels/totalTokens"
+                                        },
+                                        "height": 5,
+                                        "width": 5,
+                                        "x": 0,
+                                        "y": 0
+                                    },
+                                    {
+                                        "content": {
+                                            "$ref": "#/spec/panels/totalRequests"
+                                        },
+                                        "height": 5,
+                                        "width": 5,
+                                        "x": 5,
+                                        "y": 0
+                                    },
+                                    {
+                                        "content": {
+                                            "$ref": "#/spec/panels/totalErrors"
+                                        },
+                                        "height": 5,
+                                        "width": 5,
+                                        "x": 10,
+                                        "y": 0
+                                    },
+                                    {
+                                        "content": {
+                                            "$ref": "#/spec/panels/successRate"
+                                        },
+                                        "height": 5,
+                                        "width": 5,
+                                        "x": 15,
+                                        "y": 0
+                                    },
+                                    {
+                                        "content": {
+                                            "$ref": "#/spec/panels/activeUsers"
+                                        },
+                                        "height": 5,
+                                        "width": 4,
+                                        "x": 20,
+                                        "y": 0
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "kind": "Grid",
+                            "spec": {
+                                "display": {
+                                    "collapse": {
+                                        "open": true
+                                    },
+                                    "title": "Token Consumption"
+                                },
+                                "items": [
+                                    {
+                                        "content": {
+                                            "$ref": "#/spec/panels/tokenConsumptionByUser"
+                                        },
+                                        "height": 12,
+                                        "width": 24,
+                                        "x": 0,
+                                        "y": 0
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "panels": {
+                        "activeUsers": {
+                            "kind": "Panel",
+                            "spec": {
+                                "display": {
+                                    "description": "Distinct users with API activity over the selected time window.",
+                                    "name": "Active Users"
+                                },
+                                "plugin": {
+                                    "kind": "StatChart",
+                                    "spec": {
+                                        "calculation": "last",
+                                        "format": {
+                                            "unit": "decimal"
+                                        }
+                                    }
+                                },
+                                "queries": [
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource",
+                                                        "name": "kuadrant-prometheus-datasource"
+                                                    },
+                                                    "query": "count(\n  count by (user) (\n    (\n      (\n        sum by (user, subscription, limitador_namespace) (\n          increase(authorized_calls{user!=\"\", user=~\"$user\", subscription=~\"$subscription\"}[$__range])\n        )\n        +\n        sum by (user, subscription, limitador_namespace) (\n          increase(limited_calls{user!=\"\", user=~\"$user\", subscription=~\"$subscription\"}[$__range])\n        )\n      )\n      or\n      sum by (user, subscription, limitador_namespace) (\n        increase(authorized_calls{user!=\"\", user=~\"$user\", subscription=~\"$subscription\"}[$__range])\n      )\n    )\n    * on(user, subscription, limitador_namespace)\n    (0 * max by (user, subscription, limitador_namespace) (max_over_time(authorized_hits{model=~\"$model\"}[$__range])) + 1)\n    \u003e 0\n  )\n) or vector(0)",
+                                                    "seriesNameFormat": "Users"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "successRate": {
+                            "kind": "Panel",
+                            "spec": {
+                                "display": {
+                                    "description": "Percentage of authorized vs total requests over the selected time window.",
+                                    "name": "Success Rate"
+                                },
+                                "plugin": {
+                                    "kind": "StatChart",
+                                    "spec": {
+                                        "calculation": "last",
+                                        "format": {
+                                            "decimalPlaces": 0,
+                                            "unit": "percent-decimal"
+                                        }
+                                    }
+                                },
+                                "queries": [
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource",
+                                                        "name": "kuadrant-prometheus-datasource"
+                                                    },
+                                                    "query": "(\n  (\n    sum(\n      sum by (user, subscription, limitador_namespace) (\n        increase(authorized_calls{user!=\"\", user=~\"$user\", subscription=~\"$subscription\"}[$__range])\n      )\n      * on(user, subscription, limitador_namespace)\n      (0 * max by (user, subscription, limitador_namespace) (max_over_time(authorized_hits{model=~\"$model\"}[$__range])) + 1)\n    )\n  )\n  /\n  (\n    (\n      sum(\n        sum by (user, subscription, limitador_namespace) (\n          increase(authorized_calls{user!=\"\", user=~\"$user\", subscription=~\"$subscription\"}[$__range])\n        )\n        * on(user, subscription, limitador_namespace)\n        (0 * max by (user, subscription, limitador_namespace) (max_over_time(authorized_hits{model=~\"$model\"}[$__range])) + 1)\n      )\n      +\n      (\n        sum(\n          sum by (user, subscription, limitador_namespace) (\n            increase(limited_calls{user!=\"\", user=~\"$user\", subscription=~\"$subscription\"}[$__range])\n          )\n          * on(user, subscription, limitador_namespace)\n          (0 * max by (user, subscription, limitador_namespace) (max_over_time(authorized_hits{model=~\"$model\"}[$__range])) + 1)\n        )\n        or vector(0)\n      )\n    ) \u003e 0\n  )\n) or vector(1)",
+                                                    "seriesNameFormat": "Success Rate"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "tokenConsumptionByUser": {
+                            "kind": "Panel",
+                            "spec": {
+                                "display": {
+                                    "description": "Per-user totals over the Range dropdown window.",
+                                    "name": "Token Consumption"
+                                },
+                                "plugin": {
+                                    "kind": "Table",
+                                    "spec": {
+                                        "columnSettings": [
+                                            {
+                                                "hide": true,
+                                                "name": "timestamp"
+                                            },
+                                            {
+                                                "align": "left",
+                                                "enableSorting": true,
+                                                "header": "User",
+                                                "name": "user"
+                                            },
+                                            {
+                                                "align": "left",
+                                                "enableSorting": true,
+                                                "header": "Subscription",
+                                                "name": "subscription"
+                                            },
+                                            {
+                                                "align": "left",
+                                                "enableSorting": true,
+                                                "header": "Model",
+                                                "name": "model"
+                                            },
+                                            {
+                                                "align": "right",
+                                                "enableSorting": true,
+                                                "format": {
+                                                    "decimalPlaces": 0,
+                                                    "shortValues": true,
+                                                    "unit": "decimal"
+                                                },
+                                                "header": "Tokens",
+                                                "name": "value #1",
+                                                "sort": "desc"
+                                            },
+                                            {
+                                                "align": "right",
+                                                "enableSorting": true,
+                                                "format": {
+                                                    "decimalPlaces": 0,
+                                                    "unit": "decimal"
+                                                },
+                                                "header": "Requests",
+                                                "name": "value #2"
+                                            },
+                                            {
+                                                "align": "right",
+                                                "enableSorting": true,
+                                                "format": {
+                                                    "decimalPlaces": 0,
+                                                    "unit": "decimal"
+                                                },
+                                                "header": "Rate Limited",
+                                                "name": "value #3"
+                                            }
+                                        ],
+                                        "density": "compact",
+                                        "pagination": true,
+                                        "transforms": [
+                                            {
+                                                "kind": "MergeSeries",
+                                                "spec": {}
+                                            }
+                                        ]
+                                    }
+                                },
+                                "queries": [
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource",
+                                                        "name": "kuadrant-prometheus-datasource"
+                                                    },
+                                                    "query": "round(sum by (user, subscription, model) (increase(authorized_hits{user!=\"\", user=~\"$user\", subscription=~\"$subscription\", model=~\"$model\"}[$__range])))"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource",
+                                                        "name": "kuadrant-prometheus-datasource"
+                                                    },
+                                                    "query": "round(\n  sum by (user, subscription, model) (\n    (\n      (\n        sum by (user, subscription, limitador_namespace) (increase(authorized_calls{user!=\"\", user=~\"$user\", subscription=~\"$subscription\"}[$__range]))\n        +\n        sum by (user, subscription, limitador_namespace) (increase(limited_calls{user!=\"\", user=~\"$user\", subscription=~\"$subscription\"}[$__range]))\n      )\n      or\n      sum by (user, subscription, limitador_namespace) (increase(authorized_calls{user!=\"\", user=~\"$user\", subscription=~\"$subscription\"}[$__range]))\n    )\n    * on(user, subscription, limitador_namespace) group_left(model)\n    (0 * max by (user, subscription, limitador_namespace, model) (max_over_time(authorized_hits{model=~\"$model\"}[$__range])) + 1)\n  )\n  or\n  0 * sum by (user, subscription, model) (increase(authorized_hits{user!=\"\", user=~\"$user\", subscription=~\"$subscription\", model=~\"$model\"}[$__range]))\n)"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource",
+                                                        "name": "kuadrant-prometheus-datasource"
+                                                    },
+                                                    "query": "round(\n  sum by (user, subscription, model) (\n    sum by (user, subscription, limitador_namespace) (increase(limited_calls{user!=\"\", user=~\"$user\", subscription=~\"$subscription\"}[$__range]))\n    * on(user, subscription, limitador_namespace) group_left(model)\n    (0 * max by (user, subscription, limitador_namespace, model) (max_over_time(authorized_hits{model=~\"$model\"}[$__range])) + 1)\n  )\n  or\n  0 * sum by (user, subscription, model) (increase(authorized_hits{user!=\"\", user=~\"$user\", subscription=~\"$subscription\", model=~\"$model\"}[$__range]))\n)"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "totalErrors": {
+                            "kind": "Panel",
+                            "spec": {
+                                "display": {
+                                    "description": "Total rate-limited requests over the selected time window.",
+                                    "name": "Total Errors"
+                                },
+                                "plugin": {
+                                    "kind": "StatChart",
+                                    "spec": {
+                                        "calculation": "last",
+                                        "format": {
+                                            "decimalPlaces": 0,
+                                            "shortValues": true,
+                                            "unit": "decimal"
+                                        }
+                                    }
+                                },
+                                "queries": [
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource",
+                                                        "name": "kuadrant-prometheus-datasource"
+                                                    },
+                                                    "query": "sum(\n  sum by (user, subscription, limitador_namespace) (\n    increase(limited_calls{user!=\"\", user=~\"$user\", subscription=~\"$subscription\"}[$__range])\n  )\n  * on(user, subscription, limitador_namespace)\n  (0 * max by (user, subscription, limitador_namespace) (max_over_time(authorized_hits{model=~\"$model\"}[$__range])) + 1)\n)\nor vector(0)",
+                                                    "seriesNameFormat": "Errors"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "totalRequests": {
+                            "kind": "Panel",
+                            "spec": {
+                                "display": {
+                                    "description": "Total API requests (authorized + rate-limited) over the selected time window.",
+                                    "name": "Total Requests"
+                                },
+                                "plugin": {
+                                    "kind": "StatChart",
+                                    "spec": {
+                                        "calculation": "last",
+                                        "format": {
+                                            "decimalPlaces": 0,
+                                            "shortValues": true,
+                                            "unit": "decimal"
+                                        }
+                                    }
+                                },
+                                "queries": [
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource",
+                                                        "name": "kuadrant-prometheus-datasource"
+                                                    },
+                                                    "query": "(\n  sum(\n    sum by (user, subscription, limitador_namespace) (\n      increase(authorized_calls{user!=\"\", user=~\"$user\", subscription=~\"$subscription\"}[$__range])\n    )\n    * on(user, subscription, limitador_namespace)\n    (0 * max by (user, subscription, limitador_namespace) (max_over_time(authorized_hits{model=~\"$model\"}[$__range])) + 1)\n  )\n  or vector(0)\n)\n+\n(\n  sum(\n    sum by (user, subscription, limitador_namespace) (\n      increase(limited_calls{user!=\"\", user=~\"$user\", subscription=~\"$subscription\"}[$__range])\n    )\n    * on(user, subscription, limitador_namespace)\n    (0 * max by (user, subscription, limitador_namespace) (max_over_time(authorized_hits{model=~\"$model\"}[$__range])) + 1)\n  )\n  or vector(0)\n)",
+                                                    "seriesNameFormat": "Requests"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "totalTokens": {
+                            "kind": "Panel",
+                            "spec": {
+                                "display": {
+                                    "description": "Total tokens consumed over the selected time window.",
+                                    "name": "Total Tokens"
+                                },
+                                "plugin": {
+                                    "kind": "StatChart",
+                                    "spec": {
+                                        "calculation": "last",
+                                        "format": {
+                                            "decimalPlaces": 0,
+                                            "shortValues": true,
+                                            "unit": "decimal"
+                                        }
+                                    }
+                                },
+                                "queries": [
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource",
+                                                        "name": "kuadrant-prometheus-datasource"
+                                                    },
+                                                    "query": "sum(increase(authorized_hits{user!=\"\", user=~\"$user\", subscription=~\"$subscription\", model=~\"$model\"}[$__range])) or vector(0)",
+                                                    "seriesNameFormat": "Tokens"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "variables": [
+                        {
+                            "kind": "ListVariable",
+                            "spec": {
+                                "allowAllValue": true,
+                                "allowMultiple": true,
+                                "defaultValue": "$__all",
+                                "display": {
+                                    "hidden": false,
+                                    "name": "User"
+                                },
+                                "name": "user",
+                                "plugin": {
+                                    "kind": "PrometheusLabelValuesVariable",
+                                    "spec": {
+                                        "datasource": {
+                                            "kind": "PrometheusDatasource",
+                                            "name": "kuadrant-prometheus-datasource"
+                                        },
+                                        "labelName": "user",
+                                        "matchers": [
+                                            "authorized_hits{user!=\"\"}"
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "kind": "ListVariable",
+                            "spec": {
+                                "allowAllValue": true,
+                                "allowMultiple": true,
+                                "defaultValue": "$__all",
+                                "display": {
+                                    "hidden": false,
+                                    "name": "Subscription"
+                                },
+                                "name": "subscription",
+                                "plugin": {
+                                    "kind": "PrometheusLabelValuesVariable",
+                                    "spec": {
+                                        "datasource": {
+                                            "kind": "PrometheusDatasource",
+                                            "name": "kuadrant-prometheus-datasource"
+                                        },
+                                        "labelName": "subscription",
+                                        "matchers": [
+                                            "authorized_hits{subscription!=\"\"}"
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "kind": "ListVariable",
+                            "spec": {
+                                "allowAllValue": true,
+                                "allowMultiple": true,
+                                "defaultValue": "$__all",
+                                "display": {
+                                    "hidden": false,
+                                    "name": "Model"
+                                },
+                                "name": "model",
+                                "plugin": {
+                                    "kind": "PrometheusLabelValuesVariable",
+                                    "spec": {
+                                        "datasource": {
+                                            "kind": "PrometheusDatasource",
+                                            "name": "kuadrant-prometheus-datasource"
+                                        },
+                                        "labelName": "model",
+                                        "matchers": [
+                                            "authorized_hits{model!=\"\"}"
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastTransitionTime": "2026-08-10T18:21:22Z",
+                        "message": "something wrong happened with the request to the API. Error: Get \"http://data-science-perses.redhat-ods-monitoring.svc.cluster.local:8080/api/v1/projects/redhat-ods-applications\": dial tcp 172.30.227.118:8080: connect: connection refused",
+                        "reason": "PersesBackendError",
+                        "status": "False",
+                        "type": "Available"
+                    },
+                    {
+                        "lastTransitionTime": "2026-08-10T18:21:22Z",
+                        "message": "something wrong happened with the request to the API. Error: Get \"http://data-science-perses.redhat-ods-monitoring.svc.cluster.local:8080/api/v1/projects/redhat-ods-applications\": dial tcp 172.30.227.118:8080: connect: connection refused",
+                        "reason": "PersesBackendError",
+                        "status": "True",
+                        "type": "Degraded"
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "perses.dev/v1alpha2",
+            "kind": "PersesDashboard",
+            "metadata": {
+                "annotations": {
+                    "internal.config.kubernetes.io/previousKinds": "PersesDashboard",
+                    "internal.config.kubernetes.io/previousNames": "dashboard-0-cluster-admin",
+                    "internal.config.kubernetes.io/previousNamespaces": "default"
+                },
+                "creationTimestamp": "2026-08-10T18:19:56Z",
+                "generation": 1628,
+                "labels": {
+                    "app.kubernetes.io/part-of": "dashboard",
+                    "app.opendatahub.io/dashboard": "true"
+                },
+                "name": "dashboard-0-cluster-admin",
+                "namespace": "redhat-ods-monitoring",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "components.platform.opendatahub.io/v1alpha1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "Dashboard",
+                        "name": "default-dashboard",
+                        "uid": "2f11c3a8-b50b-4931-a40c-e3e07a7b4b37"
+                    }
+                ],
+                "resourceVersion": "197044383",
+                "uid": "b3e7ed7d-5b5a-4cc5-8cec-6ba08bedd562"
+            },
+            "spec": {
+                "config": {
+                    "display": {
+                        "name": "Cluster"
+                    },
+                    "duration": "1h",
+                    "layouts": [
+                        {
+                            "kind": "Grid",
+                            "spec": {
+                                "display": {
+                                    "collapse": {
+                                        "open": true
+                                    },
+                                    "title": "Overview"
+                                },
+                                "items": [
+                                    {
+                                        "content": {
+                                            "$ref": "#/spec/panels/systemHealth"
+                                        },
+                                        "height": 4,
+                                        "width": 6,
+                                        "x": 0,
+                                        "y": 0
+                                    },
+                                    {
+                                        "content": {
+                                            "$ref": "#/spec/panels/deployedModels"
+                                        },
+                                        "height": 4,
+                                        "width": 6,
+                                        "x": 6,
+                                        "y": 0
+                                    },
+                                    {
+                                        "content": {
+                                            "$ref": "#/spec/panels/gpuUtilizationStat"
+                                        },
+                                        "height": 4,
+                                        "width": 6,
+                                        "x": 12,
+                                        "y": 0
+                                    },
+                                    {
+                                        "content": {
+                                            "$ref": "#/spec/panels/successRate"
+                                        },
+                                        "height": 4,
+                                        "width": 6,
+                                        "x": 18,
+                                        "y": 0
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "kind": "Grid",
+                            "spec": {
+                                "display": {
+                                    "collapse": {
+                                        "open": true
+                                    },
+                                    "title": "Cluster resource overview"
+                                },
+                                "items": [
+                                    {
+                                        "content": {
+                                            "$ref": "#/spec/panels/gpuUtilizationArea"
+                                        },
+                                        "height": 8,
+                                        "width": 12,
+                                        "x": 0,
+                                        "y": 0
+                                    },
+                                    {
+                                        "content": {
+                                            "$ref": "#/spec/panels/memoryUtilizationArea"
+                                        },
+                                        "height": 8,
+                                        "width": 12,
+                                        "x": 12,
+                                        "y": 0
+                                    },
+                                    {
+                                        "content": {
+                                            "$ref": "#/spec/panels/cpuUtilizationArea"
+                                        },
+                                        "height": 8,
+                                        "width": 12,
+                                        "x": 0,
+                                        "y": 8
+                                    },
+                                    {
+                                        "content": {
+                                            "$ref": "#/spec/panels/networkUtilizationArea"
+                                        },
+                                        "height": 8,
+                                        "width": 12,
+                                        "x": 12,
+                                        "y": 8
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "kind": "Grid",
+                            "spec": {
+                                "display": {
+                                    "collapse": {
+                                        "open": true
+                                    },
+                                    "title": "Project resource usage"
+                                },
+                                "items": [
+                                    {
+                                        "content": {
+                                            "$ref": "#/spec/panels/gpuUtilizationByProject"
+                                        },
+                                        "height": 10,
+                                        "width": 8,
+                                        "x": 0,
+                                        "y": 0
+                                    },
+                                    {
+                                        "content": {
+                                            "$ref": "#/spec/panels/cpuUtilizationByProject"
+                                        },
+                                        "height": 10,
+                                        "width": 8,
+                                        "x": 8,
+                                        "y": 0
+                                    },
+                                    {
+                                        "content": {
+                                            "$ref": "#/spec/panels/memoryUsageByProject"
+                                        },
+                                        "height": 10,
+                                        "width": 8,
+                                        "x": 16,
+                                        "y": 0
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "kind": "Grid",
+                            "spec": {
+                                "display": {
+                                    "collapse": {
+                                        "open": true
+                                    },
+                                    "title": "Cluster details"
+                                },
+                                "items": [
+                                    {
+                                        "content": {
+                                            "$ref": "#/spec/panels/clusterDetails"
+                                        },
+                                        "height": 8,
+                                        "width": 24,
+                                        "x": 0,
+                                        "y": 0
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "panels": {
+                        "clusterDetails": {
+                            "kind": "Panel",
+                            "spec": {
+                                "display": {
+                                    "name": "Cluster details"
+                                },
+                                "plugin": {
+                                    "kind": "Markdown",
+                                    "spec": {
+                                        "text": "\u003cdl class=\"pf-v6-c-description-list pf-m-auto-column-widths pf-m-horizontal\"\u003e\n  \u003cdiv class=\"pf-v6-c-description-list__group\"\u003e\n    \u003cdt class=\"pf-v6-c-description-list__term\"\u003e\n      \u003cspan class=\"pf-v6-c-description-list__text\"\u003eProvider\u003c/span\u003e\n    \u003c/dt\u003e\n    \u003cdd class=\"pf-v6-c-description-list__description\"\u003e\n      \u003cdiv class=\"pf-v6-c-description-list__text\"\u003e${CLUSTER_DETAILS_INFRASTRUCTURE_PROVIDER}\u003c/div\u003e\n    \u003c/dd\u003e\n  \u003c/div\u003e\n  \u003cdiv class=\"pf-v6-c-description-list__group\"\u003e\n    \u003cdt class=\"pf-v6-c-description-list__term\"\u003e\n      \u003cspan class=\"pf-v6-c-description-list__text\"\u003eOpenShift version\u003c/span\u003e\n    \u003c/dt\u003e\n    \u003cdd class=\"pf-v6-c-description-list__description\"\u003e\n      \u003cdiv class=\"pf-v6-c-description-list__text\"\u003e${CLUSTER_DETAILS_OPENSHIFT_VERSION}\u003c/div\u003e\n    \u003c/dd\u003e\n  \u003c/div\u003e\n  \u003cdiv class=\"pf-v6-c-description-list__group\"\u003e\n    \u003cdt class=\"pf-v6-c-description-list__term\"\u003e\n      \u003cspan class=\"pf-v6-c-description-list__text\"\u003eChannel\u003c/span\u003e\n    \u003c/dt\u003e\n    \u003cdd class=\"pf-v6-c-description-list__description\"\u003e\n      \u003cdiv class=\"pf-v6-c-description-list__text\"\u003e${CLUSTER_DETAILS_CHANNEL}\u003c/div\u003e\n    \u003c/dd\u003e\n  \u003c/div\u003e\n  \u003cdiv class=\"pf-v6-c-description-list__group\"\u003e\n    \u003cdt class=\"pf-v6-c-description-list__term\"\u003e\n      \u003cspan class=\"pf-v6-c-description-list__text\"\u003eAPI server\u003c/span\u003e\n    \u003c/dt\u003e\n    \u003cdd class=\"pf-v6-c-description-list__description\"\u003e\n      \u003cdiv class=\"pf-v6-c-description-list__text\"\u003e${CLUSTER_DETAILS_API_SERVER}\u003c/div\u003e\n    \u003c/dd\u003e\n  \u003c/div\u003e\n\u003c/dl\u003e\n"
+                                    }
+                                }
+                            }
+                        },
+                        "cpuUtilizationArea": {
+                            "kind": "Panel",
+                            "spec": {
+                                "display": {
+                                    "name": "CPU utilization"
+                                },
+                                "plugin": {
+                                    "kind": "TimeSeriesChart",
+                                    "spec": {
+                                        "visual": {
+                                            "areaOpacity": 0.6,
+                                            "connectNulls": false,
+                                            "display": "line",
+                                            "lineWidth": 1.5
+                                        },
+                                        "yAxis": {
+                                            "format": {
+                                                "unit": "percent-decimal"
+                                            },
+                                            "min": 0
+                                        }
+                                    }
+                                },
+                                "queries": [
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource"
+                                                    },
+                                                    "query": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate) / sum(kube_node_status_allocatable{resource=\"cpu\"})",
+                                                    "seriesNameFormat": "CPU usage"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "cpuUtilizationByProject": {
+                            "kind": "Panel",
+                            "spec": {
+                                "display": {
+                                    "name": "CPU utilization"
+                                },
+                                "plugin": {
+                                    "kind": "TimeSeriesChart",
+                                    "spec": {
+                                        "legend": {
+                                            "mode": "list",
+                                            "position": "bottom",
+                                            "values": []
+                                        },
+                                        "visual": {
+                                            "areaOpacity": 1,
+                                            "connectNulls": false,
+                                            "display": "line",
+                                            "lineWidth": 0.25,
+                                            "stack": "all"
+                                        },
+                                        "yAxis": {
+                                            "format": {
+                                                "unit": "percent-decimal"
+                                            },
+                                            "min": 0
+                                        }
+                                    }
+                                },
+                                "queries": [
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource"
+                                                    },
+                                                    "query": "sum by (namespace) (node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace=~\"$namespace\"}) / scalar(sum(kube_node_status_allocatable{resource=\"cpu\"}))",
+                                                    "seriesNameFormat": "{{namespace}}"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "deployedModels": {
+                            "kind": "Panel",
+                            "spec": {
+                                "display": {
+                                    "name": "Deployed models"
+                                },
+                                "plugin": {
+                                    "kind": "StatChart",
+                                    "spec": {
+                                        "calculation": "last-number",
+                                        "format": {
+                                            "decimalPlaces": 0,
+                                            "unit": "decimal"
+                                        }
+                                    }
+                                },
+                                "queries": [
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource"
+                                                    },
+                                                    "query": "count(group(kserve_vllm:num_requests_running) by (model_name, namespace))",
+                                                    "seriesNameFormat": "Deployed models"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "gpuUtilizationArea": {
+                            "kind": "Panel",
+                            "spec": {
+                                "display": {
+                                    "name": "GPU utilization"
+                                },
+                                "plugin": {
+                                    "kind": "TimeSeriesChart",
+                                    "spec": {
+                                        "visual": {
+                                            "areaOpacity": 0.6,
+                                            "connectNulls": false,
+                                            "display": "line",
+                                            "lineWidth": 1.5
+                                        },
+                                        "yAxis": {
+                                            "format": {
+                                                "unit": "percent"
+                                            },
+                                            "min": 0
+                                        }
+                                    }
+                                },
+                                "queries": [
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource"
+                                                    },
+                                                    "query": "avg(accelerator_gpu_utilization)",
+                                                    "seriesNameFormat": "GPU usage"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "gpuUtilizationByProject": {
+                            "kind": "Panel",
+                            "spec": {
+                                "display": {
+                                    "name": "GPU utilization"
+                                },
+                                "plugin": {
+                                    "kind": "TimeSeriesChart",
+                                    "spec": {
+                                        "legend": {
+                                            "mode": "list",
+                                            "position": "bottom",
+                                            "values": []
+                                        },
+                                        "visual": {
+                                            "areaOpacity": 1,
+                                            "connectNulls": false,
+                                            "display": "line",
+                                            "lineWidth": 0.25,
+                                            "stack": "all"
+                                        },
+                                        "yAxis": {
+                                            "format": {
+                                                "unit": "percent"
+                                            },
+                                            "min": 0
+                                        }
+                                    }
+                                },
+                                "queries": [
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource"
+                                                    },
+                                                    "query": "sum by (exported_namespace) (accelerator_gpu_utilization{exported_namespace=~\"$namespace\"}) / scalar(count(accelerator_gpu_utilization))",
+                                                    "seriesNameFormat": "{{exported_namespace}}"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "gpuUtilizationStat": {
+                            "kind": "Panel",
+                            "spec": {
+                                "display": {
+                                    "name": "GPU utilization"
+                                },
+                                "plugin": {
+                                    "kind": "StatChart",
+                                    "spec": {
+                                        "calculation": "mean",
+                                        "format": {
+                                            "unit": "percent"
+                                        }
+                                    }
+                                },
+                                "queries": [
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource"
+                                                    },
+                                                    "query": "avg(accelerator_gpu_utilization)",
+                                                    "seriesNameFormat": "GPU usage"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "memoryUsageByProject": {
+                            "kind": "Panel",
+                            "spec": {
+                                "display": {
+                                    "name": "Memory allocated"
+                                },
+                                "plugin": {
+                                    "kind": "TimeSeriesChart",
+                                    "spec": {
+                                        "legend": {
+                                            "mode": "list",
+                                            "position": "bottom",
+                                            "values": []
+                                        },
+                                        "visual": {
+                                            "areaOpacity": 1,
+                                            "connectNulls": false,
+                                            "display": "line",
+                                            "lineWidth": 0.25,
+                                            "stack": "all"
+                                        },
+                                        "yAxis": {
+                                            "format": {
+                                                "unit": "percent-decimal"
+                                            },
+                                            "min": 0
+                                        }
+                                    }
+                                },
+                                "queries": [
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource"
+                                                    },
+                                                    "query": "sum by (namespace) (container_memory_working_set_bytes{namespace=~\"$namespace\", container!=\"\", image!=\"\"}) / scalar(sum(node_memory_MemTotal_bytes))",
+                                                    "seriesNameFormat": "{{namespace}}"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "memoryUtilizationArea": {
+                            "kind": "Panel",
+                            "spec": {
+                                "display": {
+                                    "name": "Memory allocated"
+                                },
+                                "plugin": {
+                                    "kind": "TimeSeriesChart",
+                                    "spec": {
+                                        "visual": {
+                                            "areaOpacity": 0.6,
+                                            "connectNulls": false,
+                                            "display": "line",
+                                            "lineWidth": 1.5
+                                        },
+                                        "yAxis": {
+                                            "format": {
+                                                "unit": "percent-decimal"
+                                            },
+                                            "min": 0
+                                        }
+                                    }
+                                },
+                                "queries": [
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource"
+                                                    },
+                                                    "query": "sum(container_memory_working_set_bytes{container!=\"\", image!=\"\"}) / sum(node_memory_MemTotal_bytes)",
+                                                    "seriesNameFormat": "Memory allocated"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "networkUtilizationArea": {
+                            "kind": "Panel",
+                            "spec": {
+                                "display": {
+                                    "name": "Inbound traffic"
+                                },
+                                "plugin": {
+                                    "kind": "TimeSeriesChart",
+                                    "spec": {
+                                        "visual": {
+                                            "areaOpacity": 0.6,
+                                            "connectNulls": false,
+                                            "display": "line",
+                                            "lineWidth": 1.5
+                                        },
+                                        "yAxis": {
+                                            "format": {
+                                                "unit": "bytes"
+                                            },
+                                            "min": 0
+                                        }
+                                    }
+                                },
+                                "queries": [
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource"
+                                                    },
+                                                    "query": "sum(rate(container_network_receive_bytes_total[$__rate_interval]))",
+                                                    "seriesNameFormat": "Network"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "successRate": {
+                            "kind": "Panel",
+                            "spec": {
+                                "display": {
+                                    "name": "Request success rate"
+                                },
+                                "plugin": {
+                                    "kind": "StatChart",
+                                    "spec": {
+                                        "calculation": "mean",
+                                        "format": {
+                                            "decimalPlaces": 1,
+                                            "unit": "percent-decimal"
+                                        }
+                                    }
+                                },
+                                "queries": [
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource"
+                                                    },
+                                                    "query": "(sum(increase(kserve_vllm:request_success_total{namespace=~\"$namespace\", finished_reason=~\"length|stop\"}[$__range])) / sum(increase(kserve_vllm:request_success_total{namespace=~\"$namespace\"}[$__range]))) and (sum(increase(kserve_vllm:request_success_total{namespace=~\"$namespace\"}[$__range])) \u003e 0)",
+                                                    "seriesNameFormat": "Request success rate"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "systemHealth": {
+                            "kind": "Panel",
+                            "spec": {
+                                "display": {
+                                    "name": "System health"
+                                },
+                                "plugin": {
+                                    "kind": "StatChart",
+                                    "spec": {
+                                        "calculation": "mean",
+                                        "format": {
+                                            "unit": "percent-decimal"
+                                        }
+                                    }
+                                },
+                                "queries": [
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource"
+                                                    },
+                                                    "query": "count(max by (node) (kube_node_status_condition{condition=\"Ready\",status=\"true\"} == 1)) / count(max by (node) (kube_node_status_condition{condition=\"Ready\",status=\"true\"}))",
+                                                    "seriesNameFormat": "System health"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "variables": [
+                        {
+                            "kind": "ListVariable",
+                            "spec": {
+                                "allowAllValue": true,
+                                "allowMultiple": true,
+                                "customAllValue": ".*",
+                                "defaultValue": "$__all",
+                                "display": {
+                                    "description": "Filter by project",
+                                    "hidden": false,
+                                    "name": "Project"
+                                },
+                                "name": "namespace",
+                                "plugin": {
+                                    "kind": "PrometheusLabelValuesVariable",
+                                    "spec": {
+                                        "datasource": {
+                                            "kind": "PrometheusDatasource"
+                                        },
+                                        "labelName": "namespace",
+                                        "matchers": [
+                                            "kserve_vllm:num_requests_running"
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "kind": "TextVariable",
+                            "spec": {
+                                "display": {
+                                    "hidden": true,
+                                    "name": "API server"
+                                },
+                                "name": "CLUSTER_DETAILS_API_SERVER",
+                                "value": "N/A"
+                            }
+                        },
+                        {
+                            "kind": "TextVariable",
+                            "spec": {
+                                "display": {
+                                    "hidden": true,
+                                    "name": "Channel"
+                                },
+                                "name": "CLUSTER_DETAILS_CHANNEL",
+                                "value": "N/A"
+                            }
+                        },
+                        {
+                            "kind": "TextVariable",
+                            "spec": {
+                                "display": {
+                                    "hidden": true,
+                                    "name": "OpenShift version"
+                                },
+                                "name": "CLUSTER_DETAILS_OPENSHIFT_VERSION",
+                                "value": "N/A"
+                            }
+                        },
+                        {
+                            "kind": "TextVariable",
+                            "spec": {
+                                "display": {
+                                    "hidden": true,
+                                    "name": "Infrastructure provider"
+                                },
+                                "name": "CLUSTER_DETAILS_INFRASTRUCTURE_PROVIDER",
+                                "value": "N/A"
+                            }
+                        }
+                    ]
+                }
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastTransitionTime": "2026-08-10T18:19:56Z",
+                        "message": "something wrong happened with the request to the API. Error: Get \"http://data-science-perses.redhat-ods-monitoring.svc.cluster.local:8080/api/v1/projects/redhat-ods-monitoring\": dial tcp 172.30.227.118:8080: connect: connection refused",
+                        "reason": "PersesBackendError",
+                        "status": "False",
+                        "type": "Available"
+                    },
+                    {
+                        "lastTransitionTime": "2026-08-10T18:19:56Z",
+                        "message": "something wrong happened with the request to the API. Error: Get \"http://data-science-perses.redhat-ods-monitoring.svc.cluster.local:8080/api/v1/projects/redhat-ods-monitoring\": dial tcp 172.30.227.118:8080: connect: connection refused",
+                        "reason": "PersesBackendError",
+                        "status": "True",
+                        "type": "Degraded"
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "perses.dev/v1alpha2",
+            "kind": "PersesDashboard",
+            "metadata": {
+                "annotations": {
+                    "internal.config.kubernetes.io/previousKinds": "PersesDashboard",
+                    "internal.config.kubernetes.io/previousNames": "dashboard-1-model",
+                    "internal.config.kubernetes.io/previousNamespaces": "default"
+                },
+                "creationTimestamp": "2026-08-10T18:19:56Z",
+                "generation": 1628,
+                "labels": {
+                    "app.kubernetes.io/part-of": "dashboard",
+                    "app.opendatahub.io/dashboard": "true"
+                },
+                "name": "dashboard-1-model",
+                "namespace": "redhat-ods-monitoring",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "components.platform.opendatahub.io/v1alpha1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "Dashboard",
+                        "name": "default-dashboard",
+                        "uid": "2f11c3a8-b50b-4931-a40c-e3e07a7b4b37"
+                    }
+                ],
+                "resourceVersion": "197044393",
+                "uid": "5f2c6e5a-ccb2-4c2e-bf6c-a30b04913ce2"
+            },
+            "spec": {
+                "config": {
+                    "display": {
+                        "name": "Models"
+                    },
+                    "duration": "1h",
+                    "layouts": [
+                        {
+                            "kind": "Grid",
+                            "spec": {
+                                "display": {
+                                    "collapse": {
+                                        "open": true
+                                    },
+                                    "title": "Model deployments"
+                                },
+                                "items": [
+                                    {
+                                        "content": {
+                                            "$ref": "#/spec/panels/modelDeploymentsTable"
+                                        },
+                                        "height": 9,
+                                        "width": 24,
+                                        "x": 0,
+                                        "y": 0
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "kind": "Grid",
+                            "spec": {
+                                "display": {
+                                    "collapse": {
+                                        "open": true
+                                    },
+                                    "title": "Performance metrics"
+                                },
+                                "items": [
+                                    {
+                                        "content": {
+                                            "$ref": "#/spec/panels/requestQueueLength"
+                                        },
+                                        "height": 8,
+                                        "width": 12,
+                                        "x": 0,
+                                        "y": 0
+                                    },
+                                    {
+                                        "content": {
+                                            "$ref": "#/spec/panels/replicaCount"
+                                        },
+                                        "height": 8,
+                                        "width": 12,
+                                        "x": 12,
+                                        "y": 0
+                                    },
+                                    {
+                                        "content": {
+                                            "$ref": "#/spec/panels/requestLatency"
+                                        },
+                                        "height": 8,
+                                        "width": 12,
+                                        "x": 0,
+                                        "y": 8
+                                    },
+                                    {
+                                        "content": {
+                                            "$ref": "#/spec/panels/timeToFirstToken"
+                                        },
+                                        "height": 8,
+                                        "width": 12,
+                                        "x": 12,
+                                        "y": 8
+                                    },
+                                    {
+                                        "content": {
+                                            "$ref": "#/spec/panels/tokenThroughput"
+                                        },
+                                        "height": 8,
+                                        "width": 12,
+                                        "x": 0,
+                                        "y": 16
+                                    },
+                                    {
+                                        "content": {
+                                            "$ref": "#/spec/panels/requestSuccessRate"
+                                        },
+                                        "height": 8,
+                                        "width": 12,
+                                        "x": 12,
+                                        "y": 16
+                                    },
+                                    {
+                                        "content": {
+                                            "$ref": "#/spec/panels/responseTimeDistribution"
+                                        },
+                                        "height": 8,
+                                        "width": 24,
+                                        "x": 0,
+                                        "y": 24
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "panels": {
+                        "modelDeploymentsTable": {
+                            "kind": "Panel",
+                            "spec": {
+                                "display": {
+                                    "name": "Model deployments"
+                                },
+                                "plugin": {
+                                    "kind": "Table",
+                                    "spec": {
+                                        "columnSettings": [
+                                            {
+                                                "hide": true,
+                                                "name": "timestamp"
+                                            },
+                                            {
+                                                "enableSorting": true,
+                                                "header": "Model deployment",
+                                                "name": "model_name",
+                                                "sort": "desc"
+                                            },
+                                            {
+                                                "enableSorting": true,
+                                                "header": "Project",
+                                                "name": "namespace"
+                                            },
+                                            {
+                                                "hide": true,
+                                                "name": "value #1"
+                                            },
+                                            {
+                                                "enableSorting": true,
+                                                "format": {
+                                                    "decimalPlaces": 0,
+                                                    "unit": "decimal"
+                                                },
+                                                "header": "Total requests",
+                                                "name": "value #2"
+                                            },
+                                            {
+                                                "enableSorting": true,
+                                                "format": {
+                                                    "unit": "seconds"
+                                                },
+                                                "header": "P90 E2E request latency",
+                                                "name": "value #3"
+                                            },
+                                            {
+                                                "enableSorting": true,
+                                                "format": {
+                                                    "unit": "percent-decimal"
+                                                },
+                                                "header": "Error rate",
+                                                "name": "value #4"
+                                            },
+                                            {
+                                                "enableSorting": true,
+                                                "format": {
+                                                    "unit": "percent"
+                                                },
+                                                "header": "GPU utilization",
+                                                "name": "value #5"
+                                            },
+                                            {
+                                                "enableSorting": true,
+                                                "format": {
+                                                    "unit": "percent-decimal"
+                                                },
+                                                "header": "CPU utilization",
+                                                "name": "value #6"
+                                            }
+                                        ],
+                                        "density": "compact",
+                                        "pagination": true,
+                                        "transforms": [
+                                            {
+                                                "kind": "MergeSeries",
+                                                "spec": {}
+                                            }
+                                        ]
+                                    }
+                                },
+                                "queries": [
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource"
+                                                    },
+                                                    "query": "group by (model_name, namespace) (kserve_vllm:num_requests_running{namespace=~\"$namespace\", model_name=~\"$model_name\"})"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource"
+                                                    },
+                                                    "query": "sum by (model_name, namespace) (increase(kserve_vllm:request_success_total{namespace=~\"$namespace\", model_name=~\"$model_name\"}[$__range])) or (0 * group by (model_name, namespace)(kserve_vllm:num_requests_running{namespace=~\"$namespace\", model_name=~\"$model_name\"}))"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource"
+                                                    },
+                                                    "query": "avg_over_time((histogram_quantile(0.90, sum by (le, model_name, namespace) (rate(kserve_vllm:e2e_request_latency_seconds_bucket{namespace=~\"$namespace\", model_name=~\"$model_name\"}[$__rate_interval]))) \u003e -Inf)[$__range:]) or (0 * group by (model_name, namespace)(kserve_vllm:num_requests_running{namespace=~\"$namespace\", model_name=~\"$model_name\"}))"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource"
+                                                    },
+                                                    "query": "(sum by (model_name, namespace)(increase(kserve_vllm:request_success_total{namespace=~\"$namespace\", finished_reason=~\"error|abort\", model_name=~\"$model_name\"}[$__range])) / (sum by (model_name, namespace)(increase(kserve_vllm:request_success_total{namespace=~\"$namespace\", model_name=~\"$model_name\"}[$__range])) \u003e 0)) or (0 * group by (model_name, namespace)(kserve_vllm:num_requests_running{namespace=~\"$namespace\", model_name=~\"$model_name\"}))"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource"
+                                                    },
+                                                    "query": "avg_over_time((sum by (model_name, namespace) (label_replace(label_replace(accelerator_gpu_utilization{exported_namespace=~\"$namespace\"}, \"namespace\", \"$1\", \"exported_namespace\", \"(.*)\"), \"pod\", \"$1\", \"exported_pod\", \"(.*)\") * on(namespace, pod) group_left(model_name)(0 * max by (namespace, pod, model_name)(kserve_vllm:num_requests_running{namespace=~\"$namespace\", model_name=~\"$model_name\"}) + 1)) / scalar(count(accelerator_gpu_utilization)))[$__range:]) or (0 * group by (model_name, namespace)(kserve_vllm:num_requests_running{namespace=~\"$namespace\", model_name=~\"$model_name\"}))"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource"
+                                                    },
+                                                    "query": "avg_over_time((sum by (model_name, namespace) (node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace=~\"$namespace\"} * on(namespace, pod) group_left(model_name) (0 * group by (model_name, namespace, pod)(kserve_vllm:num_requests_running{namespace=~\"$namespace\", model_name=~\"$model_name\"}) + 1)) / scalar(sum(kube_node_status_allocatable{resource=\"cpu\"})))[$__range:]) or (0 * group by (model_name, namespace)(kserve_vllm:num_requests_running{namespace=~\"$namespace\", model_name=~\"$model_name\"}))"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "replicaCount": {
+                            "kind": "Panel",
+                            "spec": {
+                                "display": {
+                                    "name": "Replica count"
+                                },
+                                "plugin": {
+                                    "kind": "TimeSeriesChart",
+                                    "spec": {
+                                        "legend": {
+                                            "mode": "list",
+                                            "position": "bottom",
+                                            "values": []
+                                        },
+                                        "visual": {
+                                            "areaOpacity": 0,
+                                            "connectNulls": false,
+                                            "display": "line",
+                                            "lineWidth": 1.5
+                                        },
+                                        "yAxis": {
+                                            "format": {
+                                                "unit": "decimal"
+                                            },
+                                            "min": 0
+                                        }
+                                    }
+                                },
+                                "queries": [
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource"
+                                                    },
+                                                    "query": "count by (model_name, namespace) (group by (pod, model_name, namespace) (kserve_vllm:num_requests_running{namespace=~\"$namespace\", model_name=~\"$model_name\"}))",
+                                                    "seriesNameFormat": "{{model_name}}"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "requestLatency": {
+                            "kind": "Panel",
+                            "spec": {
+                                "display": {
+                                    "name": "P90 E2E request latency"
+                                },
+                                "plugin": {
+                                    "kind": "TimeSeriesChart",
+                                    "spec": {
+                                        "legend": {
+                                            "mode": "list",
+                                            "position": "bottom",
+                                            "values": []
+                                        },
+                                        "visual": {
+                                            "areaOpacity": 0,
+                                            "connectNulls": false,
+                                            "display": "line",
+                                            "lineWidth": 1.5
+                                        },
+                                        "yAxis": {
+                                            "format": {
+                                                "unit": "seconds"
+                                            },
+                                            "min": 0
+                                        }
+                                    }
+                                },
+                                "queries": [
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource"
+                                                    },
+                                                    "query": "(histogram_quantile(0.90, sum by (le, model_name, namespace) (rate(kserve_vllm:e2e_request_latency_seconds_bucket{namespace=~\"$namespace\", model_name=~\"$model_name\"}[$__rate_interval]))) \u003e -Inf) or (0 * group by (model_name, namespace)(kserve_vllm:num_requests_running{namespace=~\"$namespace\", model_name=~\"$model_name\"}))",
+                                                    "seriesNameFormat": "{{model_name}}"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "requestQueueLength": {
+                            "kind": "Panel",
+                            "spec": {
+                                "display": {
+                                    "name": "Request queue length"
+                                },
+                                "plugin": {
+                                    "kind": "TimeSeriesChart",
+                                    "spec": {
+                                        "legend": {
+                                            "mode": "list",
+                                            "position": "bottom",
+                                            "values": []
+                                        },
+                                        "visual": {
+                                            "areaOpacity": 0,
+                                            "connectNulls": false,
+                                            "display": "line",
+                                            "lineWidth": 1.5
+                                        },
+                                        "yAxis": {
+                                            "format": {
+                                                "unit": "decimal"
+                                            },
+                                            "min": 0
+                                        }
+                                    }
+                                },
+                                "queries": [
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource"
+                                                    },
+                                                    "query": "sum by (model_name, namespace) (kserve_vllm:num_requests_waiting{namespace=~\"$namespace\", model_name=~\"$model_name\"})",
+                                                    "seriesNameFormat": "{{model_name}}"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "requestSuccessRate": {
+                            "kind": "Panel",
+                            "spec": {
+                                "display": {
+                                    "name": "Request success rate (requests/sec)"
+                                },
+                                "plugin": {
+                                    "kind": "TimeSeriesChart",
+                                    "spec": {
+                                        "legend": {
+                                            "mode": "list",
+                                            "position": "bottom",
+                                            "values": []
+                                        },
+                                        "visual": {
+                                            "areaOpacity": 0,
+                                            "connectNulls": false,
+                                            "display": "line",
+                                            "lineWidth": 1.5
+                                        },
+                                        "yAxis": {
+                                            "format": {
+                                                "unit": "decimal"
+                                            },
+                                            "min": 0
+                                        }
+                                    }
+                                },
+                                "queries": [
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource"
+                                                    },
+                                                    "query": "sum by (model_name, namespace) (rate(kserve_vllm:request_success_total{namespace=~\"$namespace\", model_name=~\"$model_name\", finished_reason=~\"length|stop\"}[$__rate_interval]))",
+                                                    "seriesNameFormat": "{{model_name}}"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "responseTimeDistribution": {
+                            "kind": "Panel",
+                            "spec": {
+                                "display": {
+                                    "name": "Response time distribution"
+                                },
+                                "plugin": {
+                                    "kind": "BarChart",
+                                    "spec": {
+                                        "calculation": "last",
+                                        "sort": "asc"
+                                    }
+                                },
+                                "queries": [
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource"
+                                                    },
+                                                    "query": "(sum(increase(kserve_vllm:e2e_request_latency_seconds_bucket{namespace=~\"$namespace\", model_name=~\"$model_name\", le=\"+Inf\"}[$__range]))) - (sum(increase(kserve_vllm:e2e_request_latency_seconds_bucket{namespace=~\"$namespace\", model_name=~\"$model_name\", le=\"30.0\"}[$__range])))",
+                                                    "seriesNameFormat": "Degraded \u003e30s"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource"
+                                                    },
+                                                    "query": "(sum(increase(kserve_vllm:e2e_request_latency_seconds_bucket{namespace=~\"$namespace\", model_name=~\"$model_name\", le=\"30.0\"}[$__range]))) - (sum(increase(kserve_vllm:e2e_request_latency_seconds_bucket{namespace=~\"$namespace\", model_name=~\"$model_name\", le=\"5.0\"}[$__range])))",
+                                                    "seriesNameFormat": "Slow 5-30s"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource"
+                                                    },
+                                                    "query": "(sum(increase(kserve_vllm:e2e_request_latency_seconds_bucket{namespace=~\"$namespace\", model_name=~\"$model_name\", le=\"5.0\"}[$__range]))) - (sum(increase(kserve_vllm:e2e_request_latency_seconds_bucket{namespace=~\"$namespace\", model_name=~\"$model_name\", le=\"1.0\"}[$__range])))",
+                                                    "seriesNameFormat": "Acceptable 1-5s"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource"
+                                                    },
+                                                    "query": "(sum(increase(kserve_vllm:e2e_request_latency_seconds_bucket{namespace=~\"$namespace\", model_name=~\"$model_name\", le=\"1.0\"}[$__range])))",
+                                                    "seriesNameFormat": "Fast \u003c1s"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "timeToFirstToken": {
+                            "kind": "Panel",
+                            "spec": {
+                                "display": {
+                                    "name": "P90 Time to first token (TTFT)"
+                                },
+                                "plugin": {
+                                    "kind": "TimeSeriesChart",
+                                    "spec": {
+                                        "legend": {
+                                            "mode": "list",
+                                            "position": "bottom",
+                                            "values": []
+                                        },
+                                        "visual": {
+                                            "areaOpacity": 0,
+                                            "connectNulls": false,
+                                            "display": "line",
+                                            "lineWidth": 1.5
+                                        },
+                                        "yAxis": {
+                                            "format": {
+                                                "unit": "seconds"
+                                            },
+                                            "min": 0
+                                        }
+                                    }
+                                },
+                                "queries": [
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource"
+                                                    },
+                                                    "query": "(histogram_quantile(0.90, sum by (le, model_name, namespace) (rate(kserve_vllm:time_to_first_token_seconds_bucket{namespace=~\"$namespace\", model_name=~\"$model_name\"}[$__rate_interval]))) \u003e -Inf) or (0 * group by (model_name, namespace)(kserve_vllm:num_requests_running{namespace=~\"$namespace\", model_name=~\"$model_name\"}))",
+                                                    "seriesNameFormat": "{{model_name}}"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "tokenThroughput": {
+                            "kind": "Panel",
+                            "spec": {
+                                "display": {
+                                    "name": "Token throughput (tokens/sec)"
+                                },
+                                "plugin": {
+                                    "kind": "TimeSeriesChart",
+                                    "spec": {
+                                        "legend": {
+                                            "mode": "list",
+                                            "position": "bottom",
+                                            "values": []
+                                        },
+                                        "visual": {
+                                            "areaOpacity": 0,
+                                            "connectNulls": false,
+                                            "display": "line",
+                                            "lineWidth": 1.5
+                                        },
+                                        "yAxis": {
+                                            "format": {
+                                                "unit": "decimal"
+                                            },
+                                            "min": 0
+                                        }
+                                    }
+                                },
+                                "queries": [
+                                    {
+                                        "kind": "TimeSeriesQuery",
+                                        "spec": {
+                                            "plugin": {
+                                                "kind": "PrometheusTimeSeriesQuery",
+                                                "spec": {
+                                                    "datasource": {
+                                                        "kind": "PrometheusDatasource"
+                                                    },
+                                                    "query": "sum by(model_name, namespace) (rate(kserve_vllm:prompt_tokens_total{namespace=~\"$namespace\", model_name=~\"$model_name\"}[$__rate_interval]) + rate(kserve_vllm:generation_tokens_total{namespace=~\"$namespace\", model_name=~\"$model_name\"}[$__rate_interval]))",
+                                                    "seriesNameFormat": "{{model_name}}"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "variables": [
+                        {
+                            "kind": "ListVariable",
+                            "spec": {
+                                "allowAllValue": true,
+                                "allowMultiple": true,
+                                "customAllValue": ".*",
+                                "defaultValue": "$__all",
+                                "display": {
+                                    "description": "Filter by project",
+                                    "hidden": false,
+                                    "name": "Project"
+                                },
+                                "name": "namespace",
+                                "plugin": {
+                                    "kind": "PrometheusLabelValuesVariable",
+                                    "spec": {
+                                        "datasource": {
+                                            "kind": "PrometheusDatasource"
+                                        },
+                                        "labelName": "namespace",
+                                        "matchers": [
+                                            "kserve_vllm:num_requests_running"
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "kind": "ListVariable",
+                            "spec": {
+                                "allowAllValue": true,
+                                "allowMultiple": true,
+                                "customAllValue": ".*",
+                                "defaultValue": "$__all",
+                                "display": {
+                                    "description": "Filter by model deployment",
+                                    "hidden": false,
+                                    "name": "Model deployment"
+                                },
+                                "name": "model_name",
+                                "plugin": {
+                                    "kind": "PrometheusLabelValuesVariable",
+                                    "spec": {
+                                        "datasource": {
+                                            "kind": "PrometheusDatasource"
+                                        },
+                                        "labelName": "model_name",
+                                        "matchers": [
+                                            "kserve_vllm:num_requests_running{namespace=~\"$namespace\"}"
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastTransitionTime": "2026-08-10T18:19:56Z",
+                        "message": "something wrong happened with the request to the API. Error: Get \"http://data-science-perses.redhat-ods-monitoring.svc.cluster.local:8080/api/v1/projects/redhat-ods-monitoring\": dial tcp 172.30.227.118:8080: connect: connection refused",
+                        "reason": "PersesBackendError",
+                        "status": "False",
+                        "type": "Available"
+                    },
+                    {
+                        "lastTransitionTime": "2026-08-10T18:19:56Z",
+                        "message": "something wrong happened with the request to the API. Error: Get \"http://data-science-perses.redhat-ods-monitoring.svc.cluster.local:8080/api/v1/projects/redhat-ods-monitoring\": dial tcp 172.30.227.118:8080: connect: connection refused",
+                        "reason": "PersesBackendError",
+                        "status": "True",
+                        "type": "Degraded"
+                    }
+                ]
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": "",
+        "selfLink": ""
+    }
+}

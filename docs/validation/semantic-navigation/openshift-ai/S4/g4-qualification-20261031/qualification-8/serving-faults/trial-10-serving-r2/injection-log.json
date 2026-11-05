@@ -1,0 +1,37 @@
+[
+  {
+    "event": "inject",
+    "mode": "serving",
+    "fixture_state": {
+      "phase": "motion_verified",
+      "mode": "serving",
+      "armed": true,
+      "gate_reason": "armed",
+      "leases": {
+        "camera": 303,
+        "semantic": 101,
+        "inference_heartbeat": 471
+      },
+      "written_wall_ns": 1793586495104048146
+    },
+    "controller_wall_ns": 1793586485092541000,
+    "returncode": 0
+  },
+  {
+    "event": "restore",
+    "mode": "serving",
+    "fixture_state": {
+      "phase": "stopped",
+      "mode": "serving",
+      "armed": false,
+      "gate_reason": "semantic_stale",
+      "leases": {
+        "camera": 355,
+        "semantic": 110,
+        "inference_heartbeat": 523
+      },
+      "written_wall_ns": 1793586497694782727
+    },
+    "controller_wall_ns": 1793586489733420000
+  }
+]

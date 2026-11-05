@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: phase2-lighting-probe
+  namespace: semantic-navigation
+  labels:
+    app.kubernetes.io/name: phase2-lighting-probe
+spec:
+  restartPolicy: Never
+  containers:
+    - name: simulator
+      image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:e68c674aab3f4c806197e42a5767b5d840b02834a0291016a8eec0d816d8ff35
+      imagePullPolicy: IfNotPresent
+      command: ["/bin/bash", "/entrypoint-semantic-navigation-phase1.sh"]
+      env:
+        - name: SEMANTIC_PHASE2_SCENE
+          value: "1"
+        - name: SEMANTIC_LIGHTING_PROFILE
+          value: dim
+        - name: ROS_DOMAIN_ID
+          value: "78"
+        - name: GZ_PARTITION
+          value: phase2-lightprobe
+        - name: GZ_IP
+          value: 127.0.0.1
+        - name: RMW_IMPLEMENTATION
+          value: rmw_cyclonedds_cpp
+        - name: CYCLONEDDS_URI
+          value: file:///phase1-config/cyclonedds.xml
+      resources:
+        requests:
+          cpu: "1"
+          memory: 3Gi
+        limits:
+          cpu: "12"
+          memory: 8Gi
+      volumeMounts:
+        - name: phase1-config
+          mountPath: /phase1-config
+          readOnly: true
+        - name: installer
+          mountPath: /opt/semantic-navigation/install_phase1_camera.py
+          subPath: install_phase1_camera.py
+          readOnly: true
+  volumes:
+    - name: phase1-config
+      configMap:
+        name: semantic-navigation-phase1-config
+    - name: installer
+      configMap:
+        name: phase2-lighting-probe-script
+        defaultMode: 0444

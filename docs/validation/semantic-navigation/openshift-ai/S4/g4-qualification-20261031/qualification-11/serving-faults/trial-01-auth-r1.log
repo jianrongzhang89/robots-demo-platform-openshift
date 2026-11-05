@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "/Users/zhangj/devt/src/robots-demo-platform-openshift/scripts/semantic-navigation/run_phase5_native.py", line 905, in <module>
+    main()
+    ~~~~^^
+  File "/Users/zhangj/devt/src/robots-demo-platform-openshift/scripts/semantic-navigation/run_phase5_native.py", line 321, in main
+    if oc("get", kind, NAME, "--ignore-not-found", "-o", "name").stdout.strip():
+       ~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangj/devt/src/robots-demo-platform-openshift/scripts/semantic-navigation/run_phase5_native.py", line 299, in oc
+    return subprocess.run([args.oc, "-n", NAMESPACE, *argv], input=input, text=True,
+           ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                          capture_output=True, check=check, timeout=45)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.5/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['/Users/zhangj/bin/oc', '-n', 'semantic-navigation', 'get', 'configmap', 'semantic-phase5-native', '--ignore-not-found', '-o', 'name']' returned non-zero exit status 1.

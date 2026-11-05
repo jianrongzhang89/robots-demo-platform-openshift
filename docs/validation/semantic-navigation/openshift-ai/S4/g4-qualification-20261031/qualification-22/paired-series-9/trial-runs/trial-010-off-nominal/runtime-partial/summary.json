@@ -1,0 +1,643 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "case": "console_server_preflight",
+      "passed": true,
+      "checks": [
+        {
+          "case": "wrong_domain",
+          "passed": true,
+          "returncode": 2,
+          "stdout": "",
+          "stderr": "private fixture world and new console directory required\n"
+        },
+        {
+          "case": "wrong_transport",
+          "passed": true,
+          "returncode": 2,
+          "stdout": "",
+          "stderr": "private fixture world and new console directory required\n"
+        },
+        {
+          "case": "wrong_partition",
+          "passed": true,
+          "returncode": 2,
+          "stdout": "",
+          "stderr": "private fixture world and new console directory required\n"
+        },
+        {
+          "case": "missing_world",
+          "passed": true,
+          "returncode": 2,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "case": "invalid_console_path",
+          "passed": true,
+          "returncode": 2,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "case": "existing_console_path",
+          "passed": true,
+          "returncode": 2,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "case": "existing_log_preserved",
+          "passed": true
+        },
+        {
+          "case": "valid_server_stays_alive",
+          "passed": true
+        },
+        {
+          "case": "non_stop_request_rejected",
+          "passed": true,
+          "reply": {
+            "passed": false,
+            "returncode": 0,
+            "stdout": "\n",
+            "stderr": ""
+          }
+        },
+        {
+          "case": "bounded_serialized_shutdown",
+          "passed": true,
+          "returncode": 0,
+          "reply": {
+            "passed": true,
+            "returncode": 0,
+            "stdout": "data: true\n\n",
+            "stderr": ""
+          },
+          "lifecycle": {
+            "passed": true,
+            "marker_positions": {
+              "stop_begin": 80,
+              "stop_end": 109,
+              "stop_worker_joined": 176,
+              "destructor_begin": 213,
+              "destructor_end": 248
+            },
+            "run_returned_position": 136
+          }
+        },
+        {
+          "case": "no_world_recording",
+          "passed": true,
+          "recording_files": [],
+          "recording_libraries": []
+        }
+      ]
+    },
+    {
+      "case": "real_hotel_rgbd_scan_odom_clock",
+      "passed": true,
+      "sensors": {
+        "odom": {
+          "stamp": 1740000000,
+          "frame": "odom",
+          "wall_received": 1793722554534605510,
+          "count": 290,
+          "rollback": false
+        },
+        "scan": {
+          "stamp": 1700000000,
+          "frame": "lidar_frame",
+          "wall_received": 1793722554488033880,
+          "count": 5,
+          "rollback": false,
+          "samples": 360,
+          "finite": 277
+        },
+        "rgb": {
+          "stamp": 1716000000,
+          "frame": "camera_color_optical_frame",
+          "wall_received": 1793722554539032906,
+          "count": 16,
+          "rollback": false,
+          "transport": "gz",
+          "traced": true
+        },
+        "depth": {
+          "stamp": 1716000000,
+          "frame": "camera_color_optical_frame",
+          "wall_received": 1793722554539032906,
+          "count": 16,
+          "rollback": false,
+          "transport": "gz",
+          "traced": true
+        }
+      }
+    },
+    {
+      "case": "console_sensors_system_override_loaded",
+      "passed": true
+    },
+    {
+      "case": "console_server_identity",
+      "passed": true,
+      "executable": "/opt/semantic-safety/bin/phase5_console_server",
+      "sha256": "0583215863aa70ba1fe1deb8003a37496b935ce6d2d9934c5c6bed3cf81ae437",
+      "source_hashes": {
+        "CMakeLists.txt": "dd5a65c3a67f446fc865d7f97624e1b9aead4ec49a6c5c55b88250af043324f5",
+        "console_server.cc": "5cab7c1d53c7aa2d3d0ec8d43503154f1d7a873ac2499c00d86f57bd9dc5aef2"
+      }
+    },
+    {
+      "case": "console_server_recording_absent_before_arm",
+      "passed": true,
+      "recording_files": [],
+      "recording_libraries": []
+    },
+    {
+      "case": "native_contact_components_live",
+      "passed": true
+    },
+    {
+      "case": "settled_support_geometry",
+      "enforced_before_arm": true,
+      "passed": true,
+      "reason": "clear",
+      "unexpected": [],
+      "samples": 15,
+      "steps": 257,
+      "qualification": "exact allowlisted support contacts only; no force/depth exemption"
+    },
+    {
+      "case": "amcl_and_corrected_static_sensor_frames",
+      "passed": true,
+      "amcl": {
+        "stamp": 2600000000,
+        "x": 15.40323448279606,
+        "y": -31.592912182999108,
+        "covariance": [
+          0.00973518742520696,
+          6.147309602511086e-05,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          6.147309602511086e-05,
+          0.009667023135762065,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.010012707198015709
+        ]
+      }
+    },
+    {
+      "case": "opt_in_controller_overlay_loaded",
+      "executable": "/opt/nav2-controller-overlay/lib/nav2_controller/controller_server",
+      "controller_libraries": [
+        "/opt/nav2-controller-overlay/lib/libcontroller_server_core.so"
+      ],
+      "passed": true
+    },
+    {
+      "case": "nav2_action_endpoint_inventory_recorded",
+      "passed": true,
+      "action_names": [
+        "/robot_1/backup",
+        "/robot_1/compute_path_through_poses",
+        "/robot_1/compute_path_to_pose",
+        "/robot_1/drive_on_heading",
+        "/robot_1/follow_path",
+        "/robot_1/navigate_through_poses",
+        "/robot_1/navigate_to_pose",
+        "/robot_1/smooth_path",
+        "/robot_1/spin",
+        "/robot_1/wait"
+      ]
+    },
+    {
+      "case": "actual_candidate_lifecycle_active",
+      "passed": true,
+      "states": {
+        "map_server": {
+          "id": 3,
+          "label": "active"
+        },
+        "amcl": {
+          "id": 3,
+          "label": "active"
+        },
+        "controller_server": {
+          "id": 3,
+          "label": "active"
+        },
+        "smoother_server": {
+          "id": 3,
+          "label": "active"
+        },
+        "planner_server": {
+          "id": 3,
+          "label": "active"
+        },
+        "behavior_server": {
+          "id": 3,
+          "label": "active"
+        },
+        "velocity_smoother": {
+          "id": 3,
+          "label": "active"
+        },
+        "collision_monitor": {
+          "id": 3,
+          "label": "active"
+        },
+        "bt_navigator": {
+          "id": 3,
+          "label": "active"
+        }
+      }
+    },
+    {
+      "case": "phase6_semantic_wiring",
+      "passed": true,
+      "arm": "off",
+      "layer_raw_topics": [],
+      "label_relay": null,
+      "subscriptions": {
+        "/robot_1/semantic/mask": [],
+        "/robot_1/semantic/points": [],
+        "/robot_1/semantic/timing": [],
+        "/robot_1/semantic/label_info": []
+      }
+    },
+    {
+      "case": "actual_costmaps_subscribe_to_corrected_lidar",
+      "passed": true
+    },
+    {
+      "case": "actual_command_publisher_routes",
+      "passed": true
+    },
+    {
+      "case": "unexpected_writer_and_publisher_restart_binding",
+      "passed": true,
+      "first_guid": [
+        1,
+        16,
+        33,
+        179,
+        242,
+        22,
+        91,
+        166,
+        179,
+        245,
+        219,
+        147,
+        0,
+        0,
+        134,
+        3
+      ],
+      "replacement_guid": [
+        1,
+        16,
+        33,
+        179,
+        242,
+        22,
+        91,
+        166,
+        179,
+        245,
+        219,
+        147,
+        0,
+        0,
+        151,
+        3
+      ],
+      "both_resolved_and_rejected": true
+    },
+    {
+      "case": "actual_hotel_plan_phase6_crossing",
+      "passed": true,
+      "points": 159,
+      "goal_distance_m": 4.000000000000002,
+      "goal_xy": [
+        19.402,
+        -31.594
+      ]
+    },
+    {
+      "case": "sam3_observation_ready",
+      "passed": true,
+      "labels": {
+        "active_labels": [
+          0,
+          2
+        ],
+        "generation": 1,
+        "labels": {
+          "0": "unobserved",
+          "1": "traversable",
+          "2": "avoid_target"
+        },
+        "policy": "avoid-target/v1",
+        "prompt": "red mat"
+      }
+    },
+    {
+      "case": "phase6_render_warmup",
+      "passed": true,
+      "frames": {
+        "/phase5/warmup/0/image": 5,
+        "/phase5/warmup/1/image": 5,
+        "/phase5/warmup/2/image": 5,
+        "/phase5/warmup/3/image": 5,
+        "/phase5/warmup/4/image": 5,
+        "/phase5/warmup/5/image": 5,
+        "/phase5/warmup/6/image": 5,
+        "/phase5/warmup/7/image": 5,
+        "/phase5/warmup/8/image": 5,
+        "/phase5/warmup/9/image": 5,
+        "/phase5/warmup/10/image": 5,
+        "/phase5/warmup/11/image": 5
+      }
+    },
+    {
+      "case": "cancellation_terminal_and_acknowledged",
+      "passed": true
+    },
+    {
+      "case": "native_stationary_after_task",
+      "passed": true
+    },
+    {
+      "case": "guarded_real_hotel_one_meter_goal",
+      "passed": true,
+      "terminal_status": 4,
+      "reason": "goal_succeeded"
+    },
+    {
+      "case": "closed_graph_and_descendants_terminal",
+      "passed": true
+    },
+    {
+      "case": "real_nav2_nonzero_chain_and_terminal_result",
+      "passed": true,
+      "positive_checked": 4105,
+      "terminal_status": 4
+    },
+    {
+      "case": "real_command_capture_mapping",
+      "passed": true,
+      "matched_positive_checked": 4103,
+      "clock_fault": null
+    },
+    {
+      "case": "per_message_publisher_binding",
+      "passed": true
+    },
+    {
+      "case": "command_frame_and_axes",
+      "passed": true
+    },
+    {
+      "case": "actual_capture_time_sensor_to_map_transforms",
+      "passed": true
+    },
+    {
+      "case": "independent_native_motion_observed",
+      "passed": true,
+      "minimum_required_m": 0.2
+    },
+    {
+      "case": "baseline_native_stop_metrics",
+      "passed": true,
+      "reason": "goal_succeeded",
+      "measurement_origin": "coordinator",
+      "first_trigger_to_applied_zero_ms": 0.863807,
+      "revoke_to_applied_zero_ms": 0.863807,
+      "pretrigger_sample_gap_ms": 4.12386,
+      "first_trigger_to_confirmed_stationary_ms": 572.967696,
+      "revoke_to_confirmed_stationary_ms": 572.967696,
+      "sampled_distance_to_confirmed_stationary_m": 0.00042458082185486913,
+      "maximum_applied_forward_mps": 0.15,
+      "displacement_m": 4.0170061614387205,
+      "scope": "normal completion/revocation only; not a fault-matrix qualification"
+    },
+    {
+      "case": "baseline_contact_window",
+      "start_sim": 18272000000,
+      "end_sim": 46098000000,
+      "passed": true,
+      "reason": "clear",
+      "unexpected": [],
+      "samples": 889,
+      "steps": 13995,
+      "qualification": "exact allowlisted support contacts only; no force/depth exemption"
+    },
+    {
+      "case": "sam3_registration_under_motion",
+      "passed": true,
+      "moving_results": 151,
+      "pooled_selected_points": 7181315,
+      "pooled_inside_fraction": 0.9999997214994747,
+      "minimum_result_fraction": 0.9998520053278082,
+      "contract": ">= 95% of capture-time projected points inside the ground-truth mat over >= 10 moving results with >= 50 selected pixels",
+      "scope": "observation-only registration on the private guarded fixture; no semantic cost influence on navigation"
+    },
+    {
+      "case": "sam3_observation_timing",
+      "passed": true,
+      "p95_capture_age_ms": 239.096701,
+      "p95_capture_age_limit_ms": 500.0,
+      "results_per_second": 7.152054794028745,
+      "rate_limit_per_s": 5.0,
+      "records": 531
+    },
+    {
+      "case": "sam3_semantic_isolation",
+      "passed": true,
+      "semantic_topics": [
+        "/robot_1/semantic/label_info",
+        "/robot_1/semantic/mask",
+        "/robot_1/semantic/points",
+        "/robot_1/semantic/ready",
+        "/robot_1/semantic/status",
+        "/robot_1/semantic/timing"
+      ],
+      "subscribing_nodes": [
+        "phase5_sam3_observer",
+        "phase6_label_relay_source"
+      ],
+      "costmap_subscriptions": []
+    },
+    {
+      "case": "console_server_shutdown",
+      "passed": true,
+      "returncode": 0,
+      "forced": false,
+      "lifecycle": {
+        "passed": true,
+        "marker_positions": {
+          "stop_begin": 14250,
+          "stop_end": 14319,
+          "stop_worker_joined": 14346,
+          "destructor_begin": 14383,
+          "destructor_end": 14418
+        },
+        "run_returned_position": 14279
+      }
+    },
+    {
+      "case": "console_server_recording_absent",
+      "passed": true,
+      "recording_files": [],
+      "recording_libraries": []
+    }
+  ],
+  "sensors": {
+    "odom": {
+      "stamp": 47568000000,
+      "frame": "odom",
+      "wall_received": 1793722628689105462,
+      "count": 7379,
+      "rollback": false
+    },
+    "scan": {
+      "stamp": 47500000000,
+      "frame": "lidar_frame",
+      "wall_received": 1793722628566506141,
+      "count": 463,
+      "rollback": false,
+      "samples": 360,
+      "finite": 294
+    },
+    "rgb": {
+      "stamp": 46466000000,
+      "frame": "camera_color_optical_frame",
+      "wall_received": 1793722627013780729,
+      "count": 1364,
+      "rollback": false,
+      "transport": "gz",
+      "traced": true
+    },
+    "depth": {
+      "stamp": 46466000000,
+      "frame": "camera_color_optical_frame",
+      "wall_received": 1793722627013780729,
+      "count": 1364,
+      "rollback": false,
+      "transport": "gz",
+      "traced": true
+    }
+  },
+  "states": {
+    "map_server": {
+      "id": 3,
+      "label": "active"
+    },
+    "amcl": {
+      "id": 3,
+      "label": "active"
+    },
+    "controller_server": {
+      "id": 3,
+      "label": "active"
+    },
+    "smoother_server": {
+      "id": 3,
+      "label": "active"
+    },
+    "planner_server": {
+      "id": 3,
+      "label": "active"
+    },
+    "behavior_server": {
+      "id": 3,
+      "label": "active"
+    },
+    "velocity_smoother": {
+      "id": 3,
+      "label": "active"
+    },
+    "collision_monitor": {
+      "id": 3,
+      "label": "active"
+    },
+    "bt_navigator": {
+      "id": 3,
+      "label": "active"
+    }
+  },
+  "controller_endpoint_capture": true,
+  "collision_monitor_diagnostics": false,
+  "moving_timing_trace": false,
+  "gz_thread_probe": false,
+  "fault_stop_probe": false,
+  "fault_stop_mode": "",
+  "sam3_observation": true,
+  "semantic_fault_probe": false,
+  "semantic_fault_mode": "",
+  "phase6_semantic_arm": "off",
+  "phase6_stationary_smoke": false,
+  "phase6_diagnostic_no_85_bridge": false,
+  "phase6_tf_probe": false,
+  "phase6_cost_cells_timeline": false,
+  "phase6_lethal_experiment": false,
+  "phase6_target_absent": false,
+  "phase6_target_removal": false,
+  "phase6_tf_witness": true,
+  "phase6_tf_witness_stats": {
+    "last_seq": 448,
+    "last_read": 13747499.419842668,
+    "records": 393,
+    "stale": 0,
+    "applied": 391
+  },
+  "phase6_goal_xy": [
+    19.402,
+    -31.594
+  ],
+  "phase6_mat_ground_truth": {
+    "xmin": 16.9514,
+    "xmax": 17.851399999999998,
+    "ymin": -31.919,
+    "ymax": -31.269000000000002
+  },
+  "phase6_candidate_yaml": "phase5-nav2-candidate.yaml",
+  "headless_gpu_rendering": true,
+  "console_only_server": true,
+  "world_record_period_s": 0.0,
+  "world_recording": false,
+  "diagnostic_only": false,
+  "clock_fault": null,
+  "qualification": "private Phase 6 off-arm paired navigation trial on the guarded fixture; capture-time TF witness sidecar feeds the tf lease (user-approved 2026-10-28, fail-closed, UDP-companion-path pattern); NOT a Phase 6 series pass"
+}

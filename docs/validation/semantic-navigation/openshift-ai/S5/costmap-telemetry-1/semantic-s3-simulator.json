@@ -1,0 +1,503 @@
+{
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+        "annotations": {
+            "k8s.ovn.org/pod-networks": "{\"default\":{\"ip_addresses\":[\"10.129.4.207/23\"],\"mac_address\":\"0a:58:0a:81:04:cf\",\"gateway_ips\":[\"10.129.4.1\"],\"routes\":[{\"dest\":\"10.128.0.0/14\",\"nextHop\":\"10.129.4.1\"},{\"dest\":\"172.30.0.0/16\",\"nextHop\":\"10.129.4.1\"},{\"dest\":\"169.254.0.5/32\",\"nextHop\":\"10.129.4.1\"},{\"dest\":\"100.64.0.0/16\",\"nextHop\":\"10.129.4.1\"}],\"ip_address\":\"10.129.4.207/23\",\"gateway_ip\":\"10.129.4.1\",\"role\":\"primary\"}}",
+            "k8s.v1.cni.cncf.io/network-status": "[{\n    \"name\": \"ovn-kubernetes\",\n    \"interface\": \"eth0\",\n    \"ips\": [\n        \"10.129.4.207\"\n    ],\n    \"mac\": \"0a:58:0a:81:04:cf\",\n    \"default\": true,\n    \"dns\": {}\n}]",
+            "openshift.io/scc": "anyuid",
+            "security.openshift.io/validated-scc-subject-type": "user"
+        },
+        "creationTimestamp": "2026-11-04T15:05:53Z",
+        "generation": 1,
+        "labels": {
+            "app": "semantic-s3-simulator"
+        },
+        "name": "semantic-s3-simulator",
+        "namespace": "semantic-navigation",
+        "resourceVersion": "512111288",
+        "uid": "27ae8675-1f0a-444d-892a-5e7852390823"
+    },
+    "spec": {
+        "automountServiceAccountToken": false,
+        "containers": [
+            {
+                "command": [
+                    "/bin/bash",
+                    "/g3-config/g3_simulator.sh"
+                ],
+                "env": [
+                    {
+                        "name": "ROS_DISTRO",
+                        "value": "jazzy"
+                    },
+                    {
+                        "name": "ROS_DOMAIN_ID",
+                        "value": "190"
+                    },
+                    {
+                        "name": "RMW_IMPLEMENTATION",
+                        "value": "rmw_cyclonedds_cpp"
+                    },
+                    {
+                        "name": "CYCLONEDDS_URI",
+                        "value": "file:///g3-config/cyclonedds.xml"
+                    },
+                    {
+                        "name": "GZ_PARTITION",
+                        "value": "semantic_s3_inference"
+                    },
+                    {
+                        "name": "GZ_IP",
+                        "value": "127.0.0.1"
+                    },
+                    {
+                        "name": "RESOLUTION",
+                        "value": "1600x900x24"
+                    },
+                    {
+                        "name": "SEMANTIC_PHASE2_SCENE",
+                        "value": "1"
+                    },
+                    {
+                        "name": "SEMANTIC_CAPTURE_TRACE",
+                        "value": "1"
+                    },
+                    {
+                        "name": "NVIDIA_DRIVER_CAPABILITIES",
+                        "value": "all"
+                    }
+                ],
+                "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:d417c9f252d1f89dd859290a4bca1f634bcfd7d3cde6d1702c409d432bd48894",
+                "imagePullPolicy": "Always",
+                "name": "simulator",
+                "resources": {
+                    "limits": {
+                        "cpu": "6",
+                        "memory": "8Gi",
+                        "nvidia.com/gpu": "1"
+                    },
+                    "requests": {
+                        "cpu": "3",
+                        "memory": "3Gi",
+                        "nvidia.com/gpu": "1"
+                    }
+                },
+                "securityContext": {
+                    "capabilities": {
+                        "drop": [
+                            "MKNOD"
+                        ]
+                    }
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "File",
+                "volumeMounts": [
+                    {
+                        "mountPath": "/g3-config",
+                        "name": "config",
+                        "readOnly": true
+                    }
+                ]
+            },
+            {
+                "args": [
+                    "export HOME=/tmp/ros-home ROS_LOG_DIR=/tmp/ros-home/.ros/log; mkdir -p \"$ROS_LOG_DIR\"; source /opt/ros/jazzy/setup.bash; source /opt/rmf_demos_ws/install/setup.bash; for attempt in {1..90}; do\n  color_info=$(ros2 topic info /robot_1/camera/color/image_raw 2\u003e/dev/null || true);\n  depth_info=$(ros2 topic info /robot_1/camera/depth/image_raw 2\u003e/dev/null || true);\n  if printf '%s' \"$color_info\" | grep -q 'Publisher count: 1' \u0026\u0026 printf '%s' \"$depth_info\" | grep -q 'Publisher count: 1'; then break; fi;\n  sleep 1;\ndone; exec python3 /opt/semantic-navigation/camera_compressor.py"
+                ],
+                "command": [
+                    "/bin/bash",
+                    "-lc"
+                ],
+                "env": [
+                    {
+                        "name": "ROS_DISTRO",
+                        "value": "jazzy"
+                    },
+                    {
+                        "name": "ROS_DOMAIN_ID",
+                        "value": "190"
+                    },
+                    {
+                        "name": "RMW_IMPLEMENTATION",
+                        "value": "rmw_cyclonedds_cpp"
+                    },
+                    {
+                        "name": "CYCLONEDDS_URI",
+                        "value": "file:///g3-config/cyclonedds.xml"
+                    },
+                    {
+                        "name": "SEMANTIC_CAMERA_SUBSCRIPTION_DEPTH",
+                        "value": "20"
+                    },
+                    {
+                        "name": "SEMANTIC_COMPRESSION_TRACE",
+                        "value": "1"
+                    },
+                    {
+                        "name": "SEMANTIC_RAW_INPUT",
+                        "value": "gz"
+                    },
+                    {
+                        "name": "PHASE3_CAMERA_FAULT_FILE",
+                        "value": "/tmp/phase3-camera-fault.json"
+                    },
+                    {
+                        "name": "GZ_PARTITION",
+                        "value": "semantic_s3_inference"
+                    },
+                    {
+                        "name": "GZ_IP",
+                        "value": "127.0.0.1"
+                    }
+                ],
+                "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:c3ba94bbcbbe2283f1c46ea0f2baba398da313ffe83d2b59a63272ef91d95ebf",
+                "imagePullPolicy": "Always",
+                "name": "camera-compressor",
+                "resources": {
+                    "limits": {
+                        "cpu": "2",
+                        "memory": "2Gi"
+                    },
+                    "requests": {
+                        "cpu": "250m",
+                        "memory": "512Mi"
+                    }
+                },
+                "securityContext": {
+                    "capabilities": {
+                        "drop": [
+                            "MKNOD"
+                        ]
+                    }
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "File",
+                "volumeMounts": [
+                    {
+                        "mountPath": "/g3-config",
+                        "name": "config",
+                        "readOnly": true
+                    }
+                ]
+            },
+            {
+                "args": [
+                    "-c",
+                    "/g3-config/sim-bridge.json5"
+                ],
+                "env": [
+                    {
+                        "name": "ROS_DOMAIN_ID",
+                        "value": "190"
+                    },
+                    {
+                        "name": "ROS_DISTRO",
+                        "value": "jazzy"
+                    },
+                    {
+                        "name": "RMW_IMPLEMENTATION",
+                        "value": "rmw_cyclonedds_cpp"
+                    },
+                    {
+                        "name": "CYCLONEDDS_URI",
+                        "value": "file:///g3-config/cyclonedds.xml"
+                    }
+                ],
+                "image": "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+                "imagePullPolicy": "IfNotPresent",
+                "name": "sim-zenoh-bridge",
+                "resources": {
+                    "limits": {
+                        "cpu": "1",
+                        "memory": "1Gi"
+                    },
+                    "requests": {
+                        "cpu": "100m",
+                        "memory": "128Mi"
+                    }
+                },
+                "securityContext": {
+                    "capabilities": {
+                        "drop": [
+                            "MKNOD"
+                        ]
+                    }
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "File",
+                "volumeMounts": [
+                    {
+                        "mountPath": "/g3-config",
+                        "name": "config",
+                        "readOnly": true
+                    }
+                ]
+            }
+        ],
+        "dnsPolicy": "ClusterFirst",
+        "enableServiceLinks": true,
+        "imagePullSecrets": [
+            {
+                "name": "default-dockercfg-6jjg8"
+            }
+        ],
+        "nodeName": "ip-10-0-44-146.ec2.internal",
+        "nodeSelector": {
+            "kubernetes.io/hostname": "ip-10-0-44-146.ec2.internal"
+        },
+        "preemptionPolicy": "PreemptLowerPriority",
+        "priority": 0,
+        "restartPolicy": "Always",
+        "schedulerName": "default-scheduler",
+        "securityContext": {
+            "seLinuxOptions": {
+                "level": "s0:c37,c4"
+            }
+        },
+        "serviceAccount": "default",
+        "serviceAccountName": "default",
+        "terminationGracePeriodSeconds": 30,
+        "tolerations": [
+            {
+                "effect": "NoSchedule",
+                "key": "g5-gpu",
+                "operator": "Equal",
+                "value": "true"
+            },
+            {
+                "effect": "NoExecute",
+                "key": "node.kubernetes.io/not-ready",
+                "operator": "Exists",
+                "tolerationSeconds": 300
+            },
+            {
+                "effect": "NoExecute",
+                "key": "node.kubernetes.io/unreachable",
+                "operator": "Exists",
+                "tolerationSeconds": 300
+            },
+            {
+                "effect": "NoSchedule",
+                "key": "node.kubernetes.io/memory-pressure",
+                "operator": "Exists"
+            }
+        ],
+        "volumes": [
+            {
+                "configMap": {
+                    "defaultMode": 420,
+                    "name": "semantic-s3-inference-config"
+                },
+                "name": "config"
+            }
+        ]
+    },
+    "status": {
+        "conditions": [
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-11-04T15:05:55Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "PodReadyToStartContainers"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-11-04T15:05:53Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "Initialized"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-11-04T15:05:55Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "Ready"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-11-04T15:05:55Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "ContainersReady"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-11-04T15:05:53Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "PodScheduled"
+            }
+        ],
+        "containerStatuses": [
+            {
+                "allocatedResources": {
+                    "cpu": "250m",
+                    "memory": "512Mi"
+                },
+                "containerID": "cri-o://a5d48ec74783c8ba03cb5cc1932561e63314b142f5928d44d978c7374fe9a4f9",
+                "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:c3ba94bbcbbe2283f1c46ea0f2baba398da313ffe83d2b59a63272ef91d95ebf",
+                "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:c3ba94bbcbbe2283f1c46ea0f2baba398da313ffe83d2b59a63272ef91d95ebf",
+                "lastState": {},
+                "name": "camera-compressor",
+                "ready": true,
+                "resources": {
+                    "limits": {
+                        "cpu": "2",
+                        "memory": "2Gi"
+                    },
+                    "requests": {
+                        "cpu": "250m",
+                        "memory": "512Mi"
+                    }
+                },
+                "restartCount": 0,
+                "started": true,
+                "state": {
+                    "running": {
+                        "startedAt": "2026-11-04T15:05:54Z"
+                    }
+                },
+                "user": {
+                    "linux": {
+                        "gid": 0,
+                        "supplementalGroups": [
+                            0
+                        ],
+                        "uid": 0
+                    }
+                },
+                "volumeMounts": [
+                    {
+                        "mountPath": "/g3-config",
+                        "name": "config",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    }
+                ]
+            },
+            {
+                "allocatedResources": {
+                    "cpu": "100m",
+                    "memory": "128Mi"
+                },
+                "containerID": "cri-o://ed9b32772d4157b56ca18c7643689ede5307b3c672630a7418d9e5d7d830b36b",
+                "image": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+                "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+                "lastState": {},
+                "name": "sim-zenoh-bridge",
+                "ready": true,
+                "resources": {
+                    "limits": {
+                        "cpu": "1",
+                        "memory": "1Gi"
+                    },
+                    "requests": {
+                        "cpu": "100m",
+                        "memory": "128Mi"
+                    }
+                },
+                "restartCount": 0,
+                "started": true,
+                "state": {
+                    "running": {
+                        "startedAt": "2026-11-04T15:05:55Z"
+                    }
+                },
+                "user": {
+                    "linux": {
+                        "gid": 0,
+                        "supplementalGroups": [
+                            0,
+                            1,
+                            2,
+                            3,
+                            4,
+                            6,
+                            10,
+                            11,
+                            20,
+                            26,
+                            27
+                        ],
+                        "uid": 0
+                    }
+                },
+                "volumeMounts": [
+                    {
+                        "mountPath": "/g3-config",
+                        "name": "config",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    }
+                ]
+            },
+            {
+                "allocatedResources": {
+                    "cpu": "3",
+                    "memory": "3Gi",
+                    "nvidia.com/gpu": "1"
+                },
+                "containerID": "cri-o://e10dfe7c39c08a7dae4c4de86eaa87120d95904686c86f2e2106165868ddba4d",
+                "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:d417c9f252d1f89dd859290a4bca1f634bcfd7d3cde6d1702c409d432bd48894",
+                "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:d417c9f252d1f89dd859290a4bca1f634bcfd7d3cde6d1702c409d432bd48894",
+                "lastState": {},
+                "name": "simulator",
+                "ready": true,
+                "resources": {
+                    "limits": {
+                        "cpu": "6",
+                        "memory": "8Gi",
+                        "nvidia.com/gpu": "1"
+                    },
+                    "requests": {
+                        "cpu": "3",
+                        "memory": "3Gi",
+                        "nvidia.com/gpu": "1"
+                    }
+                },
+                "restartCount": 0,
+                "started": true,
+                "state": {
+                    "running": {
+                        "startedAt": "2026-11-04T15:05:54Z"
+                    }
+                },
+                "user": {
+                    "linux": {
+                        "gid": 0,
+                        "supplementalGroups": [
+                            0
+                        ],
+                        "uid": 0
+                    }
+                },
+                "volumeMounts": [
+                    {
+                        "mountPath": "/g3-config",
+                        "name": "config",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    }
+                ]
+            }
+        ],
+        "hostIP": "10.0.44.146",
+        "hostIPs": [
+            {
+                "ip": "10.0.44.146"
+            }
+        ],
+        "observedGeneration": 1,
+        "phase": "Running",
+        "podIP": "10.129.4.207",
+        "podIPs": [
+            {
+                "ip": "10.129.4.207"
+            }
+        ],
+        "qosClass": "Burstable",
+        "startTime": "2026-11-04T15:05:53Z"
+    }
+}

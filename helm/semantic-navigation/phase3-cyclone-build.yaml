@@ -1,0 +1,20 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: sam3-runtime-phase3-cyclone
+  namespace: semantic-navigation
+spec:
+  runPolicy: Serial
+  source:
+    binary: {}
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Containerfile.phase3-cyclone
+  output:
+    to:
+      kind: ImageStreamTag
+      name: sam3-runtime:phase3-cyclone
+  resources:
+    requests: { cpu: "1", memory: 2Gi }
+    limits: { cpu: "4", memory: 8Gi }

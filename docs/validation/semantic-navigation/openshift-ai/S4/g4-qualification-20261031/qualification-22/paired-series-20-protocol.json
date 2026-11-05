@@ -1,0 +1,15 @@
+{
+ "event": "standalone paired-series re-run 20 (November 4)",
+ "context": "Series 19 passed 22 trials (all of 000-010 off/on) then stopped when the series-level per-trial recycle's initial `oc delete pod` exited 1 on a transient (the deletes were not yet hardened; only the creates were).",
+ "change": "recycle()'s initial deletes are now best-effort (check=False): a transient delete failure is fully covered by create_with_retry's internal re-delete, and a missing resource is already ignored. Harness robustness only.",
+ "setup": {
+  "topology": "G4 topology up (direct endpoint); the series' per-trial recycle manages it; reservation remains deleted",
+  "series_output": "qualification-22/paired-series-20",
+  "phase5_evidence": "qualification-22/served-phase5-qualification.json",
+  "sampler": {
+   "output": "serving-resources-paired-series-20.jsonl",
+   "stop_file": "/tmp/g4-paired-series-20-monitor-stop"
+  }
+ },
+ "command": "run_phase6_series.py --output-dir qualification-22/paired-series-20 (same arguments as series 2-19)"
+}

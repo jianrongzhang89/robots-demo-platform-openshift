@@ -1,0 +1,28 @@
+# Binary context: repository paths listed in apps/semantic-model-server/Containerfile.
+# Build only after recording G0 prerequisites. This does not deploy a predictor.
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: semantic-model-server
+  namespace: semantic-navigation
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: semantic-model-server-s1
+  namespace: semantic-navigation
+spec:
+  runPolicy: Serial
+  source:
+    binary: {}
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: apps/semantic-model-server/Containerfile
+  output:
+    to:
+      kind: ImageStreamTag
+      name: semantic-model-server:s1
+  resources:
+    requests: {cpu: '1', memory: 2Gi}
+    limits: {cpu: '4', memory: 8Gi}

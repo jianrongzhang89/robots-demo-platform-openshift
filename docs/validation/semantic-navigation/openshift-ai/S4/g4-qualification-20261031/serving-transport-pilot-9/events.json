@@ -1,0 +1,36 @@
+[
+  {
+    "event": "model_serving_preflight",
+    "running_ready": 1
+  },
+  {
+    "event": "rendering_reservation_removed"
+  },
+  {
+    "event": "proxy_certificate_provisioned",
+    "returncode": 0,
+    "metadata": "subject=CN=localhost\nissuer=CN=localhost\nnotBefore=Nov  2 13:40:18 2026 GMT\nnotAfter=Nov  5 13:40:18 2026 GMT\nsha256 Fingerprint=8A:43:AC:72:95:2B:0A:FE:AF:BE:04:7A:EC:EE:5C:34:AA:89:E6:A7:9B:25:09:9B:E3:8F:4C:DF:E4:E2:A2:9F\n",
+    "key_retained": false
+  },
+  {
+    "event": "sampler_started",
+    "stop_file": "docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/serving-transport-pilot-9/monitor-stop"
+  },
+  {
+    "event": "runner_started",
+    "command": [
+      "/opt/homebrew/opt/python@3.14/bin/python3.14",
+      "/Users/zhangj/devt/src/robots-demo-platform-openshift/scripts/semantic-navigation/run_g4_faults.py",
+      "--modes",
+      "wrong_version",
+      "--repetitions",
+      "1",
+      "--output-dir",
+      "docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/serving-transport-pilot-9/serving-faults"
+    ]
+  },
+  {
+    "event": "runner_finished",
+    "returncode": 0
+  }
+]

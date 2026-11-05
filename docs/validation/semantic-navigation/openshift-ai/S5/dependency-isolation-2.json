@@ -1,0 +1,173 @@
+{
+  "recorded_at": "2026-11-04T14:19:10.415885+00:00",
+  "status": "PASS",
+  "method": "existing serving egress isolation, verified direct-IP control connections",
+  "route_hosts": {
+    "registry": "ryans-model-registry-rest.apps.ai-dev02.kni.syseng.devcluster.openshift.com",
+    "dashboard": "rhods-dashboard-redhat-ods-applications.apps.ai-dev02.kni.syseng.devcluster.openshift.com"
+  },
+  "serving_pod_uid": "77f204c5-6301-4349-9544-96594c3ba644",
+  "policies": {
+    "apiVersion": "v1",
+    "items": [
+      {
+        "apiVersion": "networking.k8s.io/v1",
+        "kind": "NetworkPolicy",
+        "metadata": {
+          "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"networking.k8s.io/v1\",\"kind\":\"NetworkPolicy\",\"metadata\":{\"annotations\":{},\"name\":\"sam3-g5-monitor-ingress\",\"namespace\":\"semantic-model-serving\"},\"spec\":{\"ingress\":[{\"from\":[{\"namespaceSelector\":{\"matchLabels\":{\"kubernetes.io/metadata.name\":\"openshift-user-workload-monitoring\"}},\"podSelector\":{\"matchLabels\":{\"prometheus\":\"user-workload\"}}}],\"ports\":[{\"port\":8443,\"protocol\":\"TCP\"}]}],\"podSelector\":{\"matchLabels\":{\"component\":\"predictor\",\"serving.kserve.io/inferenceservice\":\"sam3-mat-v1\"}},\"policyTypes\":[\"Ingress\"]}}\n"
+          },
+          "creationTimestamp": "2026-11-04T14:17:33Z",
+          "generation": 1,
+          "name": "sam3-g5-monitor-ingress",
+          "namespace": "semantic-model-serving",
+          "resourceVersion": "511958199",
+          "uid": "e0cedd44-b766-4760-9cfd-3c4efda5b932"
+        },
+        "spec": {
+          "ingress": [
+            {
+              "from": [
+                {
+                  "namespaceSelector": {
+                    "matchLabels": {
+                      "kubernetes.io/metadata.name": "openshift-user-workload-monitoring"
+                    }
+                  },
+                  "podSelector": {
+                    "matchLabels": {
+                      "prometheus": "user-workload"
+                    }
+                  }
+                }
+              ],
+              "ports": [
+                {
+                  "port": 8443,
+                  "protocol": "TCP"
+                }
+              ]
+            }
+          ],
+          "podSelector": {
+            "matchLabels": {
+              "component": "predictor",
+              "serving.kserve.io/inferenceservice": "sam3-mat-v1"
+            }
+          },
+          "policyTypes": [
+            "Ingress"
+          ]
+        }
+      },
+      {
+        "apiVersion": "networking.k8s.io/v1",
+        "kind": "NetworkPolicy",
+        "metadata": {
+          "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"networking.k8s.io/v1\",\"kind\":\"NetworkPolicy\",\"metadata\":{\"annotations\":{},\"name\":\"sam3-isolation\",\"namespace\":\"semantic-model-serving\"},\"spec\":{\"egress\":[],\"ingress\":[{\"from\":[{\"namespaceSelector\":{\"matchLabels\":{\"kubernetes.io/metadata.name\":\"semantic-navigation\"}},\"podSelector\":{\"matchLabels\":{\"semantic-serving-client\":\"sam3-mat-v1\"}}}],\"ports\":[{\"port\":8443,\"protocol\":\"TCP\"}]}],\"podSelector\":{\"matchLabels\":{\"component\":\"predictor\",\"serving.kserve.io/inferenceservice\":\"sam3-mat-v1\"}},\"policyTypes\":[\"Ingress\",\"Egress\"]}}\n"
+          },
+          "creationTimestamp": "2026-10-31T02:57:55Z",
+          "generation": 2,
+          "name": "sam3-isolation",
+          "namespace": "semantic-model-serving",
+          "resourceVersion": "493602734",
+          "uid": "c038e706-5b88-493e-a724-bd11ec15a770"
+        },
+        "spec": {
+          "ingress": [
+            {
+              "from": [
+                {
+                  "namespaceSelector": {
+                    "matchLabels": {
+                      "kubernetes.io/metadata.name": "semantic-navigation"
+                    }
+                  },
+                  "podSelector": {
+                    "matchLabels": {
+                      "semantic-serving-client": "sam3-mat-v1"
+                    }
+                  }
+                }
+              ],
+              "ports": [
+                {
+                  "port": 8443,
+                  "protocol": "TCP"
+                }
+              ]
+            }
+          ],
+          "podSelector": {
+            "matchLabels": {
+              "component": "predictor",
+              "serving.kserve.io/inferenceservice": "sam3-mat-v1"
+            }
+          },
+          "policyTypes": [
+            "Ingress",
+            "Egress"
+          ]
+        }
+      }
+    ],
+    "kind": "List",
+    "metadata": {
+      "resourceVersion": "",
+      "selfLink": ""
+    }
+  },
+  "control": [
+    {
+      "target": "registry",
+      "ip": "100.55.120.181",
+      "port": 443,
+      "connected": true,
+      "elapsed_seconds": 0.005773352459073067
+    },
+    {
+      "target": "dashboard",
+      "ip": "44.205.35.177",
+      "port": 443,
+      "connected": true,
+      "elapsed_seconds": 0.004073599353432655
+    },
+    {
+      "target": "external-https",
+      "ip": "1.1.1.1",
+      "port": 443,
+      "connected": true,
+      "elapsed_seconds": 0.005320733413100243
+    }
+  ],
+  "serving": [
+    {
+      "target": "registry",
+      "ip": "100.55.120.181",
+      "port": 443,
+      "connected": false,
+      "error_type": "TimeoutError",
+      "error": "timed out",
+      "elapsed_seconds": 2.0032553263008595
+    },
+    {
+      "target": "dashboard",
+      "ip": "44.205.35.177",
+      "port": 443,
+      "connected": false,
+      "error_type": "TimeoutError",
+      "error": "timed out",
+      "elapsed_seconds": 2.001983990892768
+    },
+    {
+      "target": "external-https",
+      "ip": "1.1.1.1",
+      "port": 443,
+      "connected": false,
+      "error_type": "TimeoutError",
+      "error": "timed out",
+      "elapsed_seconds": 2.00200255215168
+    }
+  ]
+}

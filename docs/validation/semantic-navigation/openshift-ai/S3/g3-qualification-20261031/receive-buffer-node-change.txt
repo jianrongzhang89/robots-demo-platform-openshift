@@ -1,0 +1,8 @@
+Warning: would violate PodSecurity "restricted:latest": host namespaces (hostNetwork=true, hostPID=true), privileged (container "container-00" must not set securityContext.privileged=true), allowPrivilegeEscalation != false (container "container-00" must set securityContext.allowPrivilegeEscalation=false), unrestricted capabilities (container "container-00" must set securityContext.capabilities.drop=["ALL"]), restricted volume types (volume "host" uses restricted volume type "hostPath"), runAsNonRoot != true (pod or container "container-00" must set securityContext.runAsNonRoot=true), runAsUser=0 (container "container-00" must not set runAsUser=0)
+Starting pod/ip-10-0-53-174ec2internal-debug ...
+To use host binaries, run `chroot /host`
+net.core.rmem_max = 212992
+net.core.rmem_max = 8388608
+net.core.rmem_max = 8388608
+
+Removing debug pod ...

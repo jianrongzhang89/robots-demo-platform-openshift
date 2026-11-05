@@ -1,0 +1,37 @@
+[
+  {
+    "event": "inject",
+    "mode": "overload",
+    "fixture_state": {
+      "phase": "motion_verified",
+      "mode": "overload",
+      "armed": true,
+      "gate_reason": "armed",
+      "leases": {
+        "camera": 319,
+        "semantic": 108,
+        "inference_heartbeat": 493
+      },
+      "written_wall_ns": 1793647535652211474
+    },
+    "controller_wall_ns": 1793647525309202000,
+    "returncode": 0
+  },
+  {
+    "event": "restore",
+    "mode": "overload",
+    "fixture_state": {
+      "phase": "stopped",
+      "mode": "overload",
+      "armed": false,
+      "gate_reason": "semantic_stale",
+      "leases": {
+        "camera": 367,
+        "semantic": 116,
+        "inference_heartbeat": 540
+      },
+      "written_wall_ns": 1793647538018980087
+    },
+    "controller_wall_ns": 1793647529490607000
+  }
+]

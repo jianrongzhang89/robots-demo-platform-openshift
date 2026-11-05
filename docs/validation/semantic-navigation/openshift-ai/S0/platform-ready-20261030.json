@@ -1,0 +1,33 @@
+{
+  "recorded_at": "2026-10-31T02:52:31.555364+00:00",
+  "conditions": [
+    {
+      "lastTransitionTime": "2026-10-31T02:52:17Z",
+      "status": "True",
+      "type": "Ready"
+    },
+    {
+      "lastTransitionTime": "2026-10-31T02:52:17Z",
+      "status": "True",
+      "type": "DashboardReady"
+    },
+    {
+      "lastTransitionTime": "2026-10-31T02:52:17Z",
+      "status": "True",
+      "type": "KserveReady"
+    },
+    {
+      "lastTransitionTime": "2026-10-31T02:52:17Z",
+      "message": "MaaS platform manifests applied and maas-api deployment is available",
+      "reason": "Reconciled",
+      "status": "True",
+      "type": "ModelsAsServiceReady"
+    }
+  ],
+  "maas_ready_replicas": 1,
+  "dashboard_ready_replicas": 2,
+  "serving_project_exists": false,
+  "gate": "G0",
+  "gate_status": "HOLD",
+  "note": "Platform readiness passes; remaining baseline and serving-provision prerequisites have not passed."
+}

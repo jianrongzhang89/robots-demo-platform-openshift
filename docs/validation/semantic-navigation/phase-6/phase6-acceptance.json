@@ -1,0 +1,67 @@
+{
+  "kind": "phase6_acceptance_record",
+  "recorded": "2026-10-30",
+  "passed": true,
+  "accepted_gates": [
+    "nominal_pairs_completion",
+    "hull_exposure_reduction",
+    "no_collisions",
+    "negative_cases"
+  ],
+  "sign_off": {
+    "date": "2026-10-30",
+    "commit": "5aca9eac",
+    "reviewer": "user",
+    "record": "docs/validation/semantic-navigation/phase-6/sign-off-review-20261030.md"
+  },
+  "gate_evidence": {
+    "nominal_pairs_completion": {
+      "series": "series-23-20261029",
+      "summary": "docs/validation/semantic-navigation/phase-6/series-23-20261029/series-result.json",
+      "planned": 40,
+      "attempted": 40,
+      "succeeded": 40,
+      "note": "20/20 nominal pairs per arm, goal_succeeded every trial"
+    },
+    "hull_exposure_reduction": {
+      "series": "series-23-20261029",
+      "off_arm_aggregate_m": 28.084,
+      "on_arm_aggregate_m": 0.0,
+      "reduction": 1.0,
+      "gate": 0.9,
+      "measure": "circumscribed-hull arc length (conservative); physical-truth trace"
+    },
+    "no_collisions": {
+      "series": "series-23-20261029",
+      "collisions": 0,
+      "note": "exact allowlisted support contacts only; contact window clear in every trial"
+    },
+    "negative_cases": {
+      "series": "series-23-20261029",
+      "target_absent": "3/3 pairs",
+      "target_removal": "3/3 pairs",
+      "perception_failure": "3/3 pairs, Phase 5 fault-stop criteria met"
+    }
+  },
+  "accepted_limitations": {
+    "belief_frame_arrivals": "goal_succeeded fires on the AMCL belief pose; recorded divergence at arrival off-arm 0.445-0.889 m (mean 0.626), on-arm 0.356-1.161 m (mean 0.804); physical goal distance mean 0.587/0.783 m; every trial record and the series result carry completion_divergence",
+    "amcl_y_ambiguity": "std_y grows to ~0.95 m through the detour in every trial (intrinsic to the scene's scan ambiguity); mode-collapse-free across the 20 on-trials of the passing series under particles 2000-8000 / alphas 0.1",
+    "gz_capture_trace_race": "intermittent per-fixture-session gz-transport delivery failure of the capture_trace topic, fail-closed at the pre-arm readiness gate, worked around by the fresh-fixture-pod retry ladder; root mechanism open (probe pair retained)",
+    "standing_waivers": "Phase 2 recognition waiver; capture-time TF witness sidecar; UDP companion path; sensors-system override; grace/heartbeat-acceleration authority mechanics; render warmup; liveness retry ladder (infrastructure deaths only)",
+    "lethal_254_framing": "the passing on-arm is the implementation plan's exclusion experiment demonstrating the semantic objective's ceiling; the production candidate remains the qualified soft cost 200 (a model-only restriction is not a production safety boundary)"
+  },
+  "final_candidate": {
+    "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:348fc584e70b07c6f73f9e428623240da5fc4c81ead630f0cb051c18de2d4371",
+    "image_chain": "base 125cbd5a -> console 15b900f6 -> phase6 + endpoint-capture controller overlay 348fc584 (nav2_controller patch at f4108e5)",
+    "controller": "RPP lookahead 0.5 / min 0.25, inflation 0.45, use_rotate_to_heading disabled",
+    "localization": "AMCL particles 2000-8000, alphas 0.1",
+    "fixture_side": "capture-time TF witness; pose-delta stationary predicate; extended liveness ladder; completion-divergence record per trial",
+    "qualification": "private fixture on the frozen guarded GPU profile; not a canonical-deployment or physical-robot qualification"
+  },
+  "requalification": {
+    "smoke": "amcl05-smoke-1 (27/27)",
+    "off_pilot": "amcl05-off-1 (35/35)",
+    "on_pilot": "amcl05-on-1 (36/36)",
+    "history": "docs/validation/semantic-navigation/phase-6/pilot-1-20261026/README.md"
+  }
+}

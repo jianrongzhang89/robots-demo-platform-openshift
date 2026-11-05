@@ -1,0 +1,138 @@
+{
+  "apiVersion": "v1",
+  "kind": "Pod",
+  "metadata": {
+    "name": "sam3-g0-transport",
+    "namespace": "semantic-model-serving",
+    "labels": {
+      "serving.kserve.io/inferenceservice": "sam3-mat-v1",
+      "component": "predictor"
+    }
+  },
+  "spec": {
+    "serviceAccountName": "sam3-serving",
+    "automountServiceAccountToken": false,
+    "restartPolicy": "Never",
+    "containers": [
+      {
+        "name": "transport",
+        "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+        "ports": [
+          {
+            "name": "https",
+            "containerPort": 8443
+          },
+          {
+            "name": "health",
+            "containerPort": 8080
+          }
+        ],
+        "env": [
+          {
+            "name": "RUNTIME_IMAGE_DIGEST",
+            "value": "sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e"
+          },
+          {
+            "name": "MODEL_DIR",
+            "value": "/models"
+          },
+          {
+            "name": "TLS_CERT",
+            "value": "/tls/tls.crt"
+          },
+          {
+            "name": "TLS_KEY",
+            "value": "/tls/tls.key"
+          },
+          {
+            "name": "CLIENT_CA",
+            "value": "/tls/client-ca.crt"
+          },
+          {
+            "name": "CLIENT_POLICY",
+            "value": "/policy/clients.json"
+          },
+          {
+            "name": "HOME",
+            "value": "/tmp"
+          },
+          {
+            "name": "HF_HUB_OFFLINE",
+            "value": "1"
+          },
+          {
+            "name": "TRANSFORMERS_OFFLINE",
+            "value": "1"
+          }
+        ],
+        "resources": {
+          "requests": {
+            "cpu": "100m",
+            "memory": "512Mi"
+          },
+          "limits": {
+            "cpu": "1",
+            "memory": "2Gi"
+          }
+        },
+        "securityContext": {
+          "allowPrivilegeEscalation": false,
+          "runAsNonRoot": true,
+          "readOnlyRootFilesystem": true,
+          "capabilities": {
+            "drop": [
+              "ALL"
+            ]
+          },
+          "seccompProfile": {
+            "type": "RuntimeDefault"
+          }
+        },
+        "volumeMounts": [
+          {
+            "name": "tls",
+            "mountPath": "/tls",
+            "readOnly": true
+          },
+          {
+            "name": "policy",
+            "mountPath": "/policy",
+            "readOnly": true
+          },
+          {
+            "name": "tmp",
+            "mountPath": "/tmp"
+          }
+        ],
+        "command": [
+          "/opt/sam3-venv/bin/python",
+          "-u",
+          "-c"
+        ],
+        "args": [
+          "import ssl,json; from pathlib import Path; from server import ModelService,BoundedServer; s=ModelService(json.loads(Path(\"/policy/clients.json\").read_text())); t=ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER); t.minimum_version=ssl.TLSVersion.TLSv1_2; t.verify_mode=ssl.CERT_REQUIRED; t.load_cert_chain(\"/tls/tls.crt\",\"/tls/tls.key\"); t.load_verify_locations(\"/tls/client-ca.crt\"); print(\"G0 transport-only probe; no model loaded\",flush=True); BoundedServer((\"0.0.0.0\",8443),s,tls=t).serve_forever()"
+        ]
+      }
+    ],
+    "volumes": [
+      {
+        "name": "tls",
+        "secret": {
+          "secretName": "sam3-serving-tls"
+        }
+      },
+      {
+        "name": "policy",
+        "configMap": {
+          "name": "sam3-client-policy"
+        }
+      },
+      {
+        "name": "tmp",
+        "emptyDir": {
+          "sizeLimit": "2Gi"
+        }
+      }
+    ]
+  }
+}

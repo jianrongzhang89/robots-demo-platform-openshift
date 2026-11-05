@@ -1,0 +1,158 @@
+[
+  {
+    "index": 0,
+    "label": "tile-negative",
+    "rgb": "tile-negative-0000.jpg",
+    "depth": "tile-negative-0000-depth.png",
+    "rgb_stamp_ns": 1222100000000,
+    "depth_stamp_ns": 1222100000000,
+    "skew_ms": 0.0,
+    "width": 640,
+    "height": 480,
+    "frame_id": "camera_color_optical_frame",
+    "depth_frame_id": "camera_color_optical_frame",
+    "depth_encoding": "32FC1",
+    "camera_info_stamp_ns": 1222100000000,
+    "camera_info_skew_ms": 0.0,
+    "camera_info": {
+      "frame_id": "camera_color_optical_frame",
+      "width": 640,
+      "height": 480,
+      "distortion_model": "plumb_bob",
+      "d": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "k": [
+        554.2562591878634,
+        0.0,
+        320.0,
+        0.0,
+        554.2562591878634,
+        240.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "r": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "p": [
+        554.2562591878634,
+        0.0,
+        320.0,
+        0.0,
+        0.0,
+        554.2562591878634,
+        240.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ]
+    },
+    "odometry_stamp_ns": 1222100000000,
+    "odometry_skew_ms": 0.0,
+    "odometry": {
+      "frame_id": "odom",
+      "child_frame_id": "base_footprint",
+      "position": {
+        "x": 0.11515498940244207,
+        "y": -3.439867473394151e-11,
+        "z": 0.0
+      },
+      "orientation_xyzw": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.38513673413263144,
+        "w": 0.9228595212824381
+      },
+      "linear_velocity_x_mps": 0.0,
+      "angular_velocity_z_radps": 0.0
+    },
+    "world_to_odom_anchor": null,
+    "world_from_base_link": [
+      15.509809707244907,
+      -31.59568394234058,
+      0.010044833755437932,
+      0.011215051535991697,
+      -0.02697657949552325,
+      0.3837137105206814,
+      0.9229898564644238
+    ],
+    "static_transforms": [
+      {
+        "parent_frame": "base_footprint",
+        "child_frame": "base_link",
+        "translation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.1
+        },
+        "rotation_xyzw": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "parent_frame": "camera_link",
+        "child_frame": "camera_color_optical_frame",
+        "translation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+        "rotation_xyzw": {
+          "x": -0.5,
+          "y": 0.49999999999755174,
+          "z": -0.5,
+          "w": 0.5000000000024483
+        }
+      },
+      {
+        "parent_frame": "base_link",
+        "child_frame": "camera_link",
+        "translation": {
+          "x": 0.11,
+          "y": 0.0,
+          "z": 0.15
+        },
+        "rotation_xyzw": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "parent_frame": "base_link",
+        "child_frame": "base_scan",
+        "translation": {
+          "x": -0.064,
+          "y": 0.0,
+          "z": 0.172
+        },
+        "rotation_xyzw": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      }
+    ]
+  }
+]

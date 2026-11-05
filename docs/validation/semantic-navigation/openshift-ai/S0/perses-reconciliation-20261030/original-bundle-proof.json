@@ -1,0 +1,30 @@
+{
+  "source": "Previously approved install-5m892 bundle, unpacked from its referenced catalog ConfigMap",
+  "csv": "cluster-observability-operator.v1.5.1",
+  "bundle_digest": "sha256:6578f6e0bf83cf924d724dd110abca715f6fd656477c1bf033cf9707650a0279",
+  "deployments": [
+    "obo-prometheus-operator",
+    "obo-prometheus-operator-admission-webhook",
+    "observability-operator",
+    "perses-operator"
+  ],
+  "conversion_webhooks": [
+    {
+      "admissionReviewVersions": [
+        "v1"
+      ],
+      "containerPort": 443,
+      "conversionCRDs": [
+        "perses.perses.dev",
+        "persesdashboards.perses.dev",
+        "persesglobaldatasources.perses.dev"
+      ],
+      "deploymentName": "perses-operator",
+      "generateName": "cpersespersesdashboardspersesglobaldatasources.kb.io",
+      "sideEffects": "None",
+      "targetPort": 9443,
+      "type": "ConversionWebhook",
+      "webhookPath": "/convert"
+    }
+  ]
+}

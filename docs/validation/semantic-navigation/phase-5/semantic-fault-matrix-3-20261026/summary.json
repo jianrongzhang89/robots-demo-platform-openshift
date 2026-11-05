@@ -1,0 +1,49 @@
+{
+  "passed": false,
+  "planned": 10,
+  "attempted": 5,
+  "succeeded": 4,
+  "results": [
+    {
+      "trial": 1,
+      "mode": "camera_path_loss",
+      "repetition": 1,
+      "passed": true,
+      "returncode": 0,
+      "evidence": "docs/validation/semantic-navigation/phase-5/semantic-fault-matrix-3-20261026/trial-01-camera_path_loss-r1/runtime/summary.json"
+    },
+    {
+      "trial": 2,
+      "mode": "tf_loss",
+      "repetition": 1,
+      "passed": true,
+      "returncode": 0,
+      "evidence": "docs/validation/semantic-navigation/phase-5/semantic-fault-matrix-3-20261026/trial-02-tf_loss-r1/runtime/summary.json"
+    },
+    {
+      "trial": 3,
+      "mode": "hung_inference",
+      "repetition": 1,
+      "passed": true,
+      "returncode": 0,
+      "evidence": "docs/validation/semantic-navigation/phase-5/semantic-fault-matrix-3-20261026/trial-03-hung_inference-r1/runtime/summary.json"
+    },
+    {
+      "trial": 4,
+      "mode": "process_loss",
+      "repetition": 1,
+      "passed": true,
+      "returncode": 0,
+      "evidence": "docs/validation/semantic-navigation/phase-5/semantic-fault-matrix-3-20261026/trial-04-process_loss-r1/runtime/summary.json"
+    },
+    {
+      "trial": 5,
+      "mode": "transport_loss",
+      "repetition": 1,
+      "passed": false,
+      "returncode": 1,
+      "evidence": "docs/validation/semantic-navigation/phase-5/semantic-fault-matrix-3-20261026/trial-05-transport_loss-r1/runtime/summary.json"
+    }
+  ],
+  "scope": "armed semantic fault matrix on the private guarded fixture; semantic costs excluded; not full Phase 5 acceptance without the evidence review"
+}

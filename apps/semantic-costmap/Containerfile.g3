@@ -1,0 +1,6 @@
+FROM image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-costmap@sha256:447c6ee36d2eff0707a69133881c4131e0033dab5c38099750844173d416c92f
+USER 0
+COPY g3 /opt/g3/g3
+COPY test /opt/g3/test
+RUN /bin/bash -ec 'source /opt/semantic-costmap-ws/install/setup.bash; cmake -S /opt/g3/g3 -B /opt/g3/build; cmake --build /opt/g3/build -j2; ROS_DOMAIN_ID=193 /opt/g3/build/g3_projection_tests'
+USER 1001

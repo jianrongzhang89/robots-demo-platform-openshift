@@ -1,0 +1,96 @@
+{
+  "recorded_at": "2026-11-04T15:39:15.775644+00:00",
+  "fixture_passed": true,
+  "navigation": {
+    "case": "guarded_real_hotel_one_meter_goal",
+    "passed": true,
+    "terminal_status": 4,
+    "reason": "goal_succeeded"
+  },
+  "contact_audit": {
+    "case": "baseline_contact_window",
+    "start_sim": 43262000000,
+    "end_sim": 77420000000,
+    "passed": true,
+    "reason": "clear",
+    "unexpected": [],
+    "samples": 1325,
+    "steps": 17158,
+    "qualification": "exact allowlisted support contacts only; no force/depth exemption"
+  },
+  "stationary_after_task": {
+    "case": "native_stationary_after_task",
+    "passed": true
+  },
+  "semantic_costmap": {
+    "case": "phase6_semantic_costs_at_target",
+    "passed": true,
+    "global_soft_cells": 255,
+    "global_soft_cells_inside_target": 255,
+    "local_soft_cells": 0,
+    "soft_cost_value": 254,
+    "histograms": {
+      "global": {
+        "255": 585330,
+        "254": 255
+      }
+    },
+    "contract": "target-cost-254 cells in the global costmap, all inside the ground-truth rectangle (+0.15 m), no value other than free/target/unknown on the layer grid, and no semantic layer in the local costmap",
+    "outside_target_cells": []
+  },
+  "timing": {
+    "case": "sam3_observation_timing",
+    "passed": true,
+    "p95_capture_age_ms": 252.936188,
+    "p95_capture_age_limit_ms": 500.0,
+    "results_per_second": 7.099140614707078,
+    "rate_limit_per_s": 5.0,
+    "records": 1068
+  },
+  "command_capture_mapping": {
+    "case": "real_command_capture_mapping",
+    "passed": true,
+    "matched_positive_checked": 5516,
+    "clock_fault": null
+  },
+  "physical_goal": {
+    "final": {
+      "sim_ns": 77178000000,
+      "belief_truth_divergence_m": 0.775,
+      "physical_goal_distance_m": 0.727,
+      "belief_goal_distance_m": 0.117
+    },
+    "at_arrival": {
+      "sim_ns": 77178000000,
+      "belief_truth_divergence_m": 0.775,
+      "physical_goal_distance_m": 0.727,
+      "belief_goal_distance_m": 0.117
+    },
+    "arrival_wall_ns": 1793806670192438272
+  },
+  "physical_path_length_m": 4.87554124943866,
+  "hull_radius_m": 0.246,
+  "hull_exposure_m": 0.0,
+  "minimum_hull_clearance_m": 0.13747511340193558,
+  "clock_events": [
+    {
+      "event": "bound_while_disarmed",
+      "wall_ns": 1793806583268994496,
+      "sim_ns": 33454000000
+    },
+    {
+      "event": "latched_clock_fault",
+      "reason": "native_capture_stale",
+      "sim_ns": 77732000000,
+      "capture_wall_ns": 1793806671217656867,
+      "status_wall_ns": 1793806671217656867,
+      "callback_wall_ns": 1793806671220065225,
+      "processed_wall_ns": 1793806671318651802,
+      "capture_age_at_native_publish_ms": 0.0,
+      "capture_age_at_callback_ms": 2.408358,
+      "capture_age_at_processing_ms": 100.994935
+    }
+  ],
+  "scope": "Single served semantic-on presentation; accepted global lethal-254 exclusion profile, view-only GUI and explicit operator hold; no new G4/G5 gate acceptance",
+  "late_clock_fault_note": "Capture staleness latched in post-goal diagnostics after the command-capture and terminal/contact windows passed. Preserved in raw summary, not deleted or reclassified as clean continuous timing."
+}

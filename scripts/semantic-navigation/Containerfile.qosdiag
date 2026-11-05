@@ -1,0 +1,4 @@
+FROM image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:4e163b62f3e2fe39eca7c6ef917b1471700afb27a0b3c7e37b14e388dfc92fc3
+
+COPY camera_compressor.py /opt/semantic-navigation/camera_compressor.py
+COPY camera_qos.py /opt/semantic-navigation/camera_qos.py

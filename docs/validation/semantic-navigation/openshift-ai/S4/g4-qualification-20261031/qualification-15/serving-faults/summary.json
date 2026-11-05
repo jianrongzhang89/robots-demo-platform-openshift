@@ -1,0 +1,40 @@
+{
+  "passed": false,
+  "planned": 12,
+  "attempted": 3,
+  "results": [
+    {
+      "mode": "auth",
+      "passed": true,
+      "returncode": 0,
+      "evidence": "docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/qualification-15/serving-faults/trial-01-auth-r1/runtime/summary.json",
+      "injected": true,
+      "restored": true,
+      "prearm_liveness_retries": 0,
+      "prearm_topology_recycles": 0,
+      "repeat": 1
+    },
+    {
+      "mode": "wrong_version",
+      "passed": true,
+      "returncode": 0,
+      "evidence": "docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/qualification-15/serving-faults/trial-02-wrong_version-r1/runtime/summary.json",
+      "injected": true,
+      "restored": true,
+      "prearm_liveness_retries": 0,
+      "prearm_topology_recycles": 0,
+      "repeat": 1
+    },
+    {
+      "mode": "overload",
+      "passed": false,
+      "returncode": 1,
+      "evidence": "docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/qualification-15/serving-faults/trial-03-overload-r1/runtime/summary.json",
+      "injected": false,
+      "restored": false,
+      "prearm_liveness_retries": 0,
+      "prearm_topology_recycles": 0,
+      "repeat": 1
+    }
+  ]
+}

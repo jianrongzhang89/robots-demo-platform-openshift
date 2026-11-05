@@ -1,0 +1,213 @@
+{
+  "kind": "live_fault_tests",
+  "results": [
+    {
+      "fault": "exception",
+      "quiescent_observation_s": 3,
+      "masks_during_failure": 0,
+      "heartbeat_unchanged": true,
+      "failure_status": {
+        "confidence_threshold": 0.5,
+        "emitted_results": 191,
+        "input_queue_depths": {
+          "camera_info": 4,
+          "depth": 0,
+          "rgb": 0
+        },
+        "input_queue_drops": 0,
+        "last_result": {
+          "capture": {
+            "frame_id": "camera_color_optical_frame",
+            "stamp_ns": 221700000000
+          },
+          "identity": {
+            "epoch": "76c40501-834c-4b35-8e53-30dfa40fe33d",
+            "generation": 1,
+            "request_id": "4b1166c6-3679-428d-b59a-6c57edd3aed0",
+            "robot": "robot_1",
+            "sequence": 615,
+            "stream": "camera/color"
+          },
+          "receiver_processing_age_ms": 119.1834919154644,
+          "result_wall_ns": 1792164109172884000
+        },
+        "last_valid_result_age_ms": 4720.85,
+        "model": "facebook/sam3-original",
+        "model_revision": "3c879f39826c281e95690f02c7821c4de09afae7",
+        "paired_triplets": 661,
+        "policy": "avoid-target/v1",
+        "policy_generation": 1,
+        "prompt": "red mat",
+        "ready": false,
+        "reason": "inference: RuntimeError: diagnostic injected inference exception",
+        "state": "not_ready",
+        "stream_epoch": "76c40501-834c-4b35-8e53-30dfa40fe33d",
+        "timestamp_discards": {
+          "depth": 1,
+          "info": 0,
+          "rgb": 1
+        },
+        "versions": {
+          "decoder": "sam3-binary-instances/v1",
+          "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+          "preprocess": "sam3-pil-rgb/v1"
+        },
+        "work_queue_depth": 0,
+        "work_queue_drops": 430
+      },
+      "recovered_status": {
+        "confidence_threshold": 0.5,
+        "emitted_results": 193,
+        "input_queue_depths": {
+          "camera_info": 1,
+          "depth": 0,
+          "rgb": 0
+        },
+        "input_queue_drops": 0,
+        "last_result": {
+          "capture": {
+            "frame_id": "camera_color_optical_frame",
+            "stamp_ns": 226900000000
+          },
+          "identity": {
+            "epoch": "76c40501-834c-4b35-8e53-30dfa40fe33d",
+            "generation": 1,
+            "request_id": "b8f3ffe9-aecd-48af-bd09-bf47303ef535",
+            "robot": "robot_1",
+            "sequence": 667,
+            "stream": "camera/color"
+          },
+          "receiver_processing_age_ms": 133.76006484031677,
+          "result_wall_ns": 1792164114288024000
+        },
+        "last_valid_result_age_ms": 105.71,
+        "model": "facebook/sam3-original",
+        "model_revision": "3c879f39826c281e95690f02c7821c4de09afae7",
+        "paired_triplets": 669,
+        "policy": "avoid-target/v1",
+        "policy_generation": 1,
+        "prompt": "red mat",
+        "ready": true,
+        "reason": null,
+        "state": "ready",
+        "stream_epoch": "76c40501-834c-4b35-8e53-30dfa40fe33d",
+        "timestamp_discards": {
+          "depth": 1,
+          "info": 0,
+          "rgb": 1
+        },
+        "versions": {
+          "decoder": "sam3-binary-instances/v1",
+          "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+          "preprocess": "sam3-pil-rgb/v1"
+        },
+        "work_queue_depth": 1,
+        "work_queue_drops": 431
+      }
+    },
+    {
+      "fault": "delay",
+      "quiescent_observation_s": 3,
+      "masks_during_failure": 0,
+      "heartbeat_unchanged": true,
+      "failure_status": {
+        "confidence_threshold": 0.5,
+        "emitted_results": 194,
+        "input_queue_depths": {
+          "camera_info": 1,
+          "depth": 0,
+          "rgb": 0
+        },
+        "input_queue_drops": 0,
+        "last_result": {
+          "capture": {
+            "frame_id": "camera_color_optical_frame",
+            "stamp_ns": 227000000000
+          },
+          "identity": {
+            "epoch": "76c40501-834c-4b35-8e53-30dfa40fe33d",
+            "generation": 1,
+            "request_id": "57959399-0693-43d8-818e-02ef0aaf62a6",
+            "robot": "robot_1",
+            "sequence": 668,
+            "stream": "camera/color"
+          },
+          "receiver_processing_age_ms": 154.48301495052874,
+          "result_wall_ns": 1792164114402011000
+        },
+        "last_valid_result_age_ms": 4491.82,
+        "model": "facebook/sam3-original",
+        "model_revision": "3c879f39826c281e95690f02c7821c4de09afae7",
+        "paired_triplets": 714,
+        "policy": "avoid-target/v1",
+        "policy_generation": 1,
+        "prompt": "red mat",
+        "ready": false,
+        "reason": "inference: TimeoutError: request or retained cloud expired",
+        "state": "not_ready",
+        "stream_epoch": "76c40501-834c-4b35-8e53-30dfa40fe33d",
+        "timestamp_discards": {
+          "depth": 1,
+          "info": 0,
+          "rgb": 1
+        },
+        "versions": {
+          "decoder": "sam3-binary-instances/v1",
+          "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+          "preprocess": "sam3-pil-rgb/v1"
+        },
+        "work_queue_depth": 1,
+        "work_queue_drops": 471
+      },
+      "recovered_status": {
+        "confidence_threshold": 0.5,
+        "emitted_results": 195,
+        "input_queue_depths": {
+          "camera_info": 2,
+          "depth": 0,
+          "rgb": 0
+        },
+        "input_queue_drops": 0,
+        "last_result": {
+          "capture": {
+            "frame_id": "camera_color_optical_frame",
+            "stamp_ns": 232700000000
+          },
+          "identity": {
+            "epoch": "76c40501-834c-4b35-8e53-30dfa40fe33d",
+            "generation": 1,
+            "request_id": "6682c155-e19e-4f0b-84f1-b2a53008bee6",
+            "robot": "robot_1",
+            "sequence": 725,
+            "stream": "camera/color"
+          },
+          "receiver_processing_age_ms": 111.25648999586701,
+          "result_wall_ns": 1792164120063352300
+        },
+        "last_valid_result_age_ms": 80.4,
+        "model": "facebook/sam3-original",
+        "model_revision": "3c879f39826c281e95690f02c7821c4de09afae7",
+        "paired_triplets": 725,
+        "policy": "avoid-target/v1",
+        "policy_generation": 1,
+        "prompt": "red mat",
+        "ready": true,
+        "reason": null,
+        "state": "ready",
+        "stream_epoch": "76c40501-834c-4b35-8e53-30dfa40fe33d",
+        "timestamp_discards": {
+          "depth": 1,
+          "info": 0,
+          "rgb": 1
+        },
+        "versions": {
+          "decoder": "sam3-binary-instances/v1",
+          "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+          "preprocess": "sam3-pil-rgb/v1"
+        },
+        "work_queue_depth": 0,
+        "work_queue_drops": 482
+      }
+    }
+  ]
+}

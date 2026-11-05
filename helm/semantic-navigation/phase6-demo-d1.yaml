@@ -1,0 +1,467 @@
+# Phase 6D D1 stationary candidate. Render with
+# scripts/semantic-navigation/render_phase6_demo_d1.py before applying so the
+# exact reviewed Nav2 parameters are embedded from phase6-demo-nav2-candidate.yaml.
+# Apply only with the isolated Phase 6 router/bridge profile. The motion-output
+# config is intentionally not mounted.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: semantic-phase6-d1-nav2-config
+  namespace: semantic-navigation
+  labels:
+    app.kubernetes.io/part-of: semantic-navigation-demo
+    semantic-navigation.robots-demo/phase: phase6d-d1
+data:
+  cyclonedds.xml: |-
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <CycloneDDS xmlns="https://cdds.io/config">
+      <Domain id="any">
+        <General><Interfaces><NetworkInterface name="lo" /></Interfaces><AllowMulticast>false</AllowMulticast></General>
+        <Discovery><ParticipantIndex>auto</ParticipantIndex></Discovery>
+      </Domain>
+    </CycloneDDS>
+  entrypoint_phase6_nav2.sh: |-
+    #!/usr/bin/env bash
+    set -Ee -o pipefail
+    export HOME="${HOME:-/tmp/phase6-nav2-home}"
+    export ROS_HOME="${ROS_HOME:-${HOME}/.ros}"
+    export ROS_LOG_DIR="${ROS_LOG_DIR:-${ROS_HOME}/log}"
+    mkdir -p "${ROS_LOG_DIR}"
+    source /opt/ros/jazzy/setup.bash
+    source /opt/semantic-costmap-ws/install/setup.bash
+    exec ros2 launch /opt/ros2-demo/nav2/hotel_nav2_federated_launch.py \
+      map:="${PHASE6_MAP:-/opt/ros2-demo/maps/hotel_L1.yaml}" \
+      params_file:="${PHASE6_PARAMS:-/phase6-nav2-config/phase6-demo-nav2-candidate.yaml}"
+  phase6-demo-nav2-candidate.yaml: |-
+    amcl:
+      ros__parameters:
+        use_sim_time: true
+        alpha1: 0.2
+        alpha2: 0.2
+        alpha3: 0.2
+        alpha4: 0.2
+        alpha5: 0.2
+        base_frame_id: base_footprint
+        global_frame_id: map
+        odom_frame_id: odom
+        scan_topic: scan_fixed
+        set_initial_pose: false
+        first_map_only: false
+        tf_broadcast: false
+        transform_tolerance: 0.5
+        min_particles: 500
+        max_particles: 2000
+        laser_model_type: likelihood_field
+        laser_min_range: 0.12
+        laser_max_range: 12.0
+        max_beams: 60
+        update_min_d: 0.05
+        update_min_a: 0.1
+    bt_navigator:
+      ros__parameters:
+        use_sim_time: true
+        global_frame: map
+        robot_base_frame: base_footprint
+        odom_topic: odom
+        bt_loop_duration: 10
+        default_server_timeout: 5000
+        wait_for_service_timeout: 1000
+        navigators: [navigate_to_pose, navigate_through_poses]
+        navigate_to_pose:
+          plugin: nav2_bt_navigator::NavigateToPoseNavigator
+        navigate_through_poses:
+          plugin: nav2_bt_navigator::NavigateThroughPosesNavigator
+    controller_server:
+      ros__parameters:
+        use_sim_time: true
+        controller_frequency: 20.0
+        min_x_velocity_threshold: 0.001
+        min_y_velocity_threshold: 0.5
+        min_theta_velocity_threshold: 0.001
+        progress_checker_plugins: [progress_checker]
+        goal_checker_plugins: [general_goal_checker]
+        controller_plugins: [FollowPath]
+        progress_checker:
+          plugin: nav2_controller::SimpleProgressChecker
+          required_movement_radius: 0.05
+          movement_time_allowance: 90.0
+        general_goal_checker:
+          plugin: nav2_controller::SimpleGoalChecker
+          stateful: true
+          xy_goal_tolerance: 0.2
+          yaw_goal_tolerance: 0.35
+        FollowPath:
+          plugin: nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController
+          desired_linear_vel: 0.35
+          lookahead_dist: 0.6
+          min_lookahead_dist: 0.3
+          max_lookahead_dist: 0.9
+          transform_tolerance: 0.2
+          use_collision_detection: true
+          allow_reversing: false
+    planner_server:
+      ros__parameters:
+        use_sim_time: true
+        planner_plugins: [GridBased]
+        GridBased:
+          plugin: nav2_navfn_planner::NavfnPlanner
+          tolerance: 0.25
+          use_astar: true
+          allow_unknown: true
+    local_costmap:
+      local_costmap:
+        ros__parameters:
+          use_sim_time: true
+          global_frame: odom
+          robot_base_frame: base_footprint
+          rolling_window: true
+          width: 4
+          height: 4
+          resolution: 0.05
+          robot_radius: 0.22
+          plugins: [voxel_layer, semantic_layer, inflation_layer]
+          voxel_layer:
+            plugin: nav2_costmap_2d::VoxelLayer
+            enabled: true
+            observation_sources: scan
+            scan:
+              topic: scan_fixed
+              data_type: LaserScan
+              marking: true
+              clearing: true
+              obstacle_max_range: 3.5
+              raytrace_max_range: 4.0
+          inflation_layer:
+            plugin: nav2_costmap_2d::InflationLayer
+            inflation_radius: 0.2
+            cost_scaling_factor: 3.0
+          semantic_layer:
+            plugin: demo_semantic_costmap::SemanticLayer
+            enabled: true
+            topic_prefix: /robot_1/semantic
+            observation_lifetime: 1.0
+            max_capture_age: 0.5
+            target_cost: 200
+            optical_frame: camera_color_optical_frame
+    global_costmap:
+      global_costmap:
+        ros__parameters:
+          use_sim_time: true
+          global_frame: map
+          robot_base_frame: base_footprint
+          resolution: 0.05
+          track_unknown_space: true
+          robot_radius: 0.22
+          plugins: [static_layer, obstacle_layer, semantic_layer, inflation_layer]
+          static_layer:
+            plugin: nav2_costmap_2d::StaticLayer
+            map_subscribe_transient_local: true
+          obstacle_layer:
+            plugin: nav2_costmap_2d::ObstacleLayer
+            enabled: false
+            observation_sources: scan
+            scan:
+              topic: scan_fixed
+              data_type: LaserScan
+              marking: true
+              clearing: true
+              obstacle_max_range: 3.5
+              raytrace_max_range: 4.0
+          inflation_layer:
+            plugin: nav2_costmap_2d::InflationLayer
+            enabled: false
+            inflation_radius: 0.25
+            cost_scaling_factor: 3.0
+          semantic_layer:
+            plugin: demo_semantic_costmap::SemanticLayer
+            enabled: true
+            topic_prefix: /robot_1/semantic
+            observation_lifetime: 1.0
+            max_capture_age: 0.5
+            target_cost: 200
+            optical_frame: camera_color_optical_frame
+    behavior_server:
+      ros__parameters:
+        use_sim_time: true
+        behavior_plugins: [spin, backup, drive_on_heading, wait]
+        spin: {plugin: nav2_behaviors::Spin}
+        backup: {plugin: nav2_behaviors::BackUp}
+        drive_on_heading: {plugin: nav2_behaviors::DriveOnHeading}
+        wait: {plugin: nav2_behaviors::Wait}
+    smoother_server:
+      ros__parameters:
+        use_sim_time: true
+        smoother_plugins: [simple_smoother]
+        simple_smoother: {plugin: nav2_smoother::SimpleSmoother}
+    waypoint_follower:
+      ros__parameters:
+        use_sim_time: true
+        stop_on_failure: true
+    velocity_smoother:
+      ros__parameters:
+        use_sim_time: true
+        smoothing_frequency: 20.0
+        feedback: OPEN_LOOP
+        max_velocity: [0.5, 0.0, 0.8]
+        min_velocity: [-0.2, 0.0, -0.8]
+        max_accel: [0.5, 0.0, 1.0]
+        max_decel: [-0.8, 0.0, -1.5]
+        odom_topic: odom
+        velocity_timeout: 0.5
+    collision_monitor:
+      ros__parameters:
+        base_frame_id: base_footprint
+        odom_frame_id: odom
+        cmd_vel_in_topic: cmd_vel_smoothed
+        cmd_vel_out_topic: cmd_vel
+        state_topic: collision_monitor_state
+        transform_tolerance: 0.2
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: semantic-phase6-simulator
+  namespace: semantic-navigation
+  labels:
+    app: semantic-phase6-simulator
+    app.kubernetes.io/part-of: semantic-navigation-demo
+spec:
+  restartPolicy: Always
+  nodeSelector:
+    kubernetes.io/hostname: ip-10-0-38-113.ec2.internal
+  tolerations:
+  - key: cpu-taint
+    operator: Equal
+    value: "true"
+    effect: NoSchedule
+  containers:
+  - name: simulator
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:d417c9f252d1f89dd859290a4bca1f634bcfd7d3cde6d1702c409d432bd48894
+    imagePullPolicy: IfNotPresent
+    command: ["/bin/bash", "/entrypoint-semantic-navigation-phase1.sh"]
+    env:
+    - {name: ROS_DISTRO, value: jazzy}
+    - {name: ROS_DOMAIN_ID, value: "81"}
+    - {name: RMW_IMPLEMENTATION, value: rmw_cyclonedds_cpp}
+    - {name: CYCLONEDDS_URI, value: file:///phase6-bridges/cyclonedds.xml}
+    - {name: GZ_PARTITION, value: semantic_navigation_phase6_demo}
+    - {name: GZ_IP, value: 127.0.0.1}
+    - {name: RESOLUTION, value: 1600x900x24}
+    - {name: SEMANTIC_PHASE2_SCENE, value: "1"}
+    - {name: SEMANTIC_CAPTURE_TRACE, value: "1"}
+    volumeMounts:
+    - {name: bridge-config, mountPath: /phase6-bridges, readOnly: true}
+    resources:
+      requests: {cpu: "10", memory: 4Gi}
+      limits: {cpu: "12", memory: 8Gi}
+  - name: camera-compressor
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:c3ba94bbcbbe2283f1c46ea0f2baba398da313ffe83d2b59a63272ef91d95ebf
+    imagePullPolicy: IfNotPresent
+    command: ["/bin/bash", "-lc"]
+    args:
+    - >-
+      export HOME=/tmp/phase6-camera-home ROS_LOG_DIR=/tmp/phase6-camera-logs;
+      mkdir -p "$ROS_LOG_DIR";
+      source /opt/ros/jazzy/setup.bash;
+      source /opt/rmf_demos_ws/install/setup.bash;
+      for attempt in {1..90}; do
+        color_info=$(ros2 topic info /robot_1/camera/color/image_raw 2>/dev/null || true);
+        depth_info=$(ros2 topic info /robot_1/camera/depth/image_raw 2>/dev/null || true);
+        if printf '%s' "$color_info" | grep -q 'Publisher count: 1' && printf '%s' "$depth_info" | grep -q 'Publisher count: 1'; then break; fi;
+        sleep 1;
+      done;
+      exec python3 /opt/semantic-navigation/camera_compressor.py
+    env:
+    - {name: ROS_DISTRO, value: jazzy}
+    - {name: ROS_DOMAIN_ID, value: "81"}
+    - {name: RMW_IMPLEMENTATION, value: rmw_cyclonedds_cpp}
+    - {name: CYCLONEDDS_URI, value: file:///phase6-bridges/cyclonedds.xml}
+    - {name: SEMANTIC_CAMERA_SUBSCRIPTION_DEPTH, value: "20"}
+    - {name: SEMANTIC_COMPRESSION_TRACE, value: "1"}
+    - {name: SEMANTIC_RAW_INPUT, value: gz}
+    - {name: GZ_PARTITION, value: semantic_navigation_phase6_demo}
+    - {name: GZ_IP, value: 127.0.0.1}
+    volumeMounts:
+    - {name: bridge-config, mountPath: /phase6-bridges, readOnly: true}
+    resources:
+      requests: {cpu: 250m, memory: 512Mi}
+      limits: {cpu: "2", memory: 2Gi}
+  - name: sim-zenoh-bridge
+    image: eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18
+    args: ["-c", "/phase6-bridges/sim-bridge-d1.json5"]
+    env:
+    - {name: ROS_DOMAIN_ID, value: "81"}
+    - {name: ROS_DISTRO, value: jazzy}
+    - {name: RMW_IMPLEMENTATION, value: rmw_cyclonedds_cpp}
+    - {name: CYCLONEDDS_URI, value: file:///phase6-bridges/cyclonedds.xml}
+    volumeMounts:
+    - {name: bridge-config, mountPath: /phase6-bridges, readOnly: true}
+    resources:
+      requests: {cpu: 100m, memory: 128Mi}
+      limits: {cpu: 500m, memory: 512Mi}
+  volumes:
+  - name: bridge-config
+    configMap: {name: semantic-phase6-demo-bridge-config}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: semantic-phase6-sam3
+  namespace: semantic-navigation
+  labels:
+    app: semantic-phase6-sam3
+    app.kubernetes.io/part-of: semantic-navigation-demo
+spec:
+  restartPolicy: Always
+  securityContext:
+    fsGroup: 1001340000
+    fsGroupChangePolicy: OnRootMismatch
+  nodeSelector:
+    kubernetes.io/hostname: ip-10-0-18-251.ec2.internal
+  tolerations:
+  - key: g6e-gpu
+    operator: Equal
+    value: "true"
+    effect: NoSchedule
+  containers:
+  - name: sam3-zenoh-bridge
+    image: eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18
+    args: ["-c", "/phase6-bridges/sam3-bridge.json5"]
+    env:
+    - {name: ROS_DOMAIN_ID, value: "82"}
+    - {name: ROS_DISTRO, value: jazzy}
+    - {name: RMW_IMPLEMENTATION, value: rmw_cyclonedds_cpp}
+    - {name: CYCLONEDDS_URI, value: file:///phase6-bridges/cyclonedds.xml}
+    volumeMounts:
+    - {name: bridge-config, mountPath: /phase6-bridges, readOnly: true}
+    resources:
+      requests: {cpu: 100m, memory: 128Mi}
+      limits: {cpu: 500m, memory: 512Mi}
+  - name: sam3-inference
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/sam3-runtime@sha256:478ec01a7a47fbb0c862fbbef495c71b4a512ff59ed8d6ed5b7234422cc35686
+    imagePullPolicy: IfNotPresent
+    env:
+    - {name: ROS_DOMAIN_ID, value: "82"}
+    - {name: ROS_DISTRO, value: jazzy}
+    - {name: HOME, value: /tmp/phase6-sam3-home}
+    - {name: ROS_LOG_DIR, value: /tmp/phase6-sam3-logs}
+    - {name: RMW_IMPLEMENTATION, value: rmw_cyclonedds_cpp}
+    - {name: CYCLONEDDS_URI, value: file:///phase6-bridges/cyclonedds.xml}
+    - {name: SAM3_PROMPT, value: "red mat"}
+    - {name: SEMANTIC_REQUIRE_CAPTURE_TRACE, value: "1"}
+    - {name: SEMANTIC_MAX_WORK_WAIT_MS, value: "40"}
+    - {name: SEMANTIC_CLOCK_UNCERTAINTY_MS, value: "2"}
+    volumeMounts:
+    - {name: bridge-config, mountPath: /phase6-bridges, readOnly: true}
+    - {name: model, mountPath: /models, readOnly: true}
+    resources:
+      requests: {cpu: "3", memory: 12Gi, nvidia.com/gpu: "1"}
+      limits: {cpu: "6", memory: 24Gi, nvidia.com/gpu: "1"}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities: {drop: [ALL]}
+      runAsNonRoot: true
+      seccompProfile: {type: RuntimeDefault}
+  volumes:
+  - name: bridge-config
+    configMap: {name: semantic-phase6-demo-bridge-config}
+  - name: model
+    persistentVolumeClaim: {claimName: sam3-checkpoint}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: semantic-phase6-nav2
+  namespace: semantic-navigation
+  labels:
+    app: semantic-phase6-nav2
+    app.kubernetes.io/part-of: semantic-navigation-demo
+spec:
+  restartPolicy: Always
+  nodeSelector:
+    kubernetes.io/hostname: ip-10-0-38-113.ec2.internal
+  tolerations:
+  - key: cpu-taint
+    operator: Equal
+    value: "true"
+    effect: NoSchedule
+  containers:
+  - name: nav2
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e
+    imagePullPolicy: IfNotPresent
+    command: ["/bin/bash", "/phase6-nav2-config/entrypoint_phase6_nav2.sh"]
+    env:
+    - {name: ROS_DISTRO, value: jazzy}
+    - {name: ROS_DOMAIN_ID, value: "87"}
+    - {name: RMW_IMPLEMENTATION, value: rmw_cyclonedds_cpp}
+    - {name: CYCLONEDDS_URI, value: file:///phase6-nav2-config/cyclonedds.xml}
+    - {name: PHASE6_PARAMS, value: /phase6-nav2-config/phase6-demo-nav2-candidate.yaml}
+    - {name: HOME, value: /tmp/phase6-nav2-home}
+    - {name: ROS_LOG_DIR, value: /tmp/phase6-nav2-logs}
+    volumeMounts:
+    - {name: nav2-config, mountPath: /phase6-nav2-config, readOnly: true}
+    resources:
+      requests: {cpu: "2", memory: 2Gi}
+      limits: {cpu: "4", memory: 4Gi}
+  - name: sim-input-bridge
+    image: eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18
+    args: ["-c", "/phase6-bridges/nav2-sim-input-bridge.json5"]
+    env: &nav2_bridge_env
+    - {name: ROS_DOMAIN_ID, value: "87"}
+    - {name: ROS_DISTRO, value: jazzy}
+    - {name: RMW_IMPLEMENTATION, value: rmw_cyclonedds_cpp}
+    - {name: CYCLONEDDS_URI, value: file:///phase6-bridges/cyclonedds.xml}
+    volumeMounts: &bridge_mount
+    - {name: bridge-config, mountPath: /phase6-bridges, readOnly: true}
+    resources: {requests: {cpu: 150m, memory: 128Mi}, limits: {cpu: 500m, memory: 512Mi}}
+  - name: semantic-input-bridge
+    image: eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18
+    args: ["-c", "/phase6-bridges/nav2-semantic-input-bridge.json5"]
+    env: *nav2_bridge_env
+    volumeMounts: *bridge_mount
+    resources: {requests: {cpu: 150m, memory: 128Mi}, limits: {cpu: 500m, memory: 512Mi}}
+  - name: clock-bridge
+    image: eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18
+    args: ["-c", "/phase6-bridges/nav2-clock-bridge.json5"]
+    env: *nav2_bridge_env
+    volumeMounts: *bridge_mount
+    resources: {requests: {cpu: 150m, memory: 128Mi}, limits: {cpu: 500m, memory: 512Mi}}
+  - name: odom-tf
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e
+    command: ["/bin/bash", "-lc"]
+    args:
+    - export HOME=/tmp/phase6-odom-home ROS_LOG_DIR=/tmp/phase6-odom-logs;
+      mkdir -p "$ROS_LOG_DIR"; source /opt/ros/jazzy/setup.bash;
+      exec python3 -u /opt/ros2-demo/scripts/federated_odom_tf.py
+    env:
+    - {name: ROS_DISTRO, value: jazzy}
+    - {name: ROS_DOMAIN_ID, value: "87"}
+    - {name: RMW_IMPLEMENTATION, value: rmw_cyclonedds_cpp}
+    - {name: CYCLONEDDS_URI, value: file:///phase6-nav2-config/cyclonedds.xml}
+    - {name: INITIAL_X, value: "15.402"}
+    - {name: INITIAL_Y, value: "-31.594"}
+    volumeMounts:
+    - {name: nav2-config, mountPath: /phase6-nav2-config, readOnly: true}
+    resources: {requests: {cpu: 150m, memory: 128Mi}, limits: {cpu: 500m, memory: 512Mi}}
+  - name: scan-frame-rewriter
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e
+    command: ["/bin/bash", "-lc"]
+    args:
+    - export HOME=/tmp/phase6-scan-home ROS_LOG_DIR=/tmp/phase6-scan-logs;
+      mkdir -p "$ROS_LOG_DIR"; source /opt/ros/jazzy/setup.bash;
+      exec python3 -u /opt/ros2-demo/scripts/scan_frame_rewriter.py
+    env:
+    - {name: ROS_DISTRO, value: jazzy}
+    - {name: ROS_DOMAIN_ID, value: "87"}
+    - {name: RMW_IMPLEMENTATION, value: rmw_cyclonedds_cpp}
+    - {name: CYCLONEDDS_URI, value: file:///phase6-nav2-config/cyclonedds.xml}
+    - {name: SCAN_INPUT_TOPIC, value: /scan}
+    - {name: SCAN_OUTPUT_TOPIC, value: /scan_fixed}
+    volumeMounts:
+    - {name: nav2-config, mountPath: /phase6-nav2-config, readOnly: true}
+    resources: {requests: {cpu: 150m, memory: 128Mi}, limits: {cpu: 500m, memory: 512Mi}}
+  volumes:
+  - name: nav2-config
+    configMap: {name: semantic-phase6-d1-nav2-config}
+  - name: bridge-config
+    configMap: {name: semantic-phase6-demo-bridge-config}

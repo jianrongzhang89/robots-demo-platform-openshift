@@ -1,0 +1,46 @@
+{
+  "pump": {
+    "stages": {
+      "native": {
+        "calls": 61920,
+        "maximum_ns": 646092
+      },
+      "ingress": {
+        "calls": 41280,
+        "maximum_ns": 10245972
+      },
+      "observer": {
+        "calls": 41280,
+        "maximum_ns": 5711697
+      },
+      "task": {
+        "calls": 10320,
+        "maximum_ns": 4588486
+      },
+      "guard": {
+        "calls": 10320,
+        "maximum_ns": 4408363
+      },
+      "diagnostics": {
+        "calls": 10320,
+        "maximum_ns": 991219
+      }
+    },
+    "slow": [
+      {
+        "stage": "ingress",
+        "start_steady_ns": 13660108897699959,
+        "end_steady_ns": 13660108907945931,
+        "duration_ns": 10245972
+      }
+    ],
+    "dropped": 0,
+    "threshold_ns": 10000000
+  },
+  "adapter": {
+    "stages": {},
+    "slow": [],
+    "dropped": 0,
+    "threshold_ns": 10000000
+  }
+}

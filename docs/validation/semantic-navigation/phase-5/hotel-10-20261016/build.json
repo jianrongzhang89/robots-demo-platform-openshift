@@ -1,0 +1,161 @@
+{
+  "apiVersion": "build.openshift.io/v1",
+  "kind": "Build",
+  "metadata": {
+    "annotations": {
+      "openshift.io/build-config.name": "semantic-safety-phase5",
+      "openshift.io/build.number": "8",
+      "openshift.io/build.pod-name": "semantic-safety-phase5-8-build"
+    },
+    "creationTimestamp": "2026-10-16T23:38:45Z",
+    "generation": 2,
+    "labels": {
+      "buildconfig": "semantic-safety-phase5",
+      "openshift.io/build-config.name": "semantic-safety-phase5",
+      "openshift.io/build.start-policy": "Serial"
+    },
+    "name": "semantic-safety-phase5-8",
+    "namespace": "semantic-navigation",
+    "ownerReferences": [
+      {
+        "apiVersion": "build.openshift.io/v1",
+        "controller": true,
+        "kind": "BuildConfig",
+        "name": "semantic-safety-phase5",
+        "uid": "371ce79b-a8b3-48a6-b90a-71be2152d869"
+      }
+    ],
+    "resourceVersion": "433159141",
+    "uid": "864be98b-dba7-4760-a2af-9a22c53979ee"
+  },
+  "spec": {
+    "nodeSelector": null,
+    "output": {
+      "pushSecret": {
+        "name": "builder-dockercfg-htt4p"
+      },
+      "to": {
+        "kind": "ImageStreamTag",
+        "name": "semantic-safety:phase5"
+      }
+    },
+    "postCommit": {},
+    "resources": {
+      "limits": {
+        "cpu": "4",
+        "memory": "6Gi"
+      },
+      "requests": {
+        "cpu": "1",
+        "memory": "2Gi"
+      }
+    },
+    "revision": {
+      "git": {
+        "author": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "commit": "2007f219d60e16374064ce632449905a5c82b0f7",
+        "committer": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "message": "docs: add AI integration and semantic navigation proposals"
+      },
+      "type": "Git"
+    },
+    "serviceAccount": "builder",
+    "source": {
+      "binary": {},
+      "type": "Binary"
+    },
+    "strategy": {
+      "dockerStrategy": {
+        "dockerfilePath": "Containerfile"
+      },
+      "type": "Docker"
+    }
+  },
+  "status": {
+    "completionTimestamp": "2026-10-16T23:41:52Z",
+    "conditions": [
+      {
+        "lastTransitionTime": "2026-10-16T23:38:45Z",
+        "lastUpdateTime": "2026-10-16T23:38:45Z",
+        "status": "False",
+        "type": "New"
+      },
+      {
+        "lastTransitionTime": "2026-10-16T23:38:47Z",
+        "lastUpdateTime": "2026-10-16T23:38:47Z",
+        "status": "False",
+        "type": "Pending"
+      },
+      {
+        "lastTransitionTime": "2026-10-16T23:41:52Z",
+        "lastUpdateTime": "2026-10-16T23:41:52Z",
+        "status": "False",
+        "type": "Running"
+      },
+      {
+        "lastTransitionTime": "2026-10-16T23:41:52Z",
+        "lastUpdateTime": "2026-10-16T23:41:52Z",
+        "status": "True",
+        "type": "Complete"
+      }
+    ],
+    "config": {
+      "kind": "BuildConfig",
+      "name": "semantic-safety-phase5",
+      "namespace": "semantic-navigation"
+    },
+    "duration": 187000000000,
+    "output": {
+      "to": {
+        "imageDigest": "sha256:fbbb4d4269e6d40008fe24db618818f961b3291629815e8acc33c26bbae36dfe"
+      }
+    },
+    "outputDockerImageReference": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety:phase5",
+    "phase": "Complete",
+    "stages": [
+      {
+        "durationMilliseconds": 141121,
+        "name": "PullImages",
+        "startTime": "2026-10-16T23:38:49Z",
+        "steps": [
+          {
+            "durationMilliseconds": 141121,
+            "name": "PullBaseImage",
+            "startTime": "2026-10-16T23:38:49Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 35198,
+        "name": "Build",
+        "startTime": "2026-10-16T23:41:10Z",
+        "steps": [
+          {
+            "durationMilliseconds": 35198,
+            "name": "DockerBuild",
+            "startTime": "2026-10-16T23:41:10Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 4356,
+        "name": "PushImage",
+        "startTime": "2026-10-16T23:41:45Z",
+        "steps": [
+          {
+            "durationMilliseconds": 4356,
+            "name": "PushDockerImage",
+            "startTime": "2026-10-16T23:41:45Z"
+          }
+        ]
+      }
+    ],
+    "startTimestamp": "2026-10-16T23:38:45Z"
+  }
+}

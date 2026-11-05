@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>demo_semantic_costmap</name>
+  <version>0.1.0</version>
+  <description>Bounded fixed-policy semantic layer for isolated demo qualification.</description>
+  <maintainer email="jianrzha@redhat.com">Demo maintainers</maintainer>
+  <license>Apache-2.0</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>nav2_costmap_2d</depend><depend>nav2_util</depend>
+  <depend>pluginlib</depend><depend>rclcpp</depend>
+  <depend>sensor_msgs</depend><depend>std_msgs</depend><depend>std_srvs</depend>
+  <depend>tf2_ros</depend><depend>tf2_geometry_msgs</depend>
+  <depend>nlohmann_json</depend><depend>openssl</depend>
+  <test_depend>ament_cmake_gtest</test_depend>
+  <export><build_type>ament_cmake</build_type></export>
+</package>

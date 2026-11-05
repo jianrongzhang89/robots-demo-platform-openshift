@@ -1,0 +1,161 @@
+{
+  "apiVersion": "build.openshift.io/v1",
+  "kind": "Build",
+  "metadata": {
+    "annotations": {
+      "openshift.io/build-config.name": "semantic-safety-console-phase6",
+      "openshift.io/build.number": "5",
+      "openshift.io/build.pod-name": "semantic-safety-console-phase6-5-build"
+    },
+    "creationTimestamp": "2026-10-27T20:20:21Z",
+    "generation": 2,
+    "labels": {
+      "buildconfig": "semantic-safety-console-phase6",
+      "openshift.io/build-config.name": "semantic-safety-console-phase6",
+      "openshift.io/build.start-policy": "Serial"
+    },
+    "name": "semantic-safety-console-phase6-5",
+    "namespace": "semantic-navigation",
+    "ownerReferences": [
+      {
+        "apiVersion": "build.openshift.io/v1",
+        "controller": true,
+        "kind": "BuildConfig",
+        "name": "semantic-safety-console-phase6",
+        "uid": "db8b50ae-f77f-45d0-b508-1599869d8227"
+      }
+    ],
+    "resourceVersion": "476987314",
+    "uid": "7f1d7ece-047f-41ae-8f3b-1bd2d74a7c7b"
+  },
+  "spec": {
+    "nodeSelector": null,
+    "output": {
+      "pushSecret": {
+        "name": "builder-dockercfg-htt4p"
+      },
+      "to": {
+        "kind": "ImageStreamTag",
+        "name": "semantic-safety:phase6-console-candidate"
+      }
+    },
+    "postCommit": {},
+    "resources": {
+      "limits": {
+        "cpu": "4",
+        "memory": "8Gi"
+      },
+      "requests": {
+        "cpu": "2",
+        "memory": "4Gi"
+      }
+    },
+    "revision": {
+      "git": {
+        "author": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "commit": "54618972af7a53903ae2e05f5ab0205640a07a7d",
+        "committer": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "message": "On-arm root cause pinned: controller reader lag trips the semantic isCurrent\n\npair-1-on-tfdiag (image b122c2a3, per-observation digest/TF/projection\ntimings + updateBounds lock-wait logs): the semantic layer is\nexonerated - every observation costs 3.7-5.4 ms and no updateBounds\nexceeded 15 ms. The command_expired reproduced at 0.833 m with one\n~165 ms controller cycle. The planner's global costmap received\nstamps 14.2/14.3/14.4 at walls .407/.457/.594 while the controller's\nlocal costmap got the same stamps in a burst at .596/.601/.606 - a\n~150-200 ms per-process reader saturation of controller_server. The\nreliable depth-8 history delivered the backlog in order, so the\nnewest observation queued behind stale ones already past the layer's\n500 ms isCurrent window; the local costmap went non-current and the\ncontroller's costmap-currency wait blocked its cycle past the 100 ms\ncommand authority.\n\nRemedy: the mask/points/timing subscriptions move to best-effort\nkeep-last(3) - under backlog the OLDEST observations drop, bounding\nthe newest observation's staleness by the stall itself; a dropped\ntriple component fails the digest join and is rejected exactly like\nany invalid observation. Fail-closed semantics and every threshold\nunchanged; label_info keeps its reliable transient-local latch."
+      },
+      "type": "Git"
+    },
+    "serviceAccount": "builder",
+    "source": {
+      "binary": {},
+      "type": "Binary"
+    },
+    "strategy": {
+      "dockerStrategy": {
+        "dockerfilePath": "Containerfile.phase6-console"
+      },
+      "type": "Docker"
+    }
+  },
+  "status": {
+    "completionTimestamp": "2026-10-27T20:23:42Z",
+    "conditions": [
+      {
+        "lastTransitionTime": "2026-10-27T20:20:21Z",
+        "lastUpdateTime": "2026-10-27T20:20:21Z",
+        "status": "False",
+        "type": "New"
+      },
+      {
+        "lastTransitionTime": "2026-10-27T20:20:23Z",
+        "lastUpdateTime": "2026-10-27T20:20:23Z",
+        "status": "False",
+        "type": "Pending"
+      },
+      {
+        "lastTransitionTime": "2026-10-27T20:23:42Z",
+        "lastUpdateTime": "2026-10-27T20:23:42Z",
+        "status": "False",
+        "type": "Running"
+      },
+      {
+        "lastTransitionTime": "2026-10-27T20:23:42Z",
+        "lastUpdateTime": "2026-10-27T20:23:42Z",
+        "status": "True",
+        "type": "Complete"
+      }
+    ],
+    "config": {
+      "kind": "BuildConfig",
+      "name": "semantic-safety-console-phase6",
+      "namespace": "semantic-navigation"
+    },
+    "duration": 201000000000,
+    "output": {
+      "to": {
+        "imageDigest": "sha256:2585510636501d787f8a3ec4b2da5650d9f513d6e4088a6e67fe782f31f0ad01"
+      }
+    },
+    "outputDockerImageReference": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety:phase6-console-candidate",
+    "phase": "Complete",
+    "stages": [
+      {
+        "durationMilliseconds": 115029,
+        "name": "PullImages",
+        "startTime": "2026-10-27T20:20:25Z",
+        "steps": [
+          {
+            "durationMilliseconds": 115029,
+            "name": "PullBaseImage",
+            "startTime": "2026-10-27T20:20:25Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 75921,
+        "name": "Build",
+        "startTime": "2026-10-27T20:22:20Z",
+        "steps": [
+          {
+            "durationMilliseconds": 75921,
+            "name": "DockerBuild",
+            "startTime": "2026-10-27T20:22:20Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 4331,
+        "name": "PushImage",
+        "startTime": "2026-10-27T20:23:36Z",
+        "steps": [
+          {
+            "durationMilliseconds": 4331,
+            "name": "PushDockerImage",
+            "startTime": "2026-10-27T20:23:36Z"
+          }
+        ]
+      }
+    ],
+    "startTimestamp": "2026-10-27T20:20:21Z"
+  }
+}

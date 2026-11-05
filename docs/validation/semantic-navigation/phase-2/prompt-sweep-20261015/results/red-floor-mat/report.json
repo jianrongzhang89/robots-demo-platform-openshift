@@ -1,0 +1,111 @@
+{
+  "status": "SCORED_NOT_ACCEPTED",
+  "split": "development",
+  "model": "facebook/sam3 (local checkpoint)",
+  "checkpoint_sha256": "9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e",
+  "device": "cuda",
+  "device_name": "NVIDIA L40S",
+  "prompt": "red floor mat",
+  "confidence_threshold": 0.5,
+  "image_count": 9,
+  "positive_count": 8,
+  "negative_count": 1,
+  "positive_recall_iou_ge_0_5": 0.5,
+  "positive_median_iou_including_misses": 0.4507272430135643,
+  "negative_false_positive_frame_rate": 0.0,
+  "inference_seconds_median": 0.095093,
+  "inference_seconds_p95": 0.5596063999999997,
+  "peak_gpu_allocated_bytes": 5451124736,
+  "peak_gpu_reserved_bytes": 5676990464,
+  "results": [
+    {
+      "image": "/phase2-data/capture-pilot-v2/initial/initial-0000.jpg",
+      "presence": "positive",
+      "iou": 0.0,
+      "detected": false,
+      "scores": [],
+      "inference_seconds": 0.866924,
+      "prediction_mask": "/phase2-out/red-floor-mat/0000-prediction.png"
+    },
+    {
+      "image": "/phase2-data/capture-pilot-v2/moved/moved-0000.jpg",
+      "presence": "positive",
+      "iou": 0.0,
+      "detected": false,
+      "scores": [],
+      "inference_seconds": 0.096886,
+      "prediction_mask": "/phase2-out/red-floor-mat/0001-prediction.png"
+    },
+    {
+      "image": "/phase2-data/capture-pilot-v2/oblique/oblique-0000.jpg",
+      "presence": "positive",
+      "iou": 0.0,
+      "detected": false,
+      "scores": [],
+      "inference_seconds": 0.094924,
+      "prediction_mask": "/phase2-out/red-floor-mat/0002-prediction.png"
+    },
+    {
+      "image": "/phase2-data/capture-pilot-v2/tile-negative/tile-negative-0000.jpg",
+      "presence": "negative",
+      "iou": 0.0,
+      "detected": false,
+      "scores": [],
+      "inference_seconds": 0.094421,
+      "prediction_mask": "/phase2-out/red-floor-mat/0003-prediction.png"
+    },
+    {
+      "image": "/phase2-data/capture-pilot-v2/unoccluded-control/unoccluded-0000.jpg",
+      "presence": "positive",
+      "iou": 0.901454,
+      "detected": true,
+      "scores": [
+        0.890625
+      ],
+      "inference_seconds": 0.09863,
+      "prediction_mask": "/phase2-out/red-floor-mat/0004-prediction.png"
+    },
+    {
+      "image": "/phase2-data/capture-pilot-v2/moderate-occlusion/moderate-0000.jpg",
+      "presence": "positive",
+      "iou": 0.903495,
+      "detected": true,
+      "scores": [
+        0.8984375
+      ],
+      "inference_seconds": 0.095093,
+      "prediction_mask": "/phase2-out/red-floor-mat/0005-prediction.png"
+    },
+    {
+      "image": "/phase2-data/capture-pilot-v3/ep2-yaw-unoccluded/ep2-yaw-unoccluded-0000.jpg",
+      "presence": "positive",
+      "iou": 0.94281,
+      "detected": true,
+      "scores": [
+        0.74609375
+      ],
+      "inference_seconds": 0.095916,
+      "prediction_mask": "/phase2-out/red-floor-mat/0006-prediction.png"
+    },
+    {
+      "image": "/phase2-data/capture-pilot-v3/ep2-yaw-moderate/ep2-yaw-moderate-0000.jpg",
+      "presence": "positive",
+      "iou": 0.929858,
+      "detected": true,
+      "scores": [
+        0.78515625
+      ],
+      "inference_seconds": 0.094897,
+      "prediction_mask": "/phase2-out/red-floor-mat/0007-prediction.png"
+    },
+    {
+      "image": "/phase2-data/capture-pilot-v3/ep2-yaw-severe/ep2-yaw-severe-0000.jpg",
+      "presence": "positive",
+      "iou": 0.0,
+      "detected": false,
+      "scores": [],
+      "inference_seconds": 0.094789,
+      "prediction_mask": "/phase2-out/red-floor-mat/0008-prediction.png"
+    }
+  ]
+}

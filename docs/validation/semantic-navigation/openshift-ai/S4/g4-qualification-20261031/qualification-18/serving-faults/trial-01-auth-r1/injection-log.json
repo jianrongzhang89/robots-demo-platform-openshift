@@ -1,0 +1,37 @@
+[
+  {
+    "event": "inject",
+    "mode": "auth",
+    "fixture_state": {
+      "phase": "motion_verified",
+      "mode": "auth",
+      "armed": true,
+      "gate_reason": "armed",
+      "leases": {
+        "camera": 296,
+        "semantic": 98,
+        "inference_heartbeat": 479
+      },
+      "written_wall_ns": 1793645281461984349
+    },
+    "controller_wall_ns": 1793645271199896000,
+    "returncode": 0
+  },
+  {
+    "event": "restore",
+    "mode": "auth",
+    "fixture_state": {
+      "phase": "stopped",
+      "mode": "auth",
+      "armed": false,
+      "gate_reason": "semantic_stale",
+      "leases": {
+        "camera": 345,
+        "semantic": 106,
+        "inference_heartbeat": 528
+      },
+      "written_wall_ns": 1793645283925516026
+    },
+    "controller_wall_ns": 1793645275731682000
+  }
+]

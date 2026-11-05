@@ -1,0 +1,98 @@
+[
+  {
+    "kind": "missing_model",
+    "domain": 81,
+    "status_count": 117,
+    "mask_count": 0,
+    "last_status": {
+      "capture_trace_required": true,
+      "clock_uncertainty_ms": 2,
+      "confidence_threshold": 0.5,
+      "emitted_results": 0,
+      "input_queue_depths": {
+        "camera_info": 0,
+        "depth": 0,
+        "rgb": 0
+      },
+      "input_queue_drops": 0,
+      "last_result": null,
+      "last_valid_result_age_ms": null,
+      "max_work_wait_ms": 40,
+      "model": "facebook/sam3-original",
+      "model_revision": "3c879f39826c281e95690f02c7821c4de09afae7",
+      "paired_triplets": 0,
+      "policy": "avoid-target/v1",
+      "policy_generation": 1,
+      "prompt": "red mat",
+      "ready": false,
+      "reason": "model_initialization: FileNotFoundError: /nonexistent-phase3-checkpoint/sam3.pt",
+      "source_epoch": null,
+      "state": "not_ready",
+      "stream_epoch": "ca75d04f-f157-4d30-908a-2da24229cafc",
+      "timestamp_discards": {
+        "depth": 0,
+        "info": 0,
+        "rgb": 0
+      },
+      "trace_errors": 0,
+      "versions": {
+        "decoder": "sam3-binary-instances/v1",
+        "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+        "preprocess": "sam3-pil-rgb/v1"
+      },
+      "work_queue_depth": 0,
+      "work_queue_drops": 0,
+      "work_wait_drops": 0
+    },
+    "child_logs": "[ERROR] [1792168725.190347264] [sam3_semantic_inference]: model_initialization: FileNotFoundError: /nonexistent-phase3-checkpoint/sam3.pt\n",
+    "child_exit_code": 0
+  },
+  {
+    "kind": "missing_model",
+    "domain": 81,
+    "status_count": 116,
+    "mask_count": 0,
+    "last_status": {
+      "capture_trace_required": true,
+      "clock_uncertainty_ms": 2,
+      "confidence_threshold": 0.5,
+      "emitted_results": 0,
+      "input_queue_depths": {
+        "camera_info": 0,
+        "depth": 0,
+        "rgb": 0
+      },
+      "input_queue_drops": 0,
+      "last_result": null,
+      "last_valid_result_age_ms": null,
+      "max_work_wait_ms": 40,
+      "model": "facebook/sam3-original",
+      "model_revision": "3c879f39826c281e95690f02c7821c4de09afae7",
+      "paired_triplets": 0,
+      "policy": "avoid-target/v1",
+      "policy_generation": 1,
+      "prompt": "red mat",
+      "ready": false,
+      "reason": "model_initialization: FileNotFoundError: /nonexistent-phase3-checkpoint/sam3.pt",
+      "source_epoch": null,
+      "state": "not_ready",
+      "stream_epoch": "5afbd24e-d11b-44aa-bdc2-240815601914",
+      "timestamp_discards": {
+        "depth": 0,
+        "info": 0,
+        "rgb": 0
+      },
+      "trace_errors": 0,
+      "versions": {
+        "decoder": "sam3-binary-instances/v1",
+        "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+        "preprocess": "sam3-pil-rgb/v1"
+      },
+      "work_queue_depth": 0,
+      "work_queue_drops": 0,
+      "work_wait_drops": 0
+    },
+    "child_logs": "[ERROR] [1792168732.607202230] [sam3_semantic_inference]: model_initialization: FileNotFoundError: /nonexistent-phase3-checkpoint/sam3.pt\n",
+    "child_exit_code": 0
+  }
+]

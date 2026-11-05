@@ -1,0 +1,146 @@
+{
+    "apiVersion": "build.openshift.io/v1",
+    "kind": "Build",
+    "metadata": {
+        "annotations": {
+            "openshift.io/build-config.name": "semantic-cpu-adapter-s2",
+            "openshift.io/build.number": "1",
+            "openshift.io/build.pod-name": "semantic-cpu-adapter-s2-1-build"
+        },
+        "creationTimestamp": "2026-10-31T14:51:55Z",
+        "generation": 2,
+        "labels": {
+            "buildconfig": "semantic-cpu-adapter-s2",
+            "openshift.io/build-config.name": "semantic-cpu-adapter-s2",
+            "openshift.io/build.start-policy": "Serial"
+        },
+        "name": "semantic-cpu-adapter-s2-1",
+        "namespace": "semantic-navigation",
+        "ownerReferences": [
+            {
+                "apiVersion": "build.openshift.io/v1",
+                "controller": true,
+                "kind": "BuildConfig",
+                "name": "semantic-cpu-adapter-s2",
+                "uid": "49040f51-c9b7-4744-9b1d-9834db5d1bcd"
+            }
+        ],
+        "resourceVersion": "493805988",
+        "uid": "8c825bc7-0085-4657-9b70-859e9cda0d14"
+    },
+    "spec": {
+        "nodeSelector": null,
+        "output": {
+            "pushSecret": {
+                "name": "builder-dockercfg-htt4p"
+            },
+            "to": {
+                "kind": "ImageStreamTag",
+                "name": "semantic-cpu-adapter:s2"
+            }
+        },
+        "postCommit": {},
+        "resources": {
+            "limits": {
+                "cpu": "4",
+                "memory": "8Gi"
+            },
+            "requests": {
+                "cpu": "1",
+                "memory": "2Gi"
+            }
+        },
+        "serviceAccount": "builder",
+        "source": {
+            "binary": {},
+            "type": "Binary"
+        },
+        "strategy": {
+            "dockerStrategy": {
+                "dockerfilePath": "apps/semantic-perception/Containerfile.cpu"
+            },
+            "type": "Docker"
+        }
+    },
+    "status": {
+        "completionTimestamp": "2026-10-31T14:53:07Z",
+        "conditions": [
+            {
+                "lastTransitionTime": "2026-10-31T14:51:55Z",
+                "lastUpdateTime": "2026-10-31T14:51:55Z",
+                "status": "False",
+                "type": "New"
+            },
+            {
+                "lastTransitionTime": "2026-10-31T14:51:56Z",
+                "lastUpdateTime": "2026-10-31T14:51:56Z",
+                "status": "False",
+                "type": "Pending"
+            },
+            {
+                "lastTransitionTime": "2026-10-31T14:53:07Z",
+                "lastUpdateTime": "2026-10-31T14:53:07Z",
+                "status": "False",
+                "type": "Running"
+            },
+            {
+                "lastTransitionTime": "2026-10-31T14:53:07Z",
+                "lastUpdateTime": "2026-10-31T14:53:07Z",
+                "status": "True",
+                "type": "Complete"
+            }
+        ],
+        "config": {
+            "kind": "BuildConfig",
+            "name": "semantic-cpu-adapter-s2",
+            "namespace": "semantic-navigation"
+        },
+        "duration": 72000000000,
+        "output": {
+            "to": {
+                "imageDigest": "sha256:20ea4f5e6bc30646f48b29895eb071d40403f8c20b0c1526aeacf06dce716d4b"
+            }
+        },
+        "outputDockerImageReference": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-cpu-adapter:s2",
+        "phase": "Complete",
+        "stages": [
+            {
+                "durationMilliseconds": 21995,
+                "name": "PullImages",
+                "startTime": "2026-10-31T14:51:58Z",
+                "steps": [
+                    {
+                        "durationMilliseconds": 21995,
+                        "name": "PullBaseImage",
+                        "startTime": "2026-10-31T14:51:58Z"
+                    }
+                ]
+            },
+            {
+                "durationMilliseconds": 39132,
+                "name": "Build",
+                "startTime": "2026-10-31T14:52:20Z",
+                "steps": [
+                    {
+                        "durationMilliseconds": 39132,
+                        "name": "DockerBuild",
+                        "startTime": "2026-10-31T14:52:20Z"
+                    }
+                ]
+            },
+            {
+                "durationMilliseconds": 5909,
+                "name": "PushImage",
+                "startTime": "2026-10-31T14:52:59Z",
+                "steps": [
+                    {
+                        "durationMilliseconds": 5909,
+                        "name": "PushDockerImage",
+                        "startTime": "2026-10-31T14:52:59Z"
+                    }
+                ]
+            }
+        ],
+        "startTimestamp": "2026-10-31T14:51:55Z"
+    }
+}

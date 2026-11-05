@@ -1,0 +1,7 @@
+FROM image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-costmap@sha256:447c6ee36d2eff0707a69133881c4131e0033dab5c38099750844173d416c92f
+USER 0
+COPY evidence /opt/phase4-grid-evidence/evidence
+COPY test /opt/phase4-grid-evidence/test
+# Compile only the evidence harness; the installed candidate plugin is not rebuilt.
+RUN /bin/bash -ec 'source /opt/semantic-costmap-ws/install/setup.bash; cmake -S /opt/phase4-grid-evidence/evidence -B /opt/phase4-grid-evidence/build; cmake --build /opt/phase4-grid-evidence/build -j2; ROS_DOMAIN_ID=88 /opt/phase4-grid-evidence/build/grid_evidence --gtest_filter=LayerTest.StoreActualGridAndBufferSnapshots'
+USER 1001

@@ -1,0 +1,59 @@
+{
+  "stages": [
+    [
+      "serving-faults",
+      [
+        "run_g4_faults.py",
+        "--modes",
+        "auth",
+        "wrong_version",
+        "overload",
+        "serving",
+        "network",
+        "hang"
+      ]
+    ],
+    [
+      "observation",
+      [
+        "run_g4_phase5.py",
+        "--gate",
+        "observation"
+      ]
+    ],
+    [
+      "recovery",
+      [
+        "run_g4_phase5.py",
+        "--gate",
+        "recovery"
+      ]
+    ],
+    [
+      "moving-stop",
+      [
+        "run_g4_phase5.py",
+        "--gate",
+        "stop"
+      ]
+    ],
+    [
+      "semantic-faults",
+      [
+        "run_g4_faults.py",
+        "--modes",
+        "camera_path_loss",
+        "tf_loss",
+        "hung_inference",
+        "process_loss",
+        "transport_loss"
+      ]
+    ]
+  ],
+  "nominal_pairs": 20,
+  "negative_pairs_each": 3,
+  "stop_policy": "first armed failure, injected-fault failure, or exhausted pre-arm liveness ladder stops the suite",
+  "camera_update_hz": 15,
+  "physics_step_s": 0.002,
+  "accepted_g3": true
+}

@@ -1,0 +1,57 @@
+FROM image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-costmap@sha256:447c6ee36d2eff0707a69133881c4131e0033dab5c38099750844173d416c92f
+USER 0
+COPY . /opt/semantic-safety/src
+RUN git clone --depth 1 --branch 1.3.13 --filter=blob:none --sparse \
+      https://github.com/ros-navigation/navigation2.git /opt/nav2-smoother-src \
+    && test "$(git -C /opt/nav2-smoother-src rev-parse HEAD)" = f4108e5b1c2bce804a1aa0c7be6673a8eb4a1501 \
+    && git -C /opt/nav2-smoother-src sparse-checkout set nav2_velocity_smoother \
+    && patch -d /opt/nav2-smoother-src -p1 < /opt/semantic-safety/src/nav2_velocity_smoother-frame-preserve.patch \
+    && . /opt/ros/jazzy/setup.sh \
+    && colcon build --base-paths /opt/nav2-smoother-src/nav2_velocity_smoother \
+         --packages-select nav2_velocity_smoother --merge-install \
+         --install-base /opt/nav2-smoother-overlay
+# Private Sensors-system override (user-approved October 28, 2026): gz-sim's
+# Sensors system blocks the physics thread's PostUpdate on renderCv until an
+# in-flight render completes; one slow RGB-D render (observed ~100-200 ms at
+# a goal-approach viewpoint change) then freezes /clock and every native
+# capture, and the command chain correctly expires on the frozen stamps
+# (three pinned instances: series-14 003-on, terminal-hold-validation-on,
+# controller-block-threadprobe-2). The override skips arming while a render
+# is in flight, so physics never blocks on renders; the cost is bounded
+# sensor lag (at most one render duration) with unchanged sim-stamped
+# captures. Compiled from the exact installed gz-sim 8.15.0 tag and
+# installed under /opt/semantic-safety/lib, which GZ_SIM_SYSTEM_PLUGIN_PATH
+# searches FIRST, with the exact file name the world's
+# <plugin filename="libgz-sim-sensors-system.so"> resolves. The fixture's
+# console_sensors_system_override_loaded check proves the override (not the
+# system library) actually loaded. Same private-override precedent as the
+# gz-sensors capture-trace library.
+RUN git clone --depth 1 --branch gz-sim8_8.15.0 \
+      https://github.com/gazebosim/gz-sim.git /tmp/sensors-build/gz-sim \
+    && test "$(git -C /tmp/sensors-build/gz-sim rev-parse HEAD)" = 446a44335a45b704b4d36dabcc5508ee34eeb3d8 \
+    && patch -d /tmp/sensors-build/gz-sim -p1 < /opt/semantic-safety/src/gz-sim-sensors-postupdate.patch \
+    && mkdir -p /opt/semantic-safety/lib \
+    && g++ -std=c++17 -O2 -fPIC -shared \
+         -I/tmp/sensors-build/gz-sim/src/systems/sensors \
+         /tmp/sensors-build/gz-sim/src/systems/sensors/Sensors.cc \
+         $(pkg-config --cflags gz-sim8-rendering gz-sim8 gz-sensors8 \
+            gz-common5 gz-common5-profiler gz-plugin2-loader \
+            gz-plugin2-register gz-math7 sdformat14) \
+         -lgz-sim8-rendering -lgz-sim8 -lgz-common5-events -lgz-common5 \
+         -lgz-common5-profiler -lgz-sensors8-camera -lgz-sensors8-depth_camera \
+         -lgz-sensors8-gpu_lidar -lgz-sensors8-rgbd_camera -lgz-sensors8-thermal_camera \
+         -lgz-sensors8-boundingbox_camera -lgz-sensors8-segmentation_camera \
+         -lgz-sensors8-wide_angle_camera -lgz-sensors8-rendering -lgz-sensors8 \
+         -lgz-rendering8 -lgz-plugin2-loader -lgz-plugin2 -lgz-transport13 \
+         -lgz-msgs10 -lprotobuf -lsdformat14 -lgz-math7 -lgz-utils2 -luuid \
+         -Wl,-z,defs -Wl,-soname,libgz-sim-sensors-system.so \
+         -o /opt/semantic-safety/lib/libgz-sim-sensors-system.so \
+    && ldd /opt/semantic-safety/lib/libgz-sim-sensors-system.so \
+    && rm -rf /tmp/sensors-build
+RUN . /opt/ros/jazzy/setup.sh \
+    && cmake -S /opt/semantic-safety/src -B /opt/semantic-safety/build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/semantic-safety \
+    && cmake --build /opt/semantic-safety/build -j4 \
+    && ctest --test-dir /opt/semantic-safety/build --output-on-failure \
+    && cmake --install /opt/semantic-safety/build
+RUN python3 -m unittest discover -s /opt/semantic-safety/src -p 'test_safety_core.py' -v
+USER 1001

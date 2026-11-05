@@ -1,0 +1,450 @@
+{
+  "recorded_at": "2026-11-05T13:52:49.028960+00:00",
+  "gate": "G5",
+  "gate_status": "HOLD",
+  "accepted": false,
+  "commands": [
+    [
+      "/Users/zhangj/bin/oc",
+      "--request-timeout=20s",
+      "get",
+      "inferenceservice",
+      "sam3-mat-v1",
+      "-n",
+      "semantic-model-serving",
+      "-o",
+      "json"
+    ],
+    [
+      "/Users/zhangj/bin/oc",
+      "--request-timeout=20s",
+      "get",
+      "pods",
+      "-n",
+      "semantic-model-serving",
+      "-l",
+      "serving.kserve.io/inferenceservice=sam3-mat-v1",
+      "-o",
+      "json"
+    ],
+    [
+      "/Users/zhangj/bin/oc",
+      "--request-timeout=20s",
+      "exec",
+      "-n",
+      "semantic-model-serving",
+      "sam3-mat-v1-predictor-5cb7c9f7d5-2kg6k",
+      "-c",
+      "kserve-container",
+      "--",
+      "python3",
+      "-c",
+      "import ssl,json,urllib.request; print(json.dumps({\"certificate\":ssl._ssl._test_decode_cert(\"/tls/tls.crt\"),\"ready\":json.load(urllib.request.urlopen(\"http://localhost:8080/ready\",timeout=5))}))"
+    ],
+    [
+      "/Users/zhangj/bin/oc",
+      "--request-timeout=20s",
+      "get",
+      "pods",
+      "-n",
+      "semantic-navigation",
+      "-o",
+      "json"
+    ],
+    [
+      "/Users/zhangj/bin/oc",
+      "--request-timeout=20s",
+      "get",
+      "deployment",
+      "semantic-hotel-sim",
+      "-n",
+      "semantic-navigation",
+      "-o",
+      "json"
+    ],
+    [
+      "/Users/zhangj/bin/oc",
+      "--request-timeout=20s",
+      "get",
+      "modelregistries.modelregistry.opendatahub.io",
+      "-A",
+      "-o",
+      "json"
+    ],
+    [
+      "/Users/zhangj/bin/oc",
+      "--request-timeout=20s",
+      "get",
+      "clusterversion",
+      "version",
+      "-o",
+      "json"
+    ],
+    [
+      "/Users/zhangj/bin/oc",
+      "--request-timeout=20s",
+      "get",
+      "csv",
+      "-n",
+      "redhat-ods-operator",
+      "-o",
+      "json"
+    ]
+  ],
+  "checks": {
+    "upstream_accepted": true,
+    "inferenceservice_ready": true,
+    "one_ready_serving_pod": true,
+    "runtime_digest_matches": true,
+    "certificate_unexpired": true,
+    "local_health_ready": true,
+    "rendering_reservation_ready": true,
+    "local_sam3_ready": true,
+    "no_g4_pods": true,
+    "hotel_sim_scaled_to_zero": true,
+    "registry_available": true,
+    "ai_operator_succeeded": true
+  },
+  "errors": [],
+  "scope": "read-only prerequisites; no lifecycle qualification",
+  "upstream_gates": {
+    "G0": {
+      "status": "PASS",
+      "accepted": true
+    },
+    "G1": {
+      "status": "PASS",
+      "accepted": true
+    },
+    "G2": {
+      "status": "PASS",
+      "accepted": true
+    },
+    "G3": {
+      "status": "PASS",
+      "accepted": true
+    },
+    "G4": {
+      "status": "PASS",
+      "accepted": true
+    }
+  },
+  "expected_identity": {
+    "schema": "semantic-deployment/v1",
+    "model_name": "sam3-mat-v1",
+    "weights_sha256": "9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e",
+    "source_revision": "0570b3a5be9c4e694f23d85232fb55f4a6f1f7fc",
+    "container_digest": "sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+    "shared_sha256": {
+      "inference_contract.py": "d238d2490f826b6fbb70f07aa5579492dc425e8c858b780c8216679f121ffdef",
+      "sam3_backend.py": "3d83819971704e8ce642db98972194996307b314bb73cbb44257384e45714761",
+      "sam3_runtime_core.py": "683cf53a5b6378fa72d0cefe404bd899039b1420b4d5a2e7cfe3faecaf57085f"
+    },
+    "versions": {
+      "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+      "preprocess": "sam3-pil-rgb/v1",
+      "decoder": "sam3-binary-instances/v1"
+    },
+    "precision": "bfloat16",
+    "policy": "avoid-target/v1",
+    "prompt": "red mat",
+    "threshold": 0.5
+  },
+  "serving_pods": [
+    {
+      "name": "sam3-mat-v1-predictor-5cb7c9f7d5-2kg6k",
+      "uid": "d2758782-9073-493e-876a-05bab35cc0f5",
+      "node": "ip-10-0-55-175.ec2.internal",
+      "ready": true,
+      "containers": [
+        {
+          "name": "agent",
+          "imageID": "registry.redhat.io/rhoai/odh-kserve-agent-rhel9@sha256:8ec73b6a944b78c3ef5595c28aad3d13284c2c89b6cdf4ed4cdf6a6939ee91d2",
+          "ready": true,
+          "restarts": 0
+        },
+        {
+          "name": "kserve-container",
+          "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+          "ready": true,
+          "restarts": 0
+        }
+      ]
+    }
+  ],
+  "server_probe": {
+    "certificate": {
+      "subject": [
+        [
+          [
+            "commonName",
+            "sam3-g5-server"
+          ]
+        ]
+      ],
+      "issuer": [
+        [
+          [
+            "commonName",
+            "semantic-serving-G5-issuer"
+          ]
+        ]
+      ],
+      "version": 3,
+      "serialNumber": "6FF081E3D905008988BD0AB1CA79616DA7FCA5D1",
+      "notBefore": "Nov  4 14:14:48 2026 GMT",
+      "notAfter": "Nov 11 14:14:48 2026 GMT",
+      "subjectAltName": [
+        [
+          "DNS",
+          "sam3-mat-v1-tls.semantic-model-serving.svc"
+        ],
+        [
+          "DNS",
+          "sam3-mat-v1-tls.semantic-model-serving.svc.cluster.local"
+        ]
+      ]
+    },
+    "ready": {
+      "ok": true
+    }
+  },
+  "certificate_seconds_remaining": 519716.6601610184,
+  "navigation_pods": [
+    {
+      "name": "sam3-g0-rendering-reservation",
+      "uid": "abe3231f-5ce0-4664-925c-e48e1eb56556",
+      "node": "ip-10-0-44-146.ec2.internal",
+      "ready": true,
+      "containers": [
+        {
+          "name": "reservation",
+          "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:348fc584e70b07c6f73f9e428623240da5fc4c81ead630f0cb051c18de2d4371",
+          "ready": true,
+          "restarts": 0
+        }
+      ]
+    },
+    {
+      "name": "semantic-camera-probe-574c4ffdd8-xnvbg",
+      "uid": "e09a4ace-71cd-403e-8fef-6c4487ca2837",
+      "node": "ip-10-0-53-182.ec2.internal",
+      "ready": true,
+      "containers": [
+        {
+          "name": "probe",
+          "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:a6ccee8f09cfaea21731f98b319136805e51f66fdaa82984afac49935f1b6bd8",
+          "ready": true,
+          "restarts": 3245
+        },
+        {
+          "name": "zenoh-bridge",
+          "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+          "ready": true,
+          "restarts": 0
+        }
+      ]
+    },
+    {
+      "name": "semantic-g5-navigation-metrics",
+      "uid": "6b80a998-160f-4b29-a9ed-3093a5fc915b",
+      "node": "ip-10-0-10-13.ec2.internal",
+      "ready": true,
+      "containers": [
+        {
+          "name": "metrics",
+          "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-cpu-adapter@sha256:20ea4f5e6bc30646f48b29895eb071d40403f8c20b0c1526aeacf06dce716d4b",
+          "ready": true,
+          "restarts": 0
+        }
+      ]
+    },
+    {
+      "name": "semantic-model-server-g5-1-build",
+      "uid": "9ccf7219-fb1f-43d2-944d-73422dcb5b69",
+      "node": "ip-10-0-53-174.ec2.internal",
+      "ready": false,
+      "containers": [
+        {
+          "name": "docker-build",
+          "imageID": "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:3ad7e974983ea4c90610bd20854a5cc351b26cd225264c97f57f1ac934adccfb",
+          "ready": false,
+          "restarts": 0
+        }
+      ]
+    },
+    {
+      "name": "semantic-phase5-sam3-router-65b64b7d6f-fcl9x",
+      "uid": "a958ebbe-8f00-4730-af29-298afe8d9c06",
+      "node": "ip-10-0-53-174.ec2.internal",
+      "ready": true,
+      "containers": [
+        {
+          "name": "router",
+          "imageID": "docker.io/eclipse/zenoh@sha256:137310456cc7a75d955063513207c737f25071fbb74fd7641835c50ab8e3369f",
+          "ready": true,
+          "restarts": 0
+        }
+      ]
+    },
+    {
+      "name": "semantic-phase6-nav2",
+      "uid": "4c996b5d-9ea8-4589-9709-ed09d9606bc7",
+      "node": "ip-10-0-39-214.ec2.internal",
+      "ready": true,
+      "containers": [
+        {
+          "name": "clock-bridge",
+          "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+          "ready": true,
+          "restarts": 0
+        },
+        {
+          "name": "cmd-vel-route-keepalive",
+          "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+          "ready": true,
+          "restarts": 0
+        },
+        {
+          "name": "motion-output-bridge",
+          "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+          "ready": true,
+          "restarts": 0
+        },
+        {
+          "name": "nav2",
+          "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e",
+          "ready": true,
+          "restarts": 0
+        },
+        {
+          "name": "odom-tf",
+          "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e",
+          "ready": true,
+          "restarts": 0
+        },
+        {
+          "name": "scan-frame-rewriter",
+          "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e",
+          "ready": true,
+          "restarts": 0
+        },
+        {
+          "name": "semantic-input-bridge",
+          "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+          "ready": true,
+          "restarts": 0
+        },
+        {
+          "name": "sim-input-bridge",
+          "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+          "ready": true,
+          "restarts": 0
+        }
+      ]
+    },
+    {
+      "name": "semantic-phase6-router-7db7cd66d5-fmpdq",
+      "uid": "fa1518d0-0dc1-452e-a29c-23942bf6743f",
+      "node": "ip-10-0-22-57.ec2.internal",
+      "ready": true,
+      "containers": [
+        {
+          "name": "router",
+          "imageID": "docker.io/eclipse/zenoh@sha256:137310456cc7a75d955063513207c737f25071fbb74fd7641835c50ab8e3369f",
+          "ready": true,
+          "restarts": 0
+        }
+      ]
+    },
+    {
+      "name": "semantic-phase6-sam3",
+      "uid": "780cc945-a8cd-4871-acec-0f803fe12654",
+      "node": "ip-10-0-18-251.ec2.internal",
+      "ready": true,
+      "containers": [
+        {
+          "name": "sam3-inference",
+          "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/sam3-runtime@sha256:478ec01a7a47fbb0c862fbbef495c71b4a512ff59ed8d6ed5b7234422cc35686",
+          "ready": true,
+          "restarts": 0
+        },
+        {
+          "name": "sam3-zenoh-bridge",
+          "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+          "ready": true,
+          "restarts": 0
+        }
+      ]
+    },
+    {
+      "name": "semantic-phase6-simulator",
+      "uid": "118d48ad-13ae-44c9-8e70-8e9fd4f5960d",
+      "node": "ip-10-0-38-113.ec2.internal",
+      "ready": true,
+      "containers": [
+        {
+          "name": "camera-compressor",
+          "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:c3ba94bbcbbe2283f1c46ea0f2baba398da313ffe83d2b59a63272ef91d95ebf",
+          "ready": true,
+          "restarts": 0
+        },
+        {
+          "name": "demo-ground-truth",
+          "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:d417c9f252d1f89dd859290a4bca1f634bcfd7d3cde6d1702c409d432bd48894",
+          "ready": true,
+          "restarts": 0
+        },
+        {
+          "name": "sim-zenoh-bridge",
+          "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+          "ready": true,
+          "restarts": 0
+        },
+        {
+          "name": "simulator",
+          "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:d417c9f252d1f89dd859290a4bca1f634bcfd7d3cde6d1702c409d432bd48894",
+          "ready": true,
+          "restarts": 0
+        }
+      ]
+    },
+    {
+      "name": "semantic-zenoh-router-5c88dd6bf9-nc2nv",
+      "uid": "630ed1b7-321b-4b1e-b075-7ab1052c7492",
+      "node": "ip-10-0-22-57.ec2.internal",
+      "ready": true,
+      "containers": [
+        {
+          "name": "router",
+          "imageID": "docker.io/eclipse/zenoh@sha256:137310456cc7a75d955063513207c737f25071fbb74fd7641835c50ab8e3369f",
+          "ready": true,
+          "restarts": 0
+        }
+      ]
+    }
+  ],
+  "registries": [
+    {
+      "name": "ryans-model-registry",
+      "namespace": "rhoai-model-registries",
+      "ready": true
+    }
+  ],
+  "cluster_versions": {
+    "ocp": "4.21.16",
+    "ai": [
+      {
+        "name": "rhods-operator.3.5.2",
+        "version": "3.5.2",
+        "phase": "Succeeded"
+      }
+    ]
+  },
+  "preflight_status": "PASS",
+  "limitations": [
+    "Health and pod image do not prove authenticated loaded identity or replay parity.",
+    "Certificate validity is a snapshot, not proof it covers a future maintenance window.",
+    "No update, rollback, rotation, pod-loss, egress or dependency-outage test executed."
+  ]
+}

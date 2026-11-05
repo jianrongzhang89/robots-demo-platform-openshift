@@ -1,0 +1,28 @@
+{
+ "event": "qualification-18 setup",
+ "date": "2026-11-02",
+ "preconditions": {
+  "S1": "PASS accepted",
+  "S2": "PASS accepted",
+  "S3": "PASS accepted",
+  "leftover_g4_or_fixture_resources": "none",
+  "pilot": "serving-transport-pilot-10 PASS (all five fault-stop modes at 0.3 m injection)",
+  "prior_attempt": "qualification-17 stopped on trial-02 (wrong_version-r1): nav2's behavior_server segfaulted (SIGSEGV) during setup, provably pre-arm (status starting/unarmed, zero native packets, semantic results flowing) - first nav2 crash in ~200 campaign trials. User approved a third pre-arm ladder signature, nav2_child_crash_prearm (crash text in test.log + zero native packets in the retained trace; a mid-motion crash stays terminal), unit-tested and validated against the retained evidence."
+ },
+ "candidate": "unchanged from qualification-17 (30 simulation-Hz cadence; all harness fixes; native-link send instrumentation; three-signature pre-arm ladder)",
+ "environment": "adapter node ip-10-0-53-174 freed (hotel-sim at 0 replicas); keep hotel-sim at 0 while G4 runs",
+ "rendering_reservation": "deleted to free the A10G for the G4 fixture; run_g4_suite.py finally restores it from rendering-reservation-saved.json",
+ "proxy_certificate": {
+  "secret": "semantic-g4-proxy-tls",
+  "subject": "CN=localhost",
+  "notBefore": "Nov 2 18:39:32 2026 GMT",
+  "notAfter": "Nov 5 18:39:32 2026 GMT",
+  "sha256_fingerprint": "AC:2D:5A:42:B0:5F:57:96:56:75:B6:BB:B8:C3:07:24:4A:06:B4:59:19:A2:6C:B8:F2:1E:2C:8B:8E:05:69:4C",
+  "key_material_retained": false
+ },
+ "sampler": {
+  "output": "serving-resources-qualification-18.jsonl",
+  "stop_file": "/tmp/g4-qualification-18-monitor-stop"
+ },
+ "command": "run_g4_suite.py --output-dir qualification-18 --reservation rendering-reservation-saved.json"
+}

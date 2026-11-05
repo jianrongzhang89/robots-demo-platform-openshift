@@ -1,0 +1,80 @@
+{
+  "bounding_rectangle_radius_m": 0.23153617427952808,
+  "canonical_radius_covers_rectangle": false,
+  "canonical_radius_m": 0.22,
+  "collisions": [
+    {
+      "collision": "base_collision",
+      "link": "base_link",
+      "max": [
+        0.10800000000000001,
+        0.155,
+        0.14
+      ],
+      "min": [
+        -0.17200000000000001,
+        -0.155,
+        0.0
+      ]
+    },
+    {
+      "collision": "left_wheel_collision",
+      "link": "wheel_left_link",
+      "max": [
+        0.033,
+        0.15302627592784,
+        0.05600715647714714
+      ],
+      "min": [
+        -0.033,
+        0.13497372407216,
+        -0.010007156477147137
+      ]
+    },
+    {
+      "collision": "right_wheel_collision",
+      "link": "wheel_right_link",
+      "max": [
+        0.033,
+        -0.13497372407216,
+        0.05600715647714714
+      ],
+      "min": [
+        -0.033,
+        -0.15302627592784,
+        -0.010007156477147137
+      ]
+    },
+    {
+      "collision": "lidar_collision",
+      "link": "base_scan",
+      "max": [
+        0.018799999999999997,
+        0.0508,
+        0.19949999999999998
+      ],
+      "min": [
+        -0.0828,
+        -0.0508,
+        0.1445
+      ]
+    }
+  ],
+  "diff_drive_plugin": "<plugin filename=\"gz-sim-diff-drive-system\" name=\"gz::sim::systems::DiffDrive\">\n      <left_joint>left_wheel_joint</left_joint>\n      <right_joint>right_wheel_joint</right_joint>\n      <wheel_separation>0.287</wheel_separation>\n      <wheel_radius>0.033</wheel_radius>\n      <odom_publish_frequency>50</odom_publish_frequency>\n      <topic>/robot_1/cmd_vel</topic>\n      <odom_topic>/robot_1/odom</odom_topic>\n      <frame_id>odom</frame_id>\n      <child_frame_id>base_footprint</child_frame_id>\n      <tf_topic>/robot_1/tf</tf_topic>\n    </plugin>\n  ",
+  "qualification": "static SDF audit only; moving TF and physical stop tests still required",
+  "robot_sdf": "<model name=\"robot_1\">\n    <pose>15.402 -31.594 0.1 0 0 0.0</pose>\n    <canonical_link>base_link</canonical_link><link name=\"base_footprint\">\n      <inertial>\n        <mass>0.1</mass>\n        <inertia><ixx>0.001</ixx><iyy>0.001</iyy><izz>0.001</izz></inertia>\n      </inertial>\n    </link>\n    <link name=\"base_link\">\n      <inertial>\n        <mass>1.37</mass>\n        <inertia><ixx>0.0087</ixx><iyy>0.0086</iyy><izz>0.0146</izz></inertia>\n      </inertial>\n      <collision name=\"base_collision\">\n        <pose>-0.032 0 0.07 0 0 0</pose>\n        <geometry><box><size>0.28 0.31 0.14</size></box></geometry>\n      </collision>\n      <visual name=\"base_visual\">\n        <pose>-0.032 0 0.07 0 0 0</pose>\n        <geometry><box><size>0.28 0.31 0.14</size></box></geometry>\n        <material><ambient>0.0 0.0 1.0 1</ambient><diffuse>0.0 0.0 1.0 1</diffuse></material>\n      </visual>\n    </link>\n    <link name=\"wheel_left_link\">\n      <pose>0 0.144 0.023 -1.57 0 0</pose>\n      <inertial>\n        <mass>0.028</mass>\n        <inertia><ixx>1.1e-5</ixx><iyy>1.1e-5</iyy><izz>2.1e-5</izz></inertia>\n      </inertial>\n      <collision name=\"left_wheel_collision\">\n        <geometry><cylinder><radius>0.033</radius><length>0.018</length></cylinder></geometry>\n        <surface>\n          <friction>\n            <ode><mu>1.0</mu><mu2>1.0</mu2></ode>\n            <bullet><friction>1.0</friction><friction2>1.0</friction2></bullet>\n          </friction>\n        </surface>\n      </collision>\n      <visual name=\"left_wheel_visual\">\n        <geometry><cylinder><radius>0.033</radius><length>0.018</length></cylinder></geometry>\n      </visual>\n    </link>\n    <link name=\"wheel_right_link\">\n      <pose>0 -0.144 0.023 -1.57 0 0</pose>\n      <inertial>\n        <mass>0.028</mass>\n        <inertia><ixx>1.1e-5</ixx><iyy>1.1e-5</iyy><izz>2.1e-5</izz></inertia>\n      </inertial>\n      <collision name=\"right_wheel_collision\">\n        <geometry><cylinder><radius>0.033</radius><length>0.018</length></cylinder></geometry>\n        <surface>\n          <friction>\n            <ode><mu>1.0</mu><mu2>1.0</mu2></ode>\n            <bullet><friction>1.0</friction><friction2>1.0</friction2></bullet>\n          </friction>\n        </surface>\n      </collision>\n      <visual name=\"right_wheel_visual\">\n        <geometry><cylinder><radius>0.033</radius><length>0.018</length></cylinder></geometry>\n      </visual>\n    </link>\n    <link name=\"base_scan\">\n      <pose>-0.032 0 0.172 0 0 0</pose>\n      <inertial>\n        <mass>0.114</mass>\n        <inertia><ixx>0.001</ixx><iyy>0.001</iyy><izz>0.001</izz></inertia>\n      </inertial>\n      <collision name=\"lidar_collision\">\n        <geometry><cylinder><radius>0.0508</radius><length>0.055</length></cylinder></geometry>\n      </collision>\n      <visual name=\"lidar_visual\">\n        <geometry><cylinder><radius>0.0508</radius><length>0.055</length></cylinder></geometry>\n      </visual>\n      <sensor name=\"lidar\" type=\"gpu_lidar\">\n        <pose>0 0 0.01 0 0 0</pose>\n        <topic>scan</topic>\n        <update_rate>5</update_rate>\n        <lidar>\n          <scan>\n            <horizontal>\n              <samples>360</samples>\n              <resolution>1.0</resolution>\n              <min_angle>0.0</min_angle>\n              <max_angle>6.28</max_angle>\n            </horizontal>\n          </scan>\n          <range>\n            <min>0.12</min>\n            <max>3.5</max>\n            <resolution>0.015</resolution>\n          </range>\n        </lidar>\n        <visualize>true</visualize>\n        <frame_id>base_scan</frame_id>\n      </sensor>\n    </link>\n    <link name=\"imu_link\">\n      <pose>0 0 0.068 0 0 0</pose>\n      <inertial>\n        <mass>0.001</mass>\n        <inertia><ixx>0.0001</ixx><iyy>0.0001</iyy><izz>0.0001</izz></inertia>\n      </inertial>\n      <sensor name=\"tb3_imu\" type=\"imu\">\n        <always_on>true</always_on>\n        <update_rate>200</update_rate>\n        <imu>\n          <angular_velocity>\n            <x><noise type=\"gaussian\"><mean>0</mean><stddev>0.009</stddev></noise></x>\n            <y><noise type=\"gaussian\"><mean>0</mean><stddev>0.009</stddev></noise></y>\n            <z><noise type=\"gaussian\"><mean>0</mean><stddev>0.009</stddev></noise></z>\n          </angular_velocity>\n          <linear_acceleration>\n            <x><noise type=\"gaussian\"><mean>0</mean><stddev>0.017</stddev></noise></x>\n            <y><noise type=\"gaussian\"><mean>0</mean><stddev>0.017</stddev></noise></y>\n            <z><noise type=\"gaussian\"><mean>0</mean><stddev>0.017</stddev></noise></z>\n          </linear_acceleration>\n        </imu>\n      </sensor>\n    </link>\n    <joint name=\"base_joint\" type=\"fixed\">\n      <parent>base_footprint</parent>\n      <child>base_link</child>\n    </joint>\n    <joint name=\"left_wheel_joint\" type=\"revolute\">\n      <parent>base_link</parent>\n      <child>wheel_left_link</child>\n      <axis>\n        <xyz>0 0 1</xyz>\n        <limit>\n          <lower>-1e16</lower>\n          <upper>1e16</upper>\n          <effort>1000</effort>\n          <velocity>1000</velocity>\n        </limit>\n        <dynamics><friction>0.1</friction></dynamics>\n      </axis>\n    </joint>\n    <joint name=\"right_wheel_joint\" type=\"revolute\">\n      <parent>base_link</parent>\n      <child>wheel_right_link</child>\n      <axis>\n        <xyz>0 0 1</xyz>\n        <limit>\n          <lower>-1e16</lower>\n          <upper>1e16</upper>\n          <effort>1000</effort>\n          <velocity>1000</velocity>\n        </limit>\n        <dynamics><friction>0.1</friction></dynamics>\n      </axis>\n    </joint>\n    <joint name=\"lidar_joint\" type=\"fixed\">\n      <parent>base_link</parent>\n      <child>base_scan</child>\n    </joint>\n    <joint name=\"imu_joint\" type=\"fixed\">\n      <parent>base_link</parent>\n      <child>imu_link</child>\n    </joint>\n    <plugin filename=\"gz-sim-diff-drive-system\" name=\"gz::sim::systems::DiffDrive\">\n      <left_joint>left_wheel_joint</left_joint>\n      <right_joint>right_wheel_joint</right_joint>\n      <wheel_separation>0.287</wheel_separation>\n      <wheel_radius>0.033</wheel_radius>\n      <odom_publish_frequency>50</odom_publish_frequency>\n      <topic>/robot_1/cmd_vel</topic>\n      <odom_topic>/robot_1/odom</odom_topic>\n      <frame_id>odom</frame_id>\n      <child_frame_id>base_footprint</child_frame_id>\n      <tf_topic>/robot_1/tf</tf_topic>\n    </plugin>\n  </model>",
+  "sdf_base_link_pose": "0 0 0 0 0 0",
+  "urdf_base_joint_xyz": "0 0 0.10",
+  "urdf_sha256": "0903ba4060ad58e23591098c8d95fd23eb19999c3d94252d5ed38a2569395458",
+  "world_sha256": "b5fe2d661993fb29900873aa7f41757fafcc7367f0c042706266ca0e7437b915",
+  "xy_bounds": {
+    "max": [
+      0.10800000000000001,
+      0.155
+    ],
+    "min": [
+      -0.17200000000000001,
+      -0.155
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+FROM image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:a788757d3904d5d275f450ca0a8d94dc3ac8380fbc47349dc8f5d3cbde3a4eac
+USER 0
+COPY nav2_controller-goal-capture.patch /opt/semantic-safety/nav2_controller-goal-capture.patch
+RUN test "$(git -C /opt/nav2-smoother-src rev-parse HEAD)" = f4108e5b1c2bce804a1aa0c7be6673a8eb4a1501 \
+    && git -C /opt/nav2-smoother-src sparse-checkout add nav2_controller \
+    && patch --fuzz=0 -d /opt/nav2-smoother-src -p1 < /opt/semantic-safety/nav2_controller-goal-capture.patch \
+    && . /opt/ros/jazzy/setup.sh \
+    && colcon build --base-paths /opt/nav2-smoother-src/nav2_controller \
+         --packages-select nav2_controller --merge-install \
+         --build-base /opt/nav2-controller-build --install-base /opt/nav2-controller-overlay \
+         --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
+USER 1001

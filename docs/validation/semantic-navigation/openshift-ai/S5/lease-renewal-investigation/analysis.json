@@ -1,0 +1,209 @@
+{
+  "comparison": [
+    {
+      "run": 2,
+      "fixture_passed": true,
+      "armed_rtf": 0.49622148725081044,
+      "fixture_cpu_cores_during_armed_interval": 3.3477462171764727,
+      "fixture_throttled_usec_during_armed_interval": 0,
+      "minimum_emitted_window_ms": 17.959643,
+      "windows_at_or_below_2ms": 0,
+      "semantic_capture_p95_ms": 252.936188
+    },
+    {
+      "run": 3,
+      "fixture_passed": true,
+      "armed_rtf": 0.49063491593640807,
+      "fixture_cpu_cores_during_armed_interval": 3.3319956169769367,
+      "fixture_throttled_usec_during_armed_interval": 0,
+      "minimum_emitted_window_ms": 9.263799,
+      "windows_at_or_below_2ms": 0,
+      "semantic_capture_p95_ms": 250.267083
+    },
+    {
+      "run": 5,
+      "fixture_passed": false,
+      "armed_rtf": 0.4397193565635377,
+      "fixture_cpu_cores_during_armed_interval": 3.142437595079264,
+      "fixture_throttled_usec_during_armed_interval": 0,
+      "minimum_emitted_window_ms": 1.08445,
+      "windows_at_or_below_2ms": 1,
+      "semantic_capture_p95_ms": 255.917688
+    },
+    {
+      "run": 6,
+      "fixture_passed": false,
+      "armed_rtf": 0.4435024942593121,
+      "fixture_cpu_cores_during_armed_interval": 3.1562448102170277,
+      "fixture_throttled_usec_during_armed_interval": 0,
+      "minimum_emitted_window_ms": 13.737225,
+      "windows_at_or_below_2ms": 0,
+      "semantic_capture_p95_ms": 253.760488
+    }
+  ],
+  "run5": {
+    "short_sequence": 7696,
+    "window_ms": 1.08445,
+    "native_uncertainty_ms": 2,
+    "previous_packet_expiry_wall_ns": 1793808839631843769,
+    "short_packet_expiry_wall_ns": 1793808839606843839,
+    "expiry_regression_ms": 24.99993,
+    "same_source_as_previous": true,
+    "next_packet_same_source": true,
+    "next_packet_expiry_restoration_ms": 24.9999,
+    "native_reason": "packet_invalid"
+  },
+  "run6": {
+    "native_reason": "lease_expired",
+    "last_accepted_sequence": 4129,
+    "native_expiry_wall_ns": 1793809490285752449,
+    "next_renewal_sequence": 4130,
+    "next_renewal_issued_before_native_expiry_ms": 4.349997,
+    "worker_send_before_native_expiry_ms": 1.07885,
+    "issue_to_worker_send_ms": 3.271147,
+    "checked_publication_before_expiry_ms": 25.489296,
+    "checked_callback_before_expiry_ms": 17.282,
+    "callback_to_worker_send_ms": 16.20315,
+    "source_age_at_worker_send_ms": 66.712527,
+    "slow_stages_near_expiry": [
+      {
+        "stage": "guard",
+        "start_steady_ns": 13834361012088188,
+        "end_steady_ns": 13834361023895649,
+        "duration_ns": 11807461
+      }
+    ],
+    "native_zero_latency_ms": 1.992332,
+    "lease_queue_drops": 0,
+    "receive_timestamp_limit": "Native status retains last receive only, not per-packet recv/lock/accept timestamps. Cannot isolate scheduler vs mutex wait.",
+    "scheduling_window_ms": 202.203741,
+    "main_thread_scheduling": {
+      "1": {
+        "comm": "bash",
+        "parent_pid": 0,
+        "on_cpu_ms": 0.0,
+        "run_queue_wait_ms": 0.0
+      },
+      "65": {
+        "comm": "python3",
+        "parent_pid": 1,
+        "on_cpu_ms": 0.12733,
+        "run_queue_wait_ms": 0.55046
+      },
+      "119": {
+        "comm": "python3",
+        "parent_pid": 65,
+        "on_cpu_ms": 150.69181,
+        "run_queue_wait_ms": 28.11455
+      },
+      "169": {
+        "comm": "python3",
+        "parent_pid": 119,
+        "on_cpu_ms": 11.56254,
+        "run_queue_wait_ms": 1.40105
+      },
+      "170": {
+        "comm": "phase5_console_",
+        "parent_pid": 119,
+        "on_cpu_ms": 135.57293,
+        "run_queue_wait_ms": 34.20803
+      },
+      "171": {
+        "comm": "parameter_bridg",
+        "parent_pid": 119,
+        "on_cpu_ms": 0.0,
+        "run_queue_wait_ms": 0.0
+      },
+      "172": {
+        "comm": "parameter_bridg",
+        "parent_pid": 119,
+        "on_cpu_ms": 0.0,
+        "run_queue_wait_ms": 0.0
+      },
+      "173": {
+        "comm": "robot_state_pub",
+        "parent_pid": 119,
+        "on_cpu_ms": 0.0,
+        "run_queue_wait_ms": 0.0
+      },
+      "174": {
+        "comm": "python3",
+        "parent_pid": 119,
+        "on_cpu_ms": 55.66644,
+        "run_queue_wait_ms": 27.79845
+      },
+      "175": {
+        "comm": "phase5_command_",
+        "parent_pid": 119,
+        "on_cpu_ms": 4.46696,
+        "run_queue_wait_ms": 0.6763
+      },
+      "310": {
+        "comm": "map_server",
+        "parent_pid": 119,
+        "on_cpu_ms": 0.0,
+        "run_queue_wait_ms": 0.0
+      },
+      "311": {
+        "comm": "amcl",
+        "parent_pid": 119,
+        "on_cpu_ms": 0.0,
+        "run_queue_wait_ms": 0.0
+      },
+      "339": {
+        "comm": "controller_serv",
+        "parent_pid": 119,
+        "on_cpu_ms": 1.31285,
+        "run_queue_wait_ms": 0.35811
+      },
+      "340": {
+        "comm": "smoother_server",
+        "parent_pid": 119,
+        "on_cpu_ms": 0.11264,
+        "run_queue_wait_ms": 0.0741
+      },
+      "341": {
+        "comm": "planner_server",
+        "parent_pid": 119,
+        "on_cpu_ms": 0.0,
+        "run_queue_wait_ms": 0.0
+      },
+      "342": {
+        "comm": "behavior_server",
+        "parent_pid": 119,
+        "on_cpu_ms": 2.79552,
+        "run_queue_wait_ms": 2.86005
+      },
+      "343": {
+        "comm": "velocity_smooth",
+        "parent_pid": 119,
+        "on_cpu_ms": 2.58968,
+        "run_queue_wait_ms": 0.56792
+      },
+      "344": {
+        "comm": "collision_monit",
+        "parent_pid": 119,
+        "on_cpu_ms": 5.08076,
+        "run_queue_wait_ms": 3.86657
+      },
+      "345": {
+        "comm": "bt_navigator",
+        "parent_pid": 119,
+        "on_cpu_ms": 2.52912,
+        "run_queue_wait_ms": 2.8445
+      },
+      "475": {
+        "comm": "python3",
+        "parent_pid": 119,
+        "on_cpu_ms": 0.0,
+        "run_queue_wait_ms": 0.0
+      },
+      "476": {
+        "comm": "python3",
+        "parent_pid": 119,
+        "on_cpu_ms": 3.49588,
+        "run_queue_wait_ms": 1.43867
+      }
+    }
+  }
+}

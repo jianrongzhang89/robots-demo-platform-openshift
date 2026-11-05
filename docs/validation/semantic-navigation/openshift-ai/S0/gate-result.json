@@ -1,0 +1,161 @@
+{
+  "gate": "G0",
+  "status": "PASS",
+  "recorded_at": "2026-10-31T03:14:07.021730+00:00",
+  "commit": "ca60315af0a586967ae7137433659245862429b8",
+  "reviewer": "User (explicit approval in conversation)",
+  "accepted": true,
+  "model_sha256": "9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e",
+  "runtime_image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+  "precision": "bfloat16",
+  "cluster_versions": {
+    "ocp": "4.21.16",
+    "ai": [
+      {
+        "name": "rhods-operator.3.4.2",
+        "version": "3.4.2",
+        "phase": "Succeeded"
+      }
+    ],
+    "kserve_images": [
+      "registry.redhat.io/rhoai/odh-kserve-controller-rhel9@sha256:e046443ba557cb4c6c1dec0edb366752f7be0ba146caa2a341ee473c67443a99"
+    ]
+  },
+  "hardware_resource_profile": {
+    "gpu": "NVIDIA L40S",
+    "cpu_request": 3,
+    "cpu_limit": 6,
+    "memory_request": "12Gi",
+    "memory_limit": "24Gi"
+  },
+  "evaluation_set_sha256": "d569556cb4dce12f8674f14f5b458262e7ac34852f4b66bd10eb8d489179ece5",
+  "baseline_pair_sample_count": 2,
+  "checks": {
+    "checkpoint_access_and_sha256": "PASS: independent destination artifact verification and read-only mount",
+    "kserve_ready": "PASS",
+    "ai_operator_installation": "PASS: 3.4.2",
+    "dashboard_and_maas_reconciliation": "PASS: Ready, DashboardReady, ModelsAsServiceReady and KserveReady True; MaaS memory limit 1Gi retained",
+    "baseline_off_on_reproduction": "PASS: 1.408739283 m off, 0 m on; collision-free, 100% reduction",
+    "serving_project_artifact_storage_and_credentials": "PASS: dedicated Bound PVC, seven-day leaf certificates, exact principal/robot/stream policy",
+    "gpu_capacity": "PASS: separate serving L40S and rendering A10G reservation pods Running; original local SAM3 restored",
+    "final_destination_admission": "PASS: all seven rendered objects server-dry-run in semantic-model-serving",
+    "image_pull_permissions_and_quota": "PASS: actual cross-project image pull plus RBAC and quota verification",
+    "internal_tls_and_namespace_isolation": "PASS: positive and negative transport/policy tests; no public endpoint",
+    "perses_conversion": "PASS: restored COO webhook and prior retained verification"
+  },
+  "fault_outcomes": {
+    "transport_authentication": "PASS (actual server code, no model loaded)",
+    "network_isolation": "PASS",
+    "live_model_faults": "G1 NOT_RUN"
+  },
+  "deviations": [
+    "One pre-arm capture-trace liveness failure retained; one permitted fresh-fixture retry; no trial-check failures retried.",
+    "Initial copy failed on directory permissions; namespace filesystem group corrected before the successful verified copy."
+  ],
+  "waivers": [
+    "Standing recognition waiver retained."
+  ],
+  "evidence": [
+    "inventory-20261030.json",
+    "runtime-hardware.json",
+    "checkpoint-sha256.txt",
+    "../S1/server-dry-run-final.txt",
+    "../S1/build-results.json",
+    "../S0/perses-reconciliation-20261030/after-coo153/verification.json",
+    "../S0/perses-reconciliation-20261030/after-coo153/maas-memory-increase.json",
+    "../S0/platform-ready-20261030.json",
+    "g0-completion-20261030/report.md",
+    "g0-completion-20261030/baseline/pair-result.json",
+    "g0-completion-20261030/baseline/measured-summary.json",
+    "g0-completion-20261030/baseline/demo-restoration.json",
+    "g0-completion-20261030/runtime-artifact-verification.json",
+    "g0-completion-20261030/reservation-live.json",
+    "g0-completion-20261030/rendering-reservation-live.json",
+    "g0-completion-20261030/authentication-results.json",
+    "g0-completion-20261030/network-rbac-results.json",
+    "g0-completion-20261030/destination-admission.txt",
+    "g0-completion-20261030/evidence-hashes.json"
+  ],
+  "latest_platform_verification": "g0-completion-20261030/platform-dsc.json",
+  "acceptance_note": "User approved G0 after review of the technical PASS and evidence.",
+  "working_tree_dirty": true,
+  "source_hashes": "g0-completion-20261030/source-hashes.json",
+  "policy": "avoid-target/v1",
+  "evaluation_set_scope": "Accepted series-23 source plan; G0 selects the first nominal off/on pair only.",
+  "baseline_total_completion_time_seconds": 167.16000000000003,
+  "baseline_result": {
+    "passed": true,
+    "off_hull_exposure_m": 1.408739283072278,
+    "on_hull_exposure_m": 0.0,
+    "reduction_fraction": 1.0,
+    "samples": 2,
+    "profile": "accepted Phase 6 lethal-254, speed 0.15 m/s",
+    "recognition_waiver_retained": true
+  },
+  "baseline_metrics": {
+    "off": {
+      "p95_capture_age_ms": 205.385975,
+      "results_per_second": 6.697351558936221,
+      "completion_time_s": 72.4,
+      "path_length_m": 3.917,
+      "completion_divergence": {
+        "final": {
+          "sim_ns": 45408000000,
+          "belief_truth_divergence_m": 0.528,
+          "physical_goal_distance_m": 0.574,
+          "belief_goal_distance_m": 0.254
+        },
+        "at_arrival": {
+          "sim_ns": 45408000000,
+          "belief_truth_divergence_m": 0.528,
+          "physical_goal_distance_m": 0.574,
+          "belief_goal_distance_m": 0.254
+        },
+        "arrival_wall_ns": 1793416043955556096
+      }
+    },
+    "on": {
+      "p95_capture_age_ms": 200.755738,
+      "results_per_second": 6.568028460226319,
+      "completion_time_s": 94.76,
+      "path_length_m": 5.198,
+      "completion_divergence": {
+        "final": {
+          "sim_ns": 58506000000,
+          "belief_truth_divergence_m": 0.974,
+          "physical_goal_distance_m": 1.048,
+          "belief_goal_distance_m": 0.117
+        },
+        "at_arrival": {
+          "sim_ns": 58506000000,
+          "belief_truth_divergence_m": 0.974,
+          "physical_goal_distance_m": 1.048,
+          "belief_goal_distance_m": 0.117
+        },
+        "arrival_wall_ns": 1793416285264202240
+      }
+    }
+  },
+  "certificate_leaf_not_after": "2026-11-07T02:58:59Z",
+  "capacity_reservations": {
+    "serving": "semantic-model-serving/sam3-g0-reservation",
+    "rendering": "semantic-navigation/sam3-g0-rendering-reservation",
+    "lifetime_seconds": 604800,
+    "handoff": "Release each reservation immediately before scheduling its replacement on the pinned node."
+  },
+  "tests": {
+    "server_and_qualification": 19,
+    "baseline_harness": 6
+  },
+  "technical_reviewer": "Codex (automated technical verification)",
+  "accepted_on": "2026-10-31",
+  "acceptance_timezone": "America/New_York",
+  "approval_statement": "OK. G0 is approved.",
+  "serving_capacity_handoff": {
+    "recorded_at": "2026-10-31T14:21:47.056475+00:00",
+    "former_reservation": "semantic-model-serving/sam3-g0-reservation",
+    "replacement": "semantic-model-serving/sam3-mat-v1",
+    "node": "ip-10-0-55-175.ec2.internal",
+    "status": "InferenceService Ready; original local SAM3 and rendering reservation retained"
+  }
+}

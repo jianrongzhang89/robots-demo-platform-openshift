@@ -1,0 +1,348 @@
+{
+  "recorded_at": "2026-10-30T23:13:10.271450+00:00",
+  "ocp_version": "4.21.16",
+  "ai_operators": [
+    {
+      "name": "rhods-operator.3.4.2",
+      "version": "3.4.2",
+      "phase": "Succeeded"
+    }
+  ],
+  "conditions": [
+    {
+      "lastTransitionTime": "2026-10-30T23:00:01Z",
+      "message": "Some components are not ready: dashboard,modelsasservice",
+      "reason": "NotReady",
+      "status": "False",
+      "type": "Ready"
+    },
+    {
+      "lastTransitionTime": "2026-10-30T23:00:01Z",
+      "observedGeneration": 10,
+      "status": "True",
+      "type": "ProvisioningSucceeded"
+    },
+    {
+      "lastTransitionTime": "2026-10-30T23:00:01Z",
+      "message": "Some components are not ready: dashboard,modelsasservice",
+      "reason": "NotReady",
+      "status": "False",
+      "type": "ComponentsReady"
+    },
+    {
+      "lastTransitionTime": "2026-10-30T23:00:01Z",
+      "status": "True",
+      "type": "AIPipelinesReady"
+    },
+    {
+      "lastTransitionTime": "2026-10-30T23:00:01Z",
+      "message": "failed to deploy observability manifests: failed to prune fields: failed add back owned items: failed to convert merged object at version perses.dev/v1alpha2: .spec.layouts: field not declared in schema",
+      "reason": "Error",
+      "status": "False",
+      "type": "DashboardReady"
+    },
+    {
+      "lastTransitionTime": "2026-10-30T23:00:01Z",
+      "status": "True",
+      "type": "FeastOperatorReady"
+    },
+    {
+      "lastTransitionTime": "2026-10-30T23:00:01Z",
+      "status": "True",
+      "type": "KserveLLMInferenceServiceDependencies"
+    },
+    {
+      "lastTransitionTime": "2026-10-30T23:00:01Z",
+      "status": "True",
+      "type": "KserveLLMInferenceServiceWideEPDependencies"
+    },
+    {
+      "lastTransitionTime": "2026-10-30T23:00:01Z",
+      "status": "True",
+      "type": "KserveReady"
+    },
+    {
+      "lastTransitionTime": "2026-10-30T23:00:01Z",
+      "status": "True",
+      "type": "KueueReady"
+    },
+    {
+      "lastTransitionTime": "2026-10-30T23:00:01Z",
+      "status": "True",
+      "type": "LlamaStackOperatorReady"
+    },
+    {
+      "lastTransitionTime": "2026-10-30T23:00:01Z",
+      "status": "True",
+      "type": "MLflowOperatorReady"
+    },
+    {
+      "lastTransitionTime": "2026-10-30T23:00:01Z",
+      "status": "True",
+      "type": "ModelControllerReady"
+    },
+    {
+      "lastTransitionTime": "2026-10-30T23:00:01Z",
+      "status": "True",
+      "type": "ModelRegistryReady"
+    },
+    {
+      "lastTransitionTime": "2026-10-30T23:00:01Z",
+      "message": "apply: apply PersesDashboard redhat-ods-applications/dashboard-3-maas-usage-admin: failed to prune fields: failed add back owned items: failed to convert merged object at version perses.dev/v1alpha2: .spec.panels: field not declared in schema",
+      "reason": "PlatformReconcileFailed",
+      "status": "False",
+      "type": "ModelsAsServiceReady"
+    },
+    {
+      "lastTransitionTime": "2026-10-30T23:00:01Z",
+      "status": "True",
+      "type": "RayReady"
+    },
+    {
+      "lastTransitionTime": "2026-10-30T23:00:01Z",
+      "message": "Component ManagementState is set to Removed",
+      "reason": "Removed",
+      "severity": "Info",
+      "status": "False",
+      "type": "SparkOperatorReady"
+    },
+    {
+      "lastTransitionTime": "2026-10-30T23:00:01Z",
+      "status": "True",
+      "type": "TrainerReady"
+    },
+    {
+      "lastTransitionTime": "2026-10-30T23:00:01Z",
+      "status": "True",
+      "type": "TrainingOperatorReady"
+    },
+    {
+      "lastTransitionTime": "2026-10-30T23:00:01Z",
+      "status": "True",
+      "type": "TrustyAIReady"
+    },
+    {
+      "lastTransitionTime": "2026-10-30T23:00:01Z",
+      "status": "True",
+      "type": "WorkbenchesReady"
+    }
+  ],
+  "kserve_images": [
+    "registry.redhat.io/rhoai/odh-kserve-controller-rhel9@sha256:e046443ba557cb4c6c1dec0edb366752f7be0ba146caa2a341ee473c67443a99"
+  ],
+  "crds": [
+    {
+      "name": "servingruntimes.serving.kserve.io",
+      "versions": [
+        "v1alpha1"
+      ]
+    },
+    {
+      "name": "inferenceservices.serving.kserve.io",
+      "versions": [
+        "v1beta1"
+      ]
+    }
+  ],
+  "baseline_model": {
+    "name": "semantic-phase6-sam3",
+    "node": "ip-10-0-18-251.ec2.internal",
+    "images": [
+      {
+        "name": "sam3-inference",
+        "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/sam3-runtime@sha256:478ec01a7a47fbb0c862fbbef495c71b4a512ff59ed8d6ed5b7234422cc35686",
+        "ready": true
+      },
+      {
+        "name": "sam3-zenoh-bridge",
+        "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+        "ready": true
+      }
+    ],
+    "resources": {
+      "sam3-zenoh-bridge": {
+        "limits": {
+          "cpu": "500m",
+          "memory": "512Mi"
+        },
+        "requests": {
+          "cpu": "100m",
+          "memory": "128Mi"
+        }
+      },
+      "sam3-inference": {
+        "limits": {
+          "cpu": "6",
+          "memory": "24Gi",
+          "nvidia.com/gpu": "1"
+        },
+        "requests": {
+          "cpu": "3",
+          "memory": "12Gi",
+          "nvidia.com/gpu": "1"
+        }
+      }
+    }
+  },
+  "baseline_renderer": {
+    "name": "semantic-phase6-simulator",
+    "node": "ip-10-0-38-113.ec2.internal",
+    "images": [
+      {
+        "name": "camera-compressor",
+        "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:c3ba94bbcbbe2283f1c46ea0f2baba398da313ffe83d2b59a63272ef91d95ebf",
+        "ready": true
+      },
+      {
+        "name": "demo-ground-truth",
+        "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:d417c9f252d1f89dd859290a4bca1f634bcfd7d3cde6d1702c409d432bd48894",
+        "ready": true
+      },
+      {
+        "name": "sim-zenoh-bridge",
+        "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+        "ready": true
+      },
+      {
+        "name": "simulator",
+        "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:d417c9f252d1f89dd859290a4bca1f634bcfd7d3cde6d1702c409d432bd48894",
+        "ready": true
+      }
+    ],
+    "resources": {
+      "simulator": {
+        "limits": {
+          "cpu": "12",
+          "memory": "8Gi"
+        },
+        "requests": {
+          "cpu": "10",
+          "memory": "4Gi"
+        }
+      },
+      "camera-compressor": {
+        "limits": {
+          "cpu": "2",
+          "memory": "2Gi"
+        },
+        "requests": {
+          "cpu": "250m",
+          "memory": "512Mi"
+        }
+      },
+      "sim-zenoh-bridge": {
+        "limits": {
+          "cpu": "500m",
+          "memory": "512Mi"
+        },
+        "requests": {
+          "cpu": "100m",
+          "memory": "128Mi"
+        }
+      },
+      "demo-ground-truth": {
+        "limits": {
+          "cpu": "500m",
+          "memory": "512Mi"
+        },
+        "requests": {
+          "cpu": "100m",
+          "memory": "128Mi"
+        }
+      }
+    }
+  },
+  "gpus": [
+    {
+      "node": "ip-10-0-18-251.ec2.internal",
+      "product": "NVIDIA-L40S",
+      "allocatable": "1",
+      "requested_by_active_regular_containers": 1
+    },
+    {
+      "node": "ip-10-0-30-1.ec2.internal",
+      "product": "NVIDIA-A10G",
+      "allocatable": "1",
+      "requested_by_active_regular_containers": 1
+    },
+    {
+      "node": "ip-10-0-39-214.ec2.internal",
+      "product": "NVIDIA-A10G",
+      "allocatable": "1",
+      "requested_by_active_regular_containers": 0
+    },
+    {
+      "node": "ip-10-0-44-146.ec2.internal",
+      "product": "NVIDIA-A10G",
+      "allocatable": "1",
+      "requested_by_active_regular_containers": 0
+    },
+    {
+      "node": "ip-10-0-46-92.ec2.internal",
+      "product": "NVIDIA-A10G",
+      "allocatable": "1",
+      "requested_by_active_regular_containers": 1
+    },
+    {
+      "node": "ip-10-0-47-62.ec2.internal",
+      "product": "NVIDIA-A10G",
+      "allocatable": "1",
+      "requested_by_active_regular_containers": 1
+    },
+    {
+      "node": "ip-10-0-55-116.ec2.internal",
+      "product": "NVIDIA-A10G",
+      "allocatable": "1",
+      "requested_by_active_regular_containers": 0
+    },
+    {
+      "node": "ip-10-0-55-175.ec2.internal",
+      "product": "NVIDIA-L40S",
+      "allocatable": "1",
+      "requested_by_active_regular_containers": 0
+    },
+    {
+      "node": "ip-10-0-59-200.ec2.internal",
+      "product": "NVIDIA-L40S",
+      "allocatable": "1",
+      "requested_by_active_regular_containers": 1
+    },
+    {
+      "node": "ip-10-0-6-4.ec2.internal",
+      "product": "NVIDIA-A10G",
+      "allocatable": "1",
+      "requested_by_active_regular_containers": 1
+    },
+    {
+      "node": "ip-10-0-60-135.ec2.internal",
+      "product": "NVIDIA-A10G",
+      "allocatable": "1",
+      "requested_by_active_regular_containers": 1
+    },
+    {
+      "node": "ip-10-0-8-24.ec2.internal",
+      "product": "NVIDIA-A10G",
+      "allocatable": "1",
+      "requested_by_active_regular_containers": 1
+    }
+  ],
+  "storage": {
+    "namespace": "semantic-navigation",
+    "claim": "sam3-checkpoint",
+    "phase": "Bound",
+    "accessModes": [
+      "ReadWriteOnce"
+    ],
+    "storageClass": "gp3-csi"
+  },
+  "gate": "G0",
+  "status": "HOLD",
+  "remaining": [
+    "Require relevant OpenShift AI component reconciliation to succeed.",
+    "Reproduce and archive a baseline off/on pair with frozen Phase 6 configuration.",
+    "Provision serving-project checkpoint PVC, verify checksum, and reserve L40S capacity separately from rendering.",
+    "Issue short-lived internal TLS/client credentials and validate namespace, quotas, permissions and routing.",
+    "Build a runtime digest and server-dry-run final resources in the destination project."
+  ],
+  "capacity_note": "Snapshot only, not a GPU reservation; excludes init-container and scheduler constraints."
+}

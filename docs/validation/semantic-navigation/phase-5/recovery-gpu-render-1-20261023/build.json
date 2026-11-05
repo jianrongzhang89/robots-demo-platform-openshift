@@ -1,0 +1,161 @@
+{
+  "apiVersion": "build.openshift.io/v1",
+  "kind": "Build",
+  "metadata": {
+    "annotations": {
+      "openshift.io/build-config.name": "semantic-safety-console-phase5",
+      "openshift.io/build.number": "17",
+      "openshift.io/build.pod-name": "semantic-safety-console-phase5-17-build"
+    },
+    "creationTimestamp": "2026-10-23T18:12:30Z",
+    "generation": 2,
+    "labels": {
+      "buildconfig": "semantic-safety-console-phase5",
+      "openshift.io/build-config.name": "semantic-safety-console-phase5",
+      "openshift.io/build.start-policy": "Serial"
+    },
+    "name": "semantic-safety-console-phase5-17",
+    "namespace": "semantic-navigation",
+    "ownerReferences": [
+      {
+        "apiVersion": "build.openshift.io/v1",
+        "controller": true,
+        "kind": "BuildConfig",
+        "name": "semantic-safety-console-phase5",
+        "uid": "22e3050b-68bd-4c47-818b-c6b3a771ca22"
+      }
+    ],
+    "resourceVersion": "460616223",
+    "uid": "af5dbbeb-be8e-491a-970d-6a955e6995d5"
+  },
+  "spec": {
+    "nodeSelector": null,
+    "output": {
+      "pushSecret": {
+        "name": "builder-dockercfg-htt4p"
+      },
+      "to": {
+        "kind": "ImageStreamTag",
+        "name": "semantic-safety:phase5-console-candidate"
+      }
+    },
+    "postCommit": {},
+    "resources": {
+      "limits": {
+        "cpu": "2",
+        "memory": "4Gi"
+      },
+      "requests": {
+        "cpu": "1",
+        "memory": "2Gi"
+      }
+    },
+    "revision": {
+      "git": {
+        "author": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "commit": "8396f491a7c63406603043ebe9f1276313b6d8ce",
+        "committer": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "message": "Add opt-in GPU rendering for the hotel fixture\n\nThe thread-probe diagnostic showed the RGB-D camera's llvmpipe software\nrendering saturating the console Gazebo server (~3 cores continuously,\nmain thread ~80%) and stalling physics beyond the 100 ms command budget\non non-GPU nodes. A new --gpu-rendering runner flag pins the fixture to\na GPU worker, requests one nvidia.com/gpu with full driver capabilities\n(feasibility-verified: libEGL_nvidia and the graphics stack are mounted),\ntolerates the g5/g6e taints, and sets PHASE5_HEADLESS_RENDERING=1; the\nconsole server then selects EGL headless rendering via ServerConfig.\nThe forced-software GL profile is unchanged for non-GPU runs. The flag\nrequires a pinned node, hotel suite, and is mutually exclusive with the\nnon-GPU placement guards; the summary records headless_gpu_rendering.\nRendering-context selection only: physics, watchdog, and every safety\nthreshold are unchanged."
+      },
+      "type": "Git"
+    },
+    "serviceAccount": "builder",
+    "source": {
+      "binary": {},
+      "type": "Binary"
+    },
+    "strategy": {
+      "dockerStrategy": {
+        "dockerfilePath": "Containerfile.console"
+      },
+      "type": "Docker"
+    }
+  },
+  "status": {
+    "completionTimestamp": "2026-10-23T18:17:54Z",
+    "conditions": [
+      {
+        "lastTransitionTime": "2026-10-23T18:12:30Z",
+        "lastUpdateTime": "2026-10-23T18:12:30Z",
+        "status": "False",
+        "type": "New"
+      },
+      {
+        "lastTransitionTime": "2026-10-23T18:12:31Z",
+        "lastUpdateTime": "2026-10-23T18:12:31Z",
+        "status": "False",
+        "type": "Pending"
+      },
+      {
+        "lastTransitionTime": "2026-10-23T18:17:54Z",
+        "lastUpdateTime": "2026-10-23T18:17:54Z",
+        "status": "False",
+        "type": "Running"
+      },
+      {
+        "lastTransitionTime": "2026-10-23T18:17:54Z",
+        "lastUpdateTime": "2026-10-23T18:17:54Z",
+        "status": "True",
+        "type": "Complete"
+      }
+    ],
+    "config": {
+      "kind": "BuildConfig",
+      "name": "semantic-safety-console-phase5",
+      "namespace": "semantic-navigation"
+    },
+    "duration": 324000000000,
+    "output": {
+      "to": {
+        "imageDigest": "sha256:ba1ce67c52259d3ef72f62cf155c59427e1cf7ca8f6c08794d8ae425d8572b3f"
+      }
+    },
+    "outputDockerImageReference": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety:phase5-console-candidate",
+    "phase": "Complete",
+    "stages": [
+      {
+        "durationMilliseconds": 125602,
+        "name": "PullImages",
+        "startTime": "2026-10-23T18:12:34Z",
+        "steps": [
+          {
+            "durationMilliseconds": 125602,
+            "name": "PullBaseImage",
+            "startTime": "2026-10-23T18:12:34Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 185762,
+        "name": "Build",
+        "startTime": "2026-10-23T18:14:39Z",
+        "steps": [
+          {
+            "durationMilliseconds": 185762,
+            "name": "DockerBuild",
+            "startTime": "2026-10-23T18:14:39Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 6772,
+        "name": "PushImage",
+        "startTime": "2026-10-23T18:17:45Z",
+        "steps": [
+          {
+            "durationMilliseconds": 6772,
+            "name": "PushDockerImage",
+            "startTime": "2026-10-23T18:17:45Z"
+          }
+        ]
+      }
+    ],
+    "startTimestamp": "2026-10-23T18:12:30Z"
+  }
+}

@@ -1,0 +1,451 @@
+{
+  "pods": [
+    {
+      "name": "semantic-phase3-simulator",
+      "uid": "06c9269e-92b6-4115-8dc3-9a0f39c025da",
+      "node": "ip-10-0-38-113.ec2.internal",
+      "started": "2026-10-16T16:33:10Z",
+      "containers": [
+        {
+          "name": "simulator",
+          "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:d417c9f252d1f89dd859290a4bca1f634bcfd7d3cde6d1702c409d432bd48894",
+          "resources": {
+            "limits": {
+              "cpu": "12",
+              "memory": "8Gi"
+            },
+            "requests": {
+              "cpu": "1",
+              "memory": "3Gi"
+            }
+          }
+        },
+        {
+          "name": "camera-compressor",
+          "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:c3ba94bbcbbe2283f1c46ea0f2baba398da313ffe83d2b59a63272ef91d95ebf",
+          "resources": {
+            "limits": {
+              "cpu": "2",
+              "memory": "2Gi"
+            },
+            "requests": {
+              "cpu": "250m",
+              "memory": "512Mi"
+            }
+          }
+        },
+        {
+          "name": "sim-zenoh-bridge",
+          "image": "eclipse/zenoh-bridge-ros2dds:1.5.0",
+          "resources": {
+            "limits": {
+              "cpu": "1",
+              "memory": "1Gi"
+            },
+            "requests": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            }
+          }
+        }
+      ],
+      "status": [
+        {
+          "allocatedResources": {
+            "cpu": "250m",
+            "memory": "512Mi"
+          },
+          "containerID": "cri-o://6648cd2627d55b57484bdd706e08eb9ddd6b639ea091b5c15db3e1b893c864f1",
+          "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:c3ba94bbcbbe2283f1c46ea0f2baba398da313ffe83d2b59a63272ef91d95ebf",
+          "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:c3ba94bbcbbe2283f1c46ea0f2baba398da313ffe83d2b59a63272ef91d95ebf",
+          "lastState": {},
+          "name": "camera-compressor",
+          "ready": true,
+          "resources": {
+            "limits": {
+              "cpu": "2",
+              "memory": "2Gi"
+            },
+            "requests": {
+              "cpu": "250m",
+              "memory": "512Mi"
+            }
+          },
+          "restartCount": 0,
+          "started": true,
+          "state": {
+            "running": {
+              "startedAt": "2026-10-16T16:33:11Z"
+            }
+          },
+          "user": {
+            "linux": {
+              "gid": 0,
+              "supplementalGroups": [
+                0
+              ],
+              "uid": 1001340000
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/phase3-config",
+              "name": "config",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-q45h5",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        },
+        {
+          "allocatedResources": {
+            "cpu": "100m",
+            "memory": "128Mi"
+          },
+          "containerID": "cri-o://f12c2e76f9408cebae8c11c16592b513e95651367a1e6edec77e8d294edfc166",
+          "image": "docker.io/eclipse/zenoh-bridge-ros2dds:1.5.0",
+          "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+          "lastState": {},
+          "name": "sim-zenoh-bridge",
+          "ready": true,
+          "resources": {
+            "limits": {
+              "cpu": "1",
+              "memory": "1Gi"
+            },
+            "requests": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            }
+          },
+          "restartCount": 0,
+          "started": true,
+          "state": {
+            "running": {
+              "startedAt": "2026-10-16T16:33:11Z"
+            }
+          },
+          "user": {
+            "linux": {
+              "gid": 0,
+              "supplementalGroups": [
+                0
+              ],
+              "uid": 1001340000
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/phase3-config",
+              "name": "config",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-q45h5",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        },
+        {
+          "allocatedResources": {
+            "cpu": "1",
+            "memory": "3Gi"
+          },
+          "containerID": "cri-o://52e828da231958f7c855e5dd692d3b55730f72d59bc6a5f9d7632151f0493a3b",
+          "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:d417c9f252d1f89dd859290a4bca1f634bcfd7d3cde6d1702c409d432bd48894",
+          "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:d417c9f252d1f89dd859290a4bca1f634bcfd7d3cde6d1702c409d432bd48894",
+          "lastState": {},
+          "name": "simulator",
+          "ready": true,
+          "resources": {
+            "limits": {
+              "cpu": "12",
+              "memory": "8Gi"
+            },
+            "requests": {
+              "cpu": "1",
+              "memory": "3Gi"
+            }
+          },
+          "restartCount": 0,
+          "started": true,
+          "state": {
+            "running": {
+              "startedAt": "2026-10-16T16:33:10Z"
+            }
+          },
+          "user": {
+            "linux": {
+              "gid": 0,
+              "supplementalGroups": [
+                0
+              ],
+              "uid": 1001340000
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/phase3-config",
+              "name": "config",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-q45h5",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "semantic-phase3-inference",
+      "uid": "2402529a-7de2-46b0-b804-5463ffaeecf3",
+      "node": "ip-10-0-18-251.ec2.internal",
+      "started": "2026-10-16T16:18:33Z",
+      "containers": [
+        {
+          "name": "inference-zenoh-bridge",
+          "image": "eclipse/zenoh-bridge-ros2dds:1.5.0",
+          "resources": {
+            "limits": {
+              "cpu": "500m",
+              "memory": "512Mi"
+            },
+            "requests": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            }
+          }
+        },
+        {
+          "name": "sam3-inference",
+          "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/sam3-runtime@sha256:f4972af2f294c57d5662284fe3ad027b113fbed990690c55cbeacc4f19512726",
+          "resources": {
+            "limits": {
+              "cpu": "6",
+              "memory": "24Gi",
+              "nvidia.com/gpu": "1"
+            },
+            "requests": {
+              "cpu": "3",
+              "memory": "12Gi",
+              "nvidia.com/gpu": "1"
+            }
+          }
+        }
+      ],
+      "status": [
+        {
+          "allocatedResources": {
+            "cpu": "100m",
+            "memory": "128Mi"
+          },
+          "containerID": "cri-o://fbbfbe01a4ffd4df0e1227a1299bd078f6c887157d0d68f3b1d774d62b71e491",
+          "image": "docker.io/eclipse/zenoh-bridge-ros2dds:1.5.0",
+          "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+          "lastState": {},
+          "name": "inference-zenoh-bridge",
+          "ready": true,
+          "resources": {
+            "limits": {
+              "cpu": "500m",
+              "memory": "512Mi"
+            },
+            "requests": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            }
+          },
+          "restartCount": 0,
+          "started": true,
+          "state": {
+            "running": {
+              "startedAt": "2026-10-16T16:18:35Z"
+            }
+          },
+          "user": {
+            "linux": {
+              "gid": 0,
+              "supplementalGroups": [
+                0,
+                1001340000
+              ],
+              "uid": 1001340000
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/phase3-config",
+              "name": "config",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-jlgqx",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        },
+        {
+          "allocatedResources": {
+            "cpu": "3",
+            "memory": "12Gi",
+            "nvidia.com/gpu": "1"
+          },
+          "containerID": "cri-o://2116cf10d38864229497c191bec08cc594892ec1a3dfcf7a0ef0c8e94873cc33",
+          "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/sam3-runtime@sha256:f4972af2f294c57d5662284fe3ad027b113fbed990690c55cbeacc4f19512726",
+          "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/sam3-runtime@sha256:f4972af2f294c57d5662284fe3ad027b113fbed990690c55cbeacc4f19512726",
+          "lastState": {
+            "terminated": {
+              "containerID": "cri-o://f4472f05087a181d15799070bae2058234ad4552be42b3eb48516a15f37256fe",
+              "exitCode": 0,
+              "finishedAt": "2026-10-16T16:42:54Z",
+              "reason": "Completed",
+              "startedAt": "2026-10-16T16:37:28Z"
+            }
+          },
+          "name": "sam3-inference",
+          "ready": true,
+          "resources": {
+            "limits": {
+              "cpu": "6",
+              "memory": "24Gi",
+              "nvidia.com/gpu": "1"
+            },
+            "requests": {
+              "cpu": "3",
+              "memory": "12Gi",
+              "nvidia.com/gpu": "1"
+            }
+          },
+          "restartCount": 3,
+          "started": true,
+          "state": {
+            "running": {
+              "startedAt": "2026-10-16T16:43:06Z"
+            }
+          },
+          "user": {
+            "linux": {
+              "gid": 0,
+              "supplementalGroups": [
+                0,
+                1001340000
+              ],
+              "uid": 1001340000
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/phase3-config",
+              "name": "config",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/models",
+              "name": "model",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-jlgqx",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "semantic-phase3-router",
+      "uid": "d94535c0-6a60-44ee-8fb0-e0460d9ac1c0",
+      "node": "ip-10-0-44-171.ec2.internal",
+      "started": "2026-10-16T15:54:30Z",
+      "containers": [
+        {
+          "name": "router",
+          "image": "eclipse/zenoh:1.5.0",
+          "resources": {
+            "limits": {
+              "cpu": "500m",
+              "memory": "512Mi"
+            },
+            "requests": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            }
+          }
+        }
+      ],
+      "status": [
+        {
+          "allocatedResources": {
+            "cpu": "100m",
+            "memory": "128Mi"
+          },
+          "containerID": "cri-o://09eb9003e0fff58056bded0ca0aafa45fba2433bc3d8cf0dae6992005d9fb153",
+          "image": "docker.io/eclipse/zenoh:1.5.0",
+          "imageID": "docker.io/eclipse/zenoh@sha256:137310456cc7a75d955063513207c737f25071fbb74fd7641835c50ab8e3369f",
+          "lastState": {},
+          "name": "router",
+          "ready": true,
+          "resources": {
+            "limits": {
+              "cpu": "500m",
+              "memory": "512Mi"
+            },
+            "requests": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            }
+          },
+          "restartCount": 0,
+          "started": true,
+          "state": {
+            "running": {
+              "startedAt": "2026-10-16T15:54:30Z"
+            }
+          },
+          "user": {
+            "linux": {
+              "gid": 0,
+              "supplementalGroups": [
+                0
+              ],
+              "uid": 1001340000
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/phase3-config",
+              "name": "config",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-zt6b2",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

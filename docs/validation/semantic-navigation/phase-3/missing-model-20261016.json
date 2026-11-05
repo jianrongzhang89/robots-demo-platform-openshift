@@ -1,0 +1,41 @@
+{
+  "kind": "missing_model",
+  "domain": 81,
+  "status_count": 22,
+  "mask_count": 0,
+  "last_status": {
+    "confidence_threshold": 0.5,
+    "emitted_results": 0,
+    "input_queue_depths": {
+      "camera_info": 0,
+      "depth": 0,
+      "rgb": 0
+    },
+    "input_queue_drops": 0,
+    "last_result": null,
+    "last_valid_result_age_ms": null,
+    "model": "facebook/sam3-original",
+    "model_revision": "3c879f39826c281e95690f02c7821c4de09afae7",
+    "paired_triplets": 0,
+    "policy": "avoid-target/v1",
+    "policy_generation": 1,
+    "prompt": "red mat",
+    "ready": false,
+    "reason": "model_initialization: FileNotFoundError: /nonexistent-phase3-checkpoint/sam3.pt",
+    "state": "not_ready",
+    "stream_epoch": "446ae79b-2162-496b-8897-aa38f22146bc",
+    "timestamp_discards": {
+      "depth": 0,
+      "info": 0,
+      "rgb": 0
+    },
+    "versions": {
+      "decoder": "sam3-binary-instances/v1",
+      "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+      "preprocess": "sam3-pil-rgb/v1"
+    },
+    "work_queue_depth": 0,
+    "work_queue_drops": 0
+  },
+  "child_logs": "[ERROR] [1792164142.388518053] [sam3_semantic_inference]: model_initialization: FileNotFoundError: /nonexistent-phase3-checkpoint/sam3.pt\nTraceback (most recent call last):\n  File \"/opt/semantic-perception/sam3_ros_node.py\", line 359, in main\n    rclpy.spin(node)\n  File \"/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/__init__.py\", line 247, in spin\n    executor.spin_once()\n  File \"/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py\", line 926, in spin_once\n    self._spin_once_impl(timeout_sec)\n  File \"/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py\", line 907, in _spin_once_impl\n    handler, entity, node = self.wait_for_ready_callbacks(\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py\", line 877, in wait_for_ready_callbacks\n    return next(self._cb_iter)\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py\", line 785, in _wait_for_ready_callbacks\n    raise ExternalShutdownException()\nrclpy.executors.ExternalShutdownException\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/opt/semantic-perception/sam3_ros_node.py\", line 368, in <module>\n    main()\n  File \"/opt/semantic-perception/sam3_ros_node.py\", line 364, in main\n    rclpy.shutdown()\n  File \"/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/__init__.py\", line 134, in shutdown\n    _shutdown(context=context)\n  File \"/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/utilities.py\", line 82, in shutdown\n    context.shutdown()\n  File \"/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/context.py\", line 129, in shutdown\n    self.__context.shutdown()\nrclpy._rclpy_pybind11.RCLError: failed to shutdown: rcl_shutdown already called on the given context, at ./src/rcl/init.c:333\n"
+}

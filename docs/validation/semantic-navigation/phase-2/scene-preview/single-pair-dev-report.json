@@ -1,0 +1,42 @@
+{
+  "status": "SCORED_NOT_ACCEPTED",
+  "split": "development",
+  "model": "facebook/sam3 (local checkpoint)",
+  "checkpoint_sha256": "9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e",
+  "device": "cuda",
+  "device_name": "NVIDIA L40S",
+  "prompt": "red floor mat",
+  "confidence_threshold": 0.5,
+  "image_count": 2,
+  "positive_count": 1,
+  "negative_count": 1,
+  "positive_recall_iou_ge_0_5": 1.0,
+  "positive_median_iou_including_misses": 0.9989785495403473,
+  "negative_false_positive_frame_rate": 0.0,
+  "inference_seconds_median": 0.480129,
+  "inference_seconds_p95": 0.8260637999999999,
+  "peak_gpu_allocated_bytes": 5451386880,
+  "peak_gpu_reserved_bytes": 5674893312,
+  "results": [
+    {
+      "image": "/phase2-data/..2026_10_14_01_49_12.3307229013/scene-preview-corrected.jpg",
+      "presence": "positive",
+      "iou": 0.998979,
+      "detected": true,
+      "scores": [
+        0.81640625
+      ],
+      "inference_seconds": 0.864501,
+      "prediction_mask": "/phase2-out/0000-prediction.png"
+    },
+    {
+      "image": "/phase2-data/..2026_10_14_01_49_12.3307229013/angle-check.jpg",
+      "presence": "negative",
+      "iou": 0.0,
+      "detected": false,
+      "scores": [],
+      "inference_seconds": 0.095757,
+      "prediction_mask": "/phase2-out/0001-prediction.png"
+    }
+  ]
+}

@@ -1,0 +1,827 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: semantic-phase6-d2-nav2-config-on
+  namespace: semantic-navigation
+  labels:
+    app.kubernetes.io/part-of: semantic-navigation-demo
+    semantic-navigation.robots-demo/phase: phase6d-d2-on
+data:
+  cyclonedds.xml: "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<CycloneDDS xmlns=\"\
+    https://cdds.io/config\">\n  <Domain id=\"any\">\n    <General><Interfaces><NetworkInterface\
+    \ name=\"lo\" /></Interfaces><AllowMulticast>false</AllowMulticast></General>\n\
+    \    <Discovery><ParticipantIndex>auto</ParticipantIndex></Discovery>\n  </Domain>\n\
+    </CycloneDDS>"
+  entrypoint_phase6_nav2.sh: "#!/usr/bin/env bash\nset -Ee -o pipefail\nexport HOME=\"\
+    ${HOME:-/tmp/phase6-nav2-home}\"\nexport ROS_HOME=\"${ROS_HOME:-${HOME}/.ros}\"\
+    \nexport ROS_LOG_DIR=\"${ROS_LOG_DIR:-${ROS_HOME}/log}\"\nmkdir -p \"${ROS_LOG_DIR}\"\
+    \nsource /opt/ros/jazzy/setup.bash\nsource /opt/semantic-costmap-ws/install/setup.bash\n\
+    wait_for_topic() {\n  local topic=\"$1\"\n  for attempt in {1..30}; do\n    if\
+    \ timeout 3 ros2 topic echo \"$topic\" --once >/dev/null 2>&1; then\n      return\
+    \ 0\n    fi\n    sleep 1\n  done\n  echo \"required D2 input did not become live:\
+    \ $topic\" >&2\n  return 1\n}\n# The simulator and its bridge start independently.\
+    \ Give the adapter sidecars\n# time to establish live inputs before Nav2's lifecycle\
+    \ manager activates its\n# costmaps (which require odom->base TF immediately).\n\
+    wait_for_topic /clock\nwait_for_topic /odom\nwait_for_topic /scan_fixed\nwait_for_topic\
+    \ /tf\nsleep 2\n\nexec ros2 launch /opt/ros2-demo/nav2/hotel_nav2_federated_launch.py\
+    \ \\\n  map:=\"${PHASE6_MAP:-/opt/ros2-demo/maps/hotel_L1.yaml}\" \\\n  params_file:=\"\
+    ${PHASE6_PARAMS:-/phase6-nav2-config/phase6-demo-nav2-candidate.yaml}\""
+  phase6-demo-nav2-on.yaml: "amcl:\n  ros__parameters:\n    use_sim_time: true\n \
+    \   alpha1: 0.2\n    alpha2: 0.2\n    alpha3: 0.2\n    alpha4: 0.2\n    alpha5:\
+    \ 0.2\n    base_frame_id: base_footprint\n    global_frame_id: map\n    odom_frame_id:\
+    \ odom\n    scan_topic: scan_fixed\n    set_initial_pose: false\n    first_map_only:\
+    \ false\n    tf_broadcast: false\n    transform_tolerance: 0.5\n    min_particles:\
+    \ 500\n    max_particles: 2000\n    laser_model_type: likelihood_field\n    laser_min_range:\
+    \ 0.12\n    laser_max_range: 12.0\n    max_beams: 60\n    update_min_d: 0.05\n\
+    \    update_min_a: 0.1\nbt_navigator:\n  ros__parameters:\n    use_sim_time: true\n\
+    \    global_frame: map\n    robot_base_frame: base_footprint\n    odom_topic:\
+    \ odom\n    bt_loop_duration: 10\n    default_server_timeout: 5000\n    wait_for_service_timeout:\
+    \ 1000\n    navigators:\n    - navigate_to_pose\n    - navigate_through_poses\n\
+    \    navigate_to_pose:\n      plugin: nav2_bt_navigator::NavigateToPoseNavigator\n\
+    \    navigate_through_poses:\n      plugin: nav2_bt_navigator::NavigateThroughPosesNavigator\n\
+    controller_server:\n  ros__parameters:\n    use_sim_time: true\n    controller_frequency:\
+    \ 20.0\n    min_x_velocity_threshold: 0.001\n    min_y_velocity_threshold: 0.5\n\
+    \    min_theta_velocity_threshold: 0.001\n    progress_checker_plugins:\n    -\
+    \ progress_checker\n    goal_checker_plugins:\n    - general_goal_checker\n  \
+    \  controller_plugins:\n    - FollowPath\n    progress_checker:\n      plugin:\
+    \ nav2_controller::SimpleProgressChecker\n      required_movement_radius: 0.05\n\
+    \      movement_time_allowance: 90.0\n    general_goal_checker:\n      plugin:\
+    \ nav2_controller::SimpleGoalChecker\n      stateful: true\n      xy_goal_tolerance:\
+    \ 0.2\n      yaw_goal_tolerance: 0.35\n    FollowPath:\n      plugin: nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController\n\
+    \      desired_linear_vel: 0.12\n      lookahead_dist: 0.5\n      min_lookahead_dist:\
+    \ 0.25\n      max_lookahead_dist: 0.9\n      transform_tolerance: 0.2\n      use_collision_detection:\
+    \ true\n      allow_reversing: false\n      regulated_linear_scaling_min_speed:\
+    \ 0.06\n      min_approach_linear_velocity: 0.04\n      stateful: false\n    \
+    \  use_rotate_to_heading: false\nplanner_server:\n  ros__parameters:\n    use_sim_time:\
+    \ true\n    planner_plugins:\n    - GridBased\n    GridBased:\n      plugin: nav2_navfn_planner::NavfnPlanner\n\
+    \      tolerance: 0.25\n      use_astar: true\n      allow_unknown: true\nlocal_costmap:\n\
+    \  local_costmap:\n    ros__parameters:\n      use_sim_time: true\n      global_frame:\
+    \ odom\n      robot_base_frame: base_footprint\n      rolling_window: true\n \
+    \     width: 4\n      height: 4\n      resolution: 0.05\n      robot_radius: 0.246\n\
+    \      plugins:\n      - voxel_layer\n      - semantic_layer\n      - inflation_layer\n\
+    \      voxel_layer:\n        plugin: nav2_costmap_2d::VoxelLayer\n        enabled:\
+    \ true\n        observation_sources: scan\n        scan:\n          topic: scan_fixed\n\
+    \          data_type: LaserScan\n          marking: true\n          clearing:\
+    \ true\n          obstacle_max_range: 3.5\n          raytrace_max_range: 4.0\n\
+    \      inflation_layer:\n        plugin: nav2_costmap_2d::InflationLayer\n   \
+    \     inflation_radius: 0.6\n        cost_scaling_factor: 3.0\n        enabled:\
+    \ true\n      semantic_layer:\n        plugin: demo_semantic_costmap::SemanticLayer\n\
+    \        enabled: false\n        topic_prefix: /robot_1/semantic\n        observation_lifetime:\
+    \ 1.0\n        max_capture_age: 0.5\n        target_cost: 254\n        optical_frame:\
+    \ camera_color_optical_frame\nglobal_costmap:\n  global_costmap:\n    ros__parameters:\n\
+    \      use_sim_time: true\n      global_frame: map\n      robot_base_frame: base_footprint\n\
+    \      resolution: 0.05\n      track_unknown_space: true\n      robot_radius:\
+    \ 0.246\n      plugins:\n      - static_layer\n      - obstacle_layer\n      -\
+    \ semantic_layer\n      - inflation_layer\n      static_layer:\n        plugin:\
+    \ nav2_costmap_2d::StaticLayer\n        map_subscribe_transient_local: true\n\
+    \      obstacle_layer:\n        plugin: nav2_costmap_2d::ObstacleLayer\n     \
+    \   enabled: false\n        observation_sources: scan\n        scan:\n       \
+    \   topic: scan_fixed\n          data_type: LaserScan\n          marking: true\n\
+    \          clearing: true\n          obstacle_max_range: 3.5\n          raytrace_max_range:\
+    \ 4.0\n      inflation_layer:\n        plugin: nav2_costmap_2d::InflationLayer\n\
+    \        enabled: true\n        inflation_radius: 0.6\n        cost_scaling_factor:\
+    \ 3.0\n      semantic_layer:\n        plugin: demo_semantic_costmap::SemanticLayer\n\
+    \        enabled: true\n        topic_prefix: /robot_1/semantic\n        observation_lifetime:\
+    \ 1.0\n        max_capture_age: 0.5\n        target_cost: 254\n        optical_frame:\
+    \ camera_color_optical_frame\nbehavior_server:\n  ros__parameters:\n    use_sim_time:\
+    \ true\n    behavior_plugins:\n    - spin\n    - backup\n    - drive_on_heading\n\
+    \    - wait\n    spin:\n      plugin: nav2_behaviors::Spin\n    backup:\n    \
+    \  plugin: nav2_behaviors::BackUp\n    drive_on_heading:\n      plugin: nav2_behaviors::DriveOnHeading\n\
+    \    wait:\n      plugin: nav2_behaviors::Wait\nsmoother_server:\n  ros__parameters:\n\
+    \    use_sim_time: true\n    smoother_plugins:\n    - simple_smoother\n    simple_smoother:\n\
+    \      plugin: nav2_smoother::SimpleSmoother\nwaypoint_follower:\n  ros__parameters:\n\
+    \    use_sim_time: true\n    stop_on_failure: true\nvelocity_smoother:\n  ros__parameters:\n\
+    \    use_sim_time: true\n    smoothing_frequency: 20.0\n    feedback: OPEN_LOOP\n\
+    \    max_velocity:\n    - 0.12\n    - 0.0\n    - 0.45\n    min_velocity:\n   \
+    \ - -0.12\n    - 0.0\n    - -0.45\n    max_accel:\n    - 0.3\n    - 0.0\n    -\
+    \ 0.4\n    max_decel:\n    - -0.5\n    - 0.0\n    - -0.6\n    odom_topic: odom\n\
+    \    velocity_timeout: 0.5\ncollision_monitor:\n  ros__parameters:\n    base_frame_id:\
+    \ base_footprint\n    odom_frame_id: odom\n    cmd_vel_in_topic: cmd_vel_smoothed\n\
+    \    cmd_vel_out_topic: cmd_vel\n    state_topic: collision_monitor_state\n  \
+    \  transform_tolerance: 0.2\n    source_timeout: 1.0\n    base_shift_correction:\
+    \ true\n    stop_pub_timeout: 2.0\n    polygons:\n    - FootprintApproach\n  \
+    \  FootprintApproach:\n      type: polygon\n      action_type: approach\n    \
+    \  footprint_topic: local_costmap/published_footprint\n      time_before_collision:\
+    \ 0.5\n      simulation_time_step: 0.1\n      min_points: 6\n      visualize:\
+    \ false\n      enabled: true\n    observation_sources:\n    - scan\n    scan:\n\
+    \      type: scan\n      topic: scan_fixed\n      min_height: 0.15\n      max_height:\
+    \ 2.0\n      enabled: true\ndocking_server:\n  ros__parameters:\n    controller_frequency:\
+    \ 50.0\n    initial_perception_timeout: 5.0\n    wait_charge_timeout: 5.0\n  \
+    \  dock_approach_timeout: 30.0\n    undock_linear_tolerance: 0.05\n    undock_angular_tolerance:\
+    \ 0.1\n    max_retries: 3\n    base_frame: base_link\n    fixed_frame: odom\n\
+    \    dock_backwards: false\n    dock_prestaging_tolerance: 0.5\n    dock_plugins:\n\
+    \    - simple_charging_dock\n    simple_charging_dock:\n      plugin: opennav_docking::SimpleChargingDock\n\
+    \      docking_threshold: 0.05\n      staging_x_offset: -0.7\n      use_external_detection_pose:\
+    \ true\n      use_battery_status: false\n      use_stall_detection: false\n  \
+    \    external_detection_timeout: 1.0\n      external_detection_translation_x:\
+    \ -0.18\n      external_detection_translation_y: 0.0\n      external_detection_rotation_roll:\
+    \ -1.57\n      external_detection_rotation_pitch: -1.57\n      external_detection_rotation_yaw:\
+    \ 0.0\n      filter_coef: 0.1\n    controller:\n      k_phi: 3.0\n      k_delta:\
+    \ 2.0\n      v_linear_min: 0.15\n      v_linear_max: 0.15\n      use_collision_detection:\
+    \ true\n      costmap_topic: local_costmap/costmap_raw\n      footprint_topic:\
+    \ local_costmap/published_footprint\n      transform_tolerance: 0.1\n      projection_time:\
+    \ 5.0\n      simulation_step: 0.1\n      dock_collision_threshold: 0.3\n"
+  install_phase1_camera.py: "#!/usr/bin/env python3\n\"\"\"Add the isolated semantic-navigation\
+    \ RGB-D sensor to a hotel world.\"\"\"\n\nfrom __future__ import annotations\n\
+    \nimport argparse\nimport math\nimport os\nimport xml.etree.ElementTree as ET\n\
+    from pathlib import Path\n\n\ndef add_camera(world_path: Path, robot_name: str\
+    \ = \"robot_1\") -> None:\n    tree = ET.parse(world_path)\n    model = tree.getroot().find(f\"\
+    .//model[@name='{robot_name}']\")\n    if model is None:\n        raise ValueError(f\"\
+    robot model {robot_name!r} not found in {world_path}\")\n    if model.find(\"\
+    link[@name='camera_link']\") is not None:\n        raise ValueError(\"camera_link\
+    \ already exists; refusing to patch twice\")\n\n    link = ET.SubElement(model,\
+    \ \"link\", {\"name\": \"camera_link\"})\n    ET.SubElement(link, \"pose\", {\"\
+    relative_to\": \"base_link\"}).text = \"0.11 0 0.15 0 0 0\"\n    inertial = ET.SubElement(link,\
+    \ \"inertial\")\n    ET.SubElement(inertial, \"mass\").text = \"0.01\"\n    inertia\
+    \ = ET.SubElement(inertial, \"inertia\")\n    for name, value in ((\"ixx\", \"\
+    0.00001\"), (\"iyy\", \"0.00001\"), (\"izz\", \"0.00001\"),\n                \
+    \        (\"ixy\", \"0\"), (\"ixz\", \"0\"), (\"iyz\", \"0\")):\n        ET.SubElement(inertia,\
+    \ name).text = value\n\n    sensor = ET.SubElement(link, \"sensor\", {\"name\"\
+    : \"rgbd_camera\", \"type\": \"rgbd_camera\"})\n    ET.SubElement(sensor, \"always_on\"\
+    ).text = \"true\"\n    ET.SubElement(sensor, \"update_rate\").text = \"10\"\n\
+    \    ET.SubElement(sensor, \"topic\").text = f\"/{robot_name}/camera\"\n    ET.SubElement(sensor,\
+    \ \"gz_frame_id\").text = \"camera_color_optical_frame\"\n    camera = ET.SubElement(sensor,\
+    \ \"camera\")\n    ET.SubElement(camera, \"horizontal_fov\").text = \"1.04719755\"\
+    \n    image = ET.SubElement(camera, \"image\")\n    ET.SubElement(image, \"width\"\
+    ).text = \"640\"\n    ET.SubElement(image, \"height\").text = \"480\"\n    ET.SubElement(image,\
+    \ \"format\").text = \"R8G8B8\"\n    clip = ET.SubElement(camera, \"clip\")\n\
+    \    ET.SubElement(clip, \"near\").text = \"0.15\"\n    ET.SubElement(clip, \"\
+    far\").text = \"5.0\"\n    ET.SubElement(sensor, \"visualize\").text = \"false\"\
+    \n\n    joint = ET.SubElement(model, \"joint\", {\"name\": \"camera_joint\", \"\
+    type\": \"fixed\"})\n    ET.SubElement(joint, \"parent\").text = \"base_link\"\
+    \n    ET.SubElement(joint, \"child\").text = \"camera_link\"\n\n    tree.write(world_path,\
+    \ encoding=\"utf-8\", xml_declaration=True)\n\n\ndef add_bridge_to_entrypoint(entrypoint_path:\
+    \ Path, bridge_config: str) -> None:\n    script = entrypoint_path.read_text()\n\
+    \    marker = 'echo \"[hotel-sim] Canonical federated Gazebo simulation ready\"\
+    '\n    if \"semantic_camera_bridge\" in script:\n        raise ValueError(\"semantic\
+    \ camera bridge is already installed in entrypoint\")\n    if marker not in script:\n\
+    \        raise ValueError(f\"expected startup marker not found in {entrypoint_path}\"\
+    )\n    command = (\n        'echo \"[semantic-camera] Starting RGB-D Gazebo-to-ROS\
+    \ bridge\"\\n'\n        f'ros2 launch ros_gz_bridge ros_gz_bridge.launch.py '\n\
+    \        f'bridge_name:=semantic_camera_bridge config_file:={bridge_config} &\\\
+    n'\n        'pids+=(\"$!\")\\n\\n'\n    )\n    entrypoint_path.write_text(script.replace(marker,\
+    \ command + marker))\n\n\ndef add_phase2_targets(world_path: Path, *, phase6_demo:\
+    \ bool = False) -> None:\n    \"\"\"Add a recognizable mat and a visual distractor\
+    \ to the isolated world.\n\n    ``phase6_demo`` is an explicit D2-only geometry\
+    \ variant: 1.2 m along\n    the route and 1.95 m across it (three times the previous\
+    \ 0.65 m width).\n    The Phase 2/fixture geometry remains unchanged for default\
+    \ callers.\n    \"\"\"\n    tree = ET.parse(world_path)\n    world = tree.getroot().find(\"\
+    world\")\n    if world is None:\n        raise ValueError(f\"world element not\
+    \ found in {world_path}\")\n    if world.find(\"model[@name='semantic_target_mat']\"\
+    ) is not None:\n        raise ValueError(\"Phase 2 target already exists; refusing\
+    \ to patch twice\")\n\n    def slab(name: str, x: float, y: float, sx: float,\
+    \ sy: float,\n             color: tuple[float, float, float]) -> ET.Element:\n\
+    \        model = ET.Element(\"model\", {\"name\": name})\n        ET.SubElement(model,\
+    \ \"static\").text = \"true\"\n        ET.SubElement(model, \"pose\").text = f\"\
+    {x} {y} 0.005 0 0 0\"\n        link = ET.SubElement(model, \"link\", {\"name\"\
+    : \"surface\"})\n        visual = ET.SubElement(link, \"visual\", {\"name\": \"\
+    visual\"})\n        visual_geometry = ET.SubElement(visual, \"geometry\")\n  \
+    \      ET.SubElement(visual_geometry, \"box\")\n        ET.SubElement(visual_geometry.find(\"\
+    box\"), \"size\").text = f\"{sx} {sy} 0.012\"\n        material = ET.SubElement(visual,\
+    \ \"material\")\n        ET.SubElement(material, \"ambient\").text = f\"{color[0]}\
+    \ {color[1]} {color[2]} 1\"\n        ET.SubElement(material, \"diffuse\").text\
+    \ = f\"{color[0]} {color[1]} {color[2]} 1\"\n        return model\n\n    # The\
+    \ validated hotel runtime pose is (15.4014, -31.5940, yaw\u22480).\n    # Place\
+    \ the target 2 m ahead; do not use the separate TB3 template pose.\n    # 2.7\
+    \ m (2026-10-30 prepared value) left only 0.30 m of runway between\n    # the\
+    \ start and the hull-clearance envelope's west edge \u2014 the >65 deg\n    #\
+    \ escape turn is kinematically infeasible for RPP and the robot cut the\n    #\
+    \ corner into the envelope in every motion trial (notouch-run3/4:\n    # canceled\
+    \ at 0.091 m hull clearance). 1.2 m keeps the direct route\n    # blocked while\
+    \ giving ~1.05 m of runway before the envelope's west edge.\n    mat_length_x\
+    \ = 1.2 if phase6_demo else 0.9\n    # Widen only the standalone demo mat; keep\
+    \ its center, X length,\n    # thickness, and the distractor unchanged.\n    mat_width_y\
+    \ = 1.95 if phase6_demo else 0.65\n    world.append(slab(\"semantic_target_mat\"\
+    , 17.4014, -31.5940, mat_length_x, mat_width_y,\n                      (0.85,\
+    \ 0.08, 0.06)))\n    # Similar footprint, but a neutral tile-like distractor,\
+    \ offset laterally.\n    world.append(slab(\"semantic_distractor_tile\", 17.4014,\
+    \ -30.0940, 0.9, 0.65,\n                      (0.55, 0.52, 0.45)))\n    tree.write(world_path,\
+    \ encoding=\"utf-8\", xml_declaration=True)\n\n\ndef add_lighting_profile(world_path:\
+    \ Path, profile: str) -> None:\n    \"\"\"Apply a repeatable world lighting profile\
+    \ before Gazebo starts.\"\"\"\n    if profile == \"baseline\":\n        return\n\
+    \    if profile != \"dim\":\n        raise ValueError(f\"unsupported lighting\
+    \ profile {profile!r}\")\n    tree = ET.parse(world_path)\n    world = tree.getroot().find(\"\
+    world\")\n    if world is None:\n        raise ValueError(f\"world element not\
+    \ found in {world_path}\")\n    scene = world.find(\"scene\")\n    light = world.find(\"\
+    light[@name='sun']\")\n    if scene is None or light is None:\n        raise ValueError(\"\
+    world must contain a scene and the directional light named 'sun'\")\n    scene.find(\"\
+    ambient\").text = \"0.08 0.08 0.08\"\n    scene.find(\"background\").text = \"\
+    0.12 0.12 0.12\"\n    light.find(\"diffuse\").text = \"0.25 0.25 0.25 1\"\n  \
+    \  light.find(\"specular\").text = \"0.05 0.05 0.05 1\"\n    tree.write(world_path,\
+    \ encoding=\"utf-8\", xml_declaration=True)\n\n\nWARMUP_CAMERA_TEMPLATE = \"\"\
+    \"<model name=\"phase5_warmup_camera_{index}\">\n  <static>true</static>\n  <pose>{x}\
+    \ {y} 0.15 0 0 {yaw}</pose>\n  <link name=\"link\">\n    <sensor name=\"rgbd_camera\"\
+    \ type=\"rgbd_camera\">\n      <always_on>true</always_on>\n      <update_rate>5</update_rate>\n\
+    \      <topic>/phase5/warmup/{index}</topic>\n      <gz_frame_id>phase5_warmup_{index}_optical</gz_frame_id>\n\
+    \      <camera>\n        <horizontal_fov>1.8</horizontal_fov>\n        <image><width>640</width><height>480</height><format>R8G8B8</format></image>\n\
+    \        <clip><near>0.15</near><far>5.0</far></clip>\n      </camera>\n     \
+    \ <visualize>false</visualize>\n    </sensor>\n  </link>\n</model>\"\"\"\n\n\n\
+    def add_phase6_render_warmup(world_path: Path, goal_xy) -> None:\n    \"\"\"Stage\
+    \ the pre-arm render-warmup cameras around the Phase 6 goal.\n\n    User-approved\
+    \ October 28, 2026: the on-arm's goal-approach orbit sweeps\n    the robot camera\
+    \ through scene content not seen on the detour route,\n    and its FIRST render\
+    \ there costs ~190 ms of render-thread CPU (the root\n    of the remaining endgame\
+    \ failure), delaying the gpu_lidar scan ~450 ms\n    and the controller's TF wait\
+    \ ~76 ms past the 100 ms command authority.\n    Twelve static, collision-less\
+    \ rgbd cameras: four at the goal facing\n    N/E/S/W, and eight on the orbit circle\
+    \ (radius 1.3 m \u2014 the observed\n    RPP goal-approach orbit radius) facing\
+    \ OUTWARD, matching the robot\n    camera's actual viewpoints during the orbit\
+    \ (series-15 trial 000-on:\n    the goal-centered set alone missed content visible\
+    \ from the orbit\n    circle through parallax/occlusion \u2014 a fresh ~190 ms\
+    \ spike at sim 56.3).\n    Each covers 1.8 rad of azimuth; the union covers every\
+    \ direction the\n    orbit can expose within the main camera's 5 m far clip. The\
+    \ gz Sensors\n    system never renders sensors without subscribers, so they cost\
+    \ nothing\n    during the armed trial; the fixture subscribes each one briefly\
+    \ during\n    the DISARMED startup (a few frames, forcing the lazy scene content\
+    \ to\n    load), then unsubscribes and they deactivate again. Identical in BOTH\n\
+    \    arms so the paired scene and load stay identical.\n    \"\"\"\n    text =\
+    \ world_path.read_text()\n    if \"phase5_warmup_camera_\" in text:\n        raise\
+    \ ValueError(\"warmup cameras already staged; refusing to patch twice\")\n   \
+    \ poses = []\n    # Four goal-centered cameras facing N/E/S/W.\n    for index\
+    \ in range(4):\n        poses.append((goal_xy[0], goal_xy[1], index * math.pi\
+    \ / 2))\n    # Eight cameras on the orbit circle facing outward, 45 deg apart.\n\
+    \    radius = 1.3\n    for step in range(8):\n        angle = math.pi / 8 + step\
+    \ * math.pi / 4\n        poses.append((goal_xy[0] + radius * math.cos(angle),\n\
+    \                      goal_xy[1] + radius * math.sin(angle),\n              \
+    \        angle))\n    models = \"\".join(WARMUP_CAMERA_TEMPLATE.format(\n    \
+    \    index=index, x=x, y=y, yaw=yaw)\n        for index, (x, y, yaw) in enumerate(poses))\n\
+    \    world_path.write_text(text.replace(\"</world>\", models + \"</world>\"))\n\
+    \n\ndef main() -> None:\n    parser = argparse.ArgumentParser()\n    parser.add_argument(\"\
+    world\", type=Path)\n    parser.add_argument(\"--robot\", default=\"robot_1\"\
+    )\n    parser.add_argument(\"--entrypoint\", type=Path)\n    parser.add_argument(\"\
+    --phase2-targets\", action=\"store_true\")\n    parser.add_argument(\"--bridge-config\"\
+    , default=\"/opt/ros2-demo/config/semantic-camera-bridge.yaml\")\n    args = parser.parse_args()\n\
+    \    add_camera(args.world, args.robot)\n    if args.phase2_targets:\n       \
+    \ phase6_demo = os.environ.get(\"SEMANTIC_PHASE6_DEMO_TARGETS\") == \"1\"\n  \
+    \      if phase6_demo:\n            # The un-supported simplified body pitches\
+    \ onto the floor; wheel\n            # odometry can report a turn while the Gazebo\
+    \ body stays still.\n            # Reuse the private fixture's supports ONLY in\
+    \ the opt-in D2 world.\n            # No canonical SDF/URDF or qualified fixture\
+    \ is modified here.\n            from support_geometry import add_rear_casters\n\
+    \            supported, _ = add_rear_casters(args.world.read_text(), \"<robot/>\"\
+    )\n            args.world.write_text(supported)\n        add_phase2_targets(args.world,\
+    \ phase6_demo=phase6_demo)\n    lighting_profile = os.environ.get(\"SEMANTIC_LIGHTING_PROFILE\"\
+    , \"baseline\")\n    add_lighting_profile(args.world, lighting_profile)\n    if\
+    \ args.entrypoint:\n        add_bridge_to_entrypoint(args.entrypoint, args.bridge_config)\n\
+    \    print(f\"Installed 640x480 RGB-D camera at 10 Hz on {args.robot}: {args.world}\"\
+    )\n\n\nif __name__ == \"__main__\":\n    main()\n"
+  support_geometry.py: "\"\"\"Opt-in rear ball supports for the private simplified\
+    \ robot, not canonical assets.\n\nLike upstream Waffle, use two freely rotating\
+    \ ball-joint casters. Locations are\nadapted to this demo's smaller box hull;\
+    \ all existing collisions/inertias remain.\nURDF represents spherical centres\
+    \ as fixed transforms (orientation is immaterial\nto a sphere); dynamics are defined\
+    \ only by the Gazebo SDF ball joints.\n\"\"\"\nimport xml.etree.ElementTree as\
+    \ ET\n\n\nCASTERS = ((\"rear_left_caster\", -.14, .064), (\"rear_right_caster\"\
+    , -.14, -.064))\n\n\ndef add_rear_casters(world_text, urdf_text):\n    world,urdf=ET.fromstring(world_text),ET.fromstring(urdf_text)\n\
+    \    robot=world.find(\".//model[@name='robot_1']\")\n    if robot is None or\
+    \ len(robot.findall(\"link/collision\"))!=4:\n        raise ValueError(\"expected\
+    \ original four-collision robot\")\n    base=robot.find(\"link[@name='base_link']/collision[@name='base_collision']\"\
+    )\n    if (base is None or [float(x) for x in base.findtext(\"pose\", \"\").split()]!=[-.032,0,.07,0,0,0]\n\
+    \            or [float(x) for x in base.findtext(\"geometry/box/size\", \"\").split()]!=[.28,.31,.14]):\n\
+    \        raise ValueError(\"unqualified chassis geometry\")\n    for side in (\"\
+    left\",\"right\"):\n        wheel=robot.find(f\"link[@name='wheel_{side}_link']\"\
+    )\n        y=.144 if side==\"left\" else -.144\n        if (wheel is None or [float(x)\
+    \ for x in wheel.findtext(\"pose\", \"\").split()]!=[0,y,.023,-1.57,0,0]\n   \
+    \             or float(wheel.findtext(\"collision/geometry/cylinder/radius\",\
+    \ \"nan\"))!=.033):\n            raise ValueError(\"unqualified wheel geometry\"\
+    )\n    for name,x,y in CASTERS:\n        if robot.find(f\"link[@name='{name}']\"\
+    ) is not None or urdf.find(f\"link[@name='{name}']\") is not None:\n         \
+    \   raise ValueError(\"refusing duplicate caster\")\n        robot.append(ET.fromstring(f'''<link\
+    \ name=\"{name}\"><pose>{x} {y} -0.005 0 0 0</pose>\n          <inertial><mass>0.001</mass><inertia><ixx>1e-8</ixx><iyy>1e-8</iyy><izz>1e-8</izz></inertia></inertial>\n\
+    \          <collision name=\"support\"><geometry><sphere><radius>0.005</radius></sphere></geometry>\n\
+    \            <surface><friction><ode><mu>1</mu><mu2>1</mu2></ode>\n          \
+    \    <bullet><friction>1</friction><friction2>1</friction2></bullet></friction></surface></collision>\n\
+    \          <visual name=\"support\"><geometry><sphere><radius>0.005</radius></sphere></geometry></visual></link>'''))\n\
+    \        robot.append(ET.fromstring(f'''<joint name=\"{name}_joint\" type=\"ball\"\
+    >\n          <parent>base_link</parent><child>{name}</child></joint>'''))\n  \
+    \      urdf.append(ET.fromstring(f'''<link name=\"{name}\">\n          <collision><geometry><sphere\
+    \ radius=\"0.005\"/></geometry></collision>\n          <visual><geometry><sphere\
+    \ radius=\"0.005\"/></geometry></visual></link>'''))\n        urdf.append(ET.fromstring(f'''<joint\
+    \ name=\"{name}_centre\" type=\"fixed\">\n          <parent link=\"base_link\"\
+    /><child link=\"{name}\"/><origin xyz=\"{x} {y} -0.005\" rpy=\"0 0 0\"/></joint>'''))\n\
+    \    return ET.tostring(world,encoding=\"unicode\"),ET.tostring(urdf,encoding=\"\
+    unicode\")\n"
+  demo_ground_truth.py: "#!/usr/bin/env python3\n\"\"\"Publish independent Gazebo\
+    \ model-pose telemetry for the private D2 demo.\n\nThis is an observation path,\
+    \ never a velocity publisher or a TF authority.\nWheel-integrated odometry is\
+    \ deliberately not used to construct this pose.\n\"\"\"\nimport math\n\nimport\
+    \ rclpy\nfrom gz.msgs10.pose_v_pb2 import Pose_V\nfrom gz.transport13 import Node\
+    \ as GazeboNode\nfrom nav_msgs.msg import Odometry\n\n\ndef planar_velocity(previous,\
+    \ current):\n    \"\"\"Return body-frame vx/vy and yaw rate from consecutive truth\
+    \ samples.\"\"\"\n    dt = (current[0] - previous[0]) / 1e9\n    if dt <= 0 or\
+    \ dt > 0.5:\n        return None\n    vx = (current[1] - previous[1]) / dt\n \
+    \   vy = (current[2] - previous[2]) / dt\n    yaw = current[3]\n    dyaw = math.atan2(math.sin(yaw\
+    \ - previous[3]), math.cos(yaw - previous[3]))\n    return (math.cos(yaw) * vx\
+    \ + math.sin(yaw) * vy,\n            -math.sin(yaw) * vx + math.cos(yaw) * vy,\
+    \ dyaw / dt)\n\n\nclass GroundTruth:\n    def __init__(self):\n        self.node\
+    \ = rclpy.create_node(\"phase6_demo_ground_truth\")\n        self.publisher =\
+    \ self.node.create_publisher(\n            Odometry, \"/robot_1/demo/ground_truth\"\
+    , 10)\n        self.previous = None\n        self.gz = GazeboNode()\n        if\
+    \ not self.gz.subscribe(Pose_V, \"/world/sim_world/dynamic_pose/info\",\n    \
+    \                             self.on_pose):\n            raise RuntimeError(\"\
+    could not subscribe to Gazebo model poses\")\n\n    def on_pose(self, message):\n\
+    \        stamp = message.header.stamp\n        ns = stamp.sec * 1_000_000_000\
+    \ + stamp.nsec\n        if self.previous is not None and ns < self.previous[0]:\n\
+    \            self.previous = None  # New simulator epoch, not a velocity impulse.\n\
+    \        if self.previous is not None and ns - self.previous[0] < 50_000_000:\n\
+    \            return\n        pose = next((p for p in message.pose if p.name ==\
+    \ \"robot_1\"), None)\n        if pose is None:\n            return  # No heartbeat\
+    \ without an actual model-pose observation.\n        q = pose.orientation\n  \
+    \      yaw = math.atan2(2 * (q.w * q.z + q.x * q.y),\n                       \
+    \  1 - 2 * (q.y * q.y + q.z * q.z))\n        current = (ns, pose.position.x, pose.position.y,\
+    \ yaw)\n        velocity = planar_velocity(self.previous, current) if self.previous\
+    \ else None\n        self.previous = current\n        if velocity is None:\n \
+    \           return  # Need two fresh samples to assert a measured velocity.\n\
+    \        result = Odometry()\n        result.header.frame_id = \"map\"\n     \
+    \   result.header.stamp.sec = stamp.sec\n        result.header.stamp.nanosec =\
+    \ stamp.nsec\n        result.child_frame_id = \"base_footprint\"\n        result.pose.pose.position.x\
+    \ = pose.position.x\n        result.pose.pose.position.y = pose.position.y\n \
+    \       result.pose.pose.position.z = pose.position.z\n        result.pose.pose.orientation.x\
+    \ = q.x\n        result.pose.pose.orientation.y = q.y\n        result.pose.pose.orientation.z\
+    \ = q.z\n        result.pose.pose.orientation.w = q.w\n        result.twist.twist.linear.x,\
+    \ result.twist.twist.linear.y = velocity[:2]\n        result.twist.twist.angular.z\
+    \ = velocity[2]\n        self.publisher.publish(result)\n\n\ndef main():\n   \
+    \ rclpy.init()\n    telemetry = GroundTruth()\n    try:\n        rclpy.spin(telemetry.node)\n\
+    \    finally:\n        telemetry.node.destroy_node()\n        rclpy.shutdown()\n\
+    \n\nif __name__ == \"__main__\":\n    main()\n"
+  entrypoint-phase1.sh: "#!/usr/bin/env bash\nset -Eeo pipefail\n\nexport HOME=/tmp/ros-home\n\
+    mkdir -p \"${HOME}/.ros\" \"${HOME}/.config\" /tmp/semantic-navigation\nexport\
+    \ ROS_HOME=\"${HOME}/.ros\"\nexport ROS_LOG_DIR=\"${HOME}/.ros/log\"\nexport ROS_DOMAIN_ID=\"\
+    ${ROS_DOMAIN_ID:-0}\"\nexport RMW_IMPLEMENTATION=rmw_cyclonedds_cpp\nexport GZ_IP=\"\
+    ${GZ_IP:-127.0.0.1}\"\nexport GZ_PARTITION=\"${GZ_PARTITION:-hotel_nav2_rmf}\"\
+    \n\nsource /opt/ros/jazzy/setup.bash\nsource /opt/rmf_demos_ws/install/setup.bash\n\
+    if [[ \"${SEMANTIC_CAPTURE_TRACE:-0}\" == \"1\" ]]; then\n  export LD_LIBRARY_PATH=\"\
+    /opt/semantic-navigation/capture-lib:${LD_LIBRARY_PATH:-}\"\nfi\nset -u\n\nASSET_DIR=/opt/ros2-demo/hotel-assets\n\
+    WORLD=/tmp/semantic-navigation/hotel.world\ncp \"${ASSET_DIR}/hotel.world\" \"\
+    ${WORLD}\"\nif [[ \"${SEMANTIC_PHASE2_SCENE:-0}\" == \"1\" ]]; then\n  python3\
+    \ /opt/semantic-navigation/install_phase1_camera.py \"${WORLD}\" --phase2-targets\n\
+    else\n  python3 /opt/semantic-navigation/install_phase1_camera.py \"${WORLD}\"\
+    \nfi\nexport GZ_SIM_RESOURCE_PATH=\"${ASSET_DIR}/models:${ASSET_DIR}:/opt/rmf_demos_ws/install/share/rmf_demos_assets/models:${GZ_SIM_RESOURCE_PATH:-}\"\
+    \nexport GZ_SIM_SYSTEM_PLUGIN_PATH=\"/opt/ros/jazzy/opt/gz_sim_vendor/lib/gz-sim-8/plugins:${GZ_SIM_SYSTEM_PLUGIN_PATH:-}\"\
+    \nexport QT_QPA_PLATFORM=xcb\nexport QT_X11_NO_MITSHM=1\nexport DISPLAY=\"${DISPLAY:-:99}\"\
+    \nVNC_PORT=\"${VNC_PORT:-5900}\"\nNOVNC_PORT=\"${NOVNC_PORT:-6080}\"\n\npids=()\n\
+    cleanup() {\n  trap - TERM INT EXIT\n  for pid in \"${pids[@]:-}\"; do kill \"\
+    ${pid}\" 2>/dev/null || true; done\n  wait || true\n}\ntrap cleanup TERM INT EXIT\n\
+    \nXorg \"${DISPLAY}\" -config /etc/X11/xorg-dummy.conf -nolisten tcp \\\n  -logfile\
+    \ /tmp/Xorg.semantic-navigation.log & pids+=(\"$!\")\nsleep 2\nopenbox >/tmp/openbox.semantic-navigation.log\
+    \ 2>&1 & pids+=(\"$!\")\nx11vnc -display \"${DISPLAY}\" -rfbport \"${VNC_PORT}\"\
+    \ -shared -forever -nopw -noxdamage -noscr \\\n  >/tmp/x11vnc.semantic-navigation.log\
+    \ 2>&1 & pids+=(\"$!\")\nwebsockify --web /usr/share/novnc \"${NOVNC_PORT}\" \"\
+    localhost:${VNC_PORT}\" \\\n  >/tmp/novnc.semantic-navigation.log 2>&1 & pids+=(\"\
+    $!\")\n\ngz sim --force-version 8 -r -s -v 2 \"${WORLD}\" >/tmp/gz-server.semantic-navigation.log\
+    \ 2>&1 &\npids+=(\"$!\")\nsleep 3\ngz sim --force-version 8 -g -v 2 \"${WORLD}\"\
+    \ >/tmp/gz-gui.semantic-navigation.log 2>&1 &\npids+=(\"$!\")\n# Match rmf-hotel-world-openshift-ai's\
+    \ smoothed overhead GUI follow mode.\n# The supervisor below handles recovery,\
+    \ but does not attach at startup.\n# Wait for both the service and tracking subscriber:\
+    \ publishing earlier races\n# the GUI scene. Bounded startup retries leave later\
+    \ manual pan/zoom alone.\ninitialize_camera_follow() {\n  for _attempt in $(seq\
+    \ 1 90); do\n    if timeout 3 gz service -i -s /gui/follow 2>/dev/null |\n   \
+    \     grep -q 'gz.msgs.StringMsg, gz.msgs.Boolean' &&\n        timeout 4 gz service\
+    \ -s /gui/follow \\\n          --reqtype gz.msgs.StringMsg --reptype gz.msgs.Boolean\
+    \ \\\n          --timeout 3000 --req 'data: \"robot_1\"' 2>/dev/null |\n     \
+    \   grep -q 'data: true' &&\n        timeout 4 gz service -s /gui/follow/offset\
+    \ \\\n          --reqtype gz.msgs.Vector3d --reptype gz.msgs.Boolean \\\n    \
+    \      --timeout 3000 --req 'x: 0 y: 0 z: 5' 2>/dev/null |\n        grep -q 'data:\
+    \ true' &&\n        timeout 3 gz topic -i -t /gui/track 2>/dev/null |\n      \
+    \  grep -q 'Subscribers'; then\n      for _publish in $(seq 1 3); do\n       \
+    \ timeout 2 gz topic -t /gui/track -m gz.msgs.CameraTrack \\\n          -p 'track_mode:\
+    \ FOLLOW_LOOK_AT follow_target: {name: \"robot_1\"} track_target: {name: \"robot_1\"\
+    } follow_offset: {x: 0 y: 0 z: 5} track_offset: {x: 0 y: 0 z: 0} follow_pgain:\
+    \ 0.02 track_pgain: 0.02' \\\n          >/dev/null 2>&1 || true\n        sleep\
+    \ 0.5\n      done\n      echo \"[semantic-navigation] Gazebo camera following\
+    \ robot_1 (overhead)\"\n      return 0\n    fi\n    sleep 1\n  done\n  echo \"\
+    [semantic-navigation] camera follow initialization timed out\" >&2\n  return 1\n\
+    }\ninitialize_camera_follow >/tmp/camera-follow-startup.semantic-navigation.log\
+    \ 2>&1 &\npids+=(\"$!\")\npython3 /opt/ros2-demo/scripts/camera_follow_supervisor.py\
+    \ >/tmp/camera-follow.semantic-navigation.log 2>&1 &\npids+=(\"$!\")\nros2 run\
+    \ robot_state_publisher robot_state_publisher \\\n  --ros-args -p use_sim_time:=true\
+    \ \\\n  -p robot_description:=\"$(< /opt/ros2-demo/robot/turtlebot3_waffle.urdf)\"\
+    \ \\\n  -r /tf:=/robot_1/tf -r /tf_static:=/robot_1/tf_static \\\n  >/tmp/robot-state-publisher.semantic-navigation.log\
+    \ 2>&1 &\npids+=(\"$!\")\n\nros2 run ros_gz_bridge parameter_bridge \\\n  /clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock\
+    \ \\\n  /robot_1/cmd_vel@geometry_msgs/msg/Twist]gz.msgs.Twist \\\n  /robot_1/odom@nav_msgs/msg/Odometry[gz.msgs.Odometry\
+    \ \\\n  /scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan \\\n  --ros-args -r\
+    \ /scan:=/robot_1/scan >/tmp/gz-bridge.semantic-navigation.log 2>&1 &\npids+=(\"\
+    $!\")\nros2 launch ros_gz_bridge ros_gz_bridge.launch.py \\\n  bridge_name:=semantic_camera_bridge\
+    \ \\\n  config_file:=/opt/ros2-demo/config/semantic-camera-bridge.yaml \\\n  >/tmp/rgbd-bridge.semantic-navigation.log\
+    \ 2>&1 &\npids+=(\"$!\")\n\necho \"[semantic-navigation] isolated hotel simulator\
+    \ with RGB-D camera ready\"\nwait \"${pids[4]}\"\n"
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: semantic-phase6-simulator
+  namespace: semantic-navigation
+  labels:
+    app: semantic-phase6-simulator
+    app.kubernetes.io/part-of: semantic-navigation-demo
+    semantic-navigation.robots-demo/phase: phase6d-d2
+spec:
+  restartPolicy: Always
+  nodeSelector:
+    kubernetes.io/hostname: ip-10-0-38-113.ec2.internal
+  tolerations:
+  - key: cpu-taint
+    operator: Equal
+    value: 'true'
+    effect: NoSchedule
+  containers:
+  - name: simulator
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:d417c9f252d1f89dd859290a4bca1f634bcfd7d3cde6d1702c409d432bd48894
+    imagePullPolicy: IfNotPresent
+    command:
+    - /bin/bash
+    - /entrypoint-semantic-navigation-phase1.sh
+    env:
+    - name: ROS_DISTRO
+      value: jazzy
+    - name: ROS_DOMAIN_ID
+      value: '81'
+    - name: RMW_IMPLEMENTATION
+      value: rmw_cyclonedds_cpp
+    - name: CYCLONEDDS_URI
+      value: file:///phase6-bridges/cyclonedds.xml
+    - name: GZ_PARTITION
+      value: semantic_navigation_phase6_demo
+    - name: GZ_IP
+      value: 127.0.0.1
+    - name: RESOLUTION
+      value: 1600x900x24
+    - name: SEMANTIC_PHASE2_SCENE
+      value: '1'
+    - name: SEMANTIC_CAPTURE_TRACE
+      value: '1'
+    - name: SEMANTIC_PHASE6_DEMO_TARGETS
+      value: '1'
+    volumeMounts:
+    - name: bridge-config
+      mountPath: /phase6-bridges
+      readOnly: true
+    - name: phase6-demo-world-config
+      mountPath: /opt/semantic-navigation/install_phase1_camera.py
+      subPath: install_phase1_camera.py
+      readOnly: true
+    - name: phase6-demo-world-config
+      mountPath: /opt/semantic-navigation/support_geometry.py
+      subPath: support_geometry.py
+      readOnly: true
+    - name: phase6-demo-world-config
+      mountPath: /entrypoint-semantic-navigation-phase1.sh
+      subPath: entrypoint-phase1.sh
+      readOnly: true
+    resources:
+      requests:
+        cpu: '10'
+        memory: 4Gi
+      limits:
+        cpu: '12'
+        memory: 8Gi
+  - name: camera-compressor
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:c3ba94bbcbbe2283f1c46ea0f2baba398da313ffe83d2b59a63272ef91d95ebf
+    imagePullPolicy: IfNotPresent
+    command:
+    - /bin/bash
+    - -lc
+    args:
+    - "export HOME=/tmp/phase6-camera-home ROS_LOG_DIR=/tmp/phase6-camera-logs; mkdir\
+      \ -p \"$ROS_LOG_DIR\"; source /opt/ros/jazzy/setup.bash; source /opt/rmf_demos_ws/install/setup.bash;\
+      \ for attempt in {1..90}; do\n  color_info=$(ros2 topic info /robot_1/camera/color/image_raw\
+      \ 2>/dev/null || true);\n  depth_info=$(ros2 topic info /robot_1/camera/depth/image_raw\
+      \ 2>/dev/null || true);\n  if printf '%s' \"$color_info\" | grep -q 'Publisher\
+      \ count: 1' && printf '%s' \"$depth_info\" | grep -q 'Publisher count: 1'; then\
+      \ break; fi;\n  sleep 1;\ndone; exec python3 /opt/semantic-navigation/camera_compressor.py"
+    env:
+    - name: ROS_DISTRO
+      value: jazzy
+    - name: ROS_DOMAIN_ID
+      value: '81'
+    - name: RMW_IMPLEMENTATION
+      value: rmw_cyclonedds_cpp
+    - name: CYCLONEDDS_URI
+      value: file:///phase6-bridges/cyclonedds.xml
+    - name: SEMANTIC_CAMERA_SUBSCRIPTION_DEPTH
+      value: '20'
+    - name: SEMANTIC_COMPRESSION_TRACE
+      value: '1'
+    - name: SEMANTIC_RAW_INPUT
+      value: gz
+    - name: GZ_PARTITION
+      value: semantic_navigation_phase6_demo
+    - name: GZ_IP
+      value: 127.0.0.1
+    volumeMounts:
+    - name: bridge-config
+      mountPath: /phase6-bridges
+      readOnly: true
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: '2'
+        memory: 2Gi
+  - name: sim-zenoh-bridge
+    image: eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18
+    args:
+    - -c
+    - /phase6-bridges/sim-bridge.json5
+    env:
+    - name: ROS_DOMAIN_ID
+      value: '81'
+    - name: ROS_DISTRO
+      value: jazzy
+    - name: RMW_IMPLEMENTATION
+      value: rmw_cyclonedds_cpp
+    - name: CYCLONEDDS_URI
+      value: file:///phase6-bridges/cyclonedds.xml
+    volumeMounts:
+    - name: bridge-config
+      mountPath: /phase6-bridges
+      readOnly: true
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  - name: demo-ground-truth
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:d417c9f252d1f89dd859290a4bca1f634bcfd7d3cde6d1702c409d432bd48894
+    command:
+    - /bin/bash
+    - -lc
+    args:
+    - export HOME=/tmp/demo-truth-home ROS_LOG_DIR=/tmp/demo-truth-logs; mkdir -p
+      "$ROS_LOG_DIR"; source /opt/ros/jazzy/setup.bash; exec python3 /phase6-demo-helpers/demo_ground_truth.py
+    env:
+    - name: ROS_DISTRO
+      value: jazzy
+    - name: ROS_DOMAIN_ID
+      value: '81'
+    - name: RMW_IMPLEMENTATION
+      value: rmw_cyclonedds_cpp
+    - name: CYCLONEDDS_URI
+      value: file:///phase6-bridges/cyclonedds.xml
+    - name: GZ_PARTITION
+      value: semantic_navigation_phase6_demo
+    - name: GZ_IP
+      value: 127.0.0.1
+    volumeMounts:
+    - name: bridge-config
+      mountPath: /phase6-bridges
+      readOnly: true
+    - name: phase6-demo-world-config
+      mountPath: /phase6-demo-helpers
+      readOnly: true
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  volumes:
+  - name: bridge-config
+    configMap:
+      name: semantic-phase6-demo-bridge-config
+  - name: phase6-demo-world-config
+    configMap:
+      name: semantic-phase6-d2-nav2-config-on
+      items:
+      - key: install_phase1_camera.py
+        path: install_phase1_camera.py
+      - key: support_geometry.py
+        path: support_geometry.py
+      - key: demo_ground_truth.py
+        path: demo_ground_truth.py
+      - key: entrypoint-phase1.sh
+        path: entrypoint-phase1.sh
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: semantic-phase6-nav2
+  namespace: semantic-navigation
+  labels:
+    app: semantic-phase6-nav2
+    app.kubernetes.io/part-of: semantic-navigation-demo
+    semantic-navigation.robots-demo/phase: phase6d-d2-on
+spec:
+  restartPolicy: Always
+  nodeSelector:
+    kubernetes.io/hostname: ip-10-0-39-214.ec2.internal
+  tolerations:
+  - key: cpu-taint
+    operator: Equal
+    value: 'true'
+    effect: NoSchedule
+  - key: g5-gpu
+    operator: Equal
+    value: 'true'
+    effect: NoSchedule
+  containers:
+  - name: nav2
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e
+    imagePullPolicy: IfNotPresent
+    command:
+    - /bin/bash
+    - /phase6-nav2-config/entrypoint_phase6_nav2.sh
+    env:
+    - name: ROS_DISTRO
+      value: jazzy
+    - name: ROS_DOMAIN_ID
+      value: '87'
+    - name: RMW_IMPLEMENTATION
+      value: rmw_cyclonedds_cpp
+    - name: CYCLONEDDS_URI
+      value: file:///phase6-nav2-config/cyclonedds.xml
+    - name: PHASE6_PARAMS
+      value: /phase6-nav2-config/phase6-demo-nav2-on.yaml
+    - name: HOME
+      value: /tmp/phase6-nav2-home
+    - name: ROS_LOG_DIR
+      value: /tmp/phase6-nav2-logs
+    volumeMounts:
+    - name: nav2-config
+      mountPath: /phase6-nav2-config
+      readOnly: true
+    resources:
+      requests:
+        cpu: '2'
+        memory: 2Gi
+      limits:
+        cpu: '4'
+        memory: 4Gi
+  - name: sim-input-bridge
+    image: eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18
+    args:
+    - -c
+    - /phase6-bridges/nav2-sim-input-bridge.json5
+    env: &id001
+    - name: ROS_DOMAIN_ID
+      value: '87'
+    - name: ROS_DISTRO
+      value: jazzy
+    - name: RMW_IMPLEMENTATION
+      value: rmw_cyclonedds_cpp
+    - name: CYCLONEDDS_URI
+      value: file:///phase6-bridges/cyclonedds.xml
+    volumeMounts: &id002
+    - name: bridge-config
+      mountPath: /phase6-bridges
+      readOnly: true
+    resources:
+      requests:
+        cpu: 150m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  - name: semantic-input-bridge
+    image: eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18
+    args:
+    - -c
+    - /phase6-bridges/nav2-semantic-input-bridge.json5
+    env: *id001
+    volumeMounts: *id002
+    resources:
+      requests:
+        cpu: 150m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  - name: clock-bridge
+    image: eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18
+    args:
+    - -c
+    - /phase6-bridges/nav2-clock-bridge.json5
+    env: *id001
+    volumeMounts: *id002
+    resources:
+      requests:
+        cpu: 150m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  - name: odom-tf
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e
+    command:
+    - /bin/bash
+    - -lc
+    args:
+    - export HOME=/tmp/phase6-odom-home ROS_LOG_DIR=/tmp/phase6-odom-logs; mkdir -p
+      "$ROS_LOG_DIR"; source /opt/ros/jazzy/setup.bash; exec python3 -u /opt/ros2-demo/scripts/federated_odom_tf.py
+    env:
+    - name: ROS_DISTRO
+      value: jazzy
+    - name: ROS_DOMAIN_ID
+      value: '87'
+    - name: RMW_IMPLEMENTATION
+      value: rmw_cyclonedds_cpp
+    - name: CYCLONEDDS_URI
+      value: file:///phase6-nav2-config/cyclonedds.xml
+    - name: INITIAL_X
+      value: '15.402'
+    - name: INITIAL_Y
+      value: '-31.594'
+    volumeMounts:
+    - name: nav2-config
+      mountPath: /phase6-nav2-config
+      readOnly: true
+    resources:
+      requests:
+        cpu: 150m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  - name: scan-frame-rewriter
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e
+    command:
+    - /bin/bash
+    - -lc
+    args:
+    - export HOME=/tmp/phase6-scan-home ROS_LOG_DIR=/tmp/phase6-scan-logs; mkdir -p
+      "$ROS_LOG_DIR"; source /opt/ros/jazzy/setup.bash; exec python3 -u /opt/ros2-demo/scripts/scan_frame_rewriter.py
+    env:
+    - name: ROS_DISTRO
+      value: jazzy
+    - name: ROS_DOMAIN_ID
+      value: '87'
+    - name: RMW_IMPLEMENTATION
+      value: rmw_cyclonedds_cpp
+    - name: CYCLONEDDS_URI
+      value: file:///phase6-nav2-config/cyclonedds.xml
+    - name: SCAN_INPUT_TOPIC
+      value: /scan
+    - name: SCAN_OUTPUT_TOPIC
+      value: /scan_fixed
+    volumeMounts:
+    - name: nav2-config
+      mountPath: /phase6-nav2-config
+      readOnly: true
+    resources:
+      requests:
+        cpu: 150m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  - name: motion-output-bridge
+    image: eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18
+    args:
+    - -c
+    - /phase6-bridges/nav2-motion-output-gated.json5
+    env:
+    - name: ROS_DOMAIN_ID
+      value: '87'
+    - name: ROS_DISTRO
+      value: jazzy
+    - name: RMW_IMPLEMENTATION
+      value: rmw_cyclonedds_cpp
+    - name: CYCLONEDDS_URI
+      value: file:///phase6-bridges/cyclonedds.xml
+    volumeMounts:
+    - name: bridge-config
+      mountPath: /phase6-bridges
+      readOnly: true
+    resources:
+      requests:
+        cpu: 150m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  - name: cmd-vel-route-keepalive
+    image: eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18
+    args:
+    - -c
+    - /phase6-bridges/nav2-cmd-vel-keepalive.json5
+    env:
+    - name: ROS_DOMAIN_ID
+      value: '87'
+    - name: ROS_DISTRO
+      value: jazzy
+    - name: RMW_IMPLEMENTATION
+      value: rmw_cyclonedds_cpp
+    - name: CYCLONEDDS_URI
+      value: file:///phase6-bridges/cyclonedds.xml
+    volumeMounts:
+    - name: bridge-config
+      mountPath: /phase6-bridges
+      readOnly: true
+    resources:
+      requests:
+        cpu: 100m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
+  volumes:
+  - name: nav2-config
+    configMap:
+      name: semantic-phase6-d2-nav2-config-on
+  - name: bridge-config
+    configMap:
+      name: semantic-phase6-demo-bridge-config

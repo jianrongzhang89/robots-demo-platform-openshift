@@ -1,0 +1,10 @@
+diff --git a/nav2_velocity_smoother/src/velocity_smoother.cpp b/nav2_velocity_smoother/src/velocity_smoother.cpp
+--- a/nav2_velocity_smoother/src/velocity_smoother.cpp
++++ b/nav2_velocity_smoother/src/velocity_smoother.cpp
+@@ -337,2 +337,6 @@ void VelocitySmoother::smootherTimer()
++    // Retain the command frame while generating timeout deceleration. A default
++    // TwistStamped clears the frame and causes later outputs to be invalid.
++    const auto command_frame = command_->header.frame_id;
+     *command_ = geometry_msgs::msg::TwistStamped();
++    command_->header.frame_id = command_frame;
+     command_->header.stamp = now();

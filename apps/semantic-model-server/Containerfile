@@ -1,0 +1,14 @@
+# Build from repository root. Reuse the accepted CUDA/PyTorch/SAM3 dependency
+# layer; no runtime pip install, git clone or model download.
+FROM image-registry.openshift-image-registry.svc:5000/semantic-navigation/sam3-runtime@sha256:478ec01a7a47fbb0c862fbbef495c71b4a512ff59ed8d6ed5b7234422cc35686
+USER 0
+WORKDIR /app
+COPY apps/semantic-perception/sam3_backend.py apps/semantic-perception/inference_contract.py apps/semantic-perception/sam3_runtime_core.py /app/
+COPY apps/semantic-model-server/artifact.py apps/semantic-model-server/server.py apps/semantic-model-server/model-manifest.json /app/
+RUN /opt/sam3-venv/bin/python -c 'import hashlib,json,pathlib; files=("sam3_backend.py","inference_contract.py","sam3_runtime_core.py"); pathlib.Path("build-identity.json").write_text(json.dumps({"source_revision":"0570b3a5be9c4e694f23d85232fb55f4a6f1f7fc","shared_sha256":{f:hashlib.sha256(pathlib.Path(f).read_bytes()).hexdigest() for f in files}},sort_keys=True))' \
+    && /opt/sam3-venv/bin/python -c 'import server, artifact; assert not server.ModelService({}).ready()' \
+    && chmod -R a=rX /app
+ENV HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/app
+EXPOSE 8080 8443
+USER 1001
+ENTRYPOINT ["/opt/sam3-venv/bin/python", "/app/server.py"]

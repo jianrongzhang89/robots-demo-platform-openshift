@@ -1,0 +1,16 @@
+1793805174.444245 [191]    python3: failed to increase socket receive buffer size to at least 4194304 bytes, current is 425984 bytes
+[ERROR] [1793805174.444374589] [rmw_cyclonedds_cpp]: rmw_create_node: failed to create domain, error Error
+/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/node.py:188: RuntimeWarning: Failed to fini rosout publisher: rcl node implementation is invalid, at ./src/rcl/node.c:390
+  self.__node = _rclpy.Node(
+Traceback (most recent call last):
+  File "/opt/semantic-perception/sam3_ros_node.py", line 602, in <module>
+    main()
+  File "/opt/semantic-perception/sam3_ros_node.py", line 586, in main
+    node = Sam3Runtime()
+           ^^^^^^^^^^^^^
+  File "/opt/semantic-perception/sam3_ros_node.py", line 53, in __init__
+    super().__init__("sam3_semantic_inference")
+  File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/node.py", line 188, in __init__
+    self.__node = _rclpy.Node(
+                  ^^^^^^^^^^^^
+rclpy._rclpy_pybind11.RCLError: error creating node: error not set, at ./src/rcl/node.c:252

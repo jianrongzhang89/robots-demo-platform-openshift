@@ -1,0 +1,71 @@
+{
+  "kind": "phase5_acceptance_record",
+  "recorded": "2026-10-26",
+  "passed": true,
+  "accepted_gates": [
+    "recovery_repeatability",
+    "moving_fault_stop",
+    "moving_sam3_registration_load",
+    "armed_fault_matrix"
+  ],
+  "sign_off": {
+    "date": "2026-10-26",
+    "commit": "d1faa7f",
+    "reviewer": "user",
+    "record": "docs/validation/semantic-navigation/phase-5/runtime-report.md#phase-5-evidence-review-and-sign-off-october-26-2026"
+  },
+  "gate_evidence": {
+    "recovery_repeatability": {
+      "series": "recovery-series-gpu-4-20261023",
+      "summary": "docs/validation/semantic-navigation/phase-5/recovery-series-gpu-4-20261023/summary.json",
+      "planned": 10,
+      "attempted": 10,
+      "succeeded": 10
+    },
+    "moving_fault_stop": {
+      "series": "faultstop-matrix-2-20261023",
+      "summary": "docs/validation/semantic-navigation/phase-5/faultstop-matrix-2-20261023/summary.json",
+      "planned": 10,
+      "attempted": 10,
+      "succeeded": 10
+    },
+    "moving_sam3_registration_load": {
+      "series": "sam3-observation-series-20-20261026",
+      "summary": "docs/validation/semantic-navigation/phase-5/sam3-observation-series-20-20261026/summary.json",
+      "planned": 10,
+      "attempted": 10,
+      "succeeded": 10
+    },
+    "armed_fault_matrix": {
+      "series": "semantic-fault-matrix-13-20261026",
+      "summary": "docs/validation/semantic-navigation/phase-5/semantic-fault-matrix-13-20261026/summary.json",
+      "planned": 10,
+      "attempted": 10,
+      "succeeded": 10
+    }
+  },
+  "frozen_guarded_profile": {
+    "console_image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:f854b8385e46fed4c61a59647a40eab349affdca15746d8d60e2e42adbbd0fba",
+    "build": "semantic-safety-console-phase5-26",
+    "sam3_image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/sam3-runtime@sha256:478ec01a7a47fbb0c862fbbef495c71b4a512ff59ed8d6ed5b7234422cc35686",
+    "sam3_node": "ip-10-0-18-251.ec2.internal",
+    "node": "ip-10-0-44-146.ec2.internal",
+    "gpu_rendering": true,
+    "console_only_server": true,
+    "contact_audit": true,
+    "rear_casters": true,
+    "physics_step_s": 0.002,
+    "lidar_range_m": 12.0,
+    "odom_frequency_hz": 200.0,
+    "speed_cap_mps": 0.15,
+    "sam3_prompt": "red mat"
+  },
+  "caveats": [
+    "Footprint geometry: the qualified profile uses the corrected support geometry with rear casters and the padded hull; the measured discrepancy and correction are retained in the Phase 5 report.",
+    "Private-profile deviations: the watchdog UDP companion path, the domain isolation (85/86/88), the matrix runner's pod recycles and the transport-loss pod-deletion design are private-fixture mechanics, not canonical deployment changes.",
+    "Operational findings for Phase 6: a zenoh client session never re-dials a lost router (perception-backend loss is repaired by pod recreation); the SAM3 result stream has a reproducible pre-arming burst phase, so arming requires a sustained fresh-result streak.",
+    "Single-floor scope; the Phase 2 recognition waiver stands - nothing in Phase 5 qualifies recognition accuracy.",
+    "Twelve failed matrix series are retained as evidence; every failure was root-caused and fixed, with no retries anywhere in the passing series."
+  ],
+  "scope": "Entry evidence for Phase 6 execution only. It does not qualify recognition accuracy, multi-floor operation, or any canonical deployment change, and it does not by itself mark any Phase 6 gate passed."
+}

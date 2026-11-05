@@ -1,0 +1,295 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "v1",
+            "kind": "PersistentVolumeClaim",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"PersistentVolumeClaim\",\"metadata\":{\"annotations\":{\"semantic-navigation.robots-demo/model-revision\":\"3c879f39826c281e95690f02c7821c4de09afae7\",\"semantic-navigation.robots-demo/model-sha256\":\"9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e\"},\"name\":\"sam3-checkpoint\",\"namespace\":\"semantic-model-serving\"},\"spec\":{\"accessModes\":[\"ReadWriteOnce\"],\"resources\":{\"requests\":{\"storage\":\"10Gi\"}},\"storageClassName\":\"gp3-csi\"}}\n",
+                    "pv.kubernetes.io/bind-completed": "yes",
+                    "pv.kubernetes.io/bound-by-controller": "yes",
+                    "semantic-navigation.robots-demo/model-revision": "3c879f39826c281e95690f02c7821c4de09afae7",
+                    "semantic-navigation.robots-demo/model-sha256": "9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e",
+                    "volume.beta.kubernetes.io/storage-provisioner": "ebs.csi.aws.com",
+                    "volume.kubernetes.io/selected-node": "ip-10-0-55-175.ec2.internal",
+                    "volume.kubernetes.io/storage-provisioner": "ebs.csi.aws.com"
+                },
+                "creationTimestamp": "2026-10-31T02:57:55Z",
+                "finalizers": [
+                    "kubernetes.io/pvc-protection"
+                ],
+                "name": "sam3-checkpoint",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "490866780",
+                "uid": "2ea4a1e7-b849-47e9-9476-b44787685440"
+            },
+            "spec": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "resources": {
+                    "requests": {
+                        "storage": "10Gi"
+                    }
+                },
+                "storageClassName": "gp3-csi",
+                "volumeMode": "Filesystem",
+                "volumeName": "pvc-2ea4a1e7-b849-47e9-9476-b44787685440"
+            },
+            "status": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "capacity": {
+                    "storage": "10Gi"
+                },
+                "phase": "Bound"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "ResourceQuota",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"ResourceQuota\",\"metadata\":{\"annotations\":{},\"name\":\"sam3-serving-budget\",\"namespace\":\"semantic-model-serving\"},\"spec\":{\"hard\":{\"limits.cpu\":\"16\",\"limits.memory\":\"56Gi\",\"persistentvolumeclaims\":\"1\",\"pods\":\"8\",\"requests.cpu\":\"8\",\"requests.memory\":\"28Gi\",\"requests.nvidia.com/gpu\":\"1\",\"requests.storage\":\"10Gi\"}}}\n"
+                },
+                "creationTimestamp": "2026-10-31T02:57:55Z",
+                "name": "sam3-serving-budget",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "490861282",
+                "uid": "6d469142-fd70-4b1b-a7c0-4379eb42dce9"
+            },
+            "spec": {
+                "hard": {
+                    "limits.cpu": "16",
+                    "limits.memory": "56Gi",
+                    "persistentvolumeclaims": "1",
+                    "pods": "8",
+                    "requests.cpu": "8",
+                    "requests.memory": "28Gi",
+                    "requests.nvidia.com/gpu": "1",
+                    "requests.storage": "10Gi"
+                }
+            },
+            "status": {
+                "hard": {
+                    "limits.cpu": "16",
+                    "limits.memory": "56Gi",
+                    "persistentvolumeclaims": "1",
+                    "pods": "8",
+                    "requests.cpu": "8",
+                    "requests.memory": "28Gi",
+                    "requests.nvidia.com/gpu": "1",
+                    "requests.storage": "10Gi"
+                },
+                "used": {
+                    "limits.cpu": "6",
+                    "limits.memory": "24Gi",
+                    "persistentvolumeclaims": "1",
+                    "pods": "1",
+                    "requests.cpu": "3",
+                    "requests.memory": "12Gi",
+                    "requests.nvidia.com/gpu": "1",
+                    "requests.storage": "10Gi"
+                }
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "imagePullSecrets": [
+                {
+                    "name": "builder-dockercfg-6hcvf"
+                }
+            ],
+            "kind": "ServiceAccount",
+            "metadata": {
+                "annotations": {
+                    "openshift.io/internal-registry-pull-secret-ref": "builder-dockercfg-6hcvf"
+                },
+                "creationTimestamp": "2026-10-31T02:57:55Z",
+                "name": "builder",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "490809578",
+                "uid": "4bbd7c53-815f-4c88-862e-0dc2ab353f89"
+            },
+            "secrets": [
+                {
+                    "name": "builder-dockercfg-6hcvf"
+                }
+            ]
+        },
+        {
+            "apiVersion": "v1",
+            "imagePullSecrets": [
+                {
+                    "name": "default-dockercfg-qrvpk"
+                }
+            ],
+            "kind": "ServiceAccount",
+            "metadata": {
+                "annotations": {
+                    "openshift.io/internal-registry-pull-secret-ref": "default-dockercfg-qrvpk"
+                },
+                "creationTimestamp": "2026-10-31T02:57:55Z",
+                "name": "default",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "490809577",
+                "uid": "468f39d5-9e49-4ecb-9bb1-8dfb3647be9d"
+            },
+            "secrets": [
+                {
+                    "name": "default-dockercfg-qrvpk"
+                }
+            ]
+        },
+        {
+            "apiVersion": "v1",
+            "imagePullSecrets": [
+                {
+                    "name": "deployer-dockercfg-9mzc5"
+                }
+            ],
+            "kind": "ServiceAccount",
+            "metadata": {
+                "annotations": {
+                    "openshift.io/internal-registry-pull-secret-ref": "deployer-dockercfg-9mzc5"
+                },
+                "creationTimestamp": "2026-10-31T02:57:55Z",
+                "name": "deployer",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "490809580",
+                "uid": "f4745202-295b-4c86-aae6-1b8b9f4b056a"
+            },
+            "secrets": [
+                {
+                    "name": "deployer-dockercfg-9mzc5"
+                }
+            ]
+        },
+        {
+            "apiVersion": "v1",
+            "automountServiceAccountToken": false,
+            "imagePullSecrets": [
+                {
+                    "name": "sam3-serving-dockercfg-vxfls"
+                }
+            ],
+            "kind": "ServiceAccount",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"automountServiceAccountToken\":false,\"kind\":\"ServiceAccount\",\"metadata\":{\"annotations\":{},\"name\":\"sam3-serving\",\"namespace\":\"semantic-model-serving\"}}\n",
+                    "openshift.io/internal-registry-pull-secret-ref": "sam3-serving-dockercfg-vxfls"
+                },
+                "creationTimestamp": "2026-10-31T02:57:55Z",
+                "name": "sam3-serving",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "490809592",
+                "uid": "fa41af4a-8caa-4685-8936-9bb56560182f"
+            },
+            "secrets": [
+                {
+                    "name": "sam3-serving-dockercfg-vxfls"
+                }
+            ]
+        },
+        {
+            "apiVersion": "networking.k8s.io/v1",
+            "kind": "NetworkPolicy",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"networking.k8s.io/v1\",\"kind\":\"NetworkPolicy\",\"metadata\":{\"annotations\":{},\"name\":\"sam3-isolation\",\"namespace\":\"semantic-model-serving\"},\"spec\":{\"egress\":[],\"ingress\":[{\"from\":[{\"namespaceSelector\":{\"matchLabels\":{\"kubernetes.io/metadata.name\":\"semantic-navigation\"}},\"podSelector\":{\"matchLabels\":{\"semantic-serving-client\":\"sam3-mat-v1\"}}}],\"ports\":[{\"port\":8443,\"protocol\":\"TCP\"}]}],\"podSelector\":{\"matchLabels\":{\"component\":\"predictor\",\"serving.kserve.io/inferenceservice\":\"sam3-mat-v1\"}},\"policyTypes\":[\"Ingress\",\"Egress\"]}}\n"
+                },
+                "creationTimestamp": "2026-10-31T02:57:55Z",
+                "generation": 1,
+                "name": "sam3-isolation",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "490809626",
+                "uid": "c038e706-5b88-493e-a724-bd11ec15a770"
+            },
+            "spec": {
+                "ingress": [
+                    {
+                        "from": [
+                            {
+                                "namespaceSelector": {
+                                    "matchLabels": {
+                                        "kubernetes.io/metadata.name": "semantic-navigation"
+                                    }
+                                },
+                                "podSelector": {
+                                    "matchLabels": {
+                                        "semantic-serving-client": "sam3-mat-v1"
+                                    }
+                                }
+                            }
+                        ],
+                        "ports": [
+                            {
+                                "port": 8443,
+                                "protocol": "TCP"
+                            }
+                        ]
+                    }
+                ],
+                "podSelector": {
+                    "matchLabels": {
+                        "component": "predictor",
+                        "serving.kserve.io/inferenceservice": "sam3-mat-v1"
+                    }
+                },
+                "policyTypes": [
+                    "Ingress",
+                    "Egress"
+                ]
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Service\",\"metadata\":{\"annotations\":{},\"name\":\"sam3-mat-v1-tls\",\"namespace\":\"semantic-model-serving\"},\"spec\":{\"ports\":[{\"name\":\"https\",\"port\":8443,\"targetPort\":8443}],\"selector\":{\"component\":\"predictor\",\"serving.kserve.io/inferenceservice\":\"sam3-mat-v1\"},\"type\":\"ClusterIP\"}}\n"
+                },
+                "creationTimestamp": "2026-10-31T02:57:55Z",
+                "name": "sam3-mat-v1-tls",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "490809615",
+                "uid": "9cd924d7-9e2e-427a-ac46-c83f4fe53765"
+            },
+            "spec": {
+                "clusterIP": "172.30.228.182",
+                "clusterIPs": [
+                    "172.30.228.182"
+                ],
+                "internalTrafficPolicy": "Cluster",
+                "ipFamilies": [
+                    "IPv4"
+                ],
+                "ipFamilyPolicy": "SingleStack",
+                "ports": [
+                    {
+                        "name": "https",
+                        "port": 8443,
+                        "protocol": "TCP",
+                        "targetPort": 8443
+                    }
+                ],
+                "selector": {
+                    "component": "predictor",
+                    "serving.kserve.io/inferenceservice": "sam3-mat-v1"
+                },
+                "sessionAffinity": "None",
+                "type": "ClusterIP"
+            },
+            "status": {
+                "loadBalancer": {}
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": "",
+        "selfLink": ""
+    }
+}

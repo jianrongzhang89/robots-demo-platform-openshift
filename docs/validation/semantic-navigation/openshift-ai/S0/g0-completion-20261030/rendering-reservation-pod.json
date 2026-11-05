@@ -1,0 +1,85 @@
+{
+  "apiVersion": "v1",
+  "kind": "Pod",
+  "metadata": {
+    "name": "sam3-g0-rendering-reservation",
+    "namespace": "semantic-navigation",
+    "labels": {
+      "app": "sam3-g0-rendering-reservation"
+    }
+  },
+  "spec": {
+    "restartPolicy": "Never",
+    "automountServiceAccountToken": false,
+    "nodeSelector": {
+      "kubernetes.io/hostname": "ip-10-0-44-146.ec2.internal"
+    },
+    "tolerations": [
+      {
+        "effect": "NoSchedule",
+        "key": "g5-gpu",
+        "operator": "Equal",
+        "value": "true"
+      },
+      {
+        "effect": "NoSchedule",
+        "key": "g6e-gpu",
+        "operator": "Equal",
+        "value": "true"
+      },
+      {
+        "effect": "NoExecute",
+        "key": "node.kubernetes.io/not-ready",
+        "operator": "Exists",
+        "tolerationSeconds": 300
+      },
+      {
+        "effect": "NoExecute",
+        "key": "node.kubernetes.io/unreachable",
+        "operator": "Exists",
+        "tolerationSeconds": 300
+      },
+      {
+        "effect": "NoSchedule",
+        "key": "node.kubernetes.io/memory-pressure",
+        "operator": "Exists"
+      }
+    ],
+    "containers": [
+      {
+        "name": "reservation",
+        "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:348fc584e70b07c6f73f9e428623240da5fc4c81ead630f0cb051c18de2d4371",
+        "command": [
+          "python3",
+          "-c",
+          "import time;time.sleep(604800)"
+        ],
+        "resources": {
+          "requests": {
+            "cpu": "3150m",
+            "memory": "3200Mi",
+            "nvidia.com/gpu": "1"
+          },
+          "limits": {
+            "cpu": "14",
+            "memory": "12800Mi",
+            "nvidia.com/gpu": "1"
+          }
+        },
+        "securityContext": {
+          "runAsNonRoot": true,
+          "allowPrivilegeEscalation": false,
+          "readOnlyRootFilesystem": true,
+          "capabilities": {
+            "drop": [
+              "ALL"
+            ]
+          },
+          "seccompProfile": {
+            "type": "RuntimeDefault"
+          }
+        }
+      }
+    ]
+  }
+}

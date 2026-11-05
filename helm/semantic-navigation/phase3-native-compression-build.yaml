@@ -1,0 +1,16 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: semantic-phase3-native-compression
+  namespace: semantic-navigation
+spec:
+  runPolicy: Serial
+  source: { binary: {} }
+  strategy:
+    type: Docker
+    dockerStrategy: { dockerfilePath: Containerfile.native-compression }
+  output:
+    to: { kind: ImageStreamTag, name: 'semantic-hotel-sim:phase3-native-compression' }
+  resources:
+    requests: { cpu: '1', memory: 2Gi }
+    limits: { cpu: '4', memory: 8Gi }

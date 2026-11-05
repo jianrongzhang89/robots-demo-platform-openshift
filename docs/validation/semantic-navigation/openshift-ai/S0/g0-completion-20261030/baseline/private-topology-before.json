@@ -1,0 +1,182 @@
+[
+  {
+    "apiVersion": "v1",
+    "data": {
+      "cyclonedds.xml": "<CycloneDDS><Domain id=\"any\"><General><Interfaces><NetworkInterface name=\"lo\"/></Interfaces><AllowMulticast>false</AllowMulticast></General><Discovery><ParticipantIndex>auto</ParticipantIndex></Discovery></Domain></CycloneDDS>",
+      "router.json5": "{\n  \"mode\": \"router\",\n  \"listen\": { \"endpoints\": [\"tcp/0.0.0.0:17448\"] },\n  \"scouting\": { \"multicast\": { \"enabled\": false } }\n}\n",
+      "sam3-bridge.json5": "{\n  \"plugins\": { \"ros2dds\": { \"allow\": {\n      \"publishers\": [\n        \"^/robot_1/semantic/mask$\",\n        \"^/robot_1/semantic/points$\",\n        \"^/robot_1/semantic/timing$\",\n        \"^/robot_1/semantic/label_info$\",\n        \"^/robot_1/semantic/status$\",\n        \"^/robot_1/semantic/ready$\"\n      ],\n      \"subscribers\": [\n        \"^/clock$\",\n        \"^/robot_1/camera/color/image_compressed$\",\n        \"^/robot_1/camera/depth/image_compressed$\",\n        \"^/robot_1/camera/color/camera_info$\",\n        \"^/robot_1/camera/capture_trace$\",\n        \"^/robot_1/camera/compression_trace$\"\n      ]\n    } } },\n  \"mode\": \"client\",\n  \"connect\": { \"endpoints\": [\"tcp/semantic-phase5-sam3-router:17448\"], \"exit_on_failure\": false, \"timeout_ms\": -1 },\n  \"scouting\": { \"multicast\": { \"enabled\": false } }\n}\n"
+    },
+    "kind": "ConfigMap",
+    "metadata": {
+      "creationTimestamp": "2026-10-27T23:16:21Z",
+      "labels": {
+        "app": "semantic-phase5-sam3-router"
+      },
+      "name": "semantic-phase5-sam3-config",
+      "namespace": "semantic-navigation",
+      "resourceVersion": "477497539",
+      "uid": "dbb818d6-41a8-4c56-9b81-cce1079f0e2e"
+    }
+  },
+  {
+    "apiVersion": "v1",
+    "kind": "Service",
+    "metadata": {
+      "creationTimestamp": "2026-10-27T23:16:21Z",
+      "labels": {
+        "app": "semantic-phase5-sam3-router"
+      },
+      "name": "semantic-phase5-sam3-router",
+      "namespace": "semantic-navigation",
+      "resourceVersion": "477497555",
+      "uid": "102ba34f-891b-4cb9-921e-0679bbd9b6f4"
+    },
+    "spec": {
+      "clusterIP": "172.30.154.218",
+      "clusterIPs": [
+        "172.30.154.218"
+      ],
+      "internalTrafficPolicy": "Cluster",
+      "ipFamilies": [
+        "IPv4"
+      ],
+      "ipFamilyPolicy": "SingleStack",
+      "ports": [
+        {
+          "name": "zenoh",
+          "port": 17448,
+          "protocol": "TCP",
+          "targetPort": 17448
+        }
+      ],
+      "selector": {
+        "app": "semantic-phase5-sam3-router"
+      },
+      "sessionAffinity": "None",
+      "type": "ClusterIP"
+    },
+    "status": {
+      "loadBalancer": {}
+    }
+  },
+  {
+    "apiVersion": "apps/v1",
+    "kind": "Deployment",
+    "metadata": {
+      "annotations": {
+        "deployment.kubernetes.io/revision": "1"
+      },
+      "creationTimestamp": "2026-10-30T14:03:22Z",
+      "generation": 1,
+      "labels": {
+        "app": "semantic-phase5-sam3-router"
+      },
+      "name": "semantic-phase5-sam3-router",
+      "namespace": "semantic-navigation",
+      "resourceVersion": "488561352",
+      "uid": "6cd4e0f6-8337-407b-a814-635510bbf594"
+    },
+    "spec": {
+      "progressDeadlineSeconds": 600,
+      "replicas": 1,
+      "revisionHistoryLimit": 10,
+      "selector": {
+        "matchLabels": {
+          "app": "semantic-phase5-sam3-router"
+        }
+      },
+      "strategy": {
+        "rollingUpdate": {
+          "maxSurge": "25%",
+          "maxUnavailable": "25%"
+        },
+        "type": "RollingUpdate"
+      },
+      "template": {
+        "metadata": {
+          "labels": {
+            "app": "semantic-phase5-sam3-router"
+          }
+        },
+        "spec": {
+          "containers": [
+            {
+              "args": [
+                "-c",
+                "/phase5-config/router.json5"
+              ],
+              "image": "docker.io/eclipse/zenoh@sha256:137310456cc7a75d955063513207c737f25071fbb74fd7641835c50ab8e3369f",
+              "imagePullPolicy": "IfNotPresent",
+              "name": "router",
+              "ports": [
+                {
+                  "containerPort": 17448,
+                  "name": "zenoh",
+                  "protocol": "TCP"
+                }
+              ],
+              "resources": {
+                "limits": {
+                  "cpu": "500m",
+                  "memory": "512Mi"
+                },
+                "requests": {
+                  "cpu": "100m",
+                  "memory": "128Mi"
+                }
+              },
+              "terminationMessagePath": "/dev/termination-log",
+              "terminationMessagePolicy": "File",
+              "volumeMounts": [
+                {
+                  "mountPath": "/phase5-config",
+                  "name": "config",
+                  "readOnly": true
+                }
+              ]
+            }
+          ],
+          "dnsPolicy": "ClusterFirst",
+          "restartPolicy": "Always",
+          "schedulerName": "default-scheduler",
+          "securityContext": {},
+          "terminationGracePeriodSeconds": 30,
+          "volumes": [
+            {
+              "configMap": {
+                "defaultMode": 420,
+                "name": "semantic-phase5-sam3-config"
+              },
+              "name": "config"
+            }
+          ]
+        }
+      }
+    },
+    "status": {
+      "availableReplicas": 1,
+      "conditions": [
+        {
+          "lastTransitionTime": "2026-10-30T14:03:23Z",
+          "lastUpdateTime": "2026-10-30T14:03:23Z",
+          "message": "Deployment has minimum availability.",
+          "reason": "MinimumReplicasAvailable",
+          "status": "True",
+          "type": "Available"
+        },
+        {
+          "lastTransitionTime": "2026-10-30T14:03:22Z",
+          "lastUpdateTime": "2026-10-30T14:03:23Z",
+          "message": "ReplicaSet \"semantic-phase5-sam3-router-85bf85947c\" has successfully progressed.",
+          "reason": "NewReplicaSetAvailable",
+          "status": "True",
+          "type": "Progressing"
+        }
+      ],
+      "observedGeneration": 1,
+      "readyReplicas": 1,
+      "replicas": 1,
+      "updatedReplicas": 1
+    }
+  }
+]

@@ -1,0 +1,21 @@
+# Build the Phase 6 demo plugin against the exact Nav2 image used by the
+# currently running known-working hotel navigation deployment.
+FROM quay.io/jianrzha/ros2-rmf-nav2@sha256:fcf66afcc12e213bc13ee8a50eb6b141b4a9af3b4a4b86123421e58624ec54b6
+
+USER 0
+ENV ROS_DISTRO=jazzy
+COPY . /opt/semantic-costmap-ws/src/demo_semantic_costmap
+COPY test/run_nav2_plugin_preflight.sh /usr/local/bin/phase6-nav2-plugin-preflight
+RUN chmod 0755 /usr/local/bin/phase6-nav2-plugin-preflight \
+    && /bin/bash -ec 'source /opt/ros/jazzy/setup.bash; \
+       cd /opt/semantic-costmap-ws; \
+       colcon build --merge-install --packages-select demo_semantic_costmap \
+         --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF' \
+    && grep -Fqx 'source /opt/ros/jazzy/setup.bash' /entrypoint-nav2-federated.sh \
+    && sed -i '/^source \/opt\/ros\/jazzy\/setup.bash$/a source /opt/semantic-costmap-ws/install/setup.bash' \
+         /entrypoint-nav2-federated.sh \
+    && grep -Fqx 'source /opt/semantic-costmap-ws/install/setup.bash' \
+         /entrypoint-nav2-federated.sh \
+    && chmod -R a+rX /opt/semantic-costmap-ws/install
+
+USER 1001

@@ -1,0 +1,161 @@
+{
+  "apiVersion": "build.openshift.io/v1",
+  "kind": "Build",
+  "metadata": {
+    "annotations": {
+      "openshift.io/build-config.name": "semantic-safety-console-phase6",
+      "openshift.io/build.number": "16",
+      "openshift.io/build.pod-name": "semantic-safety-console-phase6-16-build"
+    },
+    "creationTimestamp": "2026-10-28T14:15:37Z",
+    "generation": 2,
+    "labels": {
+      "buildconfig": "semantic-safety-console-phase6",
+      "openshift.io/build-config.name": "semantic-safety-console-phase6",
+      "openshift.io/build.start-policy": "Serial"
+    },
+    "name": "semantic-safety-console-phase6-16",
+    "namespace": "semantic-navigation",
+    "ownerReferences": [
+      {
+        "apiVersion": "build.openshift.io/v1",
+        "controller": true,
+        "kind": "BuildConfig",
+        "name": "semantic-safety-console-phase6",
+        "uid": "db8b50ae-f77f-45d0-b508-1599869d8227"
+      }
+    ],
+    "resourceVersion": "480172277",
+    "uid": "59c333da-c460-4909-95ed-449fb44d1b89"
+  },
+  "spec": {
+    "nodeSelector": null,
+    "output": {
+      "pushSecret": {
+        "name": "builder-dockercfg-htt4p"
+      },
+      "to": {
+        "kind": "ImageStreamTag",
+        "name": "semantic-safety:phase6-console-candidate"
+      }
+    },
+    "postCommit": {},
+    "resources": {
+      "limits": {
+        "cpu": "4",
+        "memory": "8Gi"
+      },
+      "requests": {
+        "cpu": "2",
+        "memory": "4Gi"
+      }
+    },
+    "revision": {
+      "git": {
+        "author": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "commit": "acb0abda9467495a763ccbcbb077c00f8dbd1916",
+        "committer": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "message": "Sensors override v3: try_to_lock the ECM-sync mutex \u2014 the acquisition itself was the remaining block\n\nsensors-override-pair-on-2 (extended override, both coupling waits\nnon-blocking) still tripped ONE ~103.4 ms physics stall at sim 41.5\n(dt_sim 2.0, frozen stamps, chain correctly expired). Root cause: the\nupdateTimeCv WAIT was gone but both it and the skip check live inside\nstd::unique_lock(renderUtilMutex) \u2014 and the render thread holds that\nmutex for the ENTIRE renderUtil.Update() (the slow scene/geometry\napplication at a viewpoint change). The physics thread blocked on the\nmutex ACQUISITION itself for exactly that duration.\n\nv3: try_to_lock. If the render thread holds the mutex, or the previous\nECM update is unconsumed, skip the cycle's UpdateFromECM entirely. The\nin-flight render keeps its buffered state; the next cycle refreshes.\nThe arming-side check (hunk D) stays on renderMutex, which the render\nthread holds only microseconds (its cv wait releases it)."
+      },
+      "type": "Git"
+    },
+    "serviceAccount": "builder",
+    "source": {
+      "binary": {},
+      "type": "Binary"
+    },
+    "strategy": {
+      "dockerStrategy": {
+        "dockerfilePath": "Containerfile.phase6-console"
+      },
+      "type": "Docker"
+    }
+  },
+  "status": {
+    "completionTimestamp": "2026-10-28T14:18:57Z",
+    "conditions": [
+      {
+        "lastTransitionTime": "2026-10-28T14:15:37Z",
+        "lastUpdateTime": "2026-10-28T14:15:37Z",
+        "status": "False",
+        "type": "New"
+      },
+      {
+        "lastTransitionTime": "2026-10-28T14:15:39Z",
+        "lastUpdateTime": "2026-10-28T14:15:39Z",
+        "status": "False",
+        "type": "Pending"
+      },
+      {
+        "lastTransitionTime": "2026-10-28T14:18:57Z",
+        "lastUpdateTime": "2026-10-28T14:18:57Z",
+        "status": "False",
+        "type": "Running"
+      },
+      {
+        "lastTransitionTime": "2026-10-28T14:18:57Z",
+        "lastUpdateTime": "2026-10-28T14:18:57Z",
+        "status": "True",
+        "type": "Complete"
+      }
+    ],
+    "config": {
+      "kind": "BuildConfig",
+      "name": "semantic-safety-console-phase6",
+      "namespace": "semantic-navigation"
+    },
+    "duration": 200000000000,
+    "output": {
+      "to": {
+        "imageDigest": "sha256:1c0063c2d2360b6b8e15735ad9d7b4b21407f1788b260d25304761bdd884714d"
+      }
+    },
+    "outputDockerImageReference": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety:phase6-console-candidate",
+    "phase": "Complete",
+    "stages": [
+      {
+        "durationMilliseconds": 115275,
+        "name": "PullImages",
+        "startTime": "2026-10-28T14:15:41Z",
+        "steps": [
+          {
+            "durationMilliseconds": 115275,
+            "name": "PullBaseImage",
+            "startTime": "2026-10-28T14:15:41Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 74932,
+        "name": "Build",
+        "startTime": "2026-10-28T14:17:36Z",
+        "steps": [
+          {
+            "durationMilliseconds": 74932,
+            "name": "DockerBuild",
+            "startTime": "2026-10-28T14:17:36Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 3588,
+        "name": "PushImage",
+        "startTime": "2026-10-28T14:18:51Z",
+        "steps": [
+          {
+            "durationMilliseconds": 3588,
+            "name": "PushDockerImage",
+            "startTime": "2026-10-28T14:18:51Z"
+          }
+        ]
+      }
+    ],
+    "startTimestamp": "2026-10-28T14:15:37Z"
+  }
+}

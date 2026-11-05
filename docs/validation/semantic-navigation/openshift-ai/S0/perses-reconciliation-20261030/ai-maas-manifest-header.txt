@@ -1,0 +1,22 @@
+apiVersion: perses.dev/v1alpha1
+kind: PersesDashboard
+metadata:
+  name: dashboard-3-maas-usage-admin
+  namespace: opendatahub
+spec:
+  display:
+    description: Token consumption overview and per-user usage breakdown
+    name: Usage
+  duration: 168h
+  layouts:
+    - kind: Grid
+      spec:
+        display:
+          collapse:
+            open: true
+          title: Overview
+        items:
+          - content:
+              $ref: '#/spec/panels/totalTokens'
+            height: 5
+            width: 5

@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-16",
+  "runtime_image_digest": "sha256:4ed3ab9949ba27623af14901dc644b754b2fb1f9976b19f0b34e9a04311e74c8",
+  "rmw": "rmw_cyclonedds_cpp",
+  "duration_s": 30.011184230912477,
+  "counts": {
+    "rgb": 301, "depth": 301, "info": 301,
+    "mask": 198, "cloud": 198, "matched": 198,
+    "ready_true": 120, "ready_false": 0, "bad_layout": 0
+  },
+  "pending": {"mask": 0, "cloud": 0},
+  "last_status": {
+    "confidence_threshold": 0.5,
+    "emitted_results": 275,
+    "input_queue_depths": {"camera_info": 1, "depth": 0, "rgb": 0},
+    "input_queue_drops": 0,
+    "last_valid_result_age_ms": 68.69,
+    "model": "facebook/sam3-original",
+    "model_revision": "3c879f39826c281e95690f02c7821c4de09afae7",
+    "paired_triplets": 733,
+    "prompt": "red mat",
+    "ready": true,
+    "reason": null,
+    "state": "ready",
+    "timestamp_discards": {"depth": 1, "info": 0, "rgb": 1},
+    "work_queue_depth": 0,
+    "work_queue_drops": 457
+  },
+  "last_pair": {
+    "header": [126, 600000000, "camera_color_optical_frame"],
+    "points": 5872,
+    "pixels": 5872
+  },
+  "camera_publishers_per_topic": {"rgb": 1, "depth": 1, "info": 1},
+  "inference_pod_restarts": {"sam3-inference": 0, "inference-zenoh-bridge": 0},
+  "note": "Read-only 30-second observation after model warm-up. Node status counters include startup and precede/follow the observer window; work drops include deliberate frame replacement during model loading. Not a ten-minute Phase 3 gate or capture-to-result latency measurement."
+}

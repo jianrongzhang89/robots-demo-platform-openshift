@@ -1,0 +1,49 @@
+{
+  "summary": {
+    "passed": true,
+    "planned": 1,
+    "attempted": 1,
+    "results": [
+      {
+        "mode": "serving",
+        "passed": true,
+        "returncode": 0,
+        "evidence": "docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/serving-transport-pilot-2/serving-faults/trial-01-serving-r1/runtime/summary.json",
+        "injected": true,
+        "restored": true,
+        "prearm_liveness_retries": 2,
+        "prearm_topology_recycles": 0,
+        "repeat": 1
+      }
+    ]
+  },
+  "lease_margins": {
+    "trial-01-serving-r1": {
+      "results": 106,
+      "margin_min_ms": -3182.179746,
+      "margin_p10_ms": 46.127247,
+      "margin_median_ms": 78.789762,
+      "negative_margins": 4,
+      "margins_below_30ms": 7
+    },
+    "trial-01-serving-r1-liveness-1": {
+      "results": 0,
+      "margin_min_ms": null,
+      "margin_p10_ms": null,
+      "margin_median_ms": null,
+      "negative_margins": 0,
+      "margins_below_30ms": 0
+    },
+    "trial-01-serving-r1-liveness-1.log": null,
+    "trial-01-serving-r1-liveness-2": {
+      "results": 0,
+      "margin_min_ms": null,
+      "margin_p10_ms": null,
+      "margin_median_ms": null,
+      "negative_margins": 0,
+      "margins_below_30ms": 0
+    },
+    "trial-01-serving-r1-liveness-2.log": null,
+    "trial-01-serving-r1.log": null
+  }
+}

@@ -1,0 +1,23 @@
+diff --git a/nav2_controller/src/controller_server.cpp b/nav2_controller/src/controller_server.cpp
+--- a/nav2_controller/src/controller_server.cpp
++++ b/nav2_controller/src/controller_server.cpp
+@@ -808,12 +808,18 @@ bool ControllerServer::isGoalReached()
+ 
+   nav_2d_msgs::msg::Twist2D twist = getThresholdedTwist(odom_sub_->getTwist());
+   geometry_msgs::msg::Twist velocity = nav_2d_utils::twist2Dto3D(twist);
++  // Private fixed-map-goal candidate: evaluate the target in the same
++  // localization epoch as the robot pose, as RPP does for its transformed
++  // path. Retaining the planner's old stamp can disagree after AMCL updates.
++  // This target is not sensor evidence; no sensor/command stamp is changed.
++  auto endpoint_at_robot_capture = end_pose_;
++  endpoint_at_robot_capture.header.stamp = pose.header.stamp;
+ 
+   geometry_msgs::msg::PoseStamped transformed_end_pose;
+   rclcpp::Duration tolerance(rclcpp::Duration::from_seconds(costmap_ros_->getTransformTolerance()));
+   if(!nav_2d_utils::transformPose(
+     costmap_ros_->getTfBuffer(), costmap_ros_->getGlobalFrameID(),
+-    end_pose_, transformed_end_pose, tolerance))
++    endpoint_at_robot_capture, transformed_end_pose, tolerance))
+   {
+     throw nav2_core::ControllerTFError("Failed to transform end pose to global frame");
+   }

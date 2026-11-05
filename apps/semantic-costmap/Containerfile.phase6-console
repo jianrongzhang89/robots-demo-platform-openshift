@@ -1,0 +1,25 @@
+# Build the Phase 4-qualified semantic costmap plugin as an overlay on the
+# frozen Phase 5 console image (build 27, 6d863ee... — the UDP-first status
+# ordering). The console image and
+# every qualified binary in it are unchanged; this only ADDS the
+# demo_semantic_costmap plugin library, compiled against the image's exact
+# installed Nav2 (same pattern as the smoother/controller overlays). The
+# guarded fixture sources /opt/semantic-costmap-overlay only for Phase 6
+# semantic-arm trials; every other suite keeps its frozen environment.
+FROM image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:15b900f6335f0974b9cceee5dbd7bf34d24c509395e1901704af4f224a112a37
+USER 0
+COPY . /opt/semantic-costmap-ws/src/demo_semantic_costmap
+RUN /bin/bash -ec 'source /opt/ros/jazzy/setup.bash; \
+    cd /opt/semantic-costmap-ws; \
+    cmake --version >/dev/null; \
+    dpkg -s nlohmann-json3-dev >/dev/null 2>&1 || apt-get update; \
+    dpkg -s nlohmann-json3-dev >/dev/null 2>&1 || apt-get install -y --no-install-recommends nlohmann-json3-dev; \
+    dpkg -s libssl-dev >/dev/null 2>&1 || apt-get install -y --no-install-recommends libssl-dev; \
+    colcon build --merge-install --packages-select demo_semantic_costmap \
+      --build-base /opt/semantic-costmap-build --install-base /opt/semantic-costmap-overlay \
+      --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF; \
+    source /opt/semantic-costmap-overlay/local_setup.bash; \
+    test "$(ros2 pkg prefix demo_semantic_costmap)" = /opt/semantic-costmap-overlay; \
+    test -f /opt/semantic-costmap-overlay/lib/libdemo_semantic_costmap.so; \
+    rm -rf /opt/semantic-costmap-build'
+USER 1001

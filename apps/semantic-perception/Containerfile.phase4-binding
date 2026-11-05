@@ -1,0 +1,7 @@
+FROM image-registry.openshift-image-registry.svc:5000/semantic-navigation/sam3-runtime@sha256:f4972af2f294c57d5662284fe3ad027b113fbed990690c55cbeacc4f19512726
+USER 0
+COPY backend_factory.py http_backend.py sam3_ros_node.py /opt/semantic-perception/
+COPY tests /opt/semantic-perception/tests
+COPY tests_ros /opt/semantic-perception/tests_ros
+RUN /bin/bash -ec 'source /opt/ros/jazzy/setup.bash; cd /opt/semantic-perception; /opt/sam3-venv/bin/python -m unittest discover -s tests -v; /opt/sam3-venv/bin/python -m unittest discover -s tests_ros -v'
+USER 1001

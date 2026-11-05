@@ -1,0 +1,599 @@
+{
+  "sam3_pod": {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "annotations": {
+        "k8s.ovn.org/pod-networks": "{\"default\":{\"ip_addresses\":[\"10.129.12.143/23\"],\"mac_address\":\"0a:58:0a:81:0c:8f\",\"gateway_ips\":[\"10.129.12.1\"],\"routes\":[{\"dest\":\"10.128.0.0/14\",\"nextHop\":\"10.129.12.1\"},{\"dest\":\"172.30.0.0/16\",\"nextHop\":\"10.129.12.1\"},{\"dest\":\"169.254.0.5/32\",\"nextHop\":\"10.129.12.1\"},{\"dest\":\"100.64.0.0/16\",\"nextHop\":\"10.129.12.1\"}],\"ip_address\":\"10.129.12.143/23\",\"gateway_ip\":\"10.129.12.1\",\"role\":\"primary\"}}",
+        "k8s.v1.cni.cncf.io/network-status": "[{\n    \"name\": \"ovn-kubernetes\",\n    \"interface\": \"eth0\",\n    \"ips\": [\n        \"10.129.12.143\"\n    ],\n    \"mac\": \"0a:58:0a:81:0c:8f\",\n    \"default\": true,\n    \"dns\": {}\n}]",
+        "openshift.io/scc": "openshift-ai-llminferenceservice-scc",
+        "seccomp.security.alpha.kubernetes.io/pod": "runtime/default",
+        "security.openshift.io/validated-scc-subject-type": "user"
+      },
+      "creationTimestamp": "2026-10-26T22:30:17Z",
+      "generation": 1,
+      "labels": {
+        "app": "semantic-phase5-sam3"
+      },
+      "name": "semantic-phase5-sam3",
+      "namespace": "semantic-navigation",
+      "resourceVersion": "473340418",
+      "uid": "1cb1e063-01ec-4b2d-a8cd-c52167ffec4c"
+    },
+    "spec": {
+      "containers": [
+        {
+          "args": [
+            "-c",
+            "/phase5-bridges/sam3-bridge.json5"
+          ],
+          "env": [
+            {
+              "name": "ROS_DOMAIN_ID",
+              "value": "86"
+            },
+            {
+              "name": "ROS_DISTRO",
+              "value": "jazzy"
+            },
+            {
+              "name": "RMW_IMPLEMENTATION",
+              "value": "rmw_cyclonedds_cpp"
+            },
+            {
+              "name": "CYCLONEDDS_URI",
+              "value": "file:///phase5-bridges/cyclonedds.xml"
+            }
+          ],
+          "image": "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+          "imagePullPolicy": "IfNotPresent",
+          "name": "sam3-zenoh-bridge",
+          "resources": {
+            "limits": {
+              "cpu": "500m",
+              "memory": "512Mi"
+            },
+            "requests": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            }
+          },
+          "securityContext": {
+            "allowPrivilegeEscalation": false,
+            "capabilities": {
+              "drop": [
+                "ALL"
+              ]
+            },
+            "runAsNonRoot": true,
+            "runAsUser": 1001340000
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/phase5-bridges",
+              "name": "bridge-config",
+              "readOnly": true
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-hk8c5",
+              "readOnly": true
+            }
+          ]
+        },
+        {
+          "args": [
+            "source /opt/ros/jazzy/setup.bash; /opt/sam3-venv/bin/python /opt/semantic-perception/sam3_ros_node.py & echo $! > /tmp/sam3-python.pid; wait $(cat /tmp/sam3-python.pid)"
+          ],
+          "command": [
+            "/bin/bash",
+            "-c"
+          ],
+          "env": [
+            {
+              "name": "ROS_DOMAIN_ID",
+              "value": "86"
+            },
+            {
+              "name": "ROS_DISTRO",
+              "value": "jazzy"
+            },
+            {
+              "name": "HOME",
+              "value": "/tmp/phase5-sam3-home"
+            },
+            {
+              "name": "ROS_LOG_DIR",
+              "value": "/tmp/phase5-sam3-logs"
+            },
+            {
+              "name": "RMW_IMPLEMENTATION",
+              "value": "rmw_cyclonedds_cpp"
+            },
+            {
+              "name": "CYCLONEDDS_URI",
+              "value": "file:///phase5-bridges/cyclonedds.xml"
+            },
+            {
+              "name": "SAM3_PROMPT",
+              "value": "red mat"
+            },
+            {
+              "name": "SEMANTIC_REQUIRE_CAPTURE_TRACE",
+              "value": "1"
+            },
+            {
+              "name": "SEMANTIC_MAX_WORK_WAIT_MS",
+              "value": "40"
+            },
+            {
+              "name": "SEMANTIC_CLOCK_UNCERTAINTY_MS",
+              "value": "2"
+            }
+          ],
+          "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/sam3-runtime@sha256:478ec01a7a47fbb0c862fbbef495c71b4a512ff59ed8d6ed5b7234422cc35686",
+          "imagePullPolicy": "IfNotPresent",
+          "name": "sam3-inference",
+          "resources": {
+            "limits": {
+              "cpu": "6",
+              "memory": "24Gi",
+              "nvidia.com/gpu": "1"
+            },
+            "requests": {
+              "cpu": "3",
+              "memory": "12Gi",
+              "nvidia.com/gpu": "1"
+            }
+          },
+          "securityContext": {
+            "allowPrivilegeEscalation": false,
+            "capabilities": {
+              "drop": [
+                "ALL"
+              ]
+            },
+            "runAsNonRoot": true,
+            "runAsUser": 1001340000
+          },
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "volumeMounts": [
+            {
+              "mountPath": "/phase5-bridges",
+              "name": "bridge-config",
+              "readOnly": true
+            },
+            {
+              "mountPath": "/models",
+              "name": "model",
+              "readOnly": true
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-hk8c5",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "dnsPolicy": "ClusterFirst",
+      "enableServiceLinks": true,
+      "imagePullSecrets": [
+        {
+          "name": "default-dockercfg-6jjg8"
+        }
+      ],
+      "nodeName": "ip-10-0-18-251.ec2.internal",
+      "nodeSelector": {
+        "kubernetes.io/hostname": "ip-10-0-18-251.ec2.internal"
+      },
+      "preemptionPolicy": "PreemptLowerPriority",
+      "priority": 0,
+      "restartPolicy": "Always",
+      "schedulerName": "default-scheduler",
+      "securityContext": {
+        "fsGroup": 1001340000,
+        "fsGroupChangePolicy": "OnRootMismatch",
+        "seLinuxOptions": {
+          "level": "s0:c37,c4"
+        },
+        "seccompProfile": {
+          "type": "RuntimeDefault"
+        }
+      },
+      "serviceAccount": "default",
+      "serviceAccountName": "default",
+      "terminationGracePeriodSeconds": 30,
+      "tolerations": [
+        {
+          "effect": "NoSchedule",
+          "key": "g6e-gpu",
+          "operator": "Equal",
+          "value": "true"
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        },
+        {
+          "effect": "NoExecute",
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists",
+          "tolerationSeconds": 300
+        },
+        {
+          "effect": "NoSchedule",
+          "key": "node.kubernetes.io/memory-pressure",
+          "operator": "Exists"
+        }
+      ],
+      "volumes": [
+        {
+          "configMap": {
+            "defaultMode": 420,
+            "name": "semantic-phase5-sam3-config"
+          },
+          "name": "bridge-config"
+        },
+        {
+          "name": "model",
+          "persistentVolumeClaim": {
+            "claimName": "sam3-checkpoint"
+          }
+        },
+        {
+          "name": "kube-api-access-hk8c5",
+          "projected": {
+            "defaultMode": 420,
+            "sources": [
+              {
+                "serviceAccountToken": {
+                  "expirationSeconds": 3607,
+                  "path": "token"
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ],
+                  "name": "kube-root-ca.crt"
+                }
+              },
+              {
+                "downwardAPI": {
+                  "items": [
+                    {
+                      "fieldRef": {
+                        "apiVersion": "v1",
+                        "fieldPath": "metadata.namespace"
+                      },
+                      "path": "namespace"
+                    }
+                  ]
+                }
+              },
+              {
+                "configMap": {
+                  "items": [
+                    {
+                      "key": "service-ca.crt",
+                      "path": "service-ca.crt"
+                    }
+                  ],
+                  "name": "openshift-service-ca.crt"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-10-26T22:30:22Z",
+          "observedGeneration": 1,
+          "status": "True",
+          "type": "PodReadyToStartContainers"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-10-26T22:30:18Z",
+          "observedGeneration": 1,
+          "status": "True",
+          "type": "Initialized"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-10-26T22:30:22Z",
+          "observedGeneration": 1,
+          "status": "True",
+          "type": "Ready"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-10-26T22:30:22Z",
+          "observedGeneration": 1,
+          "status": "True",
+          "type": "ContainersReady"
+        },
+        {
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-10-26T22:30:18Z",
+          "observedGeneration": 1,
+          "status": "True",
+          "type": "PodScheduled"
+        }
+      ],
+      "containerStatuses": [
+        {
+          "allocatedResources": {
+            "cpu": "3",
+            "memory": "12Gi",
+            "nvidia.com/gpu": "1"
+          },
+          "containerID": "cri-o://7b77f91a86a62a6b0c356c88a5469c29353d9c17829651661bda416b6a1d5cf3",
+          "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/sam3-runtime@sha256:478ec01a7a47fbb0c862fbbef495c71b4a512ff59ed8d6ed5b7234422cc35686",
+          "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/sam3-runtime@sha256:478ec01a7a47fbb0c862fbbef495c71b4a512ff59ed8d6ed5b7234422cc35686",
+          "lastState": {},
+          "name": "sam3-inference",
+          "ready": true,
+          "resources": {
+            "limits": {
+              "cpu": "6",
+              "memory": "24Gi",
+              "nvidia.com/gpu": "1"
+            },
+            "requests": {
+              "cpu": "3",
+              "memory": "12Gi",
+              "nvidia.com/gpu": "1"
+            }
+          },
+          "restartCount": 0,
+          "started": true,
+          "state": {
+            "running": {
+              "startedAt": "2026-10-26T22:30:22Z"
+            }
+          },
+          "user": {
+            "linux": {
+              "gid": 0,
+              "supplementalGroups": [
+                0,
+                1001340000
+              ],
+              "uid": 1001340000
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/phase5-bridges",
+              "name": "bridge-config",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/models",
+              "name": "model",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-hk8c5",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        },
+        {
+          "allocatedResources": {
+            "cpu": "100m",
+            "memory": "128Mi"
+          },
+          "containerID": "cri-o://8b63728e3ec5333d2d8483797725dda25b11c4c0c439df36a94dfbe29ac2d051",
+          "image": "docker.io/eclipse/zenoh-bridge-ros2dds:1.5.0",
+          "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+          "lastState": {},
+          "name": "sam3-zenoh-bridge",
+          "ready": true,
+          "resources": {
+            "limits": {
+              "cpu": "500m",
+              "memory": "512Mi"
+            },
+            "requests": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            }
+          },
+          "restartCount": 0,
+          "started": true,
+          "state": {
+            "running": {
+              "startedAt": "2026-10-26T22:30:22Z"
+            }
+          },
+          "user": {
+            "linux": {
+              "gid": 0,
+              "supplementalGroups": [
+                0,
+                1001340000
+              ],
+              "uid": 1001340000
+            }
+          },
+          "volumeMounts": [
+            {
+              "mountPath": "/phase5-bridges",
+              "name": "bridge-config",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+              "name": "kube-api-access-hk8c5",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            }
+          ]
+        }
+      ],
+      "hostIP": "10.0.18.251",
+      "hostIPs": [
+        {
+          "ip": "10.0.18.251"
+        }
+      ],
+      "observedGeneration": 1,
+      "phase": "Running",
+      "podIP": "10.129.12.143",
+      "podIPs": [
+        {
+          "ip": "10.129.12.143"
+        }
+      ],
+      "qosClass": "Burstable",
+      "startTime": "2026-10-26T22:30:18Z"
+    }
+  },
+  "fixture_pod": {},
+  "router_deployment": {
+    "apiVersion": "apps/v1",
+    "kind": "Deployment",
+    "metadata": {
+      "annotations": {
+        "deployment.kubernetes.io/revision": "1"
+      },
+      "creationTimestamp": "2026-10-26T22:31:09Z",
+      "generation": 1,
+      "labels": {
+        "app": "semantic-phase5-sam3-router"
+      },
+      "name": "semantic-phase5-sam3-router",
+      "namespace": "semantic-navigation",
+      "resourceVersion": "473342919",
+      "uid": "560d1478-25e2-4237-83d2-24e46a2657c4"
+    },
+    "spec": {
+      "progressDeadlineSeconds": 600,
+      "replicas": 1,
+      "revisionHistoryLimit": 10,
+      "selector": {
+        "matchLabels": {
+          "app": "semantic-phase5-sam3-router"
+        }
+      },
+      "strategy": {
+        "rollingUpdate": {
+          "maxSurge": "25%",
+          "maxUnavailable": "25%"
+        },
+        "type": "RollingUpdate"
+      },
+      "template": {
+        "metadata": {
+          "labels": {
+            "app": "semantic-phase5-sam3-router"
+          }
+        },
+        "spec": {
+          "containers": [
+            {
+              "args": [
+                "-c",
+                "/phase5-config/router.json5"
+              ],
+              "image": "docker.io/eclipse/zenoh@sha256:137310456cc7a75d955063513207c737f25071fbb74fd7641835c50ab8e3369f",
+              "imagePullPolicy": "IfNotPresent",
+              "name": "router",
+              "ports": [
+                {
+                  "containerPort": 17448,
+                  "name": "zenoh",
+                  "protocol": "TCP"
+                }
+              ],
+              "resources": {
+                "limits": {
+                  "cpu": "500m",
+                  "memory": "512Mi"
+                },
+                "requests": {
+                  "cpu": "100m",
+                  "memory": "128Mi"
+                }
+              },
+              "terminationMessagePath": "/dev/termination-log",
+              "terminationMessagePolicy": "File",
+              "volumeMounts": [
+                {
+                  "mountPath": "/phase5-config",
+                  "name": "config",
+                  "readOnly": true
+                }
+              ]
+            }
+          ],
+          "dnsPolicy": "ClusterFirst",
+          "restartPolicy": "Always",
+          "schedulerName": "default-scheduler",
+          "securityContext": {},
+          "terminationGracePeriodSeconds": 30,
+          "volumes": [
+            {
+              "configMap": {
+                "defaultMode": 420,
+                "name": "semantic-phase5-sam3-config"
+              },
+              "name": "config"
+            }
+          ]
+        }
+      }
+    },
+    "status": {
+      "availableReplicas": 1,
+      "conditions": [
+        {
+          "lastTransitionTime": "2026-10-26T22:31:10Z",
+          "lastUpdateTime": "2026-10-26T22:31:10Z",
+          "message": "Deployment has minimum availability.",
+          "reason": "MinimumReplicasAvailable",
+          "status": "True",
+          "type": "Available"
+        },
+        {
+          "lastTransitionTime": "2026-10-26T22:31:09Z",
+          "lastUpdateTime": "2026-10-26T22:31:10Z",
+          "message": "ReplicaSet \"semantic-phase5-sam3-router-85bf85947c\" has successfully progressed.",
+          "reason": "NewReplicaSetAvailable",
+          "status": "True",
+          "type": "Progressing"
+        }
+      ],
+      "observedGeneration": 1,
+      "readyReplicas": 1,
+      "replicas": 1,
+      "updatedReplicas": 1
+    }
+  },
+  "router_pods": [
+    "semantic-phase5-sam3-router-85bf85947c-chl8p"
+  ],
+  "sam3-inference.log": "/opt/sam3-venv/lib/python3.12/site-packages/timm/models/layers/__init__.py:49: FutureWarning: Importing from timm.models.layers is deprecated, please import via timm.layers\n  warnings.warn(f\"Importing from {__name__} is deprecated, please import via timm.layers\", FutureWarning)\n[INFO] [1793053857.678170201] [sam3_semantic_inference]: SAM3 model loaded and warm; awaiting live RGB-D frame\n[INFO] [1793053857.907754486] [sam3_semantic_inference]: {\"capture_stamp_ns\": 13300000000, \"emitted\": 1, \"event\": \"valid_result\", \"inference_ms\": 143.58, \"mask_pixels\": 5658, \"paired\": 135, \"receiver_processing_age_ms\": 149.36, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053858.043315973] [sam3_semantic_inference]: {\"capture_stamp_ns\": 13400000000, \"emitted\": 2, \"event\": \"valid_result\", \"inference_ms\": 130.42, \"mask_pixels\": 5658, \"paired\": 136, \"receiver_processing_age_ms\": 156.43, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053858.174298642] [sam3_semantic_inference]: {\"capture_stamp_ns\": 13500000000, \"emitted\": 3, \"event\": \"valid_result\", \"inference_ms\": 126.0, \"mask_pixels\": 5658, \"paired\": 137, \"receiver_processing_age_ms\": 148.68, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053858.308753551] [sam3_semantic_inference]: {\"capture_stamp_ns\": 13600000000, \"emitted\": 4, \"event\": \"valid_result\", \"inference_ms\": 129.27, \"mask_pixels\": 5658, \"paired\": 138, \"receiver_processing_age_ms\": 147.15, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053858.441977657] [sam3_semantic_inference]: {\"capture_stamp_ns\": 13700000000, \"emitted\": 5, \"event\": \"valid_result\", \"inference_ms\": 127.73, \"mask_pixels\": 5658, \"paired\": 139, \"receiver_processing_age_ms\": 144.05, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053858.574397760] [sam3_semantic_inference]: {\"capture_stamp_ns\": 13800000000, \"emitted\": 6, \"event\": \"valid_result\", \"inference_ms\": 127.71, \"mask_pixels\": 5658, \"paired\": 140, \"receiver_processing_age_ms\": 144.79, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053858.708686321] [sam3_semantic_inference]: {\"capture_stamp_ns\": 13900000000, \"emitted\": 7, \"event\": \"valid_result\", \"inference_ms\": 127.6, \"mask_pixels\": 5658, \"paired\": 140, \"receiver_processing_age_ms\": 141.57, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053858.843460297] [sam3_semantic_inference]: {\"capture_stamp_ns\": 14000000000, \"emitted\": 8, \"event\": \"valid_result\", \"inference_ms\": 129.89, \"mask_pixels\": 5658, \"paired\": 141, \"receiver_processing_age_ms\": 132.96, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053858.980283018] [sam3_semantic_inference]: {\"capture_stamp_ns\": 14100000000, \"emitted\": 9, \"event\": \"valid_result\", \"inference_ms\": 131.76, \"mask_pixels\": 5658, \"paired\": 142, \"receiver_processing_age_ms\": 133.28, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053859.121381340] [sam3_semantic_inference]: {\"capture_stamp_ns\": 14200000000, \"emitted\": 10, \"event\": \"valid_result\", \"inference_ms\": 135.05, \"mask_pixels\": 5658, \"paired\": 143, \"receiver_processing_age_ms\": 136.65, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053859.256460612] [sam3_semantic_inference]: {\"capture_stamp_ns\": 14300000000, \"emitted\": 11, \"event\": \"valid_result\", \"inference_ms\": 129.69, \"mask_pixels\": 5658, \"paired\": 144, \"receiver_processing_age_ms\": 132.02, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053859.390230666] [sam3_semantic_inference]: {\"capture_stamp_ns\": 14400000000, \"emitted\": 12, \"event\": \"valid_result\", \"inference_ms\": 128.01, \"mask_pixels\": 5658, \"paired\": 145, \"receiver_processing_age_ms\": 129.96, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053859.523415449] [sam3_semantic_inference]: {\"capture_stamp_ns\": 14500000000, \"emitted\": 13, \"event\": \"valid_result\", \"inference_ms\": 127.92, \"mask_pixels\": 5658, \"paired\": 146, \"receiver_processing_age_ms\": 129.97, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053859.674885137] [sam3_semantic_inference]: {\"capture_stamp_ns\": 14600000000, \"emitted\": 14, \"event\": \"valid_result\", \"inference_ms\": 125.58, \"mask_pixels\": 5658, \"paired\": 147, \"receiver_processing_age_ms\": 129.62, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053859.816734329] [sam3_semantic_inference]: {\"capture_stamp_ns\": 14700000000, \"emitted\": 15, \"event\": \"valid_result\", \"inference_ms\": 126.35, \"mask_pixels\": 5658, \"paired\": 148, \"receiver_processing_age_ms\": 128.35, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053859.966256576] [sam3_semantic_inference]: {\"capture_stamp_ns\": 14800000000, \"emitted\": 16, \"event\": \"valid_result\", \"inference_ms\": 133.47, \"mask_pixels\": 5658, \"paired\": 150, \"receiver_processing_age_ms\": 138.55, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053860.100561268] [sam3_semantic_inference]: {\"capture_stamp_ns\": 14900000000, \"emitted\": 17, \"event\": \"valid_result\", \"inference_ms\": 129.65, \"mask_pixels\": 5658, \"paired\": 151, \"receiver_processing_age_ms\": 144.52, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053860.234378464] [sam3_semantic_inference]: {\"capture_stamp_ns\": 15000000000, \"emitted\": 18, \"event\": \"valid_result\", \"inference_ms\": 128.63, \"mask_pixels\": 5658, \"paired\": 152, \"receiver_processing_age_ms\": 141.81, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053860.372214608] [sam3_semantic_inference]: {\"capture_stamp_ns\": 15100000000, \"emitted\": 19, \"event\": \"valid_result\", \"inference_ms\": 132.09, \"mask_pixels\": 5658, \"paired\": 153, \"receiver_processing_age_ms\": 147.69, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053860.508108561] [sam3_semantic_inference]: {\"capture_stamp_ns\": 15200000000, \"emitted\": 20, \"event\": \"valid_result\", \"inference_ms\": 130.46, \"mask_pixels\": 5658, \"paired\": 154, \"receiver_processing_age_ms\": 148.74, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053860.646325465] [sam3_semantic_inference]: {\"capture_stamp_ns\": 15300000000, \"emitted\": 21, \"event\": \"valid_result\", \"inference_ms\": 133.45, \"mask_pixels\": 5658, \"paired\": 155, \"receiver_processing_age_ms\": 156.53, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053860.782119183] [sam3_semantic_inference]: {\"capture_stamp_ns\": 15400000000, \"emitted\": 22, \"event\": \"valid_result\", \"inference_ms\": 129.78, \"mask_pixels\": 5658, \"paired\": 156, \"receiver_processing_age_ms\": 160.67, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053860.914924286] [sam3_semantic_inference]: {\"capture_stamp_ns\": 15500000000, \"emitted\": 23, \"event\": \"valid_result\", \"inference_ms\": 128.27, \"mask_pixels\": 5658, \"paired\": 157, \"receiver_processing_age_ms\": 152.31, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053861.051883055] [sam3_semantic_inference]: {\"capture_stamp_ns\": 15600000000, \"emitted\": 24, \"event\": \"valid_result\", \"inference_ms\": 131.86, \"mask_pixels\": 5658, \"paired\": 158, \"receiver_processing_age_ms\": 150.07, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053861.186956066] [sam3_semantic_inference]: {\"capture_stamp_ns\": 15700000000, \"emitted\": 25, \"event\": \"valid_result\", \"inference_ms\": 130.04, \"mask_pixels\": 5658, \"paired\": 159, \"receiver_processing_age_ms\": 151.49, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053861.325431143] [sam3_semantic_inference]: {\"capture_stamp_ns\": 15800000000, \"emitted\": 26, \"event\": \"valid_result\", \"inference_ms\": 133.36, \"mask_pixels\": 5658, \"paired\": 160, \"receiver_processing_age_ms\": 146.6, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053861.461712776] [sam3_semantic_inference]: {\"capture_stamp_ns\": 15900000000, \"emitted\": 27, \"event\": \"valid_result\", \"inference_ms\": 131.33, \"mask_pixels\": 5658, \"paired\": 161, \"receiver_processing_age_ms\": 151.94, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053861.604523037] [sam3_semantic_inference]: {\"capture_stamp_ns\": 16000000000, \"emitted\": 28, \"event\": \"valid_result\", \"inference_ms\": 137.36, \"mask_pixels\": 5658, \"paired\": 162, \"receiver_processing_age_ms\": 159.47, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053861.741252664] [sam3_semantic_inference]: {\"capture_stamp_ns\": 16100000000, \"emitted\": 29, \"event\": \"valid_result\", \"inference_ms\": 131.31, \"mask_pixels\": 5658, \"paired\": 163, \"receiver_processing_age_ms\": 168.03, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053861.877642953] [sam3_semantic_inference]: {\"capture_stamp_ns\": 16200000000, \"emitted\": 30, \"event\": \"valid_result\", \"inference_ms\": 131.53, \"mask_pixels\": 5658, \"paired\": 164, \"receiver_processing_age_ms\": 163.37, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053862.011623577] [sam3_semantic_inference]: {\"capture_stamp_ns\": 16300000000, \"emitted\": 31, \"event\": \"valid_result\", \"inference_ms\": 129.07, \"mask_pixels\": 5658, \"paired\": 165, \"receiver_processing_age_ms\": 159.02, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053862.146371692] [sam3_semantic_inference]: {\"capture_stamp_ns\": 16400000000, \"emitted\": 32, \"event\": \"valid_result\", \"inference_ms\": 129.91, \"mask_pixels\": 5658, \"paired\": 166, \"receiver_processing_age_ms\": 153.43, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053862.280569487] [sam3_semantic_inference]: {\"capture_stamp_ns\": 16500000000, \"emitted\": 33, \"event\": \"valid_result\", \"inference_ms\": 129.73, \"mask_pixels\": 5658, \"paired\": 167, \"receiver_processing_age_ms\": 152.78, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053862.418489055] [sam3_semantic_inference]: {\"capture_stamp_ns\": 16600000000, \"emitted\": 34, \"event\": \"valid_result\", \"inference_ms\": 132.32, \"mask_pixels\": 5658, \"paired\": 168, \"receiver_processing_age_ms\": 150.89, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053862.552478380] [sam3_semantic_inference]: {\"capture_stamp_ns\": 16700000000, \"emitted\": 35, \"event\": \"valid_result\", \"inference_ms\": 128.96, \"mask_pixels\": 5658, \"paired\": 169, \"receiver_processing_age_ms\": 153.34, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053862.687628005] [sam3_semantic_inference]: {\"capture_stamp_ns\": 16800000000, \"emitted\": 36, \"event\": \"valid_result\", \"inference_ms\": 129.92, \"mask_pixels\": 5658, \"paired\": 170, \"receiver_processing_age_ms\": 144.9, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053862.822692486] [sam3_semantic_inference]: {\"capture_stamp_ns\": 16900000000, \"emitted\": 37, \"event\": \"valid_result\", \"inference_ms\": 130.18, \"mask_pixels\": 5658, \"paired\": 170, \"receiver_processing_age_ms\": 141.0, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053862.957620579] [sam3_semantic_inference]: {\"capture_stamp_ns\": 17000000000, \"emitted\": 38, \"event\": \"valid_result\", \"inference_ms\": 130.12, \"mask_pixels\": 5658, \"paired\": 171, \"receiver_processing_age_ms\": 131.6, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053863.095544158] [sam3_semantic_inference]: {\"capture_stamp_ns\": 17100000000, \"emitted\": 39, \"event\": \"valid_result\", \"inference_ms\": 132.75, \"mask_pixels\": 5658, \"paired\": 172, \"receiver_processing_age_ms\": 134.21, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053863.228924621] [sam3_semantic_inference]: {\"capture_stamp_ns\": 17200000000, \"emitted\": 40, \"event\": \"valid_result\", \"inference_ms\": 128.7, \"mask_pixels\": 5658, \"paired\": 173, \"receiver_processing_age_ms\": 130.55, \"scores\": [0.90234375], \"work_drops\": 132}\n[INFO] [1793053863.372830339] [sam3_semantic_inference]: {\"capture_stamp_ns\": 17300000000, \"emitted\": 41, \"event\": \"valid_result\", \"inference_ms\": 128.67, \"mask_pixels\": 5657, \"paired\": 174, \"receiver_processing_age_ms\": 134.32, \"scores\": [0.90625], \"work_drops\": 132}\n[INFO] [1793053863.515400677] [sam3_semantic_inference]: {\"capture_stamp_ns\": 17400000000, \"emitted\": 42, \"event\": \"valid_result\", \"inference_ms\": 127.62, \"mask_pixels\": 5670, \"paired\": 175, \"receiver_processing_age_ms\": 130.15, \"scores\": [0.921875], \"work_drops\": 132}\n[INFO] [1793053863.656380304] [sam3_semantic_inference]: {\"capture_stamp_ns\": 17500000000, \"emitted\": 43, \"event\": \"valid_result\", \"inference_ms\": 125.45, \"mask_pixels\": 5779, \"paired\": 176, \"receiver_processing_age_ms\": 128.28, \"scores\": [0.921875], \"work_drops\": 132}\n[INFO] [1793053863.800706293] [sam3_semantic_inference]: {\"capture_stamp_ns\": 17600000000, \"emitted\": 44, \"event\": \"valid_result\", \"inference_ms\": 128.41, \"mask_pixels\": 5788, \"paired\": 177, \"receiver_processing_age_ms\": 134.04, \"scores\": [0.93359375], \"work_drops\": 132}\n[INFO] [1793053863.953502200] [sam3_semantic_inference]: {\"capture_stamp_ns\": 17700000000, \"emitted\": 45, \"event\": \"valid_result\", \"inference_ms\": 127.79, \"mask_pixels\": 6063, \"paired\": 178, \"receiver_processing_age_ms\": 131.08, \"scores\": [0.93359375], \"work_drops\": 132}\n[INFO] [1793053864.102120381] [sam3_semantic_inference]: {\"capture_stamp_ns\": 17800000000, \"emitted\": 46, \"event\": \"valid_result\", \"inference_ms\": 133.18, \"mask_pixels\": 6337, \"paired\": 179, \"receiver_processing_age_ms\": 140.38, \"scores\": [0.9296875], \"work_drops\": 132}\n[INFO] [1793053864.234366845] [sam3_semantic_inference]: {\"capture_stamp_ns\": 17900000000, \"emitted\": 47, \"event\": \"valid_result\", \"inference_ms\": 126.94, \"mask_pixels\": 6187, \"paired\": 180, \"receiver_processing_age_ms\": 128.7, \"scores\": [0.93359375], \"work_drops\": 132}\n[INFO] [1793053864.376398046] [sam3_semantic_inference]: {\"capture_stamp_ns\": 18000000000, \"emitted\": 48, \"event\": \"valid_result\", \"inference_ms\": 127.01, \"mask_pixels\": 6463, \"paired\": 181, \"receiver_processing_age_ms\": 133.48, \"scores\": [0.9375], \"work_drops\": 132}\n[INFO] [1793053864.516659866] [sam3_semantic_inference]: {\"capture_stamp_ns\": 18100000000, \"emitted\": 49, \"event\": \"valid_result\", \"inference_ms\": 125.57, \"mask_pixels\": 6744, \"paired\": 182, \"receiver_processing_age_ms\": 127.97, \"scores\": [0.9453125], \"work_drops\": 132}\n[INFO] [1793053864.658395071] [sam3_semantic_inference]: {\"capture_stamp_ns\": 18200000000, \"emitted\": 50, \"event\": \"valid_result\", \"inference_ms\": 127.04, \"mask_pixels\": 7038, \"paired\": 183, \"receiver_processing_age_ms\": 127.56, \"scores\": [0.9375], \"work_drops\": 132}\n[INFO] [1793053864.800892645] [sam3_semantic_inference]: {\"capture_stamp_ns\": 18300000000, \"emitted\": 51, \"event\": \"valid_result\", \"inference_ms\": 127.25, \"mask_pixels\": 6887, \"paired\": 184, \"receiver_processing_age_ms\": 128.06, \"scores\": [0.9296875], \"work_drops\": 132}\n[INFO] [1793053864.953602448] [sam3_semantic_inference]: {\"capture_stamp_ns\": 18400000000, \"emitted\": 52, \"event\": \"valid_result\", \"inference_ms\": 126.37, \"mask_pixels\": 7182, \"paired\": 185, \"receiver_processing_age_ms\": 136.15, \"scores\": [0.9375], \"work_drops\": 132}\n[INFO] [1793053865.094819247] [sam3_semantic_inference]: {\"capture_stamp_ns\": 18500000000, \"emitted\": 53, \"event\": \"valid_result\", \"inference_ms\": 125.69, \"mask_pixels\": 7480, \"paired\": 186, \"receiver_processing_age_ms\": 134.79, \"scores\": [0.9375], \"work_drops\": 132}\n[INFO] [1793053865.235950021] [sam3_semantic_inference]: {\"capture_stamp_ns\": 18600000000, \"emitted\": 54, \"event\": \"valid_result\", \"inference_ms\": 126.26, \"mask_pixels\": 7783, \"paired\": 187, \"receiver_processing_age_ms\": 126.7, \"scores\": [0.9375], \"work_drops\": 132}\n[INFO] [1793053865.399816000] [sam3_semantic_inference]: {\"capture_stamp_ns\": 18700000000, \"emitted\": 55, \"event\": \"valid_result\", \"inference_ms\": 127.78, \"mask_pixels\": 7918, \"paired\": 188, \"receiver_processing_age_ms\": 135.97, \"scores\": [0.921875], \"work_drops\": 132}\n[INFO] [1793053865.533965313] [sam3_semantic_inference]: {\"capture_stamp_ns\": 18800000000, \"emitted\": 56, \"event\": \"valid_result\", \"inference_ms\": 129.33, \"mask_pixels\": 8230, \"paired\": 189, \"receiver_processing_age_ms\": 131.05, \"scores\": [0.91796875], \"work_drops\": 132}\n[INFO] [1793053865.678583427] [sam3_semantic_inference]: {\"capture_stamp_ns\": 18900000000, \"emitted\": 57, \"event\": \"valid_result\", \"inference_ms\": 129.63, \"mask_pixels\": 8547, \"paired\": 190, \"receiver_processing_age_ms\": 133.36, \"scores\": [0.92578125], \"work_drops\": 132}\n[INFO] [1793053865.822162828] [sam3_semantic_inference]: {\"capture_stamp_ns\": 19000000000, \"emitted\": 58, \"event\": \"valid_result\", \"inference_ms\": 128.43, \"mask_pixels\": 8614, \"paired\": 191, \"receiver_processing_age_ms\": 129.07, \"scores\": [0.921875], \"work_drops\": 132}\n[INFO] [1793053865.963267740] [sam3_semantic_inference]: {\"capture_stamp_ns\": 19100000000, \"emitted\": 59, \"event\": \"valid_result\", \"inference_ms\": 126.51, \"mask_pixels\": 8720, \"paired\": 192, \"receiver_processing_age_ms\": 130.84, \"scores\": [0.91796875], \"work_drops\": 132}\n[INFO] [1793053866.105533903] [sam3_semantic_inference]: {\"capture_stamp_ns\": 19200000000, \"emitted\": 60, \"event\": \"valid_result\", \"inference_ms\": 127.59, \"mask_pixels\": 9043, \"paired\": 193, \"receiver_processing_age_ms\": 128.67, \"scores\": [0.93359375], \"work_drops\": 132}\n[INFO] [1793053866.251325378] [sam3_semantic_inference]: {\"capture_stamp_ns\": 19300000000, \"emitted\": 61, \"event\": \"valid_result\", \"inference_ms\": 130.82, \"mask_pixels\": 9373, \"paired\": 194, \"receiver_processing_age_ms\": 131.09, \"scores\": [0.93359375], \"work_drops\": 132}\n[INFO] [1793053866.394595643] [sam3_semantic_inference]: {\"capture_stamp_ns\": 19400000000, \"emitted\": 62, \"event\": \"valid_result\", \"inference_ms\": 127.83, \"mask_pixels\": 9535, \"paired\": 195, \"receiver_processing_age_ms\": 131.14, \"scores\": [0.9296875], \"work_drops\": 132}\n[INFO] [1793053866.533068120] [sam3_semantic_inference]: {\"capture_stamp_ns\": 19500000000, \"emitted\": 63, \"event\": \"valid_result\", \"inference_ms\": 123.7, \"mask_pixels\": 10090, \"paired\": 196, \"receiver_processing_age_ms\": 124.23, \"scores\": [0.92578125], \"work_drops\": 132}\n[INFO] [1793053866.704792355] [sam3_semantic_inference]: {\"capture_stamp_ns\": 19600000000, \"emitted\": 64, \"event\": \"valid_result\", \"inference_ms\": 135.74, \"mask_pixels\": 10541, \"paired\": 197, \"receiver_processing_age_ms\": 142.72, \"scores\": [0.921875], \"work_drops\": 132}\n[INFO] [1793053866.840135820] [sam3_semantic_inference]: {\"capture_stamp_ns\": 19700000000, \"emitted\": 65, \"event\": \"valid_result\", \"inference_ms\": 129.87, \"mask_pixels\": 10702, \"paired\": 198, \"receiver_processing_age_ms\": 131.96, \"scores\": [0.7734375], \"work_drops\": 132}\n[INFO] [1793053866.982958451] [sam3_semantic_inference]: {\"capture_stamp_ns\": 19800000000, \"emitted\": 66, \"event\": \"valid_result\", \"inference_ms\": 128.02, \"mask_pixels\": 11069, \"paired\": 199, \"receiver_processing_age_ms\": 135.5, \"scores\": [0.8203125], \"work_drops\": 132}\n[INFO] [1793053867.131367162] [sam3_semantic_inference]: {\"capture_stamp_ns\": 19900000000, \"emitted\": 67, \"event\": \"valid_result\", \"inference_ms\": 131.57, \"mask_pixels\": 11422, \"paired\": 200, \"receiver_processing_age_ms\": 140.45, \"scores\": [0.74609375], \"work_drops\": 132}\n[INFO] [1793053867.263299770] [sam3_semantic_inference]: {\"capture_stamp_ns\": 20000000000, \"emitted\": 68, \"event\": \"valid_result\", \"inference_ms\": 126.6, \"mask_pixels\": 11626, \"paired\": 201, \"receiver_processing_age_ms\": 127.89, \"scores\": [0.87109375], \"work_drops\": 132}\n[INFO] [1793053867.413475872] [sam3_semantic_inference]: {\"capture_stamp_ns\": 20100000000, \"emitted\": 69, \"event\": \"valid_result\", \"inference_ms\": 124.96, \"mask_pixels\": 12158, \"paired\": 202, \"receiver_processing_age_ms\": 129.41, \"scores\": [0.8828125], \"work_drops\": 132}\n[INFO] [1793053867.556467522] [sam3_semantic_inference]: {\"capture_stamp_ns\": 20200000000, \"emitted\": 70, \"event\": \"valid_result\", \"inference_ms\": 128.03, \"mask_pixels\": 12729, \"paired\": 203, \"receiver_processing_age_ms\": 128.57, \"scores\": [0.875], \"work_drops\": 132}\n[INFO] [1793053867.713847306] [sam3_semantic_inference]: {\"capture_stamp_ns\": 20300000000, \"emitted\": 71, \"event\": \"valid_result\", \"inference_ms\": 132.93, \"mask_pixels\": 12939, \"paired\": 204, \"receiver_processing_age_ms\": 141.49, \"scores\": [0.87109375], \"work_drops\": 132}\n",
+  "sam3-zenoh-bridge.log": "#!/bin/ash\ncat /entrypoint.sh\necho \" * Starting: /$BINARY $*\"\nexec /$BINARY $*\n * Starting: /zenoh-bridge-ros2dds -c /phase5-bridges/sam3-bridge.json5\n\u001b[2m2026-10-26T22:30:22.038693Z\u001b[0m \u001b[32m INFO\u001b[0m main ThreadId(01) \u001b[2mzenoh_bridge_ros2dds\u001b[0m\u001b[2m:\u001b[0m zenoh-bridge-ros2dds v1.5.0\n\u001b[2m2026-10-26T22:30:22.039293Z\u001b[0m \u001b[32m INFO\u001b[0m main ThreadId(01) \u001b[2mzenoh_bridge_ros2dds\u001b[0m\u001b[2m:\u001b[0m Zenoh Config(Config { id: None, metadata: Null, mode: Some(Client), connect: ConnectConfig { timeout_ms: Some(Unique(-1)), endpoints: Unique([tcp/semantic-phase5-sam3-router:17448]), exit_on_failure: Some(Unique(false)), retry: None }, listen: ListenConfig { timeout_ms: None, endpoints: Dependent(ModeValues { router: Some([tcp/[::]:7447]), peer: Some([tcp/[::]:0]), client: None }), exit_on_failure: None, retry: None }, open: OpenConf { return_conditions: ReturnConditionsConf { connect_scouted: None, declares: None } }, scouting: ScoutingConf { timeout: None, delay: None, multicast: ScoutingMulticastConf { enabled: Some(false), address: None, interface: None, ttl: None, autoconnect: None, autoconnect_strategy: None, listen: None }, gossip: GossipConf { enabled: None, multihop: None, target: None, autoconnect: None, autoconnect_strategy: None } }, timestamping: TimestampingConf { enabled: Some(Unique(true)), drop_future_timestamp: None }, queries_default_timeout: None, routing: RoutingConf { router: RouterRoutingConf { peers_failover_brokering: None, linkstate: LinkstateConf { transport_weights: [] } }, peer: PeerRoutingConf { mode: None, linkstate: LinkstateConf { transport_weights: [] } }, interests: InterestsConf { timeout: None } }, aggregation: AggregationConf { subscribers: [], publishers: [] }, qos: QoSConfig { publication: PublisherQoSConfList([]), network: [] }, transport: TransportConf { unicast: TransportUnicastConf { open_timeout: 10000, accept_timeout: 10000, accept_pending: 100, max_sessions: 1000, max_links: 1, lowlatency: false, qos: QoSUnicastConf { enabled: true }, compression: CompressionUnicastConf { enabled: false } }, multicast: TransportMulticastConf { join_interval: Some(2500), max_sessions: Some(1000), qos: QoSMulticastConf { enabled: false }, compression: CompressionMulticastConf { enabled: false } }, link: TransportLinkConf { protocols: None, tx: LinkTxConf { sequence_number_resolution: U32, lease: 10000, keep_alive: 4, batch_size: 65535, queue: QueueConf { size: QueueSizeConf { control: 2, real_time: 2, interactive_high: 2, interactive_low: 2, data_high: 2, data: 2, data_low: 2, background: 2 }, congestion_control: CongestionControlConf { drop: CongestionControlDropConf { wait_before_drop: 1000, max_wait_before_drop_fragments: 50000 }, block: CongestionControlBlockConf { wait_before_close: 5000000 } }, batching: BatchingConf { enabled: true, time_limit: 1 }, allocation: QueueAllocConf { mode: Lazy } }, threads: 1 }, rx: LinkRxConf { buffer_size: 65535, max_message_size: 1073741824 }, tls: TLSConf { root_ca_certificate: None, listen_private_key: None, listen_certificate: None, enable_mtls: None, connect_private_key: None, connect_certificate: None, verify_name_on_connect: None, close_link_on_expiration: None, so_sndbuf: None, so_rcvbuf: None, root_ca_certificate_base64: None, listen_private_key_base64: None, listen_certificate_base64: None, connect_private_key_base64: None, connect_certificate_base64: None }, tcp: TcpConf { so_sndbuf: None, so_rcvbuf: None }, unixpipe: UnixPipeConf { file_access_mask: None } }, shared_memory: ShmConf { enabled: true, mode: Lazy }, auth: AuthConf { usrpwd: UsrPwdConf { user: None, password: None, dictionary_file: None }, pubkey: PubKeyConf { public_key_pem: None, private_key_pem: None, public_key_file: None, private_key_file: None, key_size: None, known_keys_file: None } } }, adminspace: AdminSpaceConf { enabled: true, permissions: PermissionsConf { read: true, write: false } }, namespace: None, downsampling: [], access_control: AclConfig { enabled: false, default_permission: Deny, rules: None, subjects: None, policies: None }, low_pass_filter: [], plugins_loading: PluginsLoading { enabled: true, search_dirs: LibSearchDirs([Spec(LibSearchSpec { kind: CurrentExeParent, value: None }), Path(\".\"), Path(\"~/.zenoh/lib\"), Path(\"/opt/homebrew/lib\"), Path(\"/usr/local/lib\"), Path(\"/usr/lib\")]) }, plugins: Object {\"ros2dds\": Object {\"allow\": Object {\"publishers\": Array [String(\"^/robot_1/semantic/mask$\"), String(\"^/robot_1/semantic/points$\"), String(\"^/robot_1/semantic/timing$\"), String(\"^/robot_1/semantic/label_info$\"), String(\"^/robot_1/semantic/status$\"), String(\"^/robot_1/semantic/ready$\")], \"subscribers\": Array [String(\"^/clock$\"), String(\"^/robot_1/camera/color/image_compressed$\"), String(\"^/robot_1/camera/depth/image_compressed$\"), String(\"^/robot_1/camera/color/camera_info$\"), String(\"^/robot_1/camera/capture_trace$\"), String(\"^/robot_1/camera/compression_trace$\")]}, \"domain\": Number(86), \"ros_localhost_only\": Bool(false)}} })\n\u001b[2m2026-10-26T22:30:22.039385Z\u001b[0m \u001b[32m INFO\u001b[0m main ThreadId(01) \u001b[2mzenoh::net::runtime\u001b[0m\u001b[2m:\u001b[0m Using ZID: c162feaad1545dfc2f92b231b3ebe546\n\u001b[2m2026-10-26T22:30:22.039592Z\u001b[0m \u001b[32m INFO\u001b[0m main ThreadId(01) \u001b[2mzenoh::api::loader\u001b[0m\u001b[2m:\u001b[0m Starting required plugin \"ros2dds\"\n\u001b[2m2026-10-26T22:30:22.040199Z\u001b[0m \u001b[32m INFO\u001b[0m main ThreadId(01) \u001b[2mzenoh::api::loader\u001b[0m\u001b[2m:\u001b[0m Successfully started plugin ros2dds from \"__static_lib__\"\n\u001b[2m2026-10-26T22:30:22.040207Z\u001b[0m \u001b[32m INFO\u001b[0m main ThreadId(01) \u001b[2mzenoh::api::loader\u001b[0m\u001b[2m:\u001b[0m Finished loading plugins\n\u001b[2m2026-10-26T22:30:22.040475Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds\u001b[0m\u001b[2m:\u001b[0m ROS2 plugin Config { namespace: \"/\", nodename: \"zenoh_bridge_ros2dds\", domain: 86, ros_localhost_only: false, ros_automatic_discovery_range: None, ros_static_peers: None, allowance: Some(Allow(ROS2InterfacesRegex { publishers: Some(Regex(\"^^/robot_1/semantic/mask$$|^^/robot_1/semantic/points$$|^^/robot_1/semantic/timing$$|^^/robot_1/semantic/label_info$$|^^/robot_1/semantic/status$$|^^/robot_1/semantic/ready$$\")), subscribers: Some(Regex(\"^^/clock$$|^^/robot_1/camera/color/image_compressed$$|^^/robot_1/camera/depth/image_compressed$$|^^/robot_1/camera/color/camera_info$$|^^/robot_1/camera/capture_trace$$|^^/robot_1/camera/compression_trace$$\")), service_servers: None, service_clients: None, action_servers: None, action_clients: None })), pub_max_frequencies: [], transient_local_cache_multiplier: 10, queries_timeout: Some(QueriesTimeouts { default: 5.0, transient_local_subscribers: [], services: [], actions: Some(ActionsTimeouts { send_goal: [], cancel_goal: [], get_result: [(Regex(\".*\"), 300.0)] }) }), reliable_routes_blocking: true, pub_priorities: [], work_thread_num: 2, max_block_thread_num: 50, __required__: None, __path__: None }\n\u001b[2m2026-10-26T22:30:22.548816Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds::discovered_entities\u001b[0m\u001b[2m:\u001b[0m Discovered ROS Node /sam3_semantic_inference\n\u001b[2m2026-10-26T22:30:22.649948Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds\u001b[0m\u001b[2m:\u001b[0m Node /sam3_semantic_inference declares Subscriber /robot_1/camera/color/camera_info: sensor_msgs/msg/CameraInfo - Allowed\n\u001b[2m2026-10-26T22:30:22.650078Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds::routes_mgr\u001b[0m\u001b[2m:\u001b[0m Route Subscriber (Zenoh:robot_1/camera/color/camera_info -> ROS:/robot_1/camera/color/camera_info) created\n\u001b[2m2026-10-26T22:30:22.650224Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds\u001b[0m\u001b[2m:\u001b[0m Node /sam3_semantic_inference declares Subscriber /robot_1/camera/color/image_compressed: sensor_msgs/msg/CompressedImage - Allowed\n\u001b[2m2026-10-26T22:30:22.650331Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds::routes_mgr\u001b[0m\u001b[2m:\u001b[0m Route Subscriber (Zenoh:robot_1/camera/color/image_compressed -> ROS:/robot_1/camera/color/image_compressed) created\n\u001b[2m2026-10-26T22:30:22.650427Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds\u001b[0m\u001b[2m:\u001b[0m Node /sam3_semantic_inference declares Subscriber /clock: rosgraph_msgs/msg/Clock - Allowed\n\u001b[2m2026-10-26T22:30:22.650497Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds::routes_mgr\u001b[0m\u001b[2m:\u001b[0m Route Subscriber (Zenoh:clock -> ROS:/clock) created\n\u001b[2m2026-10-26T22:30:22.650603Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds\u001b[0m\u001b[2m:\u001b[0m Node /sam3_semantic_inference declares Subscriber /robot_1/camera/capture_trace: std_msgs/msg/String - Allowed\n\u001b[2m2026-10-26T22:30:22.650732Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds::routes_mgr\u001b[0m\u001b[2m:\u001b[0m Route Subscriber (Zenoh:robot_1/camera/capture_trace -> ROS:/robot_1/camera/capture_trace) created\n\u001b[2m2026-10-26T22:30:22.650822Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds\u001b[0m\u001b[2m:\u001b[0m Node /sam3_semantic_inference declares Subscriber /robot_1/camera/compression_trace: std_msgs/msg/String - Allowed\n\u001b[2m2026-10-26T22:30:22.650963Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds::routes_mgr\u001b[0m\u001b[2m:\u001b[0m Route Subscriber (Zenoh:robot_1/camera/compression_trace -> ROS:/robot_1/camera/compression_trace) created\n\u001b[2m2026-10-26T22:30:22.651078Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds\u001b[0m\u001b[2m:\u001b[0m Node /sam3_semantic_inference declares Subscriber /robot_1/camera/depth/image_compressed: sensor_msgs/msg/CompressedImage - Allowed\n\u001b[2m2026-10-26T22:30:22.651142Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds::routes_mgr\u001b[0m\u001b[2m:\u001b[0m Route Subscriber (Zenoh:robot_1/camera/depth/image_compressed -> ROS:/robot_1/camera/depth/image_compressed) created\n\u001b[2m2026-10-26T22:30:22.651322Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds\u001b[0m\u001b[2m:\u001b[0m Node /sam3_semantic_inference declares Publisher /robot_1/semantic/label_info: std_msgs/msg/String - Allowed\n\u001b[2m2026-10-26T22:30:22.651502Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds::routes_mgr\u001b[0m\u001b[2m:\u001b[0m Route Publisher (ROS:/robot_1/semantic/label_info -> Zenoh:robot_1/semantic/label_info) created\n\u001b[2m2026-10-26T22:30:22.651605Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds\u001b[0m\u001b[2m:\u001b[0m Node /sam3_semantic_inference declares Publisher /robot_1/semantic/ready: std_msgs/msg/Bool - Allowed\n\u001b[2m2026-10-26T22:30:22.651643Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds::routes_mgr\u001b[0m\u001b[2m:\u001b[0m Route Publisher (ROS:/robot_1/semantic/ready -> Zenoh:robot_1/semantic/ready) created\n\u001b[2m2026-10-26T22:30:22.651712Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds\u001b[0m\u001b[2m:\u001b[0m Node /sam3_semantic_inference declares Publisher /robot_1/semantic/status: std_msgs/msg/String - Allowed\n\u001b[2m2026-10-26T22:30:22.651744Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds::routes_mgr\u001b[0m\u001b[2m:\u001b[0m Route Publisher (ROS:/robot_1/semantic/status -> Zenoh:robot_1/semantic/status) created\n\u001b[2m2026-10-26T22:30:22.651833Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds\u001b[0m\u001b[2m:\u001b[0m Node /sam3_semantic_inference declares Publisher /robot_1/semantic/points: sensor_msgs/msg/PointCloud2 - Allowed\n\u001b[2m2026-10-26T22:30:22.651874Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds::routes_mgr\u001b[0m\u001b[2m:\u001b[0m Route Publisher (ROS:/robot_1/semantic/points -> Zenoh:robot_1/semantic/points) created\n\u001b[2m2026-10-26T22:30:22.651974Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds\u001b[0m\u001b[2m:\u001b[0m Node /sam3_semantic_inference declares Publisher /robot_1/semantic/mask: sensor_msgs/msg/Image - Allowed\n\u001b[2m2026-10-26T22:30:22.652001Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds::routes_mgr\u001b[0m\u001b[2m:\u001b[0m Route Publisher (ROS:/robot_1/semantic/mask -> Zenoh:robot_1/semantic/mask) created\n\u001b[2m2026-10-26T22:30:22.652072Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds\u001b[0m\u001b[2m:\u001b[0m Node /sam3_semantic_inference declares Publisher /robot_1/semantic/timing: std_msgs/msg/String - Allowed\n\u001b[2m2026-10-26T22:30:22.652155Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds::routes_mgr\u001b[0m\u001b[2m:\u001b[0m Route Publisher (ROS:/robot_1/semantic/timing -> Zenoh:robot_1/semantic/timing) created\n\u001b[2m2026-10-26T22:30:29.534052Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds\u001b[0m\u001b[2m:\u001b[0m New ROS 2 bridge detected: aad011ad19d3db09b29cd8aaefe1d58\n\u001b[2m2026-10-26T22:30:30.438084Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds\u001b[0m\u001b[2m:\u001b[0m Remote bridge aad011ad19d3db09b29cd8aaefe1d58 announces Publisher robot_1/camera/depth/image_compressed - Allowed\n\u001b[2m2026-10-26T22:30:30.438116Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds\u001b[0m\u001b[2m:\u001b[0m Remote bridge aad011ad19d3db09b29cd8aaefe1d58 announces Publisher robot_1/camera/compression_trace - Allowed\n\u001b[2m2026-10-26T22:30:30.438130Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds\u001b[0m\u001b[2m:\u001b[0m Remote bridge aad011ad19d3db09b29cd8aaefe1d58 announces Publisher robot_1/camera/color/image_compressed - Allowed\n\u001b[2m2026-10-26T22:30:32.562720Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds\u001b[0m\u001b[2m:\u001b[0m Remote bridge aad011ad19d3db09b29cd8aaefe1d58 announces Subscriber robot_1/semantic/points - Allowed\n\u001b[2m2026-10-26T22:30:32.562860Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds\u001b[0m\u001b[2m:\u001b[0m Remote bridge aad011ad19d3db09b29cd8aaefe1d58 announces Subscriber robot_1/semantic/status - Allowed\n\u001b[2m2026-10-26T22:30:32.562900Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds\u001b[0m\u001b[2m:\u001b[0m Remote bridge aad011ad19d3db09b29cd8aaefe1d58 announces Subscriber robot_1/semantic/timing - Allowed\n\u001b[2m2026-10-26T22:30:32.563257Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds\u001b[0m\u001b[2m:\u001b[0m Remote bridge aad011ad19d3db09b29cd8aaefe1d58 announces Subscriber robot_1/semantic/label_info - Allowed\n\u001b[2m2026-10-26T22:30:32.563337Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds\u001b[0m\u001b[2m:\u001b[0m Remote bridge aad011ad19d3db09b29cd8aaefe1d58 announces Subscriber robot_1/semantic/mask - Allowed\n\u001b[2m2026-10-26T22:30:32.563534Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds\u001b[0m\u001b[2m:\u001b[0m Remote bridge aad011ad19d3db09b29cd8aaefe1d58 announces Subscriber robot_1/semantic/ready - Allowed\n\u001b[2m2026-10-26T22:30:34.684201Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds\u001b[0m\u001b[2m:\u001b[0m Remote bridge aad011ad19d3db09b29cd8aaefe1d58 announces Publisher robot_1/camera/capture_trace - Allowed\n\u001b[2m2026-10-26T22:30:34.684236Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds\u001b[0m\u001b[2m:\u001b[0m Remote bridge aad011ad19d3db09b29cd8aaefe1d58 announces Publisher clock - Allowed\n\u001b[2m2026-10-26T22:30:34.684252Z\u001b[0m \u001b[32m INFO\u001b[0m tokio-runtime-worker ThreadId(02) \u001b[2mzenoh_plugin_ros2dds\u001b[0m\u001b[2m:\u001b[0m Remote bridge aad011ad19d3db09b29cd8aaefe1d58 announces Publisher robot_1/camera/color/camera_info - Allowed\n\u001b[2m2026-10-26T22:31:12.722914Z\u001b[0m \u001b[31mERROR\u001b[0m ThreadId(09) \u001b[2mzenoh_transport::unicast::universal::tx\u001b[0m\u001b[2m:\u001b[0m Unable to push non droppable network message to 36be8343fcf01a4f5f5ac02a98e670b7. Closing transport!\n"
+}

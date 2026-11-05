@@ -1,0 +1,161 @@
+{
+  "apiVersion": "build.openshift.io/v1",
+  "kind": "Build",
+  "metadata": {
+    "annotations": {
+      "openshift.io/build-config.name": "semantic-safety-console-phase6",
+      "openshift.io/build.number": "2",
+      "openshift.io/build.pod-name": "semantic-safety-console-phase6-2-build"
+    },
+    "creationTimestamp": "2026-10-27T02:14:42Z",
+    "generation": 2,
+    "labels": {
+      "buildconfig": "semantic-safety-console-phase6",
+      "openshift.io/build-config.name": "semantic-safety-console-phase6",
+      "openshift.io/build.start-policy": "Serial"
+    },
+    "name": "semantic-safety-console-phase6-2",
+    "namespace": "semantic-navigation",
+    "ownerReferences": [
+      {
+        "apiVersion": "build.openshift.io/v1",
+        "controller": true,
+        "kind": "BuildConfig",
+        "name": "semantic-safety-console-phase6",
+        "uid": "db8b50ae-f77f-45d0-b508-1599869d8227"
+      }
+    ],
+    "resourceVersion": "473953981",
+    "uid": "9e9fa8f5-b746-4deb-843c-9a4659988145"
+  },
+  "spec": {
+    "nodeSelector": null,
+    "output": {
+      "pushSecret": {
+        "name": "builder-dockercfg-htt4p"
+      },
+      "to": {
+        "kind": "ImageStreamTag",
+        "name": "semantic-safety:phase6-console-candidate"
+      }
+    },
+    "postCommit": {},
+    "resources": {
+      "limits": {
+        "cpu": "4",
+        "memory": "8Gi"
+      },
+      "requests": {
+        "cpu": "2",
+        "memory": "4Gi"
+      }
+    },
+    "revision": {
+      "git": {
+        "author": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "commit": "1c477c76e79c06add0e676b5f334d6b7306a20fe",
+        "committer": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "message": "Split the semantic layer's rejection reasons for diagnosis\n\nThe aggregate stale_or_wrong_identity reason cannot be diagnosed from\nlogs (Phase 6 smoke attempts 2/3 rejected every observation). The same\nconditions in the same order now report the specific failing check and\nthe measured wall/sim ages; admission policy is unchanged."
+      },
+      "type": "Git"
+    },
+    "serviceAccount": "builder",
+    "source": {
+      "binary": {},
+      "type": "Binary"
+    },
+    "strategy": {
+      "dockerStrategy": {
+        "dockerfilePath": "Containerfile.phase6-console"
+      },
+      "type": "Docker"
+    }
+  },
+  "status": {
+    "completionTimestamp": "2026-10-27T02:17:34Z",
+    "conditions": [
+      {
+        "lastTransitionTime": "2026-10-27T02:14:42Z",
+        "lastUpdateTime": "2026-10-27T02:14:42Z",
+        "status": "False",
+        "type": "New"
+      },
+      {
+        "lastTransitionTime": "2026-10-27T02:14:43Z",
+        "lastUpdateTime": "2026-10-27T02:14:43Z",
+        "status": "False",
+        "type": "Pending"
+      },
+      {
+        "lastTransitionTime": "2026-10-27T02:17:34Z",
+        "lastUpdateTime": "2026-10-27T02:17:34Z",
+        "status": "False",
+        "type": "Running"
+      },
+      {
+        "lastTransitionTime": "2026-10-27T02:17:34Z",
+        "lastUpdateTime": "2026-10-27T02:17:34Z",
+        "status": "True",
+        "type": "Complete"
+      }
+    ],
+    "config": {
+      "kind": "BuildConfig",
+      "name": "semantic-safety-console-phase6",
+      "namespace": "semantic-navigation"
+    },
+    "duration": 172000000000,
+    "output": {
+      "to": {
+        "imageDigest": "sha256:575154a8ab3978c907f56963be6d3363e97a84c6fb55c3dc93ff7bde51e4a53f"
+      }
+    },
+    "outputDockerImageReference": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety:phase6-console-candidate",
+    "phase": "Complete",
+    "stages": [
+      {
+        "durationMilliseconds": 110737,
+        "name": "PullImages",
+        "startTime": "2026-10-27T02:14:45Z",
+        "steps": [
+          {
+            "durationMilliseconds": 110737,
+            "name": "PullBaseImage",
+            "startTime": "2026-10-27T02:14:45Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 52130,
+        "name": "Build",
+        "startTime": "2026-10-27T02:16:36Z",
+        "steps": [
+          {
+            "durationMilliseconds": 52130,
+            "name": "DockerBuild",
+            "startTime": "2026-10-27T02:16:36Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 4649,
+        "name": "PushImage",
+        "startTime": "2026-10-27T02:17:28Z",
+        "steps": [
+          {
+            "durationMilliseconds": 4649,
+            "name": "PushDockerImage",
+            "startTime": "2026-10-27T02:17:28Z"
+          }
+        ]
+      }
+    ],
+    "startTimestamp": "2026-10-27T02:14:42Z"
+  }
+}

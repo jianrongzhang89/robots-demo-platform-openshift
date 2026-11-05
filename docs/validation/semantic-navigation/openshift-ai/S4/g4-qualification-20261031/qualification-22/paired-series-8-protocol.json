@@ -1,0 +1,15 @@
+{
+ "event": "standalone paired-series re-run 8 (November 3)",
+ "context": "Series 7 passed trial 000-off then crashed on 000-on: the workstation's DNS resolution failed (lookup api... i/o timeout on [::1]:53) for the better part of a minute, hanging the evidence copy (oc cp timed out at 45 s) and the log collection - a local network blip, not a cluster or trial failure.",
+ "changes": "Harness robustness only: (1) oc() converts command timeouts into failed results instead of raising through check=False callers; (2) the evidence copy retries through a 5/20/40 s ladder; (3) the fixture-log collection retries through transient 'Unable to connect' errors. No gate, check, or trial semantics change.",
+ "setup": {
+  "topology": "G4 topology remains up (direct endpoint); the series' per-trial recycle manages it; reservation remains deleted",
+  "series_output": "qualification-22/paired-series-8",
+  "phase5_evidence": "qualification-22/served-phase5-qualification.json",
+  "sampler": {
+   "output": "serving-resources-paired-series-8.jsonl",
+   "stop_file": "/tmp/g4-paired-series-8-monitor-stop"
+  }
+ },
+ "command": "run_phase6_series.py --output-dir qualification-22/paired-series-8 (same arguments as series 2-7)"
+}

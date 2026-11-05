@@ -1,0 +1,489 @@
+[INFO] [1793144171.966610739] [robot_1.planner_server]: 
+	planner_server lifecycle node launched. 
+	Waiting on external lifecycle transitions to activate
+	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[INFO] [1793144171.983992113] [robot_1.planner_server]: Creating
+[INFO] [1793144172.030604628] [robot_1.global_costmap.global_costmap]: 
+	global_costmap lifecycle node launched. 
+	Waiting on external lifecycle transitions to activate
+	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[INFO] [1793144172.032277060] [robot_1.global_costmap.global_costmap]: Creating Costmap
+[INFO] [1793144172.618244626] [robot_1.planner_server]: Configuring
+[INFO] [1793144172.618315167] [robot_1.global_costmap.global_costmap]: Configuring
+[INFO] [1793144172.625771910] [robot_1.global_costmap.global_costmap]: Using plugin "static_layer"
+[INFO] [1793144172.632519940] [robot_1.global_costmap.global_costmap]: Subscribing to the map topic (/robot_1/map) with transient local durability
+[INFO] [1793144172.634626361] [robot_1.global_costmap.global_costmap]: Initialized plugin "static_layer"
+[INFO] [1793144172.634676722] [robot_1.global_costmap.global_costmap]: Using plugin "obstacle_layer"
+[INFO] [1793144172.638027586] [robot_1.global_costmap.global_costmap]: Subscribed to Topics: scan
+[INFO] [1793144172.648788643] [robot_1.global_costmap.global_costmap]: Initialized plugin "obstacle_layer"
+[INFO] [1793144172.648858514] [robot_1.global_costmap.global_costmap]: Using plugin "semantic_layer"
+[INFO] [1793144172.661639800] [robot_1.global_costmap.global_costmap]: Initialized plugin "semantic_layer"
+[INFO] [1793144172.661695191] [robot_1.global_costmap.global_costmap]: Using plugin "inflation_layer"
+[INFO] [1793144172.664030815] [robot_1.global_costmap.global_costmap]: Initialized plugin "inflation_layer"
+[WARN] [1793144172.700500746] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=164 valid=1 why=
+[INFO] [1793144172.701282951] [robot_1.global_costmap.global_costmap]: StaticLayer: Resizing costmap to 693 X 845 at 0.050000 m/pix
+[INFO] [1793144172.701470005] [robot_1.planner_server]: Created global planner plugin GridBased of type nav2_navfn_planner::NavfnPlanner
+[INFO] [1793144172.701505035] [robot_1.planner_server]: Configuring plugin GridBased of type NavfnPlanner
+[INFO] [1793144172.704898100] [robot_1.planner_server]: Planner Server has GridBased  planners available.
+[INFO] [1793144172.778195088] [robot_1.planner_server]: Activating
+[INFO] [1793144172.778383932] [robot_1.global_costmap.global_costmap]: Activating
+[INFO] [1793144172.778403552] [robot_1.global_costmap.global_costmap]: Checking transform
+[INFO] [1793144172.778494904] [robot_1.global_costmap.global_costmap]: Timed out waiting for transform from base_footprint to map to become available, tf error: Lookup would require extrapolation at time 2.688000, but only time 2.800000 is in the buffer, when looking up transform from frame [base_footprint] to frame [map]
+[WARN] [1793144172.829898841] [robot_1.global_costmap.global_costmap]: semantic observation rejected=1 accepted=0 reason=wall_before_barrier pending=1 wall_age_ms=195.20 sim_age_ms=122.00 labels_valid=1
+[INFO] [1793144173.237801377] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=2800000000 total_ms=3.44 digest_ms=2.54 tf_ms=0.03 project_ms=0.65 projected=254 cells=254
+[INFO] [1793144173.268384554] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=2900000000 total_ms=3.58 digest_ms=2.65 tf_ms=0.03 project_ms=0.86 projected=253 cells=254
+[INFO] [1793144173.278651291] [robot_1.global_costmap.global_costmap]: start
+[INFO] [1793144173.383457145] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[INFO] [1793144173.429545750] [robot_1.planner_server]: Activating plugin GridBased of type NavfnPlanner
+[INFO] [1793144173.430392376] [robot_1.planner_server]: Creating bond (planner_server) to lifecycle manager.
+[INFO] [1793144173.636698789] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=3100000000 total_ms=3.47 digest_ms=2.53 tf_ms=0.03 project_ms=0.86 projected=253 cells=253
+[INFO] [1793144173.677962091] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=3200000000 total_ms=3.32 digest_ms=2.70 tf_ms=0.03 project_ms=0.55 projected=253 cells=253
+[INFO] [1793144173.837732250] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=3300000000 total_ms=3.49 digest_ms=2.60 tf_ms=0.03 project_ms=0.83 projected=253 cells=253
+[INFO] [1793144174.075841864] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=3400000000 total_ms=3.59 digest_ms=2.60 tf_ms=0.03 project_ms=0.91 projected=253 cells=253
+[INFO] [1793144174.216535637] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=3500000000 total_ms=3.17 digest_ms=2.57 tf_ms=0.03 project_ms=0.53 projected=253 cells=253
+[INFO] [1793144174.276943937] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=3600000000 total_ms=3.58 digest_ms=2.64 tf_ms=0.03 project_ms=0.87 projected=253 cells=253
+[INFO] [1793144174.514377118] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=3700000000 total_ms=4.21 digest_ms=3.28 tf_ms=0.03 project_ms=0.85 projected=253 cells=253
+[INFO] [1793144174.554964787] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=3800000000 total_ms=3.54 digest_ms=2.65 tf_ms=0.05 project_ms=0.80 projected=253 cells=253
+[INFO] [1793144174.721735891] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=3900000000 total_ms=3.39 digest_ms=2.57 tf_ms=0.03 project_ms=0.75 projected=253 cells=253
+[INFO] [1793144174.859184481] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=4000000000 total_ms=3.20 digest_ms=2.59 tf_ms=0.03 project_ms=0.54 projected=253 cells=253
+[INFO] [1793144175.011883114] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=4100000000 total_ms=3.48 digest_ms=2.56 tf_ms=0.03 project_ms=0.86 projected=253 cells=253
+[INFO] [1793144175.264782622] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=4200000000 total_ms=3.57 digest_ms=2.67 tf_ms=0.03 project_ms=0.83 projected=253 cells=253
+[INFO] [1793144175.315330403] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=4300000000 total_ms=3.40 digest_ms=2.68 tf_ms=0.03 project_ms=0.66 projected=253 cells=253
+[INFO] [1793144175.450429158] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=4400000000 total_ms=3.47 digest_ms=2.57 tf_ms=0.03 project_ms=0.83 projected=253 cells=253
+[INFO] [1793144175.696388632] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=4500000000 total_ms=4.54 digest_ms=2.59 tf_ms=0.03 project_ms=1.86 projected=253 cells=253
+[INFO] [1793144175.730466607] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=4600000000 total_ms=3.53 digest_ms=2.58 tf_ms=0.02 project_ms=0.88 projected=253 cells=253
+[INFO] [1793144175.878619933] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=4700000000 total_ms=3.16 digest_ms=2.56 tf_ms=0.03 project_ms=0.54 projected=253 cells=253
+[INFO] [1793144176.018978079] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=4800000000 total_ms=3.15 digest_ms=2.60 tf_ms=0.02 project_ms=0.50 projected=253 cells=253
+[INFO] [1793144176.255374140] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=4900000000 total_ms=3.29 digest_ms=2.61 tf_ms=0.02 project_ms=0.60 projected=253 cells=253
+[INFO] [1793144176.348668192] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=5000000000 total_ms=3.79 digest_ms=2.99 tf_ms=0.02 project_ms=0.73 projected=253 cells=253
+[INFO] [1793144176.604220740] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=5100000000 total_ms=3.64 digest_ms=2.57 tf_ms=0.02 project_ms=0.98 projected=253 cells=253
+[INFO] [1793144176.759774368] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=5200000000 total_ms=3.16 digest_ms=2.59 tf_ms=0.03 project_ms=0.50 projected=253 cells=253
+[INFO] [1793144176.834135197] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=5300000000 total_ms=3.37 digest_ms=2.60 tf_ms=0.02 project_ms=0.68 projected=253 cells=253
+[INFO] [1793144177.012744048] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=5400000000 total_ms=3.28 digest_ms=2.63 tf_ms=0.05 project_ms=0.56 projected=253 cells=253
+[INFO] [1793144177.177734267] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=5500000000 total_ms=3.11 digest_ms=2.55 tf_ms=0.02 project_ms=0.49 projected=253 cells=253
+[INFO] [1793144177.519083214] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=5600000000 total_ms=3.44 digest_ms=2.65 tf_ms=0.02 project_ms=0.72 projected=253 cells=253
+[INFO] [1793144177.555702787] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=5700000000 total_ms=3.49 digest_ms=2.56 tf_ms=0.03 project_ms=0.86 projected=253 cells=253
+[INFO] [1793144177.798187885] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=5800000000 total_ms=3.16 digest_ms=2.56 tf_ms=0.02 project_ms=0.54 projected=253 cells=253
+[INFO] [1793144177.828107490] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=5900000000 total_ms=3.57 digest_ms=2.55 tf_ms=0.02 project_ms=0.85 projected=253 cells=253
+[INFO] [1793144177.965008219] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=6000000000 total_ms=3.54 digest_ms=2.59 tf_ms=0.03 project_ms=0.88 projected=253 cells=253
+[INFO] [1793144177.965084481] [robot_1.global_costmap.global_costmap]: semantic observation accepted=32 rejected=3 projected_cells=253 sim_age_ms=136.00 wall_age_ms=208.04
+[INFO] [1793144178.101383169] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=6100000000 total_ms=3.54 digest_ms=2.60 tf_ms=0.02 project_ms=0.87 projected=253 cells=253
+[INFO] [1793144178.336653378] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=6200000000 total_ms=3.22 digest_ms=2.57 tf_ms=0.02 project_ms=0.58 projected=253 cells=253
+[INFO] [1793144178.384315163] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=253 merged=253 master_unknown=0 stored_cells=253 window=[0,0,693,845]
+[INFO] [1793144178.478007773] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=6300000000 total_ms=3.34 digest_ms=2.57 tf_ms=0.03 project_ms=0.70 projected=253 cells=253
+[INFO] [1793144178.524185100] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=6400000000 total_ms=3.49 digest_ms=2.63 tf_ms=0.02 project_ms=0.78 projected=253 cells=253
+[INFO] [1793144178.670259456] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=6500000000 total_ms=3.61 digest_ms=2.65 tf_ms=0.03 project_ms=0.89 projected=253 cells=253
+[INFO] [1793144178.946391360] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=6600000000 total_ms=3.29 digest_ms=2.51 tf_ms=0.02 project_ms=0.68 projected=253 cells=253
+[INFO] [1793144178.986873448] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=6700000000 total_ms=3.36 digest_ms=2.62 tf_ms=0.02 project_ms=0.68 projected=253 cells=253
+[INFO] [1793144179.183817701] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=6800000000 total_ms=3.50 digest_ms=2.60 tf_ms=0.03 project_ms=0.83 projected=253 cells=253
+[INFO] [1793144179.241643411] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=6900000000 total_ms=3.15 digest_ms=2.55 tf_ms=0.02 project_ms=0.53 projected=253 cells=253
+[INFO] [1793144179.382653990] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=7000000000 total_ms=3.45 digest_ms=2.55 tf_ms=0.03 project_ms=0.83 projected=253 cells=253
+[INFO] [1793144179.513803459] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=7100000000 total_ms=3.24 digest_ms=2.59 tf_ms=0.03 project_ms=0.56 projected=253 cells=253
+[INFO] [1793144179.676384882] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=7200000000 total_ms=3.37 digest_ms=2.59 tf_ms=0.03 project_ms=0.71 projected=253 cells=253
+[INFO] [1793144179.808953099] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=7300000000 total_ms=3.19 digest_ms=2.62 tf_ms=0.02 project_ms=0.50 projected=253 cells=253
+[INFO] [1793144180.047573772] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=7400000000 total_ms=4.76 digest_ms=2.57 tf_ms=0.03 project_ms=2.11 projected=253 cells=253
+[INFO] [1793144180.186894618] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=7500000000 total_ms=3.51 digest_ms=2.56 tf_ms=0.02 project_ms=0.88 projected=253 cells=253
+[INFO] [1793144180.241870104] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=7600000000 total_ms=3.16 digest_ms=2.61 tf_ms=0.02 project_ms=0.49 projected=253 cells=253
+[INFO] [1793144180.387605024] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=7700000000 total_ms=3.38 digest_ms=2.54 tf_ms=0.02 project_ms=0.77 projected=253 cells=253
+[INFO] [1793144180.527697815] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=7800000000 total_ms=3.43 digest_ms=2.57 tf_ms=0.02 project_ms=0.79 projected=253 cells=253
+[INFO] [1793144180.780184704] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=7900000000 total_ms=3.58 digest_ms=2.62 tf_ms=0.01 project_ms=0.90 projected=253 cells=253
+[INFO] [1793144180.919678056] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=8000000000 total_ms=3.52 digest_ms=2.56 tf_ms=0.03 project_ms=0.87 projected=253 cells=253
+[INFO] [1793144180.968181151] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=8100000000 total_ms=3.51 digest_ms=2.58 tf_ms=0.02 project_ms=0.86 projected=253 cells=253
+[INFO] [1793144181.110373121] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=8200000000 total_ms=3.28 digest_ms=2.57 tf_ms=0.02 project_ms=0.63 projected=253 cells=253
+[INFO] [1793144181.349759385] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=8300000000 total_ms=3.25 digest_ms=2.57 tf_ms=0.05 project_ms=0.56 projected=253 cells=253
+[INFO] [1793144181.398379613] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=8400000000 total_ms=3.61 digest_ms=2.72 tf_ms=0.03 project_ms=0.83 projected=253 cells=253
+[INFO] [1793144181.535773891] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=8500000000 total_ms=3.32 digest_ms=2.58 tf_ms=0.03 project_ms=0.67 projected=253 cells=253
+[INFO] [1793144181.779464088] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=8600000000 total_ms=3.55 digest_ms=2.59 tf_ms=0.02 project_ms=0.89 projected=253 cells=253
+[INFO] [1793144181.928890898] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=8700000000 total_ms=3.40 digest_ms=2.60 tf_ms=0.04 project_ms=0.72 projected=253 cells=253
+[INFO] [1793144181.995591303] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=8800000000 total_ms=3.27 digest_ms=2.58 tf_ms=0.02 project_ms=0.61 projected=255 cells=255
+[INFO] [1793144182.234715102] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=8900000000 total_ms=3.46 digest_ms=2.59 tf_ms=0.03 project_ms=0.80 projected=254 cells=268
+[INFO] [1793144182.288570920] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=9000000000 total_ms=4.28 digest_ms=3.38 tf_ms=0.03 project_ms=0.83 projected=241 cells=269
+[INFO] [1793144182.426992928] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=9100000000 total_ms=3.52 digest_ms=2.61 tf_ms=0.04 project_ms=0.82 projected=246 cells=269
+[INFO] [1793144182.691484276] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=9200000000 total_ms=3.59 digest_ms=2.57 tf_ms=0.02 project_ms=0.94 projected=255 cells=271
+[INFO] [1793144182.825555860] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=9300000000 total_ms=3.60 digest_ms=2.67 tf_ms=0.02 project_ms=0.81 projected=254 cells=272
+[INFO] [1793144182.877395750] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=9400000000 total_ms=3.19 digest_ms=2.57 tf_ms=0.02 project_ms=0.56 projected=257 cells=274
+[INFO] [1793144183.017741645] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=9500000000 total_ms=3.55 digest_ms=2.58 tf_ms=0.03 project_ms=0.89 projected=254 cells=276
+[INFO] [1793144183.017834877] [robot_1.global_costmap.global_costmap]: semantic observation accepted=67 rejected=3 projected_cells=254 sim_age_ms=122.00 wall_age_ms=186.31
+[INFO] [1793144183.176907332] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=9600000000 total_ms=3.24 digest_ms=2.58 tf_ms=0.02 project_ms=0.61 projected=250 cells=278
+[INFO] [1793144183.320541341] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=9700000000 total_ms=3.28 digest_ms=2.56 tf_ms=0.02 project_ms=0.64 projected=252 cells=280
+[INFO] [1793144183.470857728] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=9800000000 total_ms=3.27 digest_ms=2.60 tf_ms=0.02 project_ms=0.60 projected=253 cells=283
+[INFO] [1793144183.483267017] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=283 merged=283 master_unknown=0 stored_cells=283 window=[0,0,693,845]
+[INFO] [1793144183.612902946] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=9900000000 total_ms=3.56 digest_ms=2.60 tf_ms=0.03 project_ms=0.88 projected=264 cells=296
+[INFO] [1793144183.769180398] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=10000000000 total_ms=3.38 digest_ms=2.66 tf_ms=0.02 project_ms=0.66 projected=264 cells=289
+[INFO] [1793144183.900004570] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=10100000000 total_ms=3.58 digest_ms=2.55 tf_ms=0.02 project_ms=0.96 projected=267 cells=291
+[INFO] [1793144184.059999534] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=10200000000 total_ms=3.47 digest_ms=2.57 tf_ms=0.04 project_ms=0.82 projected=264 cells=291
+[INFO] [1793144184.311600683] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=10300000000 total_ms=3.77 digest_ms=2.62 tf_ms=0.04 project_ms=1.06 projected=263 cells=290
+[INFO] [1793144184.464710204] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=10400000000 total_ms=3.68 digest_ms=2.59 tf_ms=0.02 project_ms=1.01 projected=264 cells=289
+[INFO] [1793144184.518192815] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=10500000000 total_ms=3.41 digest_ms=2.57 tf_ms=0.02 project_ms=0.75 projected=264 cells=291
+[INFO] [1793144184.651666188] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=10600000000 total_ms=3.69 digest_ms=2.61 tf_ms=0.03 project_ms=1.00 projected=258 cells=289
+[INFO] [1793144184.808861737] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=10700000000 total_ms=3.57 digest_ms=2.60 tf_ms=0.03 project_ms=0.91 projected=255 cells=292
+[INFO] [1793144184.948680322] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=10800000000 total_ms=3.63 digest_ms=2.61 tf_ms=0.03 project_ms=0.95 projected=248 cells=286
+[INFO] [1793144185.203083766] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=10900000000 total_ms=3.79 digest_ms=2.61 tf_ms=0.03 project_ms=1.11 projected=248 cells=283
+[INFO] [1793144185.346315096] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=11000000000 total_ms=3.44 digest_ms=2.55 tf_ms=0.02 project_ms=0.82 projected=240 cells=280
+[INFO] [1793144185.396913302] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=11100000000 total_ms=3.38 digest_ms=2.61 tf_ms=0.03 project_ms=0.69 projected=232 cells=281
+[INFO] [1793144185.548700307] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=11200000000 total_ms=3.76 digest_ms=2.71 tf_ms=0.03 project_ms=0.98 projected=224 cells=265
+[INFO] [1793144185.700991613] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=11300000000 total_ms=3.60 digest_ms=2.56 tf_ms=0.02 project_ms=0.98 projected=214 cells=263
+[INFO] [1793144185.943380925] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=11400000000 total_ms=3.45 digest_ms=2.59 tf_ms=0.02 project_ms=0.79 projected=208 cells=250
+[INFO] [1793144186.005770117] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=11500000000 total_ms=3.26 digest_ms=2.56 tf_ms=0.02 project_ms=0.64 projected=201 cells=250
+[INFO] [1793144186.149094009] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=11600000000 total_ms=3.60 digest_ms=2.58 tf_ms=0.02 project_ms=0.95 projected=191 cells=244
+[INFO] [1793144186.396962867] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=11700000000 total_ms=3.22 digest_ms=2.58 tf_ms=0.02 project_ms=0.58 projected=184 cells=225
+[INFO] [1793144186.552129078] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=11800000000 total_ms=3.75 digest_ms=2.60 tf_ms=0.03 project_ms=1.08 projected=173 cells=213
+[INFO] [1793144186.687714931] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=11900000000 total_ms=3.26 digest_ms=2.58 tf_ms=0.02 project_ms=0.62 projected=165 cells=208
+[INFO] [1793144186.762302429] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=12000000000 total_ms=3.80 digest_ms=2.59 tf_ms=0.06 project_ms=1.11 projected=158 cells=210
+[INFO] [1793144186.921688121] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=12100000000 total_ms=3.30 digest_ms=2.62 tf_ms=0.02 project_ms=0.63 projected=150 cells=200
+[INFO] [1793144187.156340333] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=12200000000 total_ms=3.64 digest_ms=2.59 tf_ms=0.02 project_ms=0.98 projected=143 cells=182
+[INFO] [1793144187.354553374] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=12300000000 total_ms=3.68 digest_ms=2.62 tf_ms=0.03 project_ms=0.99 projected=134 cells=177
+[INFO] [1793144187.364721310] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=12400000000 total_ms=3.51 digest_ms=2.68 tf_ms=0.02 project_ms=0.78 projected=130 cells=178
+[INFO] [1793144187.502075207] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=12500000000 total_ms=3.57 digest_ms=2.57 tf_ms=0.05 project_ms=0.91 projected=120 cells=170
+[INFO] [1793144187.757082362] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=12600000000 total_ms=3.61 digest_ms=2.59 tf_ms=0.03 project_ms=0.95 projected=117 cells=155
+[INFO] [1793144187.896203534] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=12700000000 total_ms=3.50 digest_ms=2.60 tf_ms=0.02 project_ms=0.84 projected=114 cells=144
+[INFO] [1793144187.961586224] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=12800000000 total_ms=3.23 digest_ms=2.53 tf_ms=0.02 project_ms=0.65 projected=108 cells=144
+[INFO] [1793144188.095332402] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=12900000000 total_ms=3.42 digest_ms=2.58 tf_ms=0.02 project_ms=0.79 projected=99 cells=140
+[INFO] [1793144188.095410083] [robot_1.global_costmap.global_costmap]: semantic observation accepted=101 rejected=3 projected_cells=99 sim_age_ms=118.00 wall_age_ms=192.19
+[INFO] [1793144188.367273983] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=13000000000 total_ms=3.66 digest_ms=2.70 tf_ms=0.02 project_ms=0.90 projected=95 cells=126
+[INFO] [1793144188.483364811] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=114 merged=114 master_unknown=0 stored_cells=114 window=[0,0,693,845]
+[INFO] [1793144188.500053643] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=13100000000 total_ms=3.17 digest_ms=2.62 tf_ms=0.03 project_ms=0.50 projected=89 cells=114
+[INFO] [1793144188.642083350] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=13200000000 total_ms=3.80 digest_ms=2.85 tf_ms=0.03 project_ms=0.89 projected=88 cells=108
+[INFO] [1793144188.705536683] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=13300000000 total_ms=3.21 digest_ms=2.55 tf_ms=0.04 project_ms=0.58 projected=84 cells=108
+[INFO] [1793144188.866216070] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=13400000000 total_ms=3.30 digest_ms=2.57 tf_ms=0.02 project_ms=0.68 projected=74 cells=100
+[INFO] [1793144189.014004379] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=13500000000 total_ms=3.17 digest_ms=2.64 tf_ms=0.02 project_ms=0.48 projected=76 cells=97
+[INFO] [1793144189.163170214] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=13600000000 total_ms=4.13 digest_ms=3.29 tf_ms=0.02 project_ms=0.78 projected=57 cells=97
+[INFO] [1793144189.411222225] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=13700000000 total_ms=3.64 digest_ms=3.02 tf_ms=0.02 project_ms=0.57 projected=57 cells=91
+[INFO] [1793144189.462360080] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=13800000000 total_ms=3.18 digest_ms=2.56 tf_ms=0.02 project_ms=0.57 projected=57 cells=91
+[INFO] [1793144189.635002218] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=13900000000 total_ms=3.54 digest_ms=2.68 tf_ms=0.06 project_ms=0.77 projected=47 cells=92
+[INFO] [1793144189.788069508] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=14000000000 total_ms=3.35 digest_ms=2.61 tf_ms=0.03 project_ms=0.68 projected=47 cells=87
+[INFO] [1793144189.926446385] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=14100000000 total_ms=3.05 digest_ms=2.54 tf_ms=0.02 project_ms=0.45 projected=48 cells=69
+[INFO] [1793144190.182565312] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=14200000000 total_ms=2.98 digest_ms=2.60 tf_ms=0.02 project_ms=0.33 projected=0 cells=69
+[INFO] [1793144190.242264703] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=14300000000 total_ms=3.09 digest_ms=2.59 tf_ms=0.02 project_ms=0.45 projected=0 cells=69
+[INFO] [1793144190.501369167] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=14400000000 total_ms=3.18 digest_ms=2.58 tf_ms=0.03 project_ms=0.54 projected=0 cells=48
+[INFO] [1793144190.541650933] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=14500000000 total_ms=3.12 digest_ms=2.55 tf_ms=0.02 project_ms=0.53 projected=0 cells=48
+[INFO] [1793144190.691630514] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=14600000000 total_ms=3.89 digest_ms=3.57 tf_ms=0.02 project_ms=0.28 projected=0 cells=48
+[INFO] [1793144190.965854489] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=14700000000 total_ms=3.10 digest_ms=2.59 tf_ms=0.03 project_ms=0.46 projected=0 cells=0
+[INFO] [1793144191.110691461] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=14800000000 total_ms=3.06 digest_ms=2.61 tf_ms=0.03 project_ms=0.40 projected=0 cells=0
+[INFO] [1793144191.157819159] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=14900000000 total_ms=2.97 digest_ms=2.64 tf_ms=0.02 project_ms=0.30 projected=0 cells=0
+[INFO] [1793144191.307383222] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=15000000000 total_ms=3.15 digest_ms=2.55 tf_ms=0.02 project_ms=0.55 projected=0 cells=0
+[INFO] [1793144191.461014473] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=15100000000 total_ms=3.20 digest_ms=2.62 tf_ms=0.03 project_ms=0.52 projected=0 cells=0
+[INFO] [1793144191.598871700] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=15200000000 total_ms=3.20 digest_ms=2.69 tf_ms=0.02 project_ms=0.46 projected=0 cells=0
+[INFO] [1793144191.753532591] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=15300000000 total_ms=3.16 digest_ms=2.60 tf_ms=0.02 project_ms=0.51 projected=0 cells=0
+[INFO] [1793144191.998286759] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=15400000000 total_ms=2.99 digest_ms=2.61 tf_ms=0.02 project_ms=0.34 projected=0 cells=0
+[INFO] [1793144192.165008342] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=15500000000 total_ms=3.29 digest_ms=2.92 tf_ms=0.02 project_ms=0.32 projected=0 cells=0
+[INFO] [1793144192.310952545] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=15600000000 total_ms=3.13 digest_ms=2.61 tf_ms=0.03 project_ms=0.47 projected=0 cells=0
+[INFO] [1793144192.371729087] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=15700000000 total_ms=3.06 digest_ms=2.59 tf_ms=0.03 project_ms=0.42 projected=0 cells=0
+[INFO] [1793144192.504139889] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=15800000000 total_ms=2.96 digest_ms=2.58 tf_ms=0.02 project_ms=0.32 projected=0 cells=0
+[INFO] [1793144192.762357476] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=15900000000 total_ms=2.92 digest_ms=2.54 tf_ms=0.02 project_ms=0.34 projected=0 cells=0
+[INFO] [1793144192.807862293] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=16000000000 total_ms=3.07 digest_ms=2.57 tf_ms=0.03 project_ms=0.45 projected=0 cells=0
+[INFO] [1793144192.965255666] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=16100000000 total_ms=3.33 digest_ms=2.83 tf_ms=0.03 project_ms=0.44 projected=0 cells=0
+[INFO] [1793144193.219189391] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=16200000000 total_ms=3.19 digest_ms=2.63 tf_ms=0.03 project_ms=0.52 projected=0 cells=0
+[INFO] [1793144193.219271892] [robot_1.global_costmap.global_costmap]: semantic observation accepted=134 rejected=3 projected_cells=0 sim_age_ms=202.00 wall_age_ms=301.32
+[INFO] [1793144193.264502084] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=16300000000 total_ms=3.05 digest_ms=2.57 tf_ms=0.02 project_ms=0.43 projected=0 cells=0
+[INFO] [1793144193.413978825] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=16400000000 total_ms=2.92 digest_ms=2.60 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144193.483696459] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[INFO] [1793144193.669476140] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=16500000000 total_ms=3.00 digest_ms=2.54 tf_ms=0.03 project_ms=0.41 projected=0 cells=0
+[INFO] [1793144193.728410466] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=16600000000 total_ms=2.91 digest_ms=2.55 tf_ms=0.02 project_ms=0.31 projected=0 cells=0
+[INFO] [1793144193.863607232] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=16700000000 total_ms=3.19 digest_ms=2.56 tf_ms=0.03 project_ms=0.57 projected=0 cells=0
+[INFO] [1793144194.014482220] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=16800000000 total_ms=3.17 digest_ms=2.56 tf_ms=0.02 project_ms=0.57 projected=0 cells=0
+[INFO] [1793144194.175985742] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=16900000000 total_ms=2.95 digest_ms=2.58 tf_ms=0.02 project_ms=0.32 projected=0 cells=0
+[INFO] [1793144194.319666072] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=17000000000 total_ms=2.96 digest_ms=2.58 tf_ms=0.03 project_ms=0.33 projected=0 cells=0
+[INFO] [1793144194.468429149] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=17100000000 total_ms=3.29 digest_ms=2.81 tf_ms=0.02 project_ms=0.44 projected=0 cells=0
+[INFO] [1793144194.619757176] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=17200000000 total_ms=3.01 digest_ms=2.59 tf_ms=0.02 project_ms=0.38 projected=0 cells=0
+[INFO] [1793144194.861064297] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=17300000000 total_ms=3.11 digest_ms=2.57 tf_ms=0.02 project_ms=0.49 projected=0 cells=0
+[INFO] [1793144194.927277573] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=17400000000 total_ms=3.14 digest_ms=2.72 tf_ms=0.03 project_ms=0.36 projected=0 cells=0
+[INFO] [1793144195.186990499] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=17500000000 total_ms=3.08 digest_ms=2.67 tf_ms=0.02 project_ms=0.37 projected=0 cells=0
+[INFO] [1793144195.338335776] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=17600000000 total_ms=3.26 digest_ms=2.62 tf_ms=0.02 project_ms=0.60 projected=0 cells=0
+[INFO] [1793144195.390967300] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=17700000000 total_ms=3.25 digest_ms=2.63 tf_ms=0.03 project_ms=0.57 projected=0 cells=0
+[INFO] [1793144195.531148032] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=17800000000 total_ms=3.19 digest_ms=2.59 tf_ms=0.02 project_ms=0.53 projected=0 cells=0
+[INFO] [1793144195.788868070] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=17900000000 total_ms=3.05 digest_ms=2.59 tf_ms=0.03 project_ms=0.40 projected=0 cells=0
+[INFO] [1793144195.837544908] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=18000000000 total_ms=2.95 digest_ms=2.57 tf_ms=0.03 project_ms=0.33 projected=0 cells=0
+[INFO] [1793144195.987385596] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=18100000000 total_ms=3.21 digest_ms=2.63 tf_ms=0.02 project_ms=0.54 projected=0 cells=0
+[INFO] [1793144196.236934686] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=18200000000 total_ms=2.99 digest_ms=2.66 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144196.293460965] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=18300000000 total_ms=3.10 digest_ms=2.54 tf_ms=0.02 project_ms=0.51 projected=0 cells=0
+[INFO] [1793144196.443242922] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=18400000000 total_ms=3.20 digest_ms=2.60 tf_ms=0.02 project_ms=0.56 projected=0 cells=0
+[INFO] [1793144196.593659062] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=18500000000 total_ms=3.19 digest_ms=2.58 tf_ms=0.02 project_ms=0.57 projected=0 cells=0
+[INFO] [1793144196.744092791] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=18600000000 total_ms=3.03 digest_ms=2.71 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144196.994488497] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=18700000000 total_ms=2.90 digest_ms=2.58 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144197.059660563] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=18800000000 total_ms=3.12 digest_ms=2.60 tf_ms=0.02 project_ms=0.47 projected=0 cells=0
+[INFO] [1793144197.401054611] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=18900000000 total_ms=2.87 digest_ms=2.55 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144197.450247238] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=19000000000 total_ms=3.18 digest_ms=2.56 tf_ms=0.02 project_ms=0.57 projected=0 cells=0
+[INFO] [1793144197.511642891] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=19100000000 total_ms=3.16 digest_ms=2.60 tf_ms=0.04 project_ms=0.49 projected=0 cells=0
+[INFO] [1793144197.750320458] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=19200000000 total_ms=3.02 digest_ms=2.59 tf_ms=0.02 project_ms=0.39 projected=0 cells=0
+[INFO] [1793144197.826529797] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=19300000000 total_ms=2.99 digest_ms=2.58 tf_ms=0.03 project_ms=0.36 projected=0 cells=0
+[INFO] [1793144198.066803767] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=19400000000 total_ms=3.18 digest_ms=2.61 tf_ms=0.03 project_ms=0.52 projected=0 cells=0
+[INFO] [1793144198.111999977] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=19500000000 total_ms=3.23 digest_ms=2.87 tf_ms=0.02 project_ms=0.32 projected=0 cells=0
+[INFO] [1793144198.250667868] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=19600000000 total_ms=2.94 digest_ms=2.60 tf_ms=0.02 project_ms=0.30 projected=0 cells=0
+[INFO] [1793144198.250724359] [robot_1.global_costmap.global_costmap]: semantic observation accepted=168 rejected=3 projected_cells=0 sim_age_ms=116.00 wall_age_ms=198.77
+[INFO] [1793144198.483741128] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[INFO] [1793144198.517511249] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=19700000000 total_ms=2.95 digest_ms=2.62 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144198.566064624] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=19800000000 total_ms=3.03 digest_ms=2.56 tf_ms=0.03 project_ms=0.41 projected=0 cells=0
+[INFO] [1793144198.713664607] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=19900000000 total_ms=3.05 digest_ms=2.68 tf_ms=0.02 project_ms=0.34 projected=0 cells=0
+[INFO] [1793144198.863768408] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=20000000000 total_ms=2.94 digest_ms=2.58 tf_ms=0.02 project_ms=0.33 projected=0 cells=0
+[INFO] [1793144199.111396848] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=20100000000 total_ms=3.19 digest_ms=2.65 tf_ms=0.02 project_ms=0.50 projected=0 cells=0
+[INFO] [1793144199.173875652] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=20200000000 total_ms=3.12 digest_ms=2.60 tf_ms=0.05 project_ms=0.46 projected=0 cells=0
+[INFO] [1793144199.331323125] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=20300000000 total_ms=3.14 digest_ms=2.57 tf_ms=0.03 project_ms=0.52 projected=0 cells=0
+[INFO] [1793144199.483330653] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=20400000000 total_ms=3.01 digest_ms=2.56 tf_ms=0.02 project_ms=0.41 projected=0 cells=0
+[INFO] [1793144199.641504700] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=20500000000 total_ms=3.09 digest_ms=2.55 tf_ms=0.02 project_ms=0.50 projected=0 cells=0
+[INFO] [1793144199.895255998] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=20600000000 total_ms=3.20 digest_ms=2.59 tf_ms=0.03 project_ms=0.56 projected=0 cells=0
+[INFO] [1793144200.038310903] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=20700000000 total_ms=3.15 digest_ms=2.54 tf_ms=0.02 project_ms=0.57 projected=0 cells=0
+[INFO] [1793144200.092382415] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=20800000000 total_ms=3.07 digest_ms=2.63 tf_ms=0.02 project_ms=0.40 projected=0 cells=0
+[INFO] [1793144200.347164813] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=20900000000 total_ms=3.34 digest_ms=2.70 tf_ms=0.03 project_ms=0.58 projected=0 cells=0
+[INFO] [1793144200.404786493] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=21000000000 total_ms=2.94 digest_ms=2.61 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144200.544470033] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=21100000000 total_ms=2.95 digest_ms=2.56 tf_ms=0.04 project_ms=0.32 projected=0 cells=0
+[INFO] [1793144200.786686339] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=21200000000 total_ms=3.11 digest_ms=2.61 tf_ms=0.03 project_ms=0.45 projected=0 cells=0
+[INFO] [1793144200.839038057] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=21300000000 total_ms=2.93 digest_ms=2.57 tf_ms=0.02 project_ms=0.30 projected=0 cells=0
+[INFO] [1793144200.986974817] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=21400000000 total_ms=2.95 digest_ms=2.58 tf_ms=0.02 project_ms=0.33 projected=0 cells=0
+[INFO] [1793144201.153343132] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=21500000000 total_ms=2.99 digest_ms=2.64 tf_ms=0.02 project_ms=0.32 projected=0 cells=0
+[INFO] [1793144201.305645786] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=21600000000 total_ms=3.12 digest_ms=2.55 tf_ms=0.02 project_ms=0.53 projected=0 cells=0
+[INFO] [1793144201.454749318] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=21700000000 total_ms=3.16 digest_ms=2.59 tf_ms=0.02 project_ms=0.52 projected=0 cells=0
+[INFO] [1793144201.607980049] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=21800000000 total_ms=3.08 digest_ms=2.74 tf_ms=0.02 project_ms=0.29 projected=0 cells=0
+[INFO] [1793144201.762618058] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=21900000000 total_ms=3.20 digest_ms=2.55 tf_ms=0.03 project_ms=0.60 projected=0 cells=0
+[INFO] [1793144201.912923203] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=22000000000 total_ms=3.08 digest_ms=2.61 tf_ms=0.02 project_ms=0.43 projected=0 cells=0
+[INFO] [1793144202.062683478] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=22100000000 total_ms=2.89 digest_ms=2.58 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144202.312820237] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=22200000000 total_ms=3.10 digest_ms=2.58 tf_ms=0.02 project_ms=0.46 projected=0 cells=0
+[INFO] [1793144202.353727574] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=22300000000 total_ms=2.86 digest_ms=2.55 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144202.513551383] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=22400000000 total_ms=3.17 digest_ms=2.56 tf_ms=0.02 project_ms=0.56 projected=0 cells=0
+[INFO] [1793144202.760901798] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=22500000000 total_ms=3.32 digest_ms=2.74 tf_ms=0.03 project_ms=0.52 projected=0 cells=0
+[INFO] [1793144202.906318129] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=22600000000 total_ms=2.93 digest_ms=2.56 tf_ms=0.03 project_ms=0.32 projected=0 cells=0
+[INFO] [1793144203.101133192] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=22700000000 total_ms=3.12 digest_ms=2.59 tf_ms=0.02 project_ms=0.47 projected=0 cells=0
+[INFO] [1793144203.118439175] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=22800000000 total_ms=3.52 digest_ms=3.13 tf_ms=0.03 project_ms=0.34 projected=0 cells=0
+[INFO] [1793144203.345204633] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=22900000000 total_ms=2.97 digest_ms=2.55 tf_ms=0.03 project_ms=0.37 projected=0 cells=0
+[INFO] [1793144203.345287645] [robot_1.global_costmap.global_costmap]: semantic observation accepted=201 rejected=3 projected_cells=0 sim_age_ms=184.00 wall_age_ms=293.36
+[INFO] [1793144203.427371386] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=23000000000 total_ms=3.08 digest_ms=2.56 tf_ms=0.03 project_ms=0.46 projected=0 cells=0
+[INFO] [1793144203.558688155] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=23100000000 total_ms=2.90 digest_ms=2.58 tf_ms=0.01 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144203.583383591] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[INFO] [1793144203.735084463] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=23200000000 total_ms=2.94 digest_ms=2.56 tf_ms=0.02 project_ms=0.34 projected=0 cells=0
+[INFO] [1793144203.964066454] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=23300000000 total_ms=3.20 digest_ms=2.61 tf_ms=0.03 project_ms=0.54 projected=0 cells=0
+[INFO] [1793144204.023202493] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=23400000000 total_ms=3.10 digest_ms=2.64 tf_ms=0.02 project_ms=0.42 projected=0 cells=0
+[INFO] [1793144204.264231066] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=23500000000 total_ms=3.12 digest_ms=2.55 tf_ms=0.03 project_ms=0.50 projected=0 cells=0
+[INFO] [1793144204.323301674] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=23600000000 total_ms=3.20 digest_ms=2.58 tf_ms=0.02 project_ms=0.54 projected=0 cells=0
+[INFO] [1793144204.480074494] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=23700000000 total_ms=3.00 digest_ms=2.63 tf_ms=0.01 project_ms=0.34 projected=0 cells=0
+[INFO] [1793144204.630853928] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=23800000000 total_ms=3.18 digest_ms=2.60 tf_ms=0.03 project_ms=0.52 projected=0 cells=0
+[INFO] [1793144204.760653999] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=23900000000 total_ms=3.11 digest_ms=2.59 tf_ms=0.02 project_ms=0.48 projected=0 cells=0
+[INFO] [1793144205.023071374] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=24000000000 total_ms=3.05 digest_ms=2.59 tf_ms=0.02 project_ms=0.42 projected=0 cells=0
+[INFO] [1793144205.244633621] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=24100000000 total_ms=3.18 digest_ms=2.56 tf_ms=0.03 project_ms=0.57 projected=0 cells=0
+[INFO] [1793144205.254066153] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=24200000000 total_ms=3.19 digest_ms=2.59 tf_ms=0.02 project_ms=0.56 projected=0 cells=0
+[INFO] [1793144205.399516395] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=24300000000 total_ms=3.24 digest_ms=2.57 tf_ms=0.02 project_ms=0.63 projected=0 cells=0
+[INFO] [1793144205.560807042] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=24400000000 total_ms=2.95 digest_ms=2.60 tf_ms=0.02 project_ms=0.30 projected=0 cells=0
+[INFO] [1793144205.707882865] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=24500000000 total_ms=2.92 digest_ms=2.60 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144205.892154915] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=24600000000 total_ms=3.20 digest_ms=2.60 tf_ms=0.02 project_ms=0.56 projected=0 cells=0
+[INFO] [1793144206.013329499] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=24700000000 total_ms=2.90 digest_ms=2.54 tf_ms=0.02 project_ms=0.32 projected=0 cells=0
+[INFO] [1793144206.171906873] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=24800000000 total_ms=2.92 digest_ms=2.59 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144206.317678971] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=24900000000 total_ms=3.16 digest_ms=2.56 tf_ms=0.05 project_ms=0.53 projected=0 cells=0
+[INFO] [1793144206.477783595] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=25000000000 total_ms=3.08 digest_ms=2.59 tf_ms=0.02 project_ms=0.42 projected=0 cells=0
+[INFO] [1793144206.725594589] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=25100000000 total_ms=2.93 digest_ms=2.61 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144206.779624450] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=25200000000 total_ms=3.13 digest_ms=2.59 tf_ms=0.02 project_ms=0.51 projected=0 cells=0
+[INFO] [1793144206.931572017] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=25300000000 total_ms=3.05 digest_ms=2.57 tf_ms=0.05 project_ms=0.40 projected=0 cells=0
+[INFO] [1793144207.097552664] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=25400000000 total_ms=2.89 digest_ms=2.57 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144207.242380314] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=25500000000 total_ms=2.97 digest_ms=2.57 tf_ms=0.05 project_ms=0.33 projected=0 cells=0
+[INFO] [1793144207.501606427] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=25600000000 total_ms=3.13 digest_ms=2.56 tf_ms=0.03 project_ms=0.52 projected=0 cells=0
+[INFO] [1793144207.647905725] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=25700000000 total_ms=3.36 digest_ms=2.84 tf_ms=0.02 project_ms=0.48 projected=0 cells=0
+[INFO] [1793144207.776600994] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=25800000000 total_ms=3.18 digest_ms=2.59 tf_ms=0.02 project_ms=0.54 projected=0 cells=0
+[INFO] [1793144207.860668673] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=25900000000 total_ms=2.93 digest_ms=2.61 tf_ms=0.03 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144208.002099888] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=26000000000 total_ms=3.11 digest_ms=2.58 tf_ms=0.02 project_ms=0.49 projected=0 cells=0
+[INFO] [1793144208.160156582] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=26100000000 total_ms=3.16 digest_ms=2.77 tf_ms=0.02 project_ms=0.35 projected=0 cells=0
+[INFO] [1793144208.308468069] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=26200000000 total_ms=3.21 digest_ms=2.59 tf_ms=0.02 project_ms=0.57 projected=0 cells=0
+[INFO] [1793144208.451966383] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=26300000000 total_ms=2.91 digest_ms=2.58 tf_ms=0.02 project_ms=0.29 projected=0 cells=0
+[INFO] [1793144208.452090076] [robot_1.global_costmap.global_costmap]: semantic observation accepted=235 rejected=3 projected_cells=0 sim_age_ms=126.00 wall_age_ms=200.01
+[INFO] [1793144208.585005966] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[INFO] [1793144208.596100510] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=26400000000 total_ms=3.19 digest_ms=2.59 tf_ms=0.05 project_ms=0.53 projected=0 cells=0
+[INFO] [1793144208.761349303] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=26500000000 total_ms=3.05 digest_ms=2.55 tf_ms=0.02 project_ms=0.46 projected=0 cells=0
+[INFO] [1793144209.010284678] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=26600000000 total_ms=3.21 digest_ms=2.58 tf_ms=0.03 project_ms=0.58 projected=0 cells=0
+[INFO] [1793144209.064816459] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=26700000000 total_ms=3.12 digest_ms=2.72 tf_ms=0.03 project_ms=0.35 projected=0 cells=0
+[INFO] [1793144209.222070578] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=26800000000 total_ms=3.25 digest_ms=2.63 tf_ms=0.02 project_ms=0.58 projected=0 cells=0
+[INFO] [1793144209.376403011] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=26900000000 total_ms=3.15 digest_ms=2.57 tf_ms=0.02 project_ms=0.53 projected=0 cells=0
+[INFO] [1793144209.512468792] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=27000000000 total_ms=3.13 digest_ms=2.56 tf_ms=0.03 project_ms=0.53 projected=0 cells=0
+[INFO] [1793144209.769018364] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=27100000000 total_ms=3.28 digest_ms=2.72 tf_ms=0.03 project_ms=0.51 projected=0 cells=0
+[INFO] [1793144209.826980130] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=27200000000 total_ms=3.00 digest_ms=2.68 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144210.000255748] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=27300000000 total_ms=3.09 digest_ms=2.57 tf_ms=0.02 project_ms=0.47 projected=0 cells=0
+[INFO] [1793144210.121232108] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=27400000000 total_ms=3.19 digest_ms=2.57 tf_ms=0.02 project_ms=0.57 projected=0 cells=0
+[INFO] [1793144210.280847143] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=27500000000 total_ms=3.05 digest_ms=2.61 tf_ms=0.02 project_ms=0.40 projected=0 cells=0
+[INFO] [1793144210.522748403] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=27600000000 total_ms=3.25 digest_ms=2.69 tf_ms=0.02 project_ms=0.50 projected=0 cells=0
+[INFO] [1793144210.679164675] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=27700000000 total_ms=3.17 digest_ms=2.60 tf_ms=0.02 project_ms=0.52 projected=0 cells=0
+[INFO] [1793144210.727182411] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=27800000000 total_ms=3.16 digest_ms=2.63 tf_ms=0.02 project_ms=0.49 projected=0 cells=0
+[INFO] [1793144210.980024201] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=27900000000 total_ms=2.88 digest_ms=2.56 tf_ms=0.01 project_ms=0.29 projected=0 cells=0
+[INFO] [1793144211.030782499] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=28000000000 total_ms=3.10 digest_ms=2.64 tf_ms=0.02 project_ms=0.42 projected=0 cells=0
+[INFO] [1793144211.286293571] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=28100000000 total_ms=2.96 digest_ms=2.56 tf_ms=0.03 project_ms=0.35 projected=0 cells=0
+[INFO] [1793144211.341208878] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=28200000000 total_ms=2.98 digest_ms=2.54 tf_ms=0.03 project_ms=0.39 projected=0 cells=0
+[INFO] [1793144211.492726147] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=28300000000 total_ms=3.20 digest_ms=2.61 tf_ms=0.03 project_ms=0.54 projected=0 cells=0
+[INFO] [1793144211.650742631] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=28400000000 total_ms=2.92 digest_ms=2.59 tf_ms=0.02 project_ms=0.29 projected=0 cells=0
+[INFO] [1793144211.794454719] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=28500000000 total_ms=2.90 digest_ms=2.58 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144212.068672801] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=28600000000 total_ms=3.21 digest_ms=2.64 tf_ms=0.04 project_ms=0.51 projected=0 cells=0
+[INFO] [1793144212.110993416] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=28700000000 total_ms=2.91 digest_ms=2.60 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144212.363448170] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=28800000000 total_ms=3.20 digest_ms=2.61 tf_ms=0.02 project_ms=0.54 projected=0 cells=0
+[INFO] [1793144212.508135147] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=28900000000 total_ms=3.20 digest_ms=2.60 tf_ms=0.03 project_ms=0.53 projected=0 cells=0
+[INFO] [1793144212.570071530] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=29000000000 total_ms=2.97 digest_ms=2.59 tf_ms=0.02 project_ms=0.30 projected=0 cells=0
+[INFO] [1793144212.803529997] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=29100000000 total_ms=3.18 digest_ms=2.61 tf_ms=0.02 project_ms=0.52 projected=0 cells=0
+[INFO] [1793144212.873036686] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=29200000000 total_ms=2.88 digest_ms=2.55 tf_ms=0.02 project_ms=0.30 projected=0 cells=0
+[INFO] [1793144213.015810046] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=29300000000 total_ms=2.90 digest_ms=2.57 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144213.155966646] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=29400000000 total_ms=3.02 digest_ms=2.63 tf_ms=0.02 project_ms=0.35 projected=0 cells=0
+[INFO] [1793144213.416192121] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=29500000000 total_ms=3.22 digest_ms=2.62 tf_ms=0.04 project_ms=0.55 projected=0 cells=0
+[INFO] [1793144213.472485983] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=29600000000 total_ms=2.93 digest_ms=2.60 tf_ms=0.02 project_ms=0.30 projected=0 cells=0
+[INFO] [1793144213.472541944] [robot_1.global_costmap.global_costmap]: semantic observation accepted=268 rejected=3 projected_cells=0 sim_age_ms=132.00 wall_age_ms=204.86
+[INFO] [1793144213.683877377] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[INFO] [1793144213.711823625] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=29700000000 total_ms=3.15 digest_ms=2.60 tf_ms=0.03 project_ms=0.50 projected=0 cells=0
+[INFO] [1793144213.789350575] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=29800000000 total_ms=3.18 digest_ms=2.61 tf_ms=0.03 project_ms=0.52 projected=0 cells=0
+[INFO] [1793144213.917866906] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=29900000000 total_ms=3.17 digest_ms=2.58 tf_ms=0.02 project_ms=0.54 projected=0 cells=0
+[INFO] [1793144214.057654483] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=30000000000 total_ms=4.56 digest_ms=4.02 tf_ms=0.03 project_ms=0.48 projected=0 cells=0
+[INFO] [1793144214.212404758] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=30100000000 total_ms=2.97 digest_ms=2.57 tf_ms=0.02 project_ms=0.36 projected=0 cells=0
+[INFO] [1793144214.372922924] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=30200000000 total_ms=2.91 digest_ms=2.57 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144214.516340511] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=30300000000 total_ms=3.03 digest_ms=2.55 tf_ms=0.03 project_ms=0.43 projected=0 cells=0
+[INFO] [1793144214.661882169] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=30400000000 total_ms=3.21 digest_ms=2.67 tf_ms=0.02 project_ms=0.50 projected=0 cells=0
+[INFO] [1793144214.915634467] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=30500000000 total_ms=2.95 digest_ms=2.62 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144215.063165504] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=30600000000 total_ms=3.13 digest_ms=2.60 tf_ms=0.02 project_ms=0.48 projected=0 cells=0
+[INFO] [1793144215.221511698] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=30700000000 total_ms=3.86 digest_ms=3.27 tf_ms=0.02 project_ms=0.55 projected=0 cells=0
+[INFO] [1793144215.273340534] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=30800000000 total_ms=3.13 digest_ms=2.57 tf_ms=0.02 project_ms=0.51 projected=0 cells=0
+[INFO] [1793144215.436634043] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=30900000000 total_ms=2.99 digest_ms=2.66 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144215.672027449] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=31000000000 total_ms=3.09 digest_ms=2.72 tf_ms=0.02 project_ms=0.32 projected=0 cells=0
+[INFO] [1793144215.735910977] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=31100000000 total_ms=3.07 digest_ms=2.64 tf_ms=0.02 project_ms=0.39 projected=0 cells=0
+[INFO] [1793144215.974805190] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=31200000000 total_ms=2.93 digest_ms=2.61 tf_ms=0.02 project_ms=0.29 projected=0 cells=0
+[INFO] [1793144216.180086196] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=31300000000 total_ms=3.18 digest_ms=2.60 tf_ms=0.03 project_ms=0.53 projected=0 cells=0
+[INFO] [1793144216.296621896] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=31400000000 total_ms=2.90 digest_ms=2.58 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144216.331061948] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=31500000000 total_ms=3.11 digest_ms=2.62 tf_ms=0.02 project_ms=0.45 projected=0 cells=0
+[INFO] [1793144216.500531186] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=31600000000 total_ms=3.01 digest_ms=2.56 tf_ms=0.02 project_ms=0.41 projected=0 cells=0
+[INFO] [1793144216.662195414] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=31700000000 total_ms=2.95 digest_ms=2.56 tf_ms=0.02 project_ms=0.34 projected=0 cells=0
+[INFO] [1793144216.823866463] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=31800000000 total_ms=3.27 digest_ms=2.69 tf_ms=0.02 project_ms=0.54 projected=0 cells=0
+[INFO] [1793144216.965955674] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=31900000000 total_ms=2.94 digest_ms=2.57 tf_ms=0.03 project_ms=0.33 projected=0 cells=0
+[INFO] [1793144217.137583654] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=32000000000 total_ms=2.91 digest_ms=2.58 tf_ms=0.02 project_ms=0.29 projected=0 cells=0
+[INFO] [1793144217.287014126] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=32100000000 total_ms=3.03 digest_ms=2.63 tf_ms=0.02 project_ms=0.36 projected=0 cells=0
+[INFO] [1793144217.650570136] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=32200000000 total_ms=2.94 digest_ms=2.61 tf_ms=0.02 project_ms=0.29 projected=0 cells=0
+[INFO] [1793144217.674464275] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=32300000000 total_ms=2.95 digest_ms=2.61 tf_ms=0.02 project_ms=0.30 projected=0 cells=0
+[INFO] [1793144217.809029572] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=32400000000 total_ms=2.86 digest_ms=2.54 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144217.977302667] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=32500000000 total_ms=2.89 digest_ms=2.54 tf_ms=0.02 project_ms=0.31 projected=0 cells=0
+[INFO] [1793144218.127462524] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=32600000000 total_ms=3.05 digest_ms=2.73 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144218.177659989] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=32700000000 total_ms=3.03 digest_ms=2.59 tf_ms=0.04 project_ms=0.38 projected=0 cells=0
+[INFO] [1793144218.428414959] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=32800000000 total_ms=3.06 digest_ms=2.55 tf_ms=0.03 project_ms=0.46 projected=0 cells=0
+[INFO] [1793144218.575335844] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=32900000000 total_ms=3.18 digest_ms=2.57 tf_ms=0.02 project_ms=0.56 projected=0 cells=0
+[INFO] [1793144218.575414366] [robot_1.global_costmap.global_costmap]: semantic observation accepted=301 rejected=3 projected_cells=0 sim_age_ms=194.00 wall_age_ms=294.81
+[INFO] [1793144218.684128055] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[INFO] [1793144218.792837685] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=33000000000 total_ms=3.18 digest_ms=2.86 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144218.796761631] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=33100000000 total_ms=3.34 digest_ms=2.75 tf_ms=0.02 project_ms=0.55 projected=0 cells=0
+[INFO] [1793144218.936370885] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=33200000000 total_ms=3.16 digest_ms=2.59 tf_ms=0.03 project_ms=0.51 projected=0 cells=0
+[INFO] [1793144219.095474943] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=33300000000 total_ms=3.15 digest_ms=2.56 tf_ms=0.03 project_ms=0.54 projected=0 cells=0
+[INFO] [1793144219.350612648] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=33400000000 total_ms=3.14 digest_ms=2.52 tf_ms=0.02 project_ms=0.58 projected=0 cells=0
+[INFO] [1793144219.507596356] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=33500000000 total_ms=3.14 digest_ms=2.57 tf_ms=0.02 project_ms=0.53 projected=0 cells=0
+[INFO] [1793144219.552484009] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=33600000000 total_ms=3.13 digest_ms=2.59 tf_ms=0.03 project_ms=0.48 projected=0 cells=0
+[INFO] [1793144219.799171402] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=33700000000 total_ms=2.97 digest_ms=2.57 tf_ms=0.02 project_ms=0.36 projected=0 cells=0
+[INFO] [1793144219.863993168] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=33800000000 total_ms=2.91 digest_ms=2.58 tf_ms=0.02 project_ms=0.30 projected=0 cells=0
+[INFO] [1793144220.119989469] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=33900000000 total_ms=3.14 digest_ms=2.59 tf_ms=0.03 project_ms=0.50 projected=0 cells=0
+[INFO] [1793144220.161836514] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=34000000000 total_ms=3.07 digest_ms=2.55 tf_ms=0.02 project_ms=0.47 projected=0 cells=0
+[INFO] [1793144220.319449294] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=34100000000 total_ms=3.29 digest_ms=2.69 tf_ms=0.02 project_ms=0.55 projected=0 cells=0
+[INFO] [1793144220.471964656] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=34200000000 total_ms=2.99 digest_ms=2.60 tf_ms=0.03 project_ms=0.33 projected=0 cells=0
+[INFO] [1793144220.633950060] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=34300000000 total_ms=3.15 digest_ms=2.56 tf_ms=0.02 project_ms=0.54 projected=0 cells=0
+[INFO] [1793144220.872646079] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=34400000000 total_ms=2.88 digest_ms=2.56 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144220.940840030] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=34500000000 total_ms=3.00 digest_ms=2.59 tf_ms=0.03 project_ms=0.36 projected=0 cells=0
+[INFO] [1793144221.086487800] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=34600000000 total_ms=2.93 digest_ms=2.60 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144221.351396833] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=34700000000 total_ms=2.97 digest_ms=2.59 tf_ms=0.03 project_ms=0.33 projected=0 cells=0
+[INFO] [1793144221.396156793] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=34800000000 total_ms=3.10 digest_ms=2.60 tf_ms=0.02 project_ms=0.42 projected=0 cells=0
+[INFO] [1793144221.646057998] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=34900000000 total_ms=3.03 digest_ms=2.57 tf_ms=0.03 project_ms=0.38 projected=0 cells=0
+[INFO] [1793144221.703771607] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=35000000000 total_ms=3.67 digest_ms=3.10 tf_ms=0.02 project_ms=0.52 projected=0 cells=0
+[INFO] [1793144221.852007667] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=35100000000 total_ms=3.17 digest_ms=2.61 tf_ms=0.03 project_ms=0.51 projected=0 cells=0
+[INFO] [1793144222.009294461] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=35200000000 total_ms=3.30 digest_ms=2.69 tf_ms=0.03 project_ms=0.56 projected=0 cells=0
+[INFO] [1793144222.154929350] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=35300000000 total_ms=2.94 digest_ms=2.58 tf_ms=0.02 project_ms=0.32 projected=0 cells=0
+[INFO] [1793144222.403893867] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=35400000000 total_ms=3.21 digest_ms=2.63 tf_ms=0.02 project_ms=0.54 projected=0 cells=0
+[INFO] [1793144222.449022274] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=35500000000 total_ms=2.88 digest_ms=2.57 tf_ms=0.01 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144222.711576692] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=35600000000 total_ms=3.15 digest_ms=2.60 tf_ms=0.03 project_ms=0.50 projected=0 cells=0
+[INFO] [1793144222.754255682] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=35700000000 total_ms=3.10 digest_ms=2.73 tf_ms=0.02 project_ms=0.33 projected=0 cells=0
+[INFO] [1793144223.008133943] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=35800000000 total_ms=2.90 digest_ms=2.56 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144223.144907223] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=35900000000 total_ms=3.26 digest_ms=2.65 tf_ms=0.03 project_ms=0.56 projected=0 cells=0
+[INFO] [1793144223.207217700] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=36000000000 total_ms=2.98 digest_ms=2.58 tf_ms=0.02 project_ms=0.36 projected=0 cells=0
+[INFO] [1793144223.352772709] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=36100000000 total_ms=2.91 digest_ms=2.58 tf_ms=0.02 project_ms=0.29 projected=0 cells=0
+[INFO] [1793144223.613701005] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=36200000000 total_ms=3.13 digest_ms=2.55 tf_ms=0.02 project_ms=0.53 projected=0 cells=0
+[INFO] [1793144223.613827527] [robot_1.global_costmap.global_costmap]: semantic observation accepted=334 rejected=3 projected_cells=0 sim_age_ms=204.00 wall_age_ms=310.43
+[INFO] [1793144223.751522775] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=36300000000 total_ms=3.19 digest_ms=2.59 tf_ms=0.02 project_ms=0.56 projected=0 cells=0
+[INFO] [1793144223.784556609] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[INFO] [1793144223.805958931] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=36400000000 total_ms=3.14 digest_ms=2.63 tf_ms=0.03 project_ms=0.46 projected=0 cells=0
+[INFO] [1793144223.957424353] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=36500000000 total_ms=2.95 digest_ms=2.58 tf_ms=0.02 project_ms=0.32 projected=0 cells=0
+[INFO] [1793144224.241685268] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=36600000000 total_ms=3.02 digest_ms=2.61 tf_ms=0.02 project_ms=0.37 projected=0 cells=0
+[INFO] [1793144224.370494234] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=36700000000 total_ms=3.16 digest_ms=2.56 tf_ms=0.02 project_ms=0.56 projected=0 cells=0
+[INFO] [1793144224.514607795] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=36800000000 total_ms=2.91 digest_ms=2.58 tf_ms=0.03 project_ms=0.29 projected=0 cells=0
+[INFO] [1793144224.561970305] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=36900000000 total_ms=3.24 digest_ms=2.64 tf_ms=0.03 project_ms=0.55 projected=0 cells=0
+[INFO] [1793144224.886508114] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=37000000000 total_ms=2.90 digest_ms=2.57 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144224.890182155] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=37100000000 total_ms=3.11 digest_ms=2.57 tf_ms=0.02 project_ms=0.50 projected=0 cells=0
+[INFO] [1793144225.024188611] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=37200000000 total_ms=2.94 digest_ms=2.57 tf_ms=0.02 project_ms=0.33 projected=0 cells=0
+[INFO] [1793144225.295555558] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=37300000000 total_ms=3.76 digest_ms=3.18 tf_ms=0.03 project_ms=0.52 projected=0 cells=0
+[INFO] [1793144225.331675342] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=37400000000 total_ms=3.20 digest_ms=2.58 tf_ms=0.03 project_ms=0.57 projected=0 cells=0
+[INFO] [1793144225.466432103] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=37500000000 total_ms=2.94 digest_ms=2.59 tf_ms=0.05 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144225.742461710] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=37600000000 total_ms=3.65 digest_ms=3.00 tf_ms=0.04 project_ms=0.57 projected=0 cells=0
+[INFO] [1793144225.774881373] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=37700000000 total_ms=2.90 digest_ms=2.59 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144225.933828539] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=37800000000 total_ms=3.18 digest_ms=2.59 tf_ms=0.02 project_ms=0.54 projected=0 cells=0
+[INFO] [1793144226.086930692] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=37900000000 total_ms=3.01 digest_ms=2.62 tf_ms=0.03 project_ms=0.34 projected=0 cells=0
+[INFO] [1793144226.336651593] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=38000000000 total_ms=2.91 digest_ms=2.59 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144226.383361911] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=38100000000 total_ms=3.31 digest_ms=2.69 tf_ms=0.02 project_ms=0.57 projected=0 cells=0
+[INFO] [1793144226.634400027] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=38200000000 total_ms=3.14 digest_ms=2.59 tf_ms=0.02 project_ms=0.50 projected=0 cells=0
+[INFO] [1793144226.835921591] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=38300000000 total_ms=3.22 digest_ms=2.62 tf_ms=0.03 project_ms=0.55 projected=0 cells=0
+[INFO] [1793144226.841799684] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=38400000000 total_ms=3.27 digest_ms=2.89 tf_ms=0.02 project_ms=0.34 projected=0 cells=0
+[INFO] [1793144226.979590383] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=38500000000 total_ms=2.99 digest_ms=2.57 tf_ms=0.01 project_ms=0.39 projected=0 cells=0
+[INFO] [1793144227.132414051] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=38600000000 total_ms=3.31 digest_ms=2.57 tf_ms=0.02 project_ms=0.66 projected=0 cells=0
+[INFO] [1793144227.386711110] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=38700000000 total_ms=3.16 digest_ms=2.66 tf_ms=0.02 project_ms=0.45 projected=0 cells=0
+[INFO] [1793144227.437275202] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=38800000000 total_ms=3.17 digest_ms=2.59 tf_ms=0.02 project_ms=0.50 projected=0 cells=0
+[INFO] [1793144227.675708456] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=38900000000 total_ms=3.17 digest_ms=2.59 tf_ms=0.02 project_ms=0.54 projected=0 cells=0
+[INFO] [1793144227.750656526] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=39000000000 total_ms=3.08 digest_ms=2.69 tf_ms=0.02 project_ms=0.35 projected=0 cells=0
+[INFO] [1793144227.989862365] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=39100000000 total_ms=3.34 digest_ms=2.73 tf_ms=0.03 project_ms=0.56 projected=0 cells=0
+[INFO] [1793144228.038358587] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=39200000000 total_ms=3.06 digest_ms=2.53 tf_ms=0.02 project_ms=0.48 projected=0 cells=0
+[INFO] [1793144228.388878506] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=39300000000 total_ms=3.12 digest_ms=2.57 tf_ms=0.03 project_ms=0.50 projected=0 cells=0
+[WARN] [1793144228.834565234] [robot_1.global_costmap.global_costmap]: semantic observation rejected=4 accepted=365 reason=wall_age pending=3 wall_age_ms=687.19 sim_age_ms=464.00 labels_valid=1
+[INFO] [1793144228.848440011] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=39600000000 total_ms=3.11 digest_ms=2.57 tf_ms=0.02 project_ms=0.51 projected=0 cells=0
+[INFO] [1793144228.883899053] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[INFO] [1793144228.906588299] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=39700000000 total_ms=3.14 digest_ms=2.59 tf_ms=0.03 project_ms=0.49 projected=0 cells=0
+[INFO] [1793144229.042438481] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=39800000000 total_ms=2.99 digest_ms=2.60 tf_ms=0.03 project_ms=0.34 projected=0 cells=0
+[INFO] [1793144229.204398194] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=39900000000 total_ms=2.95 digest_ms=2.60 tf_ms=0.02 project_ms=0.31 projected=0 cells=0
+[INFO] [1793144229.251471549] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=40000000000 total_ms=3.11 digest_ms=2.59 tf_ms=0.03 project_ms=0.47 projected=0 cells=0
+[INFO] [1793144229.503660782] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=40100000000 total_ms=2.92 digest_ms=2.60 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144229.679922924] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=40200000000 total_ms=3.30 digest_ms=2.72 tf_ms=0.01 project_ms=0.55 projected=0 cells=0
+[INFO] [1793144229.710708235] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=40300000000 total_ms=3.11 digest_ms=2.62 tf_ms=0.03 project_ms=0.44 projected=0 cells=0
+[INFO] [1793144229.956066083] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=40400000000 total_ms=3.16 digest_ms=2.58 tf_ms=0.02 project_ms=0.55 projected=0 cells=0
+[INFO] [1793144230.113494633] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=40500000000 total_ms=3.15 digest_ms=2.56 tf_ms=0.02 project_ms=0.56 projected=0 cells=0
+[INFO] [1793144230.165707575] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=40600000000 total_ms=2.88 digest_ms=2.56 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144230.421160907] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=40700000000 total_ms=3.17 digest_ms=2.60 tf_ms=0.03 project_ms=0.52 projected=0 cells=0
+[INFO] [1793144230.475213824] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=40800000000 total_ms=3.19 digest_ms=2.63 tf_ms=0.02 project_ms=0.51 projected=0 cells=0
+[INFO] [1793144230.622577491] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=40900000000 total_ms=3.09 digest_ms=2.58 tf_ms=0.02 project_ms=0.48 projected=0 cells=0
+[INFO] [1793144230.782532841] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=41000000000 total_ms=3.18 digest_ms=2.56 tf_ms=0.02 project_ms=0.58 projected=0 cells=0
+[INFO] [1793144230.926214167] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=41100000000 total_ms=2.91 digest_ms=2.53 tf_ms=0.02 project_ms=0.33 projected=0 cells=0
+[INFO] [1793144231.091542120] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=41200000000 total_ms=2.99 digest_ms=2.62 tf_ms=0.02 project_ms=0.31 projected=0 cells=0
+[INFO] [1793144231.235275778] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=41300000000 total_ms=3.12 digest_ms=2.58 tf_ms=0.02 project_ms=0.50 projected=0 cells=0
+[INFO] [1793144231.388339524] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=41400000000 total_ms=2.99 digest_ms=2.65 tf_ms=0.02 project_ms=0.30 projected=0 cells=0
+[INFO] [1793144231.542922111] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=41500000000 total_ms=3.16 digest_ms=2.57 tf_ms=0.02 project_ms=0.54 projected=0 cells=0
+[INFO] [1793144231.687253100] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=41600000000 total_ms=3.12 digest_ms=2.57 tf_ms=0.02 project_ms=0.52 projected=0 cells=0
+[INFO] [1793144231.836866951] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=41700000000 total_ms=3.03 digest_ms=2.70 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144231.986644985] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=41800000000 total_ms=3.06 digest_ms=2.60 tf_ms=0.02 project_ms=0.42 projected=0 cells=0
+[INFO] [1793144232.125444548] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=41900000000 total_ms=2.97 digest_ms=2.64 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144232.276218181] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=42000000000 total_ms=3.13 digest_ms=2.61 tf_ms=0.02 project_ms=0.47 projected=0 cells=0
+[INFO] [1793144232.420132722] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=42100000000 total_ms=2.91 digest_ms=2.56 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144232.655426597] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=42200000000 total_ms=3.24 digest_ms=2.69 tf_ms=0.20 project_ms=0.33 projected=0 cells=0
+[INFO] [1793144232.695593668] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=42300000000 total_ms=3.22 digest_ms=2.62 tf_ms=0.03 project_ms=0.55 projected=0 cells=0
+[INFO] [1793144232.940956865] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=42400000000 total_ms=3.16 digest_ms=2.59 tf_ms=0.03 project_ms=0.52 projected=0 cells=0
+[INFO] [1793144232.987773664] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=42500000000 total_ms=3.13 digest_ms=2.59 tf_ms=0.03 project_ms=0.48 projected=0 cells=0
+[INFO] [1793144233.127270440] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=42600000000 total_ms=3.02 digest_ms=2.55 tf_ms=0.03 project_ms=0.41 projected=0 cells=0
+[INFO] [1793144233.287465414] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=42700000000 total_ms=3.28 digest_ms=2.72 tf_ms=0.02 project_ms=0.52 projected=0 cells=0
+[INFO] [1793144233.421867383] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=42800000000 total_ms=3.16 digest_ms=2.57 tf_ms=0.02 project_ms=0.55 projected=0 cells=0
+[INFO] [1793144233.577894787] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=42900000000 total_ms=3.14 digest_ms=2.60 tf_ms=0.03 project_ms=0.48 projected=0 cells=0
+[INFO] [1793144233.711463010] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=43000000000 total_ms=3.07 digest_ms=2.57 tf_ms=0.03 project_ms=0.46 projected=0 cells=0
+[INFO] [1793144233.953344471] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=43100000000 total_ms=3.26 digest_ms=2.65 tf_ms=0.02 project_ms=0.56 projected=0 cells=0
+[INFO] [1793144233.953429132] [robot_1.global_costmap.global_costmap]: semantic observation accepted=401 rejected=5 projected_cells=0 sim_age_ms=206.00 wall_age_ms=296.70
+[INFO] [1793144233.983918517] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[INFO] [1793144233.996512899] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=43200000000 total_ms=3.12 digest_ms=2.58 tf_ms=0.03 project_ms=0.50 projected=0 cells=0
+[INFO] [1793144234.238915340] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=43300000000 total_ms=3.14 digest_ms=2.80 tf_ms=0.03 project_ms=0.29 projected=0 cells=0
+[INFO] [1793144234.292175232] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=43400000000 total_ms=3.13 digest_ms=2.61 tf_ms=0.02 project_ms=0.49 projected=0 cells=0
+[INFO] [1793144234.433542925] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=43500000000 total_ms=3.15 digest_ms=2.54 tf_ms=0.03 project_ms=0.56 projected=0 cells=0
+[INFO] [1793144234.660242164] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=43600000000 total_ms=2.97 digest_ms=2.56 tf_ms=0.02 project_ms=0.37 projected=0 cells=0
+[INFO] [1793144234.711520768] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=43700000000 total_ms=3.31 digest_ms=2.96 tf_ms=0.03 project_ms=0.29 projected=0 cells=0
+[INFO] [1793144234.848937175] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=43800000000 total_ms=3.17 digest_ms=2.59 tf_ms=0.02 project_ms=0.53 projected=0 cells=0
+[INFO] [1793144235.203984928] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=43900000000 total_ms=2.92 digest_ms=2.61 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144235.207519935] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=44000000000 total_ms=2.90 digest_ms=2.58 tf_ms=0.02 project_ms=0.28 projected=0 cells=0
+[INFO] [1793144235.299029981] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=44100000000 total_ms=2.95 digest_ms=2.60 tf_ms=0.02 project_ms=0.31 projected=0 cells=0
+[INFO] [1793144235.438996917] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=44200000000 total_ms=3.07 digest_ms=2.59 tf_ms=0.03 project_ms=0.43 projected=0 cells=0
+[INFO] [1793144235.595549261] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=44300000000 total_ms=3.08 digest_ms=2.57 tf_ms=0.03 project_ms=0.46 projected=0 cells=0
+[INFO] [1793144235.728053683] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=44400000000 total_ms=2.97 digest_ms=2.60 tf_ms=0.02 project_ms=0.33 projected=0 cells=0
+[INFO] [1793144235.974528252] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=44500000000 total_ms=3.14 digest_ms=2.77 tf_ms=0.03 project_ms=0.32 projected=0 cells=0
+[INFO] [1793144236.010745267] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=44600000000 total_ms=3.14 digest_ms=2.59 tf_ms=0.02 project_ms=0.50 projected=0 cells=0
+[INFO] [1793144236.183514802] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[INFO] [1793144236.183576414] [robot_1.planner_server]: Running Nav2 LifecycleNode rcl preshutdown (planner_server)
+[INFO] [1793144236.183618674] [robot_1.planner_server]: Deactivating
+[INFO] [1793144236.183650345] [robot_1.global_costmap.global_costmap]: Deactivating
+[INFO] [1793144236.279411272] [robot_1.planner_server]: Deactivating plugin GridBased of type NavfnPlanner
+[INFO] [1793144236.279472734] [robot_1.planner_server]: Destroying bond (planner_server) to lifecycle manager.
+[INFO] [1793144236.289682860] [robot_1.planner_server]: Cleaning up
+[INFO] [1793144236.297551771] [robot_1.global_costmap.global_costmap]: Cleaning up
+[INFO] [1793144236.318732787] [robot_1.planner_server]: Cleaning up plugin GridBased of type NavfnPlanner
+[INFO] [1793144236.319181516] [robot_1.planner_server]: Destroying plugin GridBased of type NavfnPlanner
+[INFO] [1793144236.342201557] [robot_1.planner_server]: Destroying bond (planner_server) to lifecycle manager.
+[INFO] [1793144236.348955407] [robot_1.global_costmap.global_costmap]: Destroying
+[INFO] [1793144236.377817611] [robot_1.planner_server]: Destroying

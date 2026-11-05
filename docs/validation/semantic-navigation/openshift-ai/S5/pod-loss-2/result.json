@@ -1,0 +1,85 @@
+{
+  "started_at": "2026-11-04T14:44:58.388265+00:00",
+  "passed": false,
+  "injected": true,
+  "replacement_ready": true,
+  "events": [
+    {
+      "event": "delete_serving_pod",
+      "at_wall_ns": 1793803587097136000,
+      "uid": "77f204c5-6301-4349-9544-96594c3ba644",
+      "fixture": {
+        "phase": "motion_verified",
+        "mode": "serving",
+        "armed": true,
+        "gate_reason": "armed",
+        "leases": {
+          "camera": 338,
+          "semantic": 117,
+          "inference_heartbeat": 516
+        },
+        "written_wall_ns": 1793803596627674731
+      }
+    },
+    {
+      "event": "replacement_ready",
+      "at_wall_ns": 1793803641053304000,
+      "uid": "349518a9-de3f-49c9-b95b-9e8c281673c2",
+      "fixture": {}
+    }
+  ],
+  "returncode": 1,
+  "fixture_passed": false,
+  "cleanup": [
+    {
+      "command": [
+        "/Users/zhangj/bin/oc",
+        "-n",
+        "semantic-navigation",
+        "delete",
+        "pod",
+        "semantic-phase5-native",
+        "--ignore-not-found",
+        "--wait=true",
+        "--timeout=90s"
+      ],
+      "returncode": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/Users/zhangj/devt/src/robots-demo-platform-openshift/scripts/semantic-navigation/g4_topology.py",
+        "down"
+      ],
+      "returncode": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/Users/zhangj/bin/oc",
+        "-n",
+        "semantic-navigation",
+        "create",
+        "-f",
+        "docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/rendering-reservation-saved.json"
+      ],
+      "returncode": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/Users/zhangj/bin/oc",
+        "-n",
+        "semantic-navigation",
+        "wait",
+        "pod/sam3-g0-rendering-reservation",
+        "--for=condition=Ready",
+        "--timeout=120s"
+      ],
+      "returncode": 0,
+      "stderr": ""
+    }
+  ],
+  "cleanup_ok": true
+}

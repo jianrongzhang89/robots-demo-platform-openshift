@@ -1,0 +1,332 @@
+{
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+        "annotations": {
+            "k8s.ovn.org/pod-networks": "{\"default\":{\"ip_addresses\":[\"10.131.3.115/23\"],\"mac_address\":\"0a:58:0a:83:03:73\",\"gateway_ips\":[\"10.131.2.1\"],\"routes\":[{\"dest\":\"10.128.0.0/14\",\"nextHop\":\"10.131.2.1\"},{\"dest\":\"172.30.0.0/16\",\"nextHop\":\"10.131.2.1\"},{\"dest\":\"169.254.0.5/32\",\"nextHop\":\"10.131.2.1\"},{\"dest\":\"100.64.0.0/16\",\"nextHop\":\"10.131.2.1\"}],\"ip_address\":\"10.131.3.115/23\",\"gateway_ip\":\"10.131.2.1\",\"role\":\"primary\"}}",
+            "k8s.v1.cni.cncf.io/network-status": "[{\n    \"name\": \"ovn-kubernetes\",\n    \"interface\": \"eth0\",\n    \"ips\": [\n        \"10.131.3.115\"\n    ],\n    \"mac\": \"0a:58:0a:83:03:73\",\n    \"default\": true,\n    \"dns\": {}\n}]",
+            "openshift.io/scc": "restricted-v2",
+            "seccomp.security.alpha.kubernetes.io/pod": "runtime/default",
+            "security.openshift.io/validated-scc-subject-type": "user"
+        },
+        "creationTimestamp": "2026-10-31T02:36:19Z",
+        "generateName": "data-science-perses-",
+        "generation": 1,
+        "labels": {
+            "app.kubernetes.io/created-by": "controller-manager",
+            "app.kubernetes.io/instance": "data-science-perses",
+            "app.kubernetes.io/managed-by": "perses-operator",
+            "app.kubernetes.io/name": "data-science-perses",
+            "app.kubernetes.io/part-of": "perses-operator",
+            "apps.kubernetes.io/pod-index": "0",
+            "controller-revision-hash": "data-science-perses-54575bc787",
+            "instance": "data-science-perses",
+            "statefulset.kubernetes.io/pod-name": "data-science-perses-0"
+        },
+        "name": "data-science-perses-0",
+        "namespace": "redhat-ods-monitoring",
+        "ownerReferences": [
+            {
+                "apiVersion": "apps/v1",
+                "blockOwnerDeletion": true,
+                "controller": true,
+                "kind": "StatefulSet",
+                "name": "data-science-perses",
+                "uid": "0802bbb3-a14e-4d7b-84f4-8d99ab167544"
+            }
+        ],
+        "resourceVersion": "490723592",
+        "uid": "31f2e9d7-1eb3-4c7e-a1e9-6f266d538e99"
+    },
+    "spec": {
+        "containers": [
+            {
+                "args": [
+                    "--config=/etc/perses/config/config.yaml",
+                    "--web.listen-address=:8080",
+                    "--web.tls-min-version=1.2",
+                    "--web.tls-cipher-suites=TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_CHACHA20_POLY1305_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256"
+                ],
+                "image": "registry.redhat.io/cluster-observability-operator/perses-rhel9@sha256:27553fd6d4b4983475a0d9a4ccc7d7fa63b1bd4b48f0e5cb2d18963fe232cfd5",
+                "imagePullPolicy": "IfNotPresent",
+                "livenessProbe": {
+                    "failureThreshold": 5,
+                    "httpGet": {
+                        "path": "/metrics",
+                        "port": 8080,
+                        "scheme": "HTTP"
+                    },
+                    "initialDelaySeconds": 10,
+                    "periodSeconds": 10,
+                    "successThreshold": 1,
+                    "timeoutSeconds": 5
+                },
+                "name": "perses",
+                "ports": [
+                    {
+                        "containerPort": 8080,
+                        "name": "perses",
+                        "protocol": "TCP"
+                    }
+                ],
+                "readinessProbe": {
+                    "failureThreshold": 5,
+                    "httpGet": {
+                        "path": "/metrics",
+                        "port": 8080,
+                        "scheme": "HTTP"
+                    },
+                    "initialDelaySeconds": 10,
+                    "periodSeconds": 10,
+                    "successThreshold": 1,
+                    "timeoutSeconds": 5
+                },
+                "resources": {},
+                "securityContext": {
+                    "allowPrivilegeEscalation": false,
+                    "capabilities": {
+                        "drop": [
+                            "ALL"
+                        ]
+                    },
+                    "runAsNonRoot": true,
+                    "runAsUser": 1000770000
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "File",
+                "volumeMounts": [
+                    {
+                        "mountPath": "/etc/perses/config",
+                        "name": "config",
+                        "readOnly": true
+                    },
+                    {
+                        "mountPath": "/etc/perses/plugins",
+                        "name": "plugins"
+                    },
+                    {
+                        "mountPath": "/perses",
+                        "name": "storage"
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-9n98s",
+                        "readOnly": true
+                    }
+                ]
+            }
+        ],
+        "dnsPolicy": "ClusterFirst",
+        "enableServiceLinks": true,
+        "hostname": "data-science-perses-0",
+        "imagePullSecrets": [
+            {
+                "name": "default-dockercfg-mdgnc"
+            }
+        ],
+        "nodeName": "ip-10-0-53-174.ec2.internal",
+        "preemptionPolicy": "PreemptLowerPriority",
+        "priority": 0,
+        "restartPolicy": "Always",
+        "schedulerName": "default-scheduler",
+        "securityContext": {
+            "fsGroup": 1000770000,
+            "seLinuxOptions": {
+                "level": "s0:c28,c7"
+            },
+            "seccompProfile": {
+                "type": "RuntimeDefault"
+            }
+        },
+        "serviceAccount": "default",
+        "serviceAccountName": "default",
+        "terminationGracePeriodSeconds": 30,
+        "tolerations": [
+            {
+                "effect": "NoExecute",
+                "key": "node.kubernetes.io/not-ready",
+                "operator": "Exists",
+                "tolerationSeconds": 300
+            },
+            {
+                "effect": "NoExecute",
+                "key": "node.kubernetes.io/unreachable",
+                "operator": "Exists",
+                "tolerationSeconds": 300
+            }
+        ],
+        "volumes": [
+            {
+                "name": "storage",
+                "persistentVolumeClaim": {
+                    "claimName": "storage-data-science-perses-0"
+                }
+            },
+            {
+                "configMap": {
+                    "defaultMode": 420,
+                    "name": "data-science-perses-config"
+                },
+                "name": "config"
+            },
+            {
+                "emptyDir": {},
+                "name": "plugins"
+            },
+            {
+                "name": "kube-api-access-9n98s",
+                "projected": {
+                    "defaultMode": 420,
+                    "sources": [
+                        {
+                            "serviceAccountToken": {
+                                "expirationSeconds": 3607,
+                                "path": "token"
+                            }
+                        },
+                        {
+                            "configMap": {
+                                "items": [
+                                    {
+                                        "key": "ca.crt",
+                                        "path": "ca.crt"
+                                    }
+                                ],
+                                "name": "kube-root-ca.crt"
+                            }
+                        },
+                        {
+                            "downwardAPI": {
+                                "items": [
+                                    {
+                                        "fieldRef": {
+                                            "apiVersion": "v1",
+                                            "fieldPath": "metadata.namespace"
+                                        },
+                                        "path": "namespace"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "configMap": {
+                                "items": [
+                                    {
+                                        "key": "service-ca.crt",
+                                        "path": "service-ca.crt"
+                                    }
+                                ],
+                                "name": "openshift-service-ca.crt"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "status": {
+        "conditions": [
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-31T02:36:41Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "PodReadyToStartContainers"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-31T02:36:19Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "Initialized"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-31T02:36:53Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "Ready"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-31T02:36:53Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "ContainersReady"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-31T02:36:19Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "PodScheduled"
+            }
+        ],
+        "containerStatuses": [
+            {
+                "containerID": "cri-o://bc8ee3c5960bac0f452a76c3444362e55821a90c27ad0ac0f9f1a8640f6f7b3b",
+                "image": "registry.redhat.io/cluster-observability-operator/perses-rhel9@sha256:27553fd6d4b4983475a0d9a4ccc7d7fa63b1bd4b48f0e5cb2d18963fe232cfd5",
+                "imageID": "registry.redhat.io/cluster-observability-operator/perses-rhel9@sha256:27553fd6d4b4983475a0d9a4ccc7d7fa63b1bd4b48f0e5cb2d18963fe232cfd5",
+                "lastState": {},
+                "name": "perses",
+                "ready": true,
+                "resources": {},
+                "restartCount": 0,
+                "started": true,
+                "state": {
+                    "running": {
+                        "startedAt": "2026-10-31T02:36:40Z"
+                    }
+                },
+                "user": {
+                    "linux": {
+                        "gid": 0,
+                        "supplementalGroups": [
+                            0,
+                            1000770000
+                        ],
+                        "uid": 1000770000
+                    }
+                },
+                "volumeMounts": [
+                    {
+                        "mountPath": "/etc/perses/config",
+                        "name": "config",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    },
+                    {
+                        "mountPath": "/etc/perses/plugins",
+                        "name": "plugins"
+                    },
+                    {
+                        "mountPath": "/perses",
+                        "name": "storage"
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-9n98s",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    }
+                ]
+            }
+        ],
+        "hostIP": "10.0.53.174",
+        "hostIPs": [
+            {
+                "ip": "10.0.53.174"
+            }
+        ],
+        "observedGeneration": 1,
+        "phase": "Running",
+        "podIP": "10.131.3.115",
+        "podIPs": [
+            {
+                "ip": "10.131.3.115"
+            }
+        ],
+        "qosClass": "BestEffort",
+        "startTime": "2026-10-31T02:36:19Z"
+    }
+}

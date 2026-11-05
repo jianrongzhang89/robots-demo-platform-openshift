@@ -1,0 +1,126 @@
+{
+  "gate": "G5",
+  "status": "HOLD",
+  "accepted": false,
+  "started_on": "2026-11-04",
+  "upstream_gate": "G4 PASS and user-accepted 2026-11-04",
+  "maintenance_mode": "stopped; no warm rollout claim",
+  "deployment_identity": {
+    "schema": "semantic-deployment/v1",
+    "model_name": "sam3-mat-v1",
+    "weights_sha256": "9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e",
+    "source_revision": "0570b3a5be9c4e694f23d85232fb55f4a6f1f7fc",
+    "container_digest": "sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+    "shared_sha256": {
+      "inference_contract.py": "d238d2490f826b6fbb70f07aa5579492dc425e8c858b780c8216679f121ffdef",
+      "sam3_backend.py": "3d83819971704e8ce642db98972194996307b314bb73cbb44257384e45714761",
+      "sam3_runtime_core.py": "683cf53a5b6378fa72d0cefe404bd899039b1420b4d5a2e7cfe3faecaf57085f"
+    },
+    "versions": {
+      "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+      "preprocess": "sam3-pil-rgb/v1",
+      "decoder": "sam3-binary-instances/v1"
+    },
+    "precision": "bfloat16",
+    "policy": "avoid-target/v1",
+    "prompt": "red mat",
+    "threshold": 0.5
+  },
+  "presenter": null,
+  "hold_reasons": [
+    "Dashboard and evidence-link visual review pending; browser tool reports no browser available",
+    "New presenter must execute the full operations/recovery protocol; presenter identity and user acceptance pending"
+  ],
+  "evidence": [
+    "report.md",
+    "operator-runbook.md",
+    "SESSION-HANDOVER.md",
+    "registry-registration-1.json",
+    "registry-readback-2.json",
+    "candidate-build.json",
+    "candidate-source-hashes.json",
+    "replay-cycles-1/result.json",
+    "rotation-1/result.json",
+    "monitoring-1/result.json",
+    "monitoring-verification-1.json",
+    "dependency-isolation-1.json",
+    "dependency-isolation-2.json",
+    "post-isolation-parity.json",
+    "preflight-20261104-3.json",
+    "server-tests.txt",
+    "shared-regression-tests.txt",
+    "operations-tests.txt",
+    "validation.txt",
+    "pod-loss-5/result.json",
+    "pod-loss-5/attribution.json",
+    "wrong-version-1/result.json",
+    "navigation-live-verification-2.json",
+    "monitoring-safety-final.json",
+    "dashboard-browser-check.json",
+    "rtf-audit.json",
+    "safety-final-tests.txt",
+    "safety-summary.json",
+    "costmap-telemetry-3/result.json",
+    "costmap-telemetry-3/correlation.json",
+    "costmap-telemetry-3/monitoring.json",
+    "navigation-unavailable-verification.json",
+    "preflight-safety-final.json",
+    "cleanup-safety-final.json",
+    "source-hashes-safety.json",
+    "validation-safety-final.json",
+    "navigation-demo-on-1/setup-diagnosis.json",
+    "navigation-demo-on-2/report.md",
+    "navigation-demo-on-2/demo-summary.json",
+    "navigation-demo-on-2/result.json",
+    "preflight-after-navigation-demo.json"
+  ],
+  "waivers": [
+    "Standing recognition waiver retained; serving parity does not establish recognition accuracy.",
+    "G4 acceptance is based on qualification-22, three nominal sweeps, exposure reduction and characterized residuals, not a completed 110/110 series."
+  ],
+  "recorded_at": "2026-11-04T15:40:14.032713+00:00",
+  "cluster_versions": {
+    "ocp": "4.21.16",
+    "ai": [
+      {
+        "name": "rhods-operator.3.5.2",
+        "version": "3.5.2",
+        "phase": "Succeeded"
+      }
+    ]
+  },
+  "candidate_image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:af5cb7325f08fd137380d488745cba3a229857cb57d059d31befce93e25246c9",
+  "runtime_restored": true,
+  "checks": {
+    "registry": "PASS: authenticated registration and exact readback; repeat run no writes",
+    "update_rollback": "PASS: three stopped replay cycles, original full identity restored; not motion qualification",
+    "rotation": "PASS: new credentials succeed; retired and missing client certificates rejected",
+    "monitor_authorization": "PASS: reads allowed; valid inference request rejected with 403",
+    "monitoring": "PASS via API: 21 dashboard panels and six serving data sources; visual review pending",
+    "dependency_isolation": "PASS: supported route and external TCP controls succeed; serving pod denied; replay remains PASS",
+    "pod_recovery": "PASS: actual serving-pod deletion during verified motion; original gate plus fixture-clock attribution; replacement UID and accepted digest; no automatic resume",
+    "presenter": "NOT_RUN",
+    "navigation_telemetry": "PASS: live capture/result, drops, RTF and supervisor series; 254/254 result-to-applied-costmap correlations in both maps; stale sources unavailable with state/latency series absent",
+    "wrong_version": "PASS: rejected identity mismatch, semantic stale stop, valid recovery without automatic resume",
+    "cleanup": "PASS: accepted serving image Ready, rendering reservation/local SAM3 Ready, hotel-sim zero, no temporary fixture/proxy resources",
+    "tests": "PASS: 14 focused operational/telemetry/attribution/preflight tests; prior 22 server and 42 shared regression tests retained",
+    "navigation_presentation": "PASS: user-viewed semantic-on run on accepted serving runtime; zero mat hull exposure; physical goal offset 0.727 m retained; not independent full G5 presenter acceptance"
+  },
+  "safety_demonstrations": {
+    "pod_loss": {
+      "attempt": "pod-loss-5",
+      "trigger_to_applied_zero_ms": 1.266446,
+      "confirmed_stationary_ms": 885.25423,
+      "no_automatic_resume_samples": 482
+    },
+    "wrong_version": {
+      "attempt": "wrong-version-1",
+      "trigger_to_applied_zero_ms": 0.912384,
+      "confirmed_stationary_ms": 848.010457,
+      "no_automatic_resume_samples": 476
+    },
+    "freshness_threshold_ms": 500,
+    "zero_command_limit_ms": 100,
+    "scope": "Original private native ROS fault fixture; observation-only semantic perception, accepted serving runtime; not candidate navigation or full G4 campaign requalification"
+  }
+}

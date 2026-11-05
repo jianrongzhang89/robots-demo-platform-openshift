@@ -1,0 +1,37 @@
+{
+  "allowed_ingress": {
+    "connected": true,
+    "seconds": 0.0,
+    "passed": true
+  },
+  "denied_ingress": {
+    "connected": false,
+    "error": "timed out",
+    "seconds": 4.01,
+    "passed": true
+  },
+  "egress_control": {
+    "connected": true,
+    "seconds": 0.0,
+    "passed": true
+  },
+  "denied_egress": {
+    "connected": false,
+    "error": "timed out",
+    "seconds": 4.01,
+    "passed": true
+  },
+  "serving_cannot_read_robotics_secrets": {
+    "answer": "no",
+    "passed": true
+  },
+  "replay_cannot_read_serving_secrets": {
+    "answer": "no",
+    "passed": true
+  },
+  "serving_can_pull_image": {
+    "answer": "no",
+    "passed": false
+  },
+  "passed": false
+}

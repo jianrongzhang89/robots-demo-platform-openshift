@@ -1,0 +1,23 @@
+{
+  "namespace": {
+    "http_status": 200,
+    "url": "https://rhods-dashboard-redhat-ods-applications.apps.ai-dev02.kni.syseng.devcluster.openshift.com/api/k8s/api/v1/namespaces/semantic-model-serving",
+    "returned_names": [
+      "semantic-model-serving"
+    ]
+  },
+  "inferenceservices": {
+    "http_status": 200,
+    "url": "https://rhods-dashboard-redhat-ods-applications.apps.ai-dev02.kni.syseng.devcluster.openshift.com/api/k8s/apis/serving.kserve.io/v1beta1/namespaces/semantic-model-serving/inferenceservices",
+    "returned_names": [
+      "sam3-mat-v1"
+    ]
+  },
+  "servingruntimes": {
+    "http_status": 200,
+    "url": "https://rhods-dashboard-redhat-ods-applications.apps.ai-dev02.kni.syseng.devcluster.openshift.com/api/k8s/apis/serving.kserve.io/v1alpha1/namespaces/semantic-model-serving/servingruntimes",
+    "returned_names": [
+      "sam3-runtime-v1"
+    ]
+  }
+}

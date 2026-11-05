@@ -1,0 +1,257 @@
+{
+  "kind": "live_fault_tests",
+  "results": [
+    {
+      "fault": "exception",
+      "quiescent_observation_s": 3,
+      "masks_during_failure": 0,
+      "heartbeat_unchanged": true,
+      "failure_status": {
+        "capture_trace_required": true,
+        "clock_uncertainty_ms": 2,
+        "confidence_threshold": 0.5,
+        "emitted_results": 1908,
+        "input_queue_depths": {
+          "camera_info": 0,
+          "depth": 0,
+          "rgb": 0
+        },
+        "input_queue_drops": 67,
+        "last_result": {
+          "capture": {
+            "frame_id": "camera_color_optical_frame",
+            "stamp_ns": 123100000000
+          },
+          "capture_age_upper_ms": 217.277724,
+          "capture_wall_ns": 1792168944812806400,
+          "identity": {
+            "epoch": "01142781-9cce-4dbb-9768-31fb37ee6596",
+            "generation": 1,
+            "request_id": "b88aadd3-8725-4662-869b-1b73e2f1d38a",
+            "robot": "robot_1",
+            "sequence": 2794,
+            "stream": "camera/color"
+          },
+          "receiver_processing_age_ms": 150.2833680715412,
+          "result_wall_ns": 1792168945028084000,
+          "simulation_age_ms": 210,
+          "source_epoch": "09266fd6-a695-4416-a150-9981787728d5",
+          "source_sequence": 1231
+        },
+        "last_valid_result_age_ms": 4656.93,
+        "max_work_wait_ms": 40,
+        "model": "facebook/sam3-original",
+        "model_revision": "3c879f39826c281e95690f02c7821c4de09afae7",
+        "paired_triplets": 2842,
+        "policy": "avoid-target/v1",
+        "policy_generation": 1,
+        "prompt": "red mat",
+        "ready": false,
+        "reason": "inference: RuntimeError: diagnostic injected inference exception",
+        "source_epoch": "09266fd6-a695-4416-a150-9981787728d5",
+        "state": "not_ready",
+        "stream_epoch": "01142781-9cce-4dbb-9768-31fb37ee6596",
+        "timestamp_discards": {
+          "depth": 71,
+          "info": 0,
+          "rgb": 71
+        },
+        "trace_errors": 0,
+        "versions": {
+          "decoder": "sam3-binary-instances/v1",
+          "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+          "preprocess": "sam3-pil-rgb/v1"
+        },
+        "work_queue_depth": 0,
+        "work_queue_drops": 113,
+        "work_wait_drops": 756
+      },
+      "recovered_status": {
+        "capture_trace_required": true,
+        "clock_uncertainty_ms": 2,
+        "confidence_threshold": 0.5,
+        "emitted_results": 1909,
+        "input_queue_depths": {
+          "camera_info": 1,
+          "depth": 0,
+          "rgb": 0
+        },
+        "input_queue_drops": 67,
+        "last_result": {
+          "capture": {
+            "frame_id": "camera_color_optical_frame",
+            "stamp_ns": 128000000000
+          },
+          "capture_age_upper_ms": 192.843568,
+          "capture_wall_ns": 1792168949713026800,
+          "identity": {
+            "epoch": "01142781-9cce-4dbb-9768-31fb37ee6596",
+            "generation": 1,
+            "request_id": "3daaf151-8e02-425f-8829-08e1152ee407",
+            "robot": "robot_1",
+            "sequence": 2843,
+            "stream": "camera/color"
+          },
+          "receiver_processing_age_ms": 117.6582018379122,
+          "result_wall_ns": 1792168949903870500,
+          "simulation_age_ms": 190,
+          "source_epoch": "09266fd6-a695-4416-a150-9981787728d5",
+          "source_sequence": 1280
+        },
+        "last_valid_result_age_ms": 31.11,
+        "max_work_wait_ms": 40,
+        "model": "facebook/sam3-original",
+        "model_revision": "3c879f39826c281e95690f02c7821c4de09afae7",
+        "paired_triplets": 2844,
+        "policy": "avoid-target/v1",
+        "policy_generation": 1,
+        "prompt": "red mat",
+        "ready": true,
+        "reason": null,
+        "source_epoch": "09266fd6-a695-4416-a150-9981787728d5",
+        "state": "ready",
+        "stream_epoch": "01142781-9cce-4dbb-9768-31fb37ee6596",
+        "timestamp_discards": {
+          "depth": 71,
+          "info": 0,
+          "rgb": 71
+        },
+        "trace_errors": 0,
+        "versions": {
+          "decoder": "sam3-binary-instances/v1",
+          "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+          "preprocess": "sam3-pil-rgb/v1"
+        },
+        "work_queue_depth": 0,
+        "work_queue_drops": 113,
+        "work_wait_drops": 756
+      }
+    },
+    {
+      "fault": "delay",
+      "quiescent_observation_s": 3,
+      "masks_during_failure": 0,
+      "heartbeat_unchanged": true,
+      "failure_status": {
+        "capture_trace_required": true,
+        "clock_uncertainty_ms": 2,
+        "confidence_threshold": 0.5,
+        "emitted_results": 1910,
+        "input_queue_depths": {
+          "camera_info": 0,
+          "depth": 0,
+          "rgb": 0
+        },
+        "input_queue_drops": 67,
+        "last_result": {
+          "capture": {
+            "frame_id": "camera_color_optical_frame",
+            "stamp_ns": 128100000000
+          },
+          "capture_age_upper_ms": 209.621082,
+          "capture_wall_ns": 1792168949813639200,
+          "identity": {
+            "epoch": "01142781-9cce-4dbb-9768-31fb37ee6596",
+            "generation": 1,
+            "request_id": "2df734f9-8c07-42e3-a96e-5cea3c50bd5f",
+            "robot": "robot_1",
+            "sequence": 2844,
+            "stream": "camera/color"
+          },
+          "receiver_processing_age_ms": 142.1608361415565,
+          "result_wall_ns": 1792168950021260300,
+          "simulation_age_ms": 200,
+          "source_epoch": "09266fd6-a695-4416-a150-9981787728d5",
+          "source_sequence": 1281
+        },
+        "last_valid_result_age_ms": 4563.69,
+        "max_work_wait_ms": 40,
+        "model": "facebook/sam3-original",
+        "model_revision": "3c879f39826c281e95690f02c7821c4de09afae7",
+        "paired_triplets": 2891,
+        "policy": "avoid-target/v1",
+        "policy_generation": 1,
+        "prompt": "red mat",
+        "ready": false,
+        "reason": "inference: TimeoutError: request or retained cloud expired",
+        "source_epoch": "09266fd6-a695-4416-a150-9981787728d5",
+        "state": "not_ready",
+        "stream_epoch": "01142781-9cce-4dbb-9768-31fb37ee6596",
+        "timestamp_discards": {
+          "depth": 71,
+          "info": 0,
+          "rgb": 71
+        },
+        "trace_errors": 0,
+        "versions": {
+          "decoder": "sam3-binary-instances/v1",
+          "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+          "preprocess": "sam3-pil-rgb/v1"
+        },
+        "work_queue_depth": 0,
+        "work_queue_drops": 153,
+        "work_wait_drops": 758
+      },
+      "recovered_status": {
+        "capture_trace_required": true,
+        "clock_uncertainty_ms": 2,
+        "confidence_threshold": 0.5,
+        "emitted_results": 1911,
+        "input_queue_depths": {
+          "camera_info": 1,
+          "depth": 0,
+          "rgb": 0
+        },
+        "input_queue_drops": 67,
+        "last_result": {
+          "capture": {
+            "frame_id": "camera_color_optical_frame",
+            "stamp_ns": 132800000000
+          },
+          "capture_age_upper_ms": 188.856135,
+          "capture_wall_ns": 1792168954512009200,
+          "identity": {
+            "epoch": "01142781-9cce-4dbb-9768-31fb37ee6596",
+            "generation": 1,
+            "request_id": "430f59c1-0f8d-4522-b833-29138869f30b",
+            "robot": "robot_1",
+            "sequence": 2891,
+            "stream": "camera/color"
+          },
+          "receiver_processing_age_ms": 116.01603799499571,
+          "result_wall_ns": 1792168954698865400,
+          "simulation_age_ms": 180,
+          "source_epoch": "09266fd6-a695-4416-a150-9981787728d5",
+          "source_sequence": 1328
+        },
+        "last_valid_result_age_ms": 36.16,
+        "max_work_wait_ms": 40,
+        "model": "facebook/sam3-original",
+        "model_revision": "3c879f39826c281e95690f02c7821c4de09afae7",
+        "paired_triplets": 2892,
+        "policy": "avoid-target/v1",
+        "policy_generation": 1,
+        "prompt": "red mat",
+        "ready": true,
+        "reason": null,
+        "source_epoch": "09266fd6-a695-4416-a150-9981787728d5",
+        "state": "ready",
+        "stream_epoch": "01142781-9cce-4dbb-9768-31fb37ee6596",
+        "timestamp_discards": {
+          "depth": 71,
+          "info": 0,
+          "rgb": 71
+        },
+        "trace_errors": 0,
+        "versions": {
+          "decoder": "sam3-binary-instances/v1",
+          "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+          "preprocess": "sam3-pil-rgb/v1"
+        },
+        "work_queue_depth": 0,
+        "work_queue_drops": 153,
+        "work_wait_drops": 758
+      }
+    }
+  ]
+}

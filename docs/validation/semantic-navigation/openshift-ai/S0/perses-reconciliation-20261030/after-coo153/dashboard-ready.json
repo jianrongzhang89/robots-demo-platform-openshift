@@ -1,0 +1,1066 @@
+{
+    "apiVersion": "apps/v1",
+    "kind": "Deployment",
+    "metadata": {
+        "annotations": {
+            "deployment.kubernetes.io/revision": "8",
+            "internal.config.kubernetes.io/previousKinds": "Deployment",
+            "internal.config.kubernetes.io/previousNames": "rhods-dashboard",
+            "internal.config.kubernetes.io/previousNamespaces": "default",
+            "platform.opendatahub.io/instance.generation": "1",
+            "platform.opendatahub.io/instance.name": "default-dashboard",
+            "platform.opendatahub.io/instance.uid": "2f11c3a8-b50b-4931-a40c-e3e07a7b4b37",
+            "platform.opendatahub.io/type": "OpenShift AI Self-Managed",
+            "platform.opendatahub.io/version": "3.4.2"
+        },
+        "creationTimestamp": "2026-05-28T05:09:34Z",
+        "generation": 9,
+        "labels": {
+            "app": "rhods-dashboard",
+            "app.kubernetes.io/part-of": "rhods-dashboard",
+            "app.opendatahub.io/rhods-dashboard": "true",
+            "platform.opendatahub.io/part-of": "dashboard"
+        },
+        "name": "rhods-dashboard",
+        "namespace": "redhat-ods-applications",
+        "ownerReferences": [
+            {
+                "apiVersion": "components.platform.opendatahub.io/v1alpha1",
+                "blockOwnerDeletion": true,
+                "controller": true,
+                "kind": "Dashboard",
+                "name": "default-dashboard",
+                "uid": "2f11c3a8-b50b-4931-a40c-e3e07a7b4b37"
+            }
+        ],
+        "resourceVersion": "490718910",
+        "uid": "6736afc7-3647-4212-a2cf-552c71e71af5"
+    },
+    "spec": {
+        "progressDeadlineSeconds": 600,
+        "replicas": 2,
+        "revisionHistoryLimit": 10,
+        "selector": {
+            "matchLabels": {
+                "app": "rhods-dashboard",
+                "app.kubernetes.io/part-of": "rhods-dashboard",
+                "app.opendatahub.io/rhods-dashboard": "true",
+                "deployment": "rhods-dashboard"
+            }
+        },
+        "strategy": {
+            "rollingUpdate": {
+                "maxSurge": "25%",
+                "maxUnavailable": "25%"
+            },
+            "type": "RollingUpdate"
+        },
+        "template": {
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/restartedAt": "2026-07-08T20:25:59-04:00"
+                },
+                "labels": {
+                    "app": "rhods-dashboard",
+                    "app.kubernetes.io/part-of": "rhods-dashboard",
+                    "app.opendatahub.io/rhods-dashboard": "true",
+                    "deployment": "rhods-dashboard"
+                }
+            },
+            "spec": {
+                "affinity": {
+                    "podAntiAffinity": {
+                        "preferredDuringSchedulingIgnoredDuringExecution": [
+                            {
+                                "podAffinityTerm": {
+                                    "labelSelector": {
+                                        "matchExpressions": [
+                                            {
+                                                "key": "app",
+                                                "operator": "In",
+                                                "values": [
+                                                    "rhods-dashboard"
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    "topologyKey": "topology.kubernetes.io/zone"
+                                },
+                                "weight": 100
+                            }
+                        ]
+                    }
+                },
+                "containers": [
+                    {
+                        "env": [
+                            {
+                                "name": "GATEWAY_DOMAIN",
+                                "value": "rh-ai.apps.ai-dev02.kni.syseng.devcluster.openshift.com"
+                            },
+                            {
+                                "name": "MODULE_FEDERATION_CONFIG",
+                                "valueFrom": {
+                                    "configMapKeyRef": {
+                                        "key": "module-federation-config.json",
+                                        "name": "federation-config"
+                                    }
+                                }
+                            }
+                        ],
+                        "image": "registry.redhat.io/rhoai/odh-dashboard-rhel9@sha256:ef27b31dd24931f3606ef0d4f923f91cd2ced02dd7f20a75962b4fd07b4b0c80",
+                        "imagePullPolicy": "Always",
+                        "livenessProbe": {
+                            "failureThreshold": 3,
+                            "initialDelaySeconds": 30,
+                            "periodSeconds": 30,
+                            "successThreshold": 1,
+                            "tcpSocket": {
+                                "port": 8080
+                            },
+                            "timeoutSeconds": 15
+                        },
+                        "name": "rhods-dashboard",
+                        "ports": [
+                            {
+                                "containerPort": 8080,
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "readinessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/api/health",
+                                "port": 8080,
+                                "scheme": "HTTP"
+                            },
+                            "initialDelaySeconds": 30,
+                            "periodSeconds": 30,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 15
+                        },
+                        "resources": {
+                            "limits": {
+                                "cpu": "1",
+                                "memory": "2Gi"
+                            },
+                            "requests": {
+                                "cpu": "500m",
+                                "memory": "1Gi"
+                            }
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/etc/pki/tls/certs/odh-trusted-ca-bundle.crt",
+                                "name": "odh-trusted-ca-cert",
+                                "subPath": "odh-trusted-ca-bundle.crt"
+                            },
+                            {
+                                "mountPath": "/etc/ssl/certs/odh-trusted-ca-bundle.crt",
+                                "name": "odh-trusted-ca-cert",
+                                "subPath": "odh-trusted-ca-bundle.crt"
+                            },
+                            {
+                                "mountPath": "/etc/pki/tls/certs/odh-ca-bundle.crt",
+                                "name": "odh-ca-cert",
+                                "subPath": "odh-ca-bundle.crt"
+                            },
+                            {
+                                "mountPath": "/etc/ssl/certs/odh-ca-bundle.crt",
+                                "name": "odh-ca-cert",
+                                "subPath": "odh-ca-bundle.crt"
+                            }
+                        ]
+                    },
+                    {
+                        "args": [
+                            "--secure-listen-address=0.0.0.0:8443",
+                            "--upstream=http://localhost:8080",
+                            "--config-file=/etc/kube-rbac-proxy/config-file.yaml",
+                            "--tls-cert-file=/etc/tls/private/tls.crt",
+                            "--tls-private-key-file=/etc/tls/private/tls.key",
+                            "--auth-header-fields-enabled=true",
+                            "--auth-header-user-field-name=X-Auth-Request-User",
+                            "--auth-header-groups-field-name=X-Auth-Request-Groups",
+                            "--proxy-endpoints-port=8444",
+                            "--v=10"
+                        ],
+                        "image": "registry.redhat.io/rhoai/odh-kube-auth-proxy-rhel9@sha256:a059f453011028f7f18b3c7ec6406a958aa7a5b9bf6c67d084ea9d5d36d6c970",
+                        "imagePullPolicy": "IfNotPresent",
+                        "livenessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/healthz",
+                                "port": 8444,
+                                "scheme": "HTTPS"
+                            },
+                            "initialDelaySeconds": 30,
+                            "periodSeconds": 5,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 1
+                        },
+                        "name": "kube-rbac-proxy",
+                        "ports": [
+                            {
+                                "containerPort": 8443,
+                                "name": "dashboard-ui",
+                                "protocol": "TCP"
+                            },
+                            {
+                                "containerPort": 8444,
+                                "name": "proxy-health",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "readinessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/healthz",
+                                "port": 8444,
+                                "scheme": "HTTPS"
+                            },
+                            "initialDelaySeconds": 5,
+                            "periodSeconds": 5,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 1
+                        },
+                        "resources": {
+                            "limits": {
+                                "cpu": "1",
+                                "memory": "2Gi"
+                            },
+                            "requests": {
+                                "cpu": "500m",
+                                "memory": "1Gi"
+                            }
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/etc/tls/private",
+                                "name": "proxy-tls"
+                            },
+                            {
+                                "mountPath": "/etc/kube-rbac-proxy",
+                                "name": "kube-rbac-proxy-config"
+                            },
+                            {
+                                "mountPath": "/etc/pki/tls/certs/odh-trusted-ca-bundle.crt",
+                                "name": "odh-trusted-ca-cert",
+                                "subPath": "odh-trusted-ca-bundle.crt"
+                            },
+                            {
+                                "mountPath": "/etc/ssl/certs/odh-trusted-ca-bundle.crt",
+                                "name": "odh-trusted-ca-cert",
+                                "subPath": "odh-trusted-ca-bundle.crt"
+                            },
+                            {
+                                "mountPath": "/etc/pki/tls/certs/odh-ca-bundle.crt",
+                                "name": "odh-ca-cert",
+                                "subPath": "odh-ca-bundle.crt"
+                            },
+                            {
+                                "mountPath": "/etc/ssl/certs/odh-ca-bundle.crt",
+                                "name": "odh-ca-cert",
+                                "subPath": "odh-ca-bundle.crt"
+                            }
+                        ]
+                    },
+                    {
+                        "args": [
+                            "--deployment-mode=federated",
+                            "--auth-method=user_token",
+                            "--auth-token-header=x-forwarded-access-token",
+                            "--auth-token-prefix=",
+                            "--port=8043",
+                            "--cert-file=/etc/tls/private/tls.crt",
+                            "--key-file=/etc/tls/private/tls.key",
+                            "--bundle-paths=/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem,/var/run/secrets/kubernetes.io/serviceaccount/ca.crt,/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt,/etc/pki/tls/certs/odh-ca-bundle.crt,/etc/pki/tls/certs/odh-trusted-ca-bundle.crt"
+                        ],
+                        "env": [
+                            {
+                                "name": "GATEWAY_DOMAIN",
+                                "value": "rh-ai.apps.ai-dev02.kni.syseng.devcluster.openshift.com"
+                            }
+                        ],
+                        "image": "registry.redhat.io/rhoai/odh-mod-arch-model-registry-rhel9@sha256:d02e85c41f94f0ece7eb0ceaf44dd9e274e129cd4c75442feed4f2fc9662a5bd",
+                        "imagePullPolicy": "Always",
+                        "livenessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/healthcheck",
+                                "port": 8043,
+                                "scheme": "HTTPS"
+                            },
+                            "initialDelaySeconds": 30,
+                            "periodSeconds": 30,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 15
+                        },
+                        "name": "model-registry-ui",
+                        "ports": [
+                            {
+                                "containerPort": 8043,
+                                "name": "mr-ui",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "readinessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/healthcheck",
+                                "port": 8043,
+                                "scheme": "HTTPS"
+                            },
+                            "initialDelaySeconds": 15,
+                            "periodSeconds": 30,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 15
+                        },
+                        "resources": {
+                            "limits": {
+                                "cpu": "300m",
+                                "memory": "512Mi"
+                            },
+                            "requests": {
+                                "cpu": "300m",
+                                "memory": "512Mi"
+                            }
+                        },
+                        "securityContext": {
+                            "allowPrivilegeEscalation": false,
+                            "capabilities": {
+                                "drop": [
+                                    "ALL"
+                                ]
+                            }
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/etc/tls/private",
+                                "name": "proxy-tls",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/etc/pki/tls/certs/odh-trusted-ca-bundle.crt",
+                                "name": "odh-trusted-ca-cert",
+                                "readOnly": true,
+                                "subPath": "odh-trusted-ca-bundle.crt"
+                            },
+                            {
+                                "mountPath": "/etc/ssl/certs/odh-trusted-ca-bundle.crt",
+                                "name": "odh-trusted-ca-cert",
+                                "readOnly": true,
+                                "subPath": "odh-trusted-ca-bundle.crt"
+                            },
+                            {
+                                "mountPath": "/etc/pki/tls/certs/odh-ca-bundle.crt",
+                                "name": "odh-ca-cert",
+                                "readOnly": true,
+                                "subPath": "odh-ca-bundle.crt"
+                            },
+                            {
+                                "mountPath": "/etc/ssl/certs/odh-ca-bundle.crt",
+                                "name": "odh-ca-cert",
+                                "readOnly": true,
+                                "subPath": "odh-ca-bundle.crt"
+                            }
+                        ]
+                    },
+                    {
+                        "args": [
+                            "--auth-method=user_token",
+                            "--auth-token-header=x-forwarded-access-token",
+                            "--auth-token-prefix=",
+                            "--port=8143",
+                            "--cert-file=/etc/tls/private/tls.crt",
+                            "--key-file=/etc/tls/private/tls.key",
+                            "--bundle-paths=/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem,/var/run/secrets/kubernetes.io/serviceaccount/ca.crt,/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt,/etc/pki/tls/certs/odh-ca-bundle.crt,/etc/pki/tls/certs/odh-trusted-ca-bundle.crt"
+                        ],
+                        "env": [
+                            {
+                                "name": "GATEWAY_DOMAIN",
+                                "value": "rh-ai.apps.ai-dev02.kni.syseng.devcluster.openshift.com"
+                            }
+                        ],
+                        "image": "registry.redhat.io/rhoai/odh-mod-arch-gen-ai-rhel9@sha256:2a54bcce301d118295177469204eed8849cc6ecd9642d638e9c72058165736a6",
+                        "imagePullPolicy": "Always",
+                        "livenessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/healthcheck",
+                                "port": 8143,
+                                "scheme": "HTTPS"
+                            },
+                            "initialDelaySeconds": 30,
+                            "periodSeconds": 30,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 15
+                        },
+                        "name": "gen-ai-ui",
+                        "ports": [
+                            {
+                                "containerPort": 8143,
+                                "name": "gen-ai-ui",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "readinessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/healthcheck",
+                                "port": 8143,
+                                "scheme": "HTTPS"
+                            },
+                            "initialDelaySeconds": 15,
+                            "periodSeconds": 30,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 15
+                        },
+                        "resources": {
+                            "limits": {
+                                "cpu": "300m",
+                                "memory": "512Mi"
+                            },
+                            "requests": {
+                                "cpu": "300m",
+                                "memory": "512Mi"
+                            }
+                        },
+                        "securityContext": {
+                            "allowPrivilegeEscalation": false,
+                            "capabilities": {
+                                "drop": [
+                                    "ALL"
+                                ]
+                            }
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/etc/tls/private",
+                                "name": "proxy-tls",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/etc/pki/tls/certs/odh-trusted-ca-bundle.crt",
+                                "name": "odh-trusted-ca-cert",
+                                "readOnly": true,
+                                "subPath": "odh-trusted-ca-bundle.crt"
+                            },
+                            {
+                                "mountPath": "/etc/ssl/certs/odh-trusted-ca-bundle.crt",
+                                "name": "odh-trusted-ca-cert",
+                                "readOnly": true,
+                                "subPath": "odh-trusted-ca-bundle.crt"
+                            },
+                            {
+                                "mountPath": "/etc/pki/tls/certs/odh-ca-bundle.crt",
+                                "name": "odh-ca-cert",
+                                "readOnly": true,
+                                "subPath": "odh-ca-bundle.crt"
+                            },
+                            {
+                                "mountPath": "/etc/ssl/certs/odh-ca-bundle.crt",
+                                "name": "odh-ca-cert",
+                                "readOnly": true,
+                                "subPath": "odh-ca-bundle.crt"
+                            }
+                        ]
+                    },
+                    {
+                        "args": [
+                            "--auth-method=user_token",
+                            "--auth-token-header=x-forwarded-access-token",
+                            "--auth-token-prefix=",
+                            "--port=8243",
+                            "--cert-file=/etc/tls/private/tls.crt",
+                            "--key-file=/etc/tls/private/tls.key",
+                            "--bundle-paths=/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem,/var/run/secrets/kubernetes.io/serviceaccount/ca.crt,/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt,/etc/pki/tls/certs/odh-ca-bundle.crt,/etc/pki/tls/certs/odh-trusted-ca-bundle.crt"
+                        ],
+                        "env": [
+                            {
+                                "name": "GATEWAY_DOMAIN",
+                                "value": "rh-ai.apps.ai-dev02.kni.syseng.devcluster.openshift.com"
+                            },
+                            {
+                                "name": "TIERS_CONFIGMAP_NS",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.namespace"
+                                    }
+                                }
+                            }
+                        ],
+                        "image": "registry.redhat.io/rhoai/odh-mod-arch-maas-rhel9@sha256:fb70ad923d754e63248e26e117b7c85c5cadbde71c7f7edf6b2ecefb733d3acd",
+                        "imagePullPolicy": "Always",
+                        "livenessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/healthcheck",
+                                "port": 8243,
+                                "scheme": "HTTPS"
+                            },
+                            "initialDelaySeconds": 30,
+                            "periodSeconds": 30,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 15
+                        },
+                        "name": "maas-ui",
+                        "ports": [
+                            {
+                                "containerPort": 8243,
+                                "name": "maas-ui",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "readinessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/healthcheck",
+                                "port": 8243,
+                                "scheme": "HTTPS"
+                            },
+                            "initialDelaySeconds": 15,
+                            "periodSeconds": 30,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 15
+                        },
+                        "resources": {
+                            "limits": {
+                                "cpu": "300m",
+                                "memory": "512Mi"
+                            },
+                            "requests": {
+                                "cpu": "300m",
+                                "memory": "512Mi"
+                            }
+                        },
+                        "securityContext": {
+                            "allowPrivilegeEscalation": false,
+                            "capabilities": {
+                                "drop": [
+                                    "ALL"
+                                ]
+                            }
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/etc/tls/private",
+                                "name": "proxy-tls",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/etc/pki/tls/certs/odh-trusted-ca-bundle.crt",
+                                "name": "odh-trusted-ca-cert",
+                                "readOnly": true,
+                                "subPath": "odh-trusted-ca-bundle.crt"
+                            },
+                            {
+                                "mountPath": "/etc/ssl/certs/odh-trusted-ca-bundle.crt",
+                                "name": "odh-trusted-ca-cert",
+                                "readOnly": true,
+                                "subPath": "odh-trusted-ca-bundle.crt"
+                            },
+                            {
+                                "mountPath": "/etc/pki/tls/certs/odh-ca-bundle.crt",
+                                "name": "odh-ca-cert",
+                                "readOnly": true,
+                                "subPath": "odh-ca-bundle.crt"
+                            },
+                            {
+                                "mountPath": "/etc/ssl/certs/odh-ca-bundle.crt",
+                                "name": "odh-ca-cert",
+                                "readOnly": true,
+                                "subPath": "odh-ca-bundle.crt"
+                            }
+                        ]
+                    },
+                    {
+                        "args": [
+                            "--deployment-mode=federated",
+                            "--auth-method=user_token",
+                            "--auth-token-header=x-forwarded-access-token",
+                            "--auth-token-prefix=",
+                            "--port=8343",
+                            "--cert-file=/etc/tls/private/tls.crt",
+                            "--key-file=/etc/tls/private/tls.key",
+                            "--bundle-paths=/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem,/var/run/secrets/kubernetes.io/serviceaccount/ca.crt,/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt,/etc/pki/tls/certs/odh-ca-bundle.crt,/etc/pki/tls/certs/odh-trusted-ca-bundle.crt"
+                        ],
+                        "image": "registry.redhat.io/rhoai/odh-mod-arch-mlflow-rhel9@sha256:41203ce11f280447a2009fcbcdb7f2e7f9a94d0b90a067e1f4edac2a32c81d57",
+                        "imagePullPolicy": "Always",
+                        "livenessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/healthcheck",
+                                "port": 8343,
+                                "scheme": "HTTPS"
+                            },
+                            "initialDelaySeconds": 30,
+                            "periodSeconds": 30,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 15
+                        },
+                        "name": "mlflow-ui",
+                        "ports": [
+                            {
+                                "containerPort": 8343,
+                                "name": "mlflow-ui",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "readinessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/healthcheck",
+                                "port": 8343,
+                                "scheme": "HTTPS"
+                            },
+                            "initialDelaySeconds": 15,
+                            "periodSeconds": 30,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 15
+                        },
+                        "resources": {
+                            "limits": {
+                                "cpu": "300m",
+                                "memory": "512Mi"
+                            },
+                            "requests": {
+                                "cpu": "300m",
+                                "memory": "512Mi"
+                            }
+                        },
+                        "securityContext": {
+                            "allowPrivilegeEscalation": false,
+                            "capabilities": {
+                                "drop": [
+                                    "ALL"
+                                ]
+                            }
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/etc/tls/private",
+                                "name": "proxy-tls",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/etc/pki/tls/certs/odh-trusted-ca-bundle.crt",
+                                "name": "odh-trusted-ca-cert",
+                                "readOnly": true,
+                                "subPath": "odh-trusted-ca-bundle.crt"
+                            },
+                            {
+                                "mountPath": "/etc/ssl/certs/odh-trusted-ca-bundle.crt",
+                                "name": "odh-trusted-ca-cert",
+                                "readOnly": true,
+                                "subPath": "odh-trusted-ca-bundle.crt"
+                            },
+                            {
+                                "mountPath": "/etc/pki/tls/certs/odh-ca-bundle.crt",
+                                "name": "odh-ca-cert",
+                                "readOnly": true,
+                                "subPath": "odh-ca-bundle.crt"
+                            },
+                            {
+                                "mountPath": "/etc/ssl/certs/odh-ca-bundle.crt",
+                                "name": "odh-ca-cert",
+                                "readOnly": true,
+                                "subPath": "odh-ca-bundle.crt"
+                            }
+                        ]
+                    },
+                    {
+                        "args": [
+                            "--deployment-mode=federated",
+                            "--auth-method=user_token",
+                            "--auth-token-header=x-forwarded-access-token",
+                            "--auth-token-prefix=",
+                            "--port=8543",
+                            "--cert-file=/etc/tls/private/tls.crt",
+                            "--key-file=/etc/tls/private/tls.key",
+                            "--bundle-paths=/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem,/var/run/secrets/kubernetes.io/serviceaccount/ca.crt,/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt,/etc/pki/tls/certs/odh-ca-bundle.crt,/etc/pki/tls/certs/odh-trusted-ca-bundle.crt"
+                        ],
+                        "image": "registry.redhat.io/rhoai/odh-mod-arch-eval-hub-rhel9@sha256:b1e93b8f6813980d356d4f03cc3bf5e89865184bfddeba4fe0859ec665bf6a4b",
+                        "imagePullPolicy": "Always",
+                        "livenessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/healthcheck",
+                                "port": 8543,
+                                "scheme": "HTTPS"
+                            },
+                            "initialDelaySeconds": 30,
+                            "periodSeconds": 30,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 15
+                        },
+                        "name": "eval-hub-ui",
+                        "ports": [
+                            {
+                                "containerPort": 8543,
+                                "name": "eval-hub-ui",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "readinessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/healthcheck",
+                                "port": 8543,
+                                "scheme": "HTTPS"
+                            },
+                            "initialDelaySeconds": 15,
+                            "periodSeconds": 30,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 15
+                        },
+                        "resources": {
+                            "limits": {
+                                "cpu": "300m",
+                                "memory": "512Mi"
+                            },
+                            "requests": {
+                                "cpu": "300m",
+                                "memory": "512Mi"
+                            }
+                        },
+                        "securityContext": {
+                            "allowPrivilegeEscalation": false,
+                            "capabilities": {
+                                "drop": [
+                                    "ALL"
+                                ]
+                            }
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/etc/tls/private",
+                                "name": "proxy-tls",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/etc/pki/tls/certs/odh-trusted-ca-bundle.crt",
+                                "name": "odh-trusted-ca-cert",
+                                "readOnly": true,
+                                "subPath": "odh-trusted-ca-bundle.crt"
+                            },
+                            {
+                                "mountPath": "/etc/ssl/certs/odh-trusted-ca-bundle.crt",
+                                "name": "odh-trusted-ca-cert",
+                                "readOnly": true,
+                                "subPath": "odh-trusted-ca-bundle.crt"
+                            },
+                            {
+                                "mountPath": "/etc/pki/tls/certs/odh-ca-bundle.crt",
+                                "name": "odh-ca-cert",
+                                "readOnly": true,
+                                "subPath": "odh-ca-bundle.crt"
+                            },
+                            {
+                                "mountPath": "/etc/ssl/certs/odh-ca-bundle.crt",
+                                "name": "odh-ca-cert",
+                                "readOnly": true,
+                                "subPath": "odh-ca-bundle.crt"
+                            }
+                        ]
+                    },
+                    {
+                        "args": [
+                            "--auth-method=user_token",
+                            "--auth-token-header=x-forwarded-access-token",
+                            "--auth-token-prefix=",
+                            "--port=8643",
+                            "--cert-file=/etc/tls/private/tls.crt",
+                            "--key-file=/etc/tls/private/tls.key",
+                            "--bundle-paths=/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem,/var/run/secrets/kubernetes.io/serviceaccount/ca.crt,/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt,/etc/pki/tls/certs/odh-ca-bundle.crt,/etc/pki/tls/certs/odh-trusted-ca-bundle.crt"
+                        ],
+                        "env": [
+                            {
+                                "name": "RELATED_IMAGE_ODH_AUTOML_IMAGE",
+                                "value": "registry.redhat.io/rhoai/odh-automl-rhel9@sha256:7c6d8346d1ca0ce905ce2d0021706cd90570a7c00b587f6187385151896b283a"
+                            }
+                        ],
+                        "image": "registry.redhat.io/rhoai/odh-mod-arch-automl-rhel9@sha256:d9e2c97671a136025565f270cee6009f7cd11bacba070b9c2e98eca69fd2b81f",
+                        "imagePullPolicy": "Always",
+                        "livenessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/healthcheck",
+                                "port": 8643,
+                                "scheme": "HTTPS"
+                            },
+                            "initialDelaySeconds": 30,
+                            "periodSeconds": 30,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 15
+                        },
+                        "name": "automl-ui",
+                        "ports": [
+                            {
+                                "containerPort": 8643,
+                                "name": "automl-ui",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "readinessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/healthcheck",
+                                "port": 8643,
+                                "scheme": "HTTPS"
+                            },
+                            "initialDelaySeconds": 15,
+                            "periodSeconds": 30,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 15
+                        },
+                        "resources": {
+                            "limits": {
+                                "cpu": "300m",
+                                "memory": "512Mi"
+                            },
+                            "requests": {
+                                "cpu": "300m",
+                                "memory": "512Mi"
+                            }
+                        },
+                        "securityContext": {
+                            "allowPrivilegeEscalation": false,
+                            "capabilities": {
+                                "drop": [
+                                    "ALL"
+                                ]
+                            }
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/etc/tls/private",
+                                "name": "proxy-tls",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/etc/pki/tls/certs/odh-trusted-ca-bundle.crt",
+                                "name": "odh-trusted-ca-cert",
+                                "readOnly": true,
+                                "subPath": "odh-trusted-ca-bundle.crt"
+                            },
+                            {
+                                "mountPath": "/etc/ssl/certs/odh-trusted-ca-bundle.crt",
+                                "name": "odh-trusted-ca-cert",
+                                "readOnly": true,
+                                "subPath": "odh-trusted-ca-bundle.crt"
+                            },
+                            {
+                                "mountPath": "/etc/pki/tls/certs/odh-ca-bundle.crt",
+                                "name": "odh-ca-cert",
+                                "readOnly": true,
+                                "subPath": "odh-ca-bundle.crt"
+                            },
+                            {
+                                "mountPath": "/etc/ssl/certs/odh-ca-bundle.crt",
+                                "name": "odh-ca-cert",
+                                "readOnly": true,
+                                "subPath": "odh-ca-bundle.crt"
+                            }
+                        ]
+                    },
+                    {
+                        "args": [
+                            "--auth-method=user_token",
+                            "--auth-token-header=x-forwarded-access-token",
+                            "--auth-token-prefix=",
+                            "--port=8743",
+                            "--cert-file=/etc/tls/private/tls.crt",
+                            "--key-file=/etc/tls/private/tls.key",
+                            "--bundle-paths=/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem,/var/run/secrets/kubernetes.io/serviceaccount/ca.crt,/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt,/etc/pki/tls/certs/odh-ca-bundle.crt,/etc/pki/tls/certs/odh-trusted-ca-bundle.crt"
+                        ],
+                        "env": [
+                            {
+                                "name": "RELATED_IMAGE_ODH_AUTORAG_IMAGE",
+                                "value": "registry.redhat.io/rhoai/odh-autorag-rhel9@sha256:2f55376c6c698ba0f6e7008d70b18723af4c6a87a6fcf76ecf58ed8ae40655c0"
+                            }
+                        ],
+                        "image": "registry.redhat.io/rhoai/odh-mod-arch-autorag-rhel9@sha256:490aca751f526463445419ea6d01da8573f6e8bb0ddc2d6b4b0a3b3320b05c74",
+                        "imagePullPolicy": "Always",
+                        "livenessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/healthcheck",
+                                "port": 8743,
+                                "scheme": "HTTPS"
+                            },
+                            "initialDelaySeconds": 30,
+                            "periodSeconds": 30,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 15
+                        },
+                        "name": "autorag-ui",
+                        "ports": [
+                            {
+                                "containerPort": 8743,
+                                "name": "autorag-ui",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "readinessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/healthcheck",
+                                "port": 8743,
+                                "scheme": "HTTPS"
+                            },
+                            "initialDelaySeconds": 15,
+                            "periodSeconds": 30,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 15
+                        },
+                        "resources": {
+                            "limits": {
+                                "cpu": "300m",
+                                "memory": "512Mi"
+                            },
+                            "requests": {
+                                "cpu": "300m",
+                                "memory": "512Mi"
+                            }
+                        },
+                        "securityContext": {
+                            "allowPrivilegeEscalation": false,
+                            "capabilities": {
+                                "drop": [
+                                    "ALL"
+                                ]
+                            }
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/etc/tls/private",
+                                "name": "proxy-tls",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/etc/pki/tls/certs/odh-trusted-ca-bundle.crt",
+                                "name": "odh-trusted-ca-cert",
+                                "readOnly": true,
+                                "subPath": "odh-trusted-ca-bundle.crt"
+                            },
+                            {
+                                "mountPath": "/etc/ssl/certs/odh-trusted-ca-bundle.crt",
+                                "name": "odh-trusted-ca-cert",
+                                "readOnly": true,
+                                "subPath": "odh-trusted-ca-bundle.crt"
+                            },
+                            {
+                                "mountPath": "/etc/pki/tls/certs/odh-ca-bundle.crt",
+                                "name": "odh-ca-cert",
+                                "readOnly": true,
+                                "subPath": "odh-ca-bundle.crt"
+                            },
+                            {
+                                "mountPath": "/etc/ssl/certs/odh-ca-bundle.crt",
+                                "name": "odh-ca-cert",
+                                "readOnly": true,
+                                "subPath": "odh-ca-bundle.crt"
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {},
+                "serviceAccount": "rhods-dashboard",
+                "serviceAccountName": "rhods-dashboard",
+                "terminationGracePeriodSeconds": 30,
+                "volumes": [
+                    {
+                        "name": "proxy-tls",
+                        "secret": {
+                            "defaultMode": 420,
+                            "secretName": "dashboard-proxy-tls"
+                        }
+                    },
+                    {
+                        "configMap": {
+                            "defaultMode": 420,
+                            "name": "kube-rbac-proxy-config"
+                        },
+                        "name": "kube-rbac-proxy-config"
+                    },
+                    {
+                        "configMap": {
+                            "defaultMode": 420,
+                            "items": [
+                                {
+                                    "key": "ca-bundle.crt",
+                                    "path": "odh-trusted-ca-bundle.crt"
+                                }
+                            ],
+                            "name": "odh-trusted-ca-bundle",
+                            "optional": true
+                        },
+                        "name": "odh-trusted-ca-cert"
+                    },
+                    {
+                        "configMap": {
+                            "defaultMode": 420,
+                            "items": [
+                                {
+                                    "key": "odh-ca-bundle.crt",
+                                    "path": "odh-ca-bundle.crt"
+                                }
+                            ],
+                            "name": "odh-trusted-ca-bundle",
+                            "optional": true
+                        },
+                        "name": "odh-ca-cert"
+                    }
+                ]
+            }
+        }
+    },
+    "status": {
+        "availableReplicas": 2,
+        "conditions": [
+            {
+                "lastTransitionTime": "2026-06-23T21:31:00Z",
+                "lastUpdateTime": "2026-06-23T21:31:00Z",
+                "message": "Deployment has minimum availability.",
+                "reason": "MinimumReplicasAvailable",
+                "status": "True",
+                "type": "Available"
+            },
+            {
+                "lastTransitionTime": "2026-05-28T05:09:34Z",
+                "lastUpdateTime": "2026-10-31T02:35:55Z",
+                "message": "ReplicaSet \"rhods-dashboard-7bbfcd597\" has successfully progressed.",
+                "reason": "NewReplicaSetAvailable",
+                "status": "True",
+                "type": "Progressing"
+            }
+        ],
+        "observedGeneration": 9,
+        "readyReplicas": 2,
+        "replicas": 2,
+        "updatedReplicas": 2
+    }
+}

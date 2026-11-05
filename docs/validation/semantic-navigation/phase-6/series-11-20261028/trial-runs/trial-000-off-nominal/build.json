@@ -1,0 +1,161 @@
+{
+  "apiVersion": "build.openshift.io/v1",
+  "kind": "Build",
+  "metadata": {
+    "annotations": {
+      "openshift.io/build-config.name": "semantic-safety-console-phase6",
+      "openshift.io/build.number": "11",
+      "openshift.io/build.pod-name": "semantic-safety-console-phase6-11-build"
+    },
+    "creationTimestamp": "2026-10-28T04:06:07Z",
+    "generation": 2,
+    "labels": {
+      "buildconfig": "semantic-safety-console-phase6",
+      "openshift.io/build-config.name": "semantic-safety-console-phase6",
+      "openshift.io/build.start-policy": "Serial"
+    },
+    "name": "semantic-safety-console-phase6-11",
+    "namespace": "semantic-navigation",
+    "ownerReferences": [
+      {
+        "apiVersion": "build.openshift.io/v1",
+        "controller": true,
+        "kind": "BuildConfig",
+        "name": "semantic-safety-console-phase6",
+        "uid": "db8b50ae-f77f-45d0-b508-1599869d8227"
+      }
+    ],
+    "resourceVersion": "478361615",
+    "uid": "8bdaf05f-4092-44ef-8362-ffe6b6beba3a"
+  },
+  "spec": {
+    "nodeSelector": null,
+    "output": {
+      "pushSecret": {
+        "name": "builder-dockercfg-htt4p"
+      },
+      "to": {
+        "kind": "ImageStreamTag",
+        "name": "semantic-safety:phase6-console-candidate"
+      }
+    },
+    "postCommit": {},
+    "resources": {
+      "limits": {
+        "cpu": "4",
+        "memory": "8Gi"
+      },
+      "requests": {
+        "cpu": "2",
+        "memory": "4Gi"
+      }
+    },
+    "revision": {
+      "git": {
+        "author": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "commit": "7ca7ef164399e7d50a97024b4a608dbb804676c3",
+        "committer": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "message": "Retain series-10: the native fixes never reached the images\n\nSeries-10's costs-gate liveness death was ruled out by the identical\nwatchdog .so hash (0300429c...) between chains 3ddbfc2 and e41be71:\nthe console-phase5 buildconfig builds Containerfile.console, which\nINHERITS the watchdog .so from the frozen base image (5e68063...) and\nnever compiles native/watchdog.cpp \u2014 the sender thread, the slot-first\nordering and the PostUpdate fill existed only in the source. The\nactual watchdog build is the semantic-safety-phase5 buildconfig\n(Containerfile: COPY source + cmake + ctest). The full chain rebuild\n(base -> console -> phase6 overlay) is in flight; series-10's passing\noff-arm trial retained with the failed on-arm."
+      },
+      "type": "Git"
+    },
+    "serviceAccount": "builder",
+    "source": {
+      "binary": {},
+      "type": "Binary"
+    },
+    "strategy": {
+      "dockerStrategy": {
+        "dockerfilePath": "Containerfile.phase6-console"
+      },
+      "type": "Docker"
+    }
+  },
+  "status": {
+    "completionTimestamp": "2026-10-28T04:09:26Z",
+    "conditions": [
+      {
+        "lastTransitionTime": "2026-10-28T04:06:07Z",
+        "lastUpdateTime": "2026-10-28T04:06:07Z",
+        "status": "False",
+        "type": "New"
+      },
+      {
+        "lastTransitionTime": "2026-10-28T04:06:08Z",
+        "lastUpdateTime": "2026-10-28T04:06:08Z",
+        "status": "False",
+        "type": "Pending"
+      },
+      {
+        "lastTransitionTime": "2026-10-28T04:09:26Z",
+        "lastUpdateTime": "2026-10-28T04:09:26Z",
+        "status": "False",
+        "type": "Running"
+      },
+      {
+        "lastTransitionTime": "2026-10-28T04:09:26Z",
+        "lastUpdateTime": "2026-10-28T04:09:26Z",
+        "status": "True",
+        "type": "Complete"
+      }
+    ],
+    "config": {
+      "kind": "BuildConfig",
+      "name": "semantic-safety-console-phase6",
+      "namespace": "semantic-navigation"
+    },
+    "duration": 199000000000,
+    "output": {
+      "to": {
+        "imageDigest": "sha256:1f44581693806a3f9b9225a1bf9f0d33514baaf56bfcc9ced6dd709b18ec977c"
+      }
+    },
+    "outputDockerImageReference": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety:phase6-console-candidate",
+    "phase": "Complete",
+    "stages": [
+      {
+        "durationMilliseconds": 114386,
+        "name": "PullImages",
+        "startTime": "2026-10-28T04:06:10Z",
+        "steps": [
+          {
+            "durationMilliseconds": 114386,
+            "name": "PullBaseImage",
+            "startTime": "2026-10-28T04:06:10Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 74411,
+        "name": "Build",
+        "startTime": "2026-10-28T04:08:05Z",
+        "steps": [
+          {
+            "durationMilliseconds": 74411,
+            "name": "DockerBuild",
+            "startTime": "2026-10-28T04:08:05Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 4878,
+        "name": "PushImage",
+        "startTime": "2026-10-28T04:09:19Z",
+        "steps": [
+          {
+            "durationMilliseconds": 4878,
+            "name": "PushDockerImage",
+            "startTime": "2026-10-28T04:09:19Z"
+          }
+        ]
+      }
+    ],
+    "startTimestamp": "2026-10-28T04:06:07Z"
+  }
+}

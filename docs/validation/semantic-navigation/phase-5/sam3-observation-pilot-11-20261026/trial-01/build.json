@@ -1,0 +1,161 @@
+{
+  "apiVersion": "build.openshift.io/v1",
+  "kind": "Build",
+  "metadata": {
+    "annotations": {
+      "openshift.io/build-config.name": "semantic-safety-console-phase5",
+      "openshift.io/build.number": "24",
+      "openshift.io/build.pod-name": "semantic-safety-console-phase5-24-build"
+    },
+    "creationTimestamp": "2026-10-26T16:32:00Z",
+    "generation": 2,
+    "labels": {
+      "buildconfig": "semantic-safety-console-phase5",
+      "openshift.io/build-config.name": "semantic-safety-console-phase5",
+      "openshift.io/build.start-policy": "Serial"
+    },
+    "name": "semantic-safety-console-phase5-24",
+    "namespace": "semantic-navigation",
+    "ownerReferences": [
+      {
+        "apiVersion": "build.openshift.io/v1",
+        "controller": true,
+        "kind": "BuildConfig",
+        "name": "semantic-safety-console-phase5",
+        "uid": "22e3050b-68bd-4c47-818b-c6b3a771ca22"
+      }
+    ],
+    "resourceVersion": "472381972",
+    "uid": "9c844af7-fef5-4cd0-998c-de20631d8451"
+  },
+  "spec": {
+    "nodeSelector": null,
+    "output": {
+      "pushSecret": {
+        "name": "builder-dockercfg-htt4p"
+      },
+      "to": {
+        "kind": "ImageStreamTag",
+        "name": "semantic-safety:phase5-console-candidate"
+      }
+    },
+    "postCommit": {},
+    "resources": {
+      "limits": {
+        "cpu": "2",
+        "memory": "4Gi"
+      },
+      "requests": {
+        "cpu": "1",
+        "memory": "2Gi"
+      }
+    },
+    "revision": {
+      "git": {
+        "author": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "commit": "69f3dfc3e1e3031aaed2fe0be02b8eed59266b62",
+        "committer": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "message": "Revert the status relay: the publication itself is delayed\n\nDecisive forensics across the retained trials: the watchdog's status\npublication inside the console server lags physics by p95 ~575 ms in\nbursts while the fixture's receive path is fast (median 0.5 ms) - the\ncamera image serving on the console server's shared gz transport blocks\nthe status publication itself. No transport relay can help, and the\nfresh-process relay received nothing anyway. Reverts the wiring and\nremoves the relay. Retains series 16 trial 1."
+      },
+      "type": "Git"
+    },
+    "serviceAccount": "builder",
+    "source": {
+      "binary": {},
+      "type": "Binary"
+    },
+    "strategy": {
+      "dockerStrategy": {
+        "dockerfilePath": "Containerfile.console"
+      },
+      "type": "Docker"
+    }
+  },
+  "status": {
+    "completionTimestamp": "2026-10-26T16:37:42Z",
+    "conditions": [
+      {
+        "lastTransitionTime": "2026-10-26T16:32:00Z",
+        "lastUpdateTime": "2026-10-26T16:32:00Z",
+        "status": "False",
+        "type": "New"
+      },
+      {
+        "lastTransitionTime": "2026-10-26T16:32:02Z",
+        "lastUpdateTime": "2026-10-26T16:32:02Z",
+        "status": "False",
+        "type": "Pending"
+      },
+      {
+        "lastTransitionTime": "2026-10-26T16:37:42Z",
+        "lastUpdateTime": "2026-10-26T16:37:42Z",
+        "status": "False",
+        "type": "Running"
+      },
+      {
+        "lastTransitionTime": "2026-10-26T16:37:42Z",
+        "lastUpdateTime": "2026-10-26T16:37:42Z",
+        "status": "True",
+        "type": "Complete"
+      }
+    ],
+    "config": {
+      "kind": "BuildConfig",
+      "name": "semantic-safety-console-phase5",
+      "namespace": "semantic-navigation"
+    },
+    "duration": 342000000000,
+    "output": {
+      "to": {
+        "imageDigest": "sha256:4b1ad9dbfc92bd10a012dd1240bb4c7395ce86077b184c312def100b731a7e8b"
+      }
+    },
+    "outputDockerImageReference": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety:phase5-console-candidate",
+    "phase": "Complete",
+    "stages": [
+      {
+        "durationMilliseconds": 126293,
+        "name": "PullImages",
+        "startTime": "2026-10-26T16:32:04Z",
+        "steps": [
+          {
+            "durationMilliseconds": 126293,
+            "name": "PullBaseImage",
+            "startTime": "2026-10-26T16:32:04Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 203879,
+        "name": "Build",
+        "startTime": "2026-10-26T16:34:10Z",
+        "steps": [
+          {
+            "durationMilliseconds": 203879,
+            "name": "DockerBuild",
+            "startTime": "2026-10-26T16:34:10Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 5916,
+        "name": "PushImage",
+        "startTime": "2026-10-26T16:37:34Z",
+        "steps": [
+          {
+            "durationMilliseconds": 5916,
+            "name": "PushDockerImage",
+            "startTime": "2026-10-26T16:37:34Z"
+          }
+        ]
+      }
+    ],
+    "startTimestamp": "2026-10-26T16:32:00Z"
+  }
+}

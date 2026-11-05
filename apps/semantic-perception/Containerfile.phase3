@@ -1,0 +1,31 @@
+FROM ros:jazzy-ros-base
+
+ARG SAM3_COMMIT=0570b3a5be9c4e694f23d85232fb55f4a6f1f7fc
+ENV VIRTUAL_ENV=/opt/sam3-venv
+ENV PATH=/opt/sam3-venv/bin:$PATH
+ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+WORKDIR /opt/semantic-perception
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates git python3-venv ros-jazzy-rmw-cyclonedds-cpp \
+    && rm -rf /var/lib/apt/lists/* \
+    && python3 -m venv --system-site-packages /opt/sam3-venv \
+    && /opt/sam3-venv/bin/pip install --no-cache-dir --upgrade pip \
+    && /opt/sam3-venv/bin/pip install --no-cache-dir \
+        torch==2.10.0 torchvision==0.25.0 \
+        --index-url https://download.pytorch.org/whl/cu128 \
+    && git clone https://github.com/facebookresearch/sam3.git /opt/sam3-src \
+    && git -C /opt/sam3-src checkout "${SAM3_COMMIT}" \
+    && /opt/sam3-venv/bin/pip install --no-cache-dir \
+        /opt/sam3-src einops==0.8.1 pycocotools==2.0.10 psutil==7.2.2 pillow==11.1.0 \
+    && rm -rf /opt/sam3-src/.git
+
+COPY sam3_runtime_core.py /opt/semantic-perception/sam3_runtime_core.py
+COPY inference_contract.py sam3_backend.py capture_timing.py /opt/semantic-perception/
+COPY sam3_ros_node.py backend_factory.py http_backend.py /opt/semantic-perception/
+COPY entrypoint-phase3.sh /entrypoint-phase3.sh
+RUN chmod 0555 /entrypoint-phase3.sh \
+    && /bin/bash -c 'source /opt/ros/jazzy/setup.bash; /opt/sam3-venv/bin/python -c "from rclpy.utilities import get_rmw_implementation_identifier; assert get_rmw_implementation_identifier() == \"rmw_cyclonedds_cpp\""'
+
+USER 1001
+ENTRYPOINT ["/entrypoint-phase3.sh"]

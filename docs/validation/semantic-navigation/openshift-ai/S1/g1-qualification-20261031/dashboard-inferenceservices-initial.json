@@ -1,0 +1,247 @@
+{
+  "apiVersion": "serving.kserve.io/v1beta1",
+  "items": [
+    {
+      "apiVersion": "serving.kserve.io/v1beta1",
+      "kind": "InferenceService",
+      "metadata": {
+        "annotations": {
+          "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"serving.kserve.io/v1beta1\",\"kind\":\"InferenceService\",\"metadata\":{\"annotations\":{\"security.opendatahub.io/enable-auth\":\"false\",\"serving.kserve.io/deploymentMode\":\"RawDeployment\",\"serving.kserve.io/visibility\":\"cluster-local\"},\"labels\":{\"opendatahub.io/dashboard\":\"true\"},\"name\":\"sam3-mat-v1\",\"namespace\":\"semantic-model-serving\"},\"spec\":{\"predictor\":{\"automountServiceAccountToken\":false,\"maxReplicas\":1,\"minReplicas\":1,\"model\":{\"modelFormat\":{\"name\":\"sam3\",\"version\":\"1\"},\"protocolVersion\":\"v1\",\"resources\":{\"limits\":{\"cpu\":\"6\",\"memory\":\"24Gi\",\"nvidia.com/gpu\":\"1\"},\"requests\":{\"cpu\":\"3\",\"memory\":\"12Gi\",\"nvidia.com/gpu\":\"1\"}},\"runtime\":\"sam3-runtime-v1\"},\"nodeSelector\":{\"kubernetes.io/hostname\":\"ip-10-0-55-175.ec2.internal\",\"nvidia.com/gpu.product\":\"NVIDIA-L40S\"},\"serviceAccountName\":\"sam3-serving\",\"tolerations\":[{\"effect\":\"NoSchedule\",\"key\":\"g6e-gpu\",\"operator\":\"Equal\",\"value\":\"true\"}]}}}\n",
+          "modelFormat": "sam3",
+          "security.opendatahub.io/enable-auth": "false",
+          "serving.kserve.io/deploymentMode": "Standard",
+          "serving.kserve.io/visibility": "cluster-local"
+        },
+        "creationTimestamp": "2026-10-31T14:04:34Z",
+        "finalizers": [
+          "inferenceservice.finalizers",
+          "odh.inferenceservice.finalizers"
+        ],
+        "generation": 1,
+        "labels": {
+          "opendatahub.io/dashboard": "true"
+        },
+        "managedFields": [
+          {
+            "apiVersion": "serving.kserve.io/v1beta1",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:annotations": {
+                  ".": {},
+                  "f:kubectl.kubernetes.io/last-applied-configuration": {},
+                  "f:security.opendatahub.io/enable-auth": {},
+                  "f:serving.kserve.io/deploymentMode": {},
+                  "f:serving.kserve.io/visibility": {}
+                },
+                "f:labels": {
+                  ".": {},
+                  "f:opendatahub.io/dashboard": {}
+                }
+              },
+              "f:spec": {
+                ".": {},
+                "f:predictor": {
+                  ".": {},
+                  "f:automountServiceAccountToken": {},
+                  "f:maxReplicas": {},
+                  "f:minReplicas": {},
+                  "f:model": {
+                    ".": {},
+                    "f:modelFormat": {
+                      ".": {},
+                      "f:name": {},
+                      "f:version": {}
+                    },
+                    "f:protocolVersion": {},
+                    "f:resources": {
+                      ".": {},
+                      "f:limits": {
+                        ".": {},
+                        "f:cpu": {},
+                        "f:memory": {},
+                        "f:nvidia.com/gpu": {}
+                      },
+                      "f:requests": {
+                        ".": {},
+                        "f:cpu": {},
+                        "f:memory": {},
+                        "f:nvidia.com/gpu": {}
+                      }
+                    },
+                    "f:runtime": {}
+                  },
+                  "f:nodeSelector": {},
+                  "f:serviceAccountName": {},
+                  "f:tolerations": {}
+                }
+              }
+            },
+            "manager": "kubectl-client-side-apply",
+            "operation": "Update",
+            "time": "2026-10-31T14:04:34Z"
+          },
+          {
+            "apiVersion": "serving.kserve.io/v1beta1",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:metadata": {
+                "f:finalizers": {
+                  ".": {},
+                  "v:\"inferenceservice.finalizers\"": {},
+                  "v:\"odh.inferenceservice.finalizers\"": {}
+                }
+              }
+            },
+            "manager": "manager",
+            "operation": "Update",
+            "time": "2026-10-31T14:04:35Z"
+          },
+          {
+            "apiVersion": "serving.kserve.io/v1beta1",
+            "fieldsType": "FieldsV1",
+            "fieldsV1": {
+              "f:status": {
+                ".": {},
+                "f:address": {
+                  ".": {},
+                  "f:url": {}
+                },
+                "f:components": {
+                  ".": {},
+                  "f:predictor": {
+                    ".": {},
+                    "f:url": {}
+                  }
+                },
+                "f:conditions": {},
+                "f:deploymentMode": {},
+                "f:modelStatus": {
+                  ".": {},
+                  "f:copies": {
+                    ".": {},
+                    "f:failedCopies": {},
+                    "f:totalCopies": {}
+                  },
+                  "f:states": {
+                    ".": {},
+                    "f:activeModelState": {},
+                    "f:targetModelState": {}
+                  },
+                  "f:transitionStatus": {}
+                },
+                "f:observedGeneration": {},
+                "f:servingRuntimeName": {},
+                "f:url": {}
+              }
+            },
+            "manager": "manager",
+            "operation": "Update",
+            "subresource": "status",
+            "time": "2026-10-31T14:13:19Z"
+          }
+        ],
+        "name": "sam3-mat-v1",
+        "namespace": "semantic-model-serving",
+        "resourceVersion": "493640232",
+        "uid": "9e81f3c5-2738-40f3-87c8-ee4ab88993e7"
+      },
+      "spec": {
+        "predictor": {
+          "automountServiceAccountToken": false,
+          "maxReplicas": 1,
+          "minReplicas": 1,
+          "model": {
+            "modelFormat": {
+              "name": "sam3",
+              "version": "1"
+            },
+            "name": "",
+            "protocolVersion": "v1",
+            "resources": {
+              "limits": {
+                "cpu": "6",
+                "memory": "24Gi",
+                "nvidia.com/gpu": "1"
+              },
+              "requests": {
+                "cpu": "3",
+                "memory": "12Gi",
+                "nvidia.com/gpu": "1"
+              }
+            },
+            "runtime": "sam3-runtime-v1"
+          },
+          "nodeSelector": {
+            "kubernetes.io/hostname": "ip-10-0-55-175.ec2.internal",
+            "nvidia.com/gpu.product": "NVIDIA-L40S"
+          },
+          "serviceAccountName": "sam3-serving",
+          "tolerations": [
+            {
+              "effect": "NoSchedule",
+              "key": "g6e-gpu",
+              "operator": "Equal",
+              "value": "true"
+            }
+          ]
+        }
+      },
+      "status": {
+        "address": {
+          "url": "http://sam3-mat-v1-predictor.semantic-model-serving.svc.cluster.local"
+        },
+        "components": {
+          "predictor": {
+            "url": "http://sam3-mat-v1-predictor-semantic-model-serving.example.com"
+          }
+        },
+        "conditions": [
+          {
+            "lastTransitionTime": "2026-10-31T14:04:35Z",
+            "status": "True",
+            "type": "IngressReady"
+          },
+          {
+            "lastTransitionTime": "2026-10-31T14:13:19Z",
+            "message": "ReplicaSet \"sam3-mat-v1-predictor-5cb7c9f7d5\" has successfully progressed.",
+            "reason": "NewReplicaSetAvailable",
+            "status": "True",
+            "type": "PredictorReady"
+          },
+          {
+            "lastTransitionTime": "2026-10-31T14:13:19Z",
+            "status": "True",
+            "type": "Ready"
+          },
+          {
+            "lastTransitionTime": "2026-10-31T14:04:35Z",
+            "severity": "Info",
+            "status": "False",
+            "type": "Stopped"
+          }
+        ],
+        "deploymentMode": "Standard",
+        "modelStatus": {
+          "copies": {
+            "failedCopies": 0,
+            "totalCopies": 1
+          },
+          "states": {
+            "activeModelState": "Loaded",
+            "targetModelState": "Loaded"
+          },
+          "transitionStatus": "UpToDate"
+        },
+        "observedGeneration": 1,
+        "servingRuntimeName": "sam3-runtime-v1",
+        "url": "http://sam3-mat-v1-predictor.semantic-model-serving.svc.cluster.local"
+      }
+    }
+  ],
+  "kind": "InferenceServiceList",
+  "metadata": {
+    "continue": "",
+    "resourceVersion": "493643155"
+  }
+}

@@ -1,0 +1,16 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: semantic-costmap-phase4-evidence
+  namespace: semantic-navigation
+spec:
+  runPolicy: Serial
+  source: { binary: {} }
+  strategy:
+    type: Docker
+    dockerStrategy: { dockerfilePath: Containerfile.evidence }
+  output:
+    to: { kind: ImageStreamTag, name: 'semantic-costmap:phase4-evidence' }
+  resources:
+    requests: { cpu: '1', memory: 1Gi }
+    limits: { cpu: '2', memory: 4Gi }

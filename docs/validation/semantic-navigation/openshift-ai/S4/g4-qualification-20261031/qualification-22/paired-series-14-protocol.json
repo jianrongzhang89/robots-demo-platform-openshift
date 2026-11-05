@@ -1,0 +1,15 @@
+{
+ "event": "standalone paired-series re-run 14 (November 3)",
+ "context": "Series 13 passed 13 trials then stopped on 006-on at the image-provenance preflight: the cluster garbage-collected every Build object in the namespace between trials (the same check passed one trial earlier). The BuildConfigs and the registry image remain; the imagestream tag semantic-safety:phase5-controller-candidate still references the pinned digest sha256:348fc584... exactly, and the pods continue to run it.",
+ "change": "The build verification gains a GC-tolerant fallback: when no Build object matches, the namespace's own candidate imagestream tag must reference exactly the pinned digest (equivalent provenance anchor; the digest is pinned in the runner's source and the per-trial installed-pins capture continues to hash the binaries inside the image). Recorded in build.json with an explanatory note. No gate/check semantics change; the pinned image is unchanged - the same digest all five qualification-22 stages ran on.",
+ "setup": {
+  "topology": "G4 topology up (direct endpoint); the series' per-trial recycle manages it; reservation remains deleted",
+  "series_output": "qualification-22/paired-series-14",
+  "phase5_evidence": "qualification-22/served-phase5-qualification.json",
+  "sampler": {
+   "output": "serving-resources-paired-series-14.jsonl",
+   "stop_file": "/tmp/g4-paired-series-14-monitor-stop"
+  }
+ },
+ "command": "run_phase6_series.py --output-dir qualification-22/paired-series-14 (same arguments as series 2-13)"
+}

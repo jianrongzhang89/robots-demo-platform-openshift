@@ -1,0 +1,25 @@
+{
+  "frozen_at": "2026-10-31T14:04:10.684141+00:00",
+  "replay_manifest_sha256": "5e000545e7ba6fb4f97932a7825b7fa9016831724fbf76758f80612a41bc2a90",
+  "sample_count": 3,
+  "precision": "bfloat16",
+  "gpu": "NVIDIA L40S",
+  "thresholds": {
+    "union_mask_iou_min": 0.99,
+    "empty_agreement": 1.0,
+    "occupied_fraction_difference_max": 0.005
+  },
+  "cold_start_cycles": 3,
+  "live_checks": [
+    "deployed identity and OpenShift AI visibility",
+    "metadata and predictions require client certificate",
+    "unbound principal and spoofed robot/stream rejected",
+    "malformed and oversized requests",
+    "maximum pixel and wire request boundaries",
+    "model/policy version mismatch and expired work",
+    "bounded concurrent admission and overload",
+    "unresponsive process restart recovery",
+    "ingress selection and no egress"
+  ],
+  "scope": "G1 backend qualification; recognition waiver retained; no ROS adapter or moving-navigation qualification"
+}

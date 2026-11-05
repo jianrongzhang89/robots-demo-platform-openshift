@@ -1,0 +1,44 @@
+test_forward_clock_preserves_inflight_identity (test_clock_rollback.ClockRollbackTests.test_forward_clock_preserves_inflight_identity) ... ok
+test_reset_invalidates_before_new_camera_message (test_clock_rollback.ClockRollbackTests.test_reset_invalidates_before_new_camera_message) ... ok
+test_configuration_changes_require_restart (test_remote_adapter.RemoteAdapterTests.test_configuration_changes_require_restart) ... [INFO] [1793471401.932575010] [sam3_semantic_inference]: Backend initialized; awaiting fresh RGB-D result
+ok
+test_errors_hangs_and_network_loss_publish_nothing (test_remote_adapter.RemoteAdapterTests.test_errors_hangs_and_network_loss_publish_nothing) ... [INFO] [1793471402.071951189] [sam3_semantic_inference]: Backend initialized; awaiting fresh RGB-D result
+[ERROR] [1793471402.211856133] [sam3_semantic_inference]: inference: BackendFailure: inference HTTP 401
+[ERROR] [1793471402.909649875] [sam3_semantic_inference]: inference: BackendFailure: inference HTTP 403
+[ERROR] [1793471403.620497253] [sam3_semantic_inference]: inference: BackendFailure: inference HTTP 429
+[ERROR] [1793471404.319423952] [sam3_semantic_inference]: inference: BackendFailure: inference HTTP 503
+[ERROR] [1793471405.022721481] [sam3_semantic_inference]: inference: RemoteDisconnected: Remote end closed connection without response
+[ERROR] [1793471406.218130356] [sam3_semantic_inference]: inference: RemoteDisconnected: Remote end closed connection without response
+[ERROR] [1793471406.430912811] [sam3_semantic_inference]: inference: ValueError: response mismatch: identity
+[ERROR] [1793471407.135067821] [sam3_semantic_inference]: inference: ValueError: response mismatch: identity
+ok
+test_identity_mismatch_latches_not_ready (test_remote_adapter.RemoteAdapterTests.test_identity_mismatch_latches_not_ready) ... [INFO] [1793471407.867157637] [sam3_semantic_inference]: Backend initialized; awaiting fresh RGB-D result
+[ERROR] [1793471407.988031672] [sam3_semantic_inference]: inference: IdentityMismatch: served deployment differs from pinned identity; restart required
+[ERROR] [1793471408.185304842] [sam3_semantic_inference]: inference: BackendFailure: backend identity unavailable or faulted
+ok
+test_input_and_inflight_buffers_bounded (test_remote_adapter.RemoteAdapterTests.test_input_and_inflight_buffers_bounded) ... [INFO] [1793471408.409724392] [sam3_semantic_inference]: Backend initialized; awaiting fresh RGB-D result
+[ERROR] [1793471408.733579049] [sam3_semantic_inference]: inference: RemoteDisconnected: Remote end closed connection without response
+ok
+test_late_reply_is_not_a_fresh_heartbeat (test_remote_adapter.RemoteAdapterTests.test_late_reply_is_not_a_fresh_heartbeat) ... [INFO] [1793471408.776650285] [sam3_semantic_inference]: Backend initialized; awaiting fresh RGB-D result
+[ERROR] [1793471409.379217155] [sam3_semantic_inference]: inference: RemoteDisconnected: Remote end closed connection without response
+ok
+test_metadata_never_grants_readiness_and_real_pair_keeps_header (test_remote_adapter.RemoteAdapterTests.test_metadata_never_grants_readiness_and_real_pair_keeps_header) ... [INFO] [1793471409.721088902] [sam3_semantic_inference]: Backend initialized; awaiting fresh RGB-D result
+[INFO] [1793471409.843275615] [sam3_semantic_inference]: {"capture_stamp_ns": 100000000, "emitted": 1, "event": "valid_result", "inference_ms": 7.38, "mask_pixels": 192, "paired": 1, "receiver_processing_age_ms": 15.9, "scores": [0.8999999761581421], "work_drops": 0}
+ok
+test_missing_retained_depth_never_publishes (test_remote_adapter.RemoteAdapterTests.test_missing_retained_depth_never_publishes) ... [INFO] [1793471410.431596539] [sam3_semantic_inference]: Backend initialized; awaiting fresh RGB-D result
+[ERROR] [1793471410.703851975] [sam3_semantic_inference]: inference: ValueError: unknown, duplicate, or expired retained request
+ok
+test_remote_mode_has_no_cuda_initialization (test_remote_adapter.RemoteAdapterTests.test_remote_mode_has_no_cuda_initialization) ... [INFO] [1793471410.888390912] [sam3_semantic_inference]: Backend initialized; awaiting fresh RGB-D result
+ok
+test_replayed_reply_and_duplicate_input_do_not_republish (test_remote_adapter.RemoteAdapterTests.test_replayed_reply_and_duplicate_input_do_not_republish) ... [INFO] [1793471411.029252585] [sam3_semantic_inference]: Backend initialized; awaiting fresh RGB-D result
+[INFO] [1793471411.155642228] [sam3_semantic_inference]: {"capture_stamp_ns": 100000000, "emitted": 1, "event": "valid_result", "inference_ms": 8.87, "mask_pixels": 192, "paired": 1, "receiver_processing_age_ms": 15.07, "scores": [0.8999999761581421], "work_drops": 0}
+[ERROR] [1793471411.328271134] [sam3_semantic_inference]: inference: ValueError: unknown, duplicate, or expired retained request
+ok
+test_reset_during_delayed_reply_never_publishes (test_remote_adapter.RemoteAdapterTests.test_reset_during_delayed_reply_never_publishes) ... [INFO] [1793471411.597932136] [sam3_semantic_inference]: Backend initialized; awaiting fresh RGB-D result
+[ERROR] [1793471411.923443163] [sam3_semantic_inference]: inference: ValueError: unknown, duplicate, or expired retained request
+ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 11.287s
+
+OK

@@ -1,0 +1,261 @@
+{
+  "apiVersion": "v1",
+  "kind": "Pod",
+  "metadata": {
+    "annotations": {
+      "k8s.ovn.org/pod-networks": "{\"default\":{\"ip_addresses\":[\"10.130.10.30/23\"],\"mac_address\":\"0a:58:0a:82:0a:1e\",\"gateway_ips\":[\"10.130.10.1\"],\"routes\":[{\"dest\":\"10.128.0.0/14\",\"nextHop\":\"10.130.10.1\"},{\"dest\":\"172.30.0.0/16\",\"nextHop\":\"10.130.10.1\"},{\"dest\":\"169.254.0.5/32\",\"nextHop\":\"10.130.10.1\"},{\"dest\":\"100.64.0.0/16\",\"nextHop\":\"10.130.10.1\"}],\"ip_address\":\"10.130.10.30/23\",\"gateway_ip\":\"10.130.10.1\",\"role\":\"primary\"}}",
+      "k8s.v1.cni.cncf.io/network-status": "[{\n    \"name\": \"ovn-kubernetes\",\n    \"interface\": \"eth0\",\n    \"ips\": [\n        \"10.130.10.30\"\n    ],\n    \"mac\": \"0a:58:0a:82:0a:1e\",\n    \"default\": true,\n    \"dns\": {}\n}]",
+      "openshift.io/scc": "openshift-ai-llminferenceservice-scc",
+      "seccomp.security.alpha.kubernetes.io/pod": "runtime/default",
+      "security.openshift.io/validated-scc-subject-type": "user"
+    },
+    "creationTimestamp": "2026-10-16T23:23:56Z",
+    "generation": 1,
+    "name": "semantic-phase5-native",
+    "namespace": "semantic-navigation",
+    "resourceVersion": "433110100",
+    "uid": "6093c249-8124-4112-b2c9-3727cdba01da"
+  },
+  "spec": {
+    "activeDeadlineSeconds": 300,
+    "automountServiceAccountToken": false,
+    "containers": [
+      {
+        "args": [
+          "source /opt/ros/jazzy/setup.bash; exec python3 /phase5-native/run_native_suite.py"
+        ],
+        "command": [
+          "/bin/bash",
+          "-ec"
+        ],
+        "env": [
+          {
+            "name": "PHASE5_SUITE",
+            "value": "combined"
+          },
+          {
+            "name": "ROS_DOMAIN_ID",
+            "value": "85"
+          },
+          {
+            "name": "RMW_IMPLEMENTATION",
+            "value": "rmw_cyclonedds_cpp"
+          },
+          {
+            "name": "CYCLONEDDS_URI",
+            "value": "file:///phase5-native/cyclonedds-phase5.xml"
+          },
+          {
+            "name": "ROS_LOG_DIR",
+            "value": "/tmp/phase5-ros-logs"
+          },
+          {
+            "name": "PYTHONDONTWRITEBYTECODE",
+            "value": "1"
+          },
+          {
+            "name": "GZ_IP",
+            "value": "127.0.0.1"
+          },
+          {
+            "name": "GZ_PARTITION",
+            "value": "phase5-watchdog-native-qualification"
+          },
+          {
+            "name": "GZ_SIM_SYSTEM_PLUGIN_PATH",
+            "value": "/opt/semantic-safety/lib:/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins:/opt/ros/jazzy/opt/gz_sim_vendor/lib/gz-sim-8/plugins"
+          }
+        ],
+        "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:218b63994d5f063fa0b59e8f478619b9de5d93cabe75b9ae30aa091ca4cef967",
+        "imagePullPolicy": "IfNotPresent",
+        "name": "fixture",
+        "resources": {
+          "limits": {
+            "cpu": "4",
+            "memory": "3Gi"
+          },
+          "requests": {
+            "cpu": "1",
+            "memory": "1Gi"
+          }
+        },
+        "securityContext": {
+          "allowPrivilegeEscalation": false,
+          "capabilities": {
+            "drop": [
+              "ALL"
+            ]
+          },
+          "runAsNonRoot": true,
+          "runAsUser": 1001340000,
+          "seccompProfile": {
+            "type": "RuntimeDefault"
+          }
+        },
+        "terminationMessagePath": "/dev/termination-log",
+        "terminationMessagePolicy": "File",
+        "volumeMounts": [
+          {
+            "mountPath": "/phase5-native",
+            "name": "source",
+            "readOnly": true
+          }
+        ]
+      }
+    ],
+    "dnsPolicy": "ClusterFirst",
+    "enableServiceLinks": true,
+    "imagePullSecrets": [
+      {
+        "name": "default-dockercfg-6jjg8"
+      }
+    ],
+    "nodeName": "ip-10-0-44-171.ec2.internal",
+    "preemptionPolicy": "PreemptLowerPriority",
+    "priority": 0,
+    "restartPolicy": "Never",
+    "schedulerName": "default-scheduler",
+    "securityContext": {
+      "seLinuxOptions": {
+        "level": "s0:c37,c4"
+      },
+      "seccompProfile": {
+        "type": "RuntimeDefault"
+      }
+    },
+    "serviceAccount": "default",
+    "serviceAccountName": "default",
+    "terminationGracePeriodSeconds": 30,
+    "tolerations": [
+      {
+        "effect": "NoExecute",
+        "key": "node.kubernetes.io/not-ready",
+        "operator": "Exists",
+        "tolerationSeconds": 300
+      },
+      {
+        "effect": "NoExecute",
+        "key": "node.kubernetes.io/unreachable",
+        "operator": "Exists",
+        "tolerationSeconds": 300
+      },
+      {
+        "effect": "NoSchedule",
+        "key": "node.kubernetes.io/memory-pressure",
+        "operator": "Exists"
+      }
+    ],
+    "volumes": [
+      {
+        "configMap": {
+          "defaultMode": 420,
+          "name": "semantic-phase5-native"
+        },
+        "name": "source"
+      }
+    ]
+  },
+  "status": {
+    "conditions": [
+      {
+        "lastProbeTime": null,
+        "lastTransitionTime": "2026-10-16T23:23:58Z",
+        "observedGeneration": 1,
+        "status": "True",
+        "type": "PodReadyToStartContainers"
+      },
+      {
+        "lastProbeTime": null,
+        "lastTransitionTime": "2026-10-16T23:23:56Z",
+        "observedGeneration": 1,
+        "status": "True",
+        "type": "Initialized"
+      },
+      {
+        "lastProbeTime": null,
+        "lastTransitionTime": "2026-10-16T23:23:58Z",
+        "observedGeneration": 1,
+        "status": "True",
+        "type": "Ready"
+      },
+      {
+        "lastProbeTime": null,
+        "lastTransitionTime": "2026-10-16T23:23:58Z",
+        "observedGeneration": 1,
+        "status": "True",
+        "type": "ContainersReady"
+      },
+      {
+        "lastProbeTime": null,
+        "lastTransitionTime": "2026-10-16T23:23:56Z",
+        "observedGeneration": 1,
+        "status": "True",
+        "type": "PodScheduled"
+      }
+    ],
+    "containerStatuses": [
+      {
+        "allocatedResources": {
+          "cpu": "1",
+          "memory": "1Gi"
+        },
+        "containerID": "cri-o://bb942a995270d421509f32ac8906540f063327e32fe821c4a6bd083f16422d25",
+        "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:218b63994d5f063fa0b59e8f478619b9de5d93cabe75b9ae30aa091ca4cef967",
+        "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:218b63994d5f063fa0b59e8f478619b9de5d93cabe75b9ae30aa091ca4cef967",
+        "lastState": {},
+        "name": "fixture",
+        "ready": true,
+        "resources": {
+          "limits": {
+            "cpu": "4",
+            "memory": "3Gi"
+          },
+          "requests": {
+            "cpu": "1",
+            "memory": "1Gi"
+          }
+        },
+        "restartCount": 0,
+        "started": true,
+        "state": {
+          "running": {
+            "startedAt": "2026-10-16T23:23:57Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 0,
+            "supplementalGroups": [
+              0
+            ],
+            "uid": 1001340000
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/phase5-native",
+            "name": "source",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          }
+        ]
+      }
+    ],
+    "hostIP": "10.0.44.171",
+    "hostIPs": [
+      {
+        "ip": "10.0.44.171"
+      }
+    ],
+    "observedGeneration": 1,
+    "phase": "Running",
+    "podIP": "10.130.10.30",
+    "podIPs": [
+      {
+        "ip": "10.130.10.30"
+      }
+    ],
+    "qosClass": "Burstable",
+    "startTime": "2026-10-16T23:23:56Z"
+  }
+}

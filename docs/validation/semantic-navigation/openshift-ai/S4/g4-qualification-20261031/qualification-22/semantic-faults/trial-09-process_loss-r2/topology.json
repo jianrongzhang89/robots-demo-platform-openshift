@@ -1,0 +1,318 @@
+[
+  {
+    "apiVersion": "v1",
+    "kind": "ConfigMap",
+    "metadata": {
+      "name": "semantic-g4-sam3-config",
+      "namespace": "semantic-navigation",
+      "labels": {
+        "app": "semantic-g4-sam3-router"
+      }
+    },
+    "data": {
+      "cyclonedds.xml": "<CycloneDDS><Domain id=\"any\"><General><Interfaces><NetworkInterface name=\"lo\"/></Interfaces><AllowMulticast>false</AllowMulticast></General><Discovery><ParticipantIndex>auto</ParticipantIndex></Discovery><Internal><SocketReceiveBufferSize min=\"4 MiB\" max=\"4 MiB\"/><NackDelay>1ms</NackDelay></Internal></Domain></CycloneDDS>",
+      "router.json5": "{\n  \"mode\": \"router\",\n  \"listen\": { \"endpoints\": [\"tcp/0.0.0.0:17448\"] },\n  \"scouting\": { \"multicast\": { \"enabled\": false } }\n}\n",
+      "sam3-bridge.json5": "{\n  \"plugins\": { \"ros2dds\": { \"allow\": {\n      \"publishers\": [\n        \"^/robot_1/semantic/mask$\",\n        \"^/robot_1/semantic/points$\",\n        \"^/robot_1/semantic/timing$\",\n        \"^/robot_1/semantic/label_info$\",\n        \"^/robot_1/semantic/status$\",\n        \"^/robot_1/semantic/ready$\"\n      ],\n      \"subscribers\": [\n        \"^/clock$\",\n        \"^/robot_1/camera/color/image_compressed$\",\n        \"^/robot_1/camera/depth/image_compressed$\",\n        \"^/robot_1/camera/color/camera_info$\",\n        \"^/robot_1/camera/capture_trace$\",\n        \"^/robot_1/camera/compression_trace$\"\n      ]\n    } } },\n  \"mode\": \"client\",\n  \"connect\": { \"endpoints\": [\"tcp/semantic-g4-sam3-router:17448\"], \"exit_on_failure\": false, \"timeout_ms\": -1 },\n  \"scouting\": { \"multicast\": { \"enabled\": false } }\n}\n",
+      "identity.json": "{\n  \"schema\": \"semantic-deployment/v1\",\n  \"model_name\": \"sam3-mat-v1\",\n  \"weights_sha256\": \"9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e\",\n  \"source_revision\": \"0570b3a5be9c4e694f23d85232fb55f4a6f1f7fc\",\n  \"container_digest\": \"sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e\",\n  \"shared_sha256\": {\n    \"inference_contract.py\": \"d238d2490f826b6fbb70f07aa5579492dc425e8c858b780c8216679f121ffdef\",\n    \"sam3_backend.py\": \"3d83819971704e8ce642db98972194996307b314bb73cbb44257384e45714761\",\n    \"sam3_runtime_core.py\": \"683cf53a5b6378fa72d0cefe404bd899039b1420b4d5a2e7cfe3faecaf57085f\"\n  },\n  \"versions\": {\n    \"model\": \"3c879f39826c281e95690f02c7821c4de09afae7\",\n    \"preprocess\": \"sam3-pil-rgb/v1\",\n    \"decoder\": \"sam3-binary-instances/v1\"\n  },\n  \"precision\": \"bfloat16\",\n  \"policy\": \"avoid-target/v1\",\n  \"prompt\": \"red mat\",\n  \"threshold\": 0.5\n}\n"
+    }
+  },
+  {
+    "apiVersion": "v1",
+    "kind": "Service",
+    "metadata": {
+      "name": "semantic-g4-sam3-router",
+      "namespace": "semantic-navigation",
+      "labels": {
+        "app": "semantic-g4-sam3-router"
+      }
+    },
+    "spec": {
+      "selector": {
+        "app": "semantic-g4-sam3-router"
+      },
+      "ports": [
+        {
+          "name": "zenoh",
+          "port": 17448,
+          "targetPort": 17448
+        }
+      ]
+    }
+  },
+  {
+    "apiVersion": "apps/v1",
+    "kind": "Deployment",
+    "metadata": {
+      "name": "semantic-g4-sam3-router",
+      "namespace": "semantic-navigation",
+      "labels": {
+        "app": "semantic-g4-sam3-router"
+      }
+    },
+    "spec": {
+      "replicas": 1,
+      "selector": {
+        "matchLabels": {
+          "app": "semantic-g4-sam3-router"
+        }
+      },
+      "template": {
+        "metadata": {
+          "labels": {
+            "app": "semantic-g4-sam3-router"
+          }
+        },
+        "spec": {
+          "containers": [
+            {
+              "name": "router",
+              "image": "docker.io/eclipse/zenoh@sha256:137310456cc7a75d955063513207c737f25071fbb74fd7641835c50ab8e3369f",
+              "imagePullPolicy": "IfNotPresent",
+              "args": [
+                "-c",
+                "/phase5-config/router.json5"
+              ],
+              "ports": [
+                {
+                  "name": "zenoh",
+                  "containerPort": 17448
+                }
+              ],
+              "resources": {
+                "requests": {
+                  "cpu": "100m",
+                  "memory": "128Mi"
+                },
+                "limits": {
+                  "cpu": "500m",
+                  "memory": "512Mi"
+                }
+              },
+              "volumeMounts": [
+                {
+                  "name": "config",
+                  "mountPath": "/phase5-config",
+                  "readOnly": true
+                }
+              ]
+            }
+          ],
+          "volumes": [
+            {
+              "name": "config",
+              "configMap": {
+                "name": "semantic-g4-sam3-config"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+      "name": "semantic-g4-sam3",
+      "namespace": "semantic-navigation",
+      "labels": {
+        "app": "semantic-g4-sam3",
+        "semantic-serving-client": "sam3-mat-v1",
+        "semantic-qualification": "g4"
+      }
+    },
+    "spec": {
+      "nodeSelector": {
+        "kubernetes.io/hostname": "ip-10-0-53-174.ec2.internal"
+      },
+      "serviceAccountName": "sam3-replay",
+      "automountServiceAccountToken": false,
+      "terminationGracePeriodSeconds": 10,
+      "containers": [
+        {
+          "name": "sam3-zenoh-bridge",
+          "image": "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+          "args": [
+            "-c",
+            "/phase5-bridges/sam3-bridge.json5"
+          ],
+          "env": [
+            {
+              "name": "ROS_DOMAIN_ID",
+              "value": "86"
+            },
+            {
+              "name": "ROS_DISTRO",
+              "value": "jazzy"
+            },
+            {
+              "name": "RMW_IMPLEMENTATION",
+              "value": "rmw_cyclonedds_cpp"
+            },
+            {
+              "name": "CYCLONEDDS_URI",
+              "value": "file:///phase5-bridges/cyclonedds.xml"
+            }
+          ],
+          "volumeMounts": [
+            {
+              "name": "config",
+              "mountPath": "/phase5-bridges",
+              "readOnly": true
+            }
+          ],
+          "resources": {
+            "requests": {
+              "cpu": "200m",
+              "memory": "128Mi"
+            },
+            "limits": {
+              "cpu": "1",
+              "memory": "512Mi"
+            }
+          }
+        },
+        {
+          "name": "sam3-inference",
+          "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-cpu-adapter@sha256:20ea4f5e6bc30646f48b29895eb071d40403f8c20b0c1526aeacf06dce716d4b",
+          "command": [
+            "/bin/bash",
+            "-ec"
+          ],
+          "args": [
+            "source /opt/ros/jazzy/setup.bash; python3 /opt/semantic-perception/sam3_ros_node.py --ros-args -p backend:=http -p robot_id:=robot_1 -p stream_id:=camera/color & echo $! > /tmp/sam3-python.pid; wait $(cat /tmp/sam3-python.pid)"
+          ],
+          "env": [
+            {
+              "name": "SEMANTIC_BACKEND",
+              "value": "http"
+            },
+            {
+              "name": "SEMANTIC_ENDPOINT",
+              "value": "https://sam3-mat-v1-tls.semantic-model-serving.svc:8443"
+            },
+            {
+              "name": "SEMANTIC_TLS_CA",
+              "value": "/cert/ca.crt"
+            },
+            {
+              "name": "SEMANTIC_TLS_CERT",
+              "value": "/cert/tls.crt"
+            },
+            {
+              "name": "SEMANTIC_TLS_KEY",
+              "value": "/cert/tls.key"
+            },
+            {
+              "name": "SEMANTIC_DEPLOYMENT_IDENTITY",
+              "value": "/config/identity.json"
+            },
+            {
+              "name": "SEMANTIC_REQUIRE_CAPTURE_TRACE",
+              "value": "1"
+            },
+            {
+              "name": "SEMANTIC_CLOCK_UNCERTAINTY_MS",
+              "value": "2"
+            },
+            {
+              "name": "SEMANTIC_MAX_WORK_WAIT_MS",
+              "value": "60"
+            },
+            {
+              "name": "SEMANTIC_STATUS_FILE",
+              "value": "/tmp/semantic-status.json"
+            },
+            {
+              "name": "ROS_DOMAIN_ID",
+              "value": "86"
+            },
+            {
+              "name": "CYCLONEDDS_URI",
+              "value": "file:///config/cyclonedds.xml"
+            },
+            {
+              "name": "HOME",
+              "value": "/tmp/g4-home"
+            },
+            {
+              "name": "ROS_LOG_DIR",
+              "value": "/tmp/g4-logs"
+            }
+          ],
+          "resources": {
+            "requests": {
+              "cpu": "1",
+              "memory": "1Gi"
+            },
+            "limits": {
+              "cpu": "2",
+              "memory": "2Gi"
+            }
+          },
+          "securityContext": {
+            "allowPrivilegeEscalation": false,
+            "readOnlyRootFilesystem": true,
+            "capabilities": {
+              "drop": [
+                "ALL"
+              ]
+            },
+            "seccompProfile": {
+              "type": "RuntimeDefault"
+            }
+          },
+          "readinessProbe": {
+            "exec": {
+              "command": [
+                "python3",
+                "-c",
+                "import json,time; s=json.load(open(\"/tmp/semantic-status.json\")); assert s[\"ready\"] and 0 <= time.time_ns()-s[\"status_wall_ns\"] < 500000000"
+              ]
+            },
+            "periodSeconds": 1,
+            "timeoutSeconds": 1,
+            "failureThreshold": 1
+          },
+          "volumeMounts": [
+            {
+              "name": "config",
+              "mountPath": "/config",
+              "readOnly": true
+            },
+            {
+              "name": "tls",
+              "mountPath": "/cert",
+              "readOnly": true
+            },
+            {
+              "name": "tmp",
+              "mountPath": "/tmp"
+            }
+          ]
+        }
+      ],
+      "volumes": [
+        {
+          "name": "config",
+          "configMap": {
+            "name": "semantic-g4-sam3-config"
+          }
+        },
+        {
+          "name": "tls",
+          "secret": {
+            "secretName": "sam3-replay-tls",
+            "defaultMode": 288
+          }
+        },
+        {
+          "name": "tmp",
+          "emptyDir": {
+            "sizeLimit": "256Mi"
+          }
+        }
+      ]
+    }
+  }
+]

@@ -1,0 +1,241 @@
+{
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+        "annotations": {
+            "k8s.ovn.org/pod-networks": "{\"default\":{\"ip_addresses\":[\"10.129.8.227/23\"],\"mac_address\":\"0a:58:0a:81:08:e3\",\"gateway_ips\":[\"10.129.8.1\"],\"routes\":[{\"dest\":\"10.128.0.0/14\",\"nextHop\":\"10.129.8.1\"},{\"dest\":\"172.30.0.0/16\",\"nextHop\":\"10.129.8.1\"},{\"dest\":\"169.254.0.5/32\",\"nextHop\":\"10.129.8.1\"},{\"dest\":\"100.64.0.0/16\",\"nextHop\":\"10.129.8.1\"}],\"ip_address\":\"10.129.8.227/23\",\"gateway_ip\":\"10.129.8.1\",\"role\":\"primary\"}}",
+            "k8s.v1.cni.cncf.io/network-status": "[{\n    \"name\": \"ovn-kubernetes\",\n    \"interface\": \"eth0\",\n    \"ips\": [\n        \"10.129.8.227\"\n    ],\n    \"mac\": \"0a:58:0a:81:08:e3\",\n    \"default\": true,\n    \"dns\": {}\n}]",
+            "openshift.io/scc": "openshift-ai-llminferenceservice-scc",
+            "seccomp.security.alpha.kubernetes.io/pod": "runtime/default",
+            "security.openshift.io/validated-scc-subject-type": "user"
+        },
+        "creationTimestamp": "2026-10-31T03:10:12Z",
+        "generation": 1,
+        "name": "sam3-g0-reservation",
+        "namespace": "semantic-model-serving",
+        "resourceVersion": "490862019",
+        "uid": "b331efd2-8525-481d-9d99-541b26856333"
+    },
+    "spec": {
+        "automountServiceAccountToken": false,
+        "containers": [
+            {
+                "args": [
+                    "import torch,json,time; print(json.dumps({\"gpu\":torch.cuda.get_device_name(),\"cuda\":torch.version.cuda,\"torch\":torch.__version__,\"bf16\":torch.cuda.is_bf16_supported()}),flush=True); time.sleep(604800)"
+                ],
+                "command": [
+                    "/opt/sam3-venv/bin/python",
+                    "-u",
+                    "-c"
+                ],
+                "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+                "imagePullPolicy": "IfNotPresent",
+                "name": "reservation",
+                "resources": {
+                    "limits": {
+                        "cpu": "6",
+                        "memory": "24Gi",
+                        "nvidia.com/gpu": "1"
+                    },
+                    "requests": {
+                        "cpu": "3",
+                        "memory": "12Gi",
+                        "nvidia.com/gpu": "1"
+                    }
+                },
+                "securityContext": {
+                    "allowPrivilegeEscalation": false,
+                    "capabilities": {
+                        "drop": [
+                            "ALL"
+                        ]
+                    },
+                    "readOnlyRootFilesystem": true,
+                    "runAsNonRoot": true,
+                    "runAsUser": 1000840000,
+                    "seccompProfile": {
+                        "type": "RuntimeDefault"
+                    }
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "File",
+                "volumeMounts": [
+                    {
+                        "mountPath": "/models",
+                        "name": "model",
+                        "readOnly": true
+                    }
+                ]
+            }
+        ],
+        "dnsPolicy": "ClusterFirst",
+        "enableServiceLinks": true,
+        "imagePullSecrets": [
+            {
+                "name": "sam3-serving-dockercfg-vxfls"
+            }
+        ],
+        "nodeName": "ip-10-0-55-175.ec2.internal",
+        "nodeSelector": {
+            "kubernetes.io/hostname": "ip-10-0-55-175.ec2.internal",
+            "nvidia.com/gpu.product": "NVIDIA-L40S"
+        },
+        "preemptionPolicy": "PreemptLowerPriority",
+        "priority": 0,
+        "restartPolicy": "Never",
+        "schedulerName": "default-scheduler",
+        "securityContext": {
+            "fsGroup": 1000840000,
+            "fsGroupChangePolicy": "OnRootMismatch",
+            "seLinuxOptions": {
+                "level": "s0:c29,c14"
+            },
+            "seccompProfile": {
+                "type": "RuntimeDefault"
+            }
+        },
+        "serviceAccount": "sam3-serving",
+        "serviceAccountName": "sam3-serving",
+        "terminationGracePeriodSeconds": 5,
+        "tolerations": [
+            {
+                "effect": "NoSchedule",
+                "key": "g6e-gpu",
+                "operator": "Equal",
+                "value": "true"
+            },
+            {
+                "effect": "NoExecute",
+                "key": "node.kubernetes.io/not-ready",
+                "operator": "Exists",
+                "tolerationSeconds": 300
+            },
+            {
+                "effect": "NoExecute",
+                "key": "node.kubernetes.io/unreachable",
+                "operator": "Exists",
+                "tolerationSeconds": 300
+            },
+            {
+                "effect": "NoSchedule",
+                "key": "node.kubernetes.io/memory-pressure",
+                "operator": "Exists"
+            }
+        ],
+        "volumes": [
+            {
+                "name": "model",
+                "persistentVolumeClaim": {
+                    "claimName": "sam3-checkpoint"
+                }
+            }
+        ]
+    },
+    "status": {
+        "conditions": [
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-31T03:10:20Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "PodReadyToStartContainers"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-31T03:10:12Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "Initialized"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-31T03:10:20Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "Ready"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-31T03:10:20Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "ContainersReady"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-31T03:10:12Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "PodScheduled"
+            }
+        ],
+        "containerStatuses": [
+            {
+                "allocatedResources": {
+                    "cpu": "3",
+                    "memory": "12Gi",
+                    "nvidia.com/gpu": "1"
+                },
+                "containerID": "cri-o://e51e5093d4d3c3d628136ee7e3ccdb69bb059263e949896b62e6be6aeea58d02",
+                "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+                "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+                "lastState": {},
+                "name": "reservation",
+                "ready": true,
+                "resources": {
+                    "limits": {
+                        "cpu": "6",
+                        "memory": "24Gi",
+                        "nvidia.com/gpu": "1"
+                    },
+                    "requests": {
+                        "cpu": "3",
+                        "memory": "12Gi",
+                        "nvidia.com/gpu": "1"
+                    }
+                },
+                "restartCount": 0,
+                "started": true,
+                "state": {
+                    "running": {
+                        "startedAt": "2026-10-31T03:10:19Z"
+                    }
+                },
+                "user": {
+                    "linux": {
+                        "gid": 0,
+                        "supplementalGroups": [
+                            0,
+                            1000840000
+                        ],
+                        "uid": 1000840000
+                    }
+                },
+                "volumeMounts": [
+                    {
+                        "mountPath": "/models",
+                        "name": "model",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    }
+                ]
+            }
+        ],
+        "hostIP": "10.0.55.175",
+        "hostIPs": [
+            {
+                "ip": "10.0.55.175"
+            }
+        ],
+        "observedGeneration": 1,
+        "phase": "Running",
+        "podIP": "10.129.8.227",
+        "podIPs": [
+            {
+                "ip": "10.129.8.227"
+            }
+        ],
+        "qosClass": "Burstable",
+        "startTime": "2026-10-31T03:10:12Z"
+    }
+}

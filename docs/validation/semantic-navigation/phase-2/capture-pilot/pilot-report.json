@@ -1,0 +1,80 @@
+{
+  "status": "CAPTURE_LABEL_WORKFLOW_PILOT_PASS_NOT_ACCEPTANCE_DATA",
+  "episode": "distance-sweep-pilot-20261014",
+  "split": "development",
+  "captures": [
+    {
+      "capture_id": "initial",
+      "image": "initial/initial-pose-0000.jpg",
+      "mask": "initial/target-geometry-mask.png",
+      "odometry_x_m": 0.0,
+      "median_target_depth_mm": 1624,
+      "geometry_mask_pixels": 6152,
+      "valid_depth_fraction_inside_mask": 1.0,
+      "rgb_depth_camera_info_odometry_skew_ms": 0.0
+    },
+    {
+      "capture_id": "moved-0p12",
+      "image": "moved/moved-0p12-0000.jpg",
+      "mask": "moved/target-geometry-mask.png",
+      "odometry_x_m": 0.1195,
+      "median_target_depth_mm": 1459,
+      "geometry_mask_pixels": 7497,
+      "valid_depth_fraction_inside_mask": 1.0,
+      "rgb_depth_camera_info_odometry_skew_ms": 0.0
+    },
+    {
+      "capture_id": "oblique-16deg",
+      "image": "oblique/oblique-16deg-0000.jpg",
+      "mask": "oblique/target-geometry-mask.png",
+      "odom_yaw_change_rad": 0.280506,
+      "median_target_depth_mm": 1510,
+      "geometry_mask_pixels": 6966,
+      "valid_depth_fraction_inside_mask": 1.0,
+      "rgb_depth_camera_info_odometry_skew_ms": 0.0,
+      "review_note": "Target remains visible but its right side is near the image boundary; projected silhouette visually aligns with the visible surface."
+    },
+    {
+      "capture_id": "tile-present-negative-46deg",
+      "image": "tile-negative/tile-negative-46deg-0000.jpg",
+      "target_mask": "tile-negative/target-geometry-mask.png",
+      "distractor_mask": "tile-negative/distractor-geometry-mask.png",
+      "odom_yaw_change_rad": 0.810511,
+      "target_mask_pixels": 0,
+      "distractor_mask_pixels": 3223,
+      "median_distractor_depth_mm": 2606,
+      "valid_depth_fraction_inside_distractor_mask": 1.0,
+      "rgb_depth_camera_info_odometry_skew_ms": 0.0,
+      "review_note": "Red target projects entirely outside the image; neutral tile silhouette is in-frame and was visually checked."
+    }
+  ],
+  "manifest": "pilot-manifest.jsonl",
+  "validator": {
+    "result": "PASS",
+    "development_positive": 3,
+    "development_negative": 1,
+    "heldout_positive": 0,
+    "heldout_negative": 0
+  },
+  "sam3_diagnostic": {
+    "status": "SCORED_NOT_ACCEPTED",
+    "checkpoint_sha256": "9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e",
+    "device": "NVIDIA L40S",
+    "prompt": "red floor mat",
+    "confidence_threshold": 0.5,
+    "positive_recall_iou_ge_0_5": 1.0,
+    "positive_median_iou": 0.851084,
+    "negative_false_positive_frame_rate": 0.0,
+    "all_frame_inference_median_seconds": 0.09661,
+    "all_frame_inference_p95_seconds": 0.751872,
+    "results": [
+      {"capture_id":"initial","presence":"positive","iou":0.953526,"detected":true,"inference_seconds":0.866851},
+      {"capture_id":"moved-0p12","presence":"positive","iou":0.794271,"detected":true,"inference_seconds":0.095919},
+      {"capture_id":"oblique-16deg","presence":"positive","iou":0.851084,"detected":true,"inference_seconds":0.096087},
+      {"capture_id":"tile-present-negative-46deg","presence":"negative","iou":0.0,"detected":false,"inference_seconds":0.094312}
+    ],
+    "prediction_masks": "predictions/",
+    "limitations": "All four images come from one development episode and visually reviewed geometry labels. The first positive call is a cold/first-inference outlier; this is not held-out accuracy or end-to-end performance."
+  },
+  "limitations": "One sequential episode with three positive baseline-light captures (two frontal distance points and one oblique boundary view) plus one target-out-of-view/tile-present negative. Candidate masks were visually checked but not independently adjudicated. This tests capture/label/manifest plumbing only; it is not model-performance evidence and must not count toward held-out acceptance."
+}

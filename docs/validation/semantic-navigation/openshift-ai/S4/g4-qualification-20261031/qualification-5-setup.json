@@ -1,0 +1,30 @@
+{
+ "event": "qualification-5 setup",
+ "date": "2026-11-01",
+ "preconditions": {
+  "S1": "PASS accepted",
+  "S2": "PASS accepted",
+  "S3": "PASS accepted",
+  "leftover_g4_or_fixture_resources": "none",
+  "pilot": "serving-transport-pilot-3 PASS (no pre-arm retries, 24 real 503s, zero command 1.04 ms after trigger, late success without resume, clean cleanup; urgency path not exercised - min healthy margin 58.2 ms)"
+ },
+ "rendering_reservation": "deleted to free the A10G for the G4 fixture; run_g4_suite.py finally restores it from rendering-reservation-saved.json",
+ "proxy_certificate": {
+  "secret": "semantic-g4-proxy-tls",
+  "subject": "CN=localhost",
+  "issuer": "CN=localhost",
+  "notBefore": "Nov 1 15:47:13 2026 GMT",
+  "notAfter": "Nov 4 15:47:13 2026 GMT",
+  "sha256_fingerprint": "37:33:E9:35:EA:4F:B0:E9:49:8F:F3:3D:65:1E:24:EF:70:BE:B9:21:EB:13:BF:A6:16:37:08:27:41:67:1C:C7",
+  "key_material_retained": false
+ },
+ "sampler": {
+  "output": "serving-resources-qualification-5.jsonl",
+  "stop_file": "/tmp/g4-qualification-5-monitor-stop"
+ },
+ "source_changes_vs_qualification_4": {
+  "apps/semantic-safety/verify_hotel_stack.py": "bad0d24fe0d1f6ebe9768d65c40732e6845ca304ede5e9b9e1a408dab27eed8c (deadline-aware fast poll: semantic_lease_urgent within 40 ms of the newest armed semantic lease deadline drops the lease-poll throttle to 1 ms and until() sleep to 0.5 ms)",
+  "rationale": "serving-transport-pilot-1-rationale.md (Pilot 3 addendum)"
+ },
+ "command": "run_g4_suite.py --output-dir qualification-5 --reservation rendering-reservation-saved.json"
+}

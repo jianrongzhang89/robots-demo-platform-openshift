@@ -1,0 +1,37 @@
+{
+  "kind": "phase6_series_result",
+  "passed": false,
+  "problems": [
+    "off arm has 1 nominal trials; 20 required",
+    "off arm incomplete trials: ['000-off-nominal']",
+    "on arm has 0 nominal trials; 20 required",
+    "baseline (off) aggregate exposure is zero; scene inconclusive"
+  ],
+  "aggregate_hull_exposure_m": {
+    "off": 0.0,
+    "on": 0
+  },
+  "completion_divergence": {
+    "off": {
+      "arrivals": 0,
+      "max_belief_truth_divergence_at_arrival_m": null,
+      "max_physical_goal_distance_at_arrival_m": null,
+      "trials": []
+    },
+    "on": {
+      "arrivals": 0,
+      "max_belief_truth_divergence_at_arrival_m": null,
+      "max_physical_goal_distance_at_arrival_m": null,
+      "trials": []
+    }
+  },
+  "trials": [
+    {
+      "trial": "000-off-nominal",
+      "arm": "off",
+      "case": "nominal",
+      "completed": false,
+      "runner_returncode": 1
+    }
+  ]
+}

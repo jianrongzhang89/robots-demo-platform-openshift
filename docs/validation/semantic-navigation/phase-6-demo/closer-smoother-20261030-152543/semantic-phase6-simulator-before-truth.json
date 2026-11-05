@@ -1,0 +1,605 @@
+{
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+        "annotations": {
+            "k8s.ovn.org/pod-networks": "{\"default\":{\"ip_addresses\":[\"10.131.8.246/23\"],\"mac_address\":\"0a:58:0a:83:08:f6\",\"gateway_ips\":[\"10.131.8.1\"],\"routes\":[{\"dest\":\"10.128.0.0/14\",\"nextHop\":\"10.131.8.1\"},{\"dest\":\"172.30.0.0/16\",\"nextHop\":\"10.131.8.1\"},{\"dest\":\"169.254.0.5/32\",\"nextHop\":\"10.131.8.1\"},{\"dest\":\"100.64.0.0/16\",\"nextHop\":\"10.131.8.1\"}],\"ip_address\":\"10.131.8.246/23\",\"gateway_ip\":\"10.131.8.1\",\"role\":\"primary\"}}",
+            "k8s.v1.cni.cncf.io/network-status": "[{\n    \"name\": \"ovn-kubernetes\",\n    \"interface\": \"eth0\",\n    \"ips\": [\n        \"10.131.8.246\"\n    ],\n    \"mac\": \"0a:58:0a:83:08:f6\",\n    \"default\": true,\n    \"dns\": {}\n}]",
+            "openshift.io/scc": "openshift-ai-llminferenceservice-scc",
+            "seccomp.security.alpha.kubernetes.io/pod": "runtime/default",
+            "security.openshift.io/validated-scc-subject-type": "user"
+        },
+        "creationTimestamp": "2026-10-30T19:30:52Z",
+        "generation": 1,
+        "labels": {
+            "app": "semantic-phase6-simulator",
+            "app.kubernetes.io/part-of": "semantic-navigation-demo",
+            "semantic-navigation.robots-demo/phase": "phase6d-d2"
+        },
+        "name": "semantic-phase6-simulator",
+        "namespace": "semantic-navigation",
+        "resourceVersion": "489521553",
+        "uid": "8e36f01a-a4fa-4179-9f65-0482774b974a"
+    },
+    "spec": {
+        "containers": [
+            {
+                "command": [
+                    "/bin/bash",
+                    "/entrypoint-semantic-navigation-phase1.sh"
+                ],
+                "env": [
+                    {
+                        "name": "ROS_DISTRO",
+                        "value": "jazzy"
+                    },
+                    {
+                        "name": "ROS_DOMAIN_ID",
+                        "value": "81"
+                    },
+                    {
+                        "name": "RMW_IMPLEMENTATION",
+                        "value": "rmw_cyclonedds_cpp"
+                    },
+                    {
+                        "name": "CYCLONEDDS_URI",
+                        "value": "file:///phase6-bridges/cyclonedds.xml"
+                    },
+                    {
+                        "name": "GZ_PARTITION",
+                        "value": "semantic_navigation_phase6_demo"
+                    },
+                    {
+                        "name": "GZ_IP",
+                        "value": "127.0.0.1"
+                    },
+                    {
+                        "name": "RESOLUTION",
+                        "value": "1600x900x24"
+                    },
+                    {
+                        "name": "SEMANTIC_PHASE2_SCENE",
+                        "value": "1"
+                    },
+                    {
+                        "name": "SEMANTIC_CAPTURE_TRACE",
+                        "value": "1"
+                    },
+                    {
+                        "name": "SEMANTIC_PHASE6_DEMO_TARGETS",
+                        "value": "1"
+                    }
+                ],
+                "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:d417c9f252d1f89dd859290a4bca1f634bcfd7d3cde6d1702c409d432bd48894",
+                "imagePullPolicy": "IfNotPresent",
+                "name": "simulator",
+                "resources": {
+                    "limits": {
+                        "cpu": "12",
+                        "memory": "8Gi"
+                    },
+                    "requests": {
+                        "cpu": "10",
+                        "memory": "4Gi"
+                    }
+                },
+                "securityContext": {
+                    "allowPrivilegeEscalation": false,
+                    "capabilities": {
+                        "drop": [
+                            "ALL"
+                        ]
+                    },
+                    "runAsNonRoot": true,
+                    "runAsUser": 1001340000
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "File",
+                "volumeMounts": [
+                    {
+                        "mountPath": "/phase6-bridges",
+                        "name": "bridge-config",
+                        "readOnly": true
+                    },
+                    {
+                        "mountPath": "/opt/semantic-navigation/install_phase1_camera.py",
+                        "name": "phase6-demo-world-config",
+                        "readOnly": true,
+                        "subPath": "install_phase1_camera.py"
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-br4cb",
+                        "readOnly": true
+                    }
+                ]
+            },
+            {
+                "args": [
+                    "export HOME=/tmp/phase6-camera-home ROS_LOG_DIR=/tmp/phase6-camera-logs; mkdir -p \"$ROS_LOG_DIR\"; source /opt/ros/jazzy/setup.bash; source /opt/rmf_demos_ws/install/setup.bash; for attempt in {1..90}; do\n  color_info=$(ros2 topic info /robot_1/camera/color/image_raw 2\u003e/dev/null || true);\n  depth_info=$(ros2 topic info /robot_1/camera/depth/image_raw 2\u003e/dev/null || true);\n  if printf '%s' \"$color_info\" | grep -q 'Publisher count: 1' \u0026\u0026 printf '%s' \"$depth_info\" | grep -q 'Publisher count: 1'; then break; fi;\n  sleep 1;\ndone; exec python3 /opt/semantic-navigation/camera_compressor.py"
+                ],
+                "command": [
+                    "/bin/bash",
+                    "-lc"
+                ],
+                "env": [
+                    {
+                        "name": "ROS_DISTRO",
+                        "value": "jazzy"
+                    },
+                    {
+                        "name": "ROS_DOMAIN_ID",
+                        "value": "81"
+                    },
+                    {
+                        "name": "RMW_IMPLEMENTATION",
+                        "value": "rmw_cyclonedds_cpp"
+                    },
+                    {
+                        "name": "CYCLONEDDS_URI",
+                        "value": "file:///phase6-bridges/cyclonedds.xml"
+                    },
+                    {
+                        "name": "SEMANTIC_CAMERA_SUBSCRIPTION_DEPTH",
+                        "value": "20"
+                    },
+                    {
+                        "name": "SEMANTIC_COMPRESSION_TRACE",
+                        "value": "1"
+                    },
+                    {
+                        "name": "SEMANTIC_RAW_INPUT",
+                        "value": "gz"
+                    },
+                    {
+                        "name": "GZ_PARTITION",
+                        "value": "semantic_navigation_phase6_demo"
+                    },
+                    {
+                        "name": "GZ_IP",
+                        "value": "127.0.0.1"
+                    }
+                ],
+                "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:c3ba94bbcbbe2283f1c46ea0f2baba398da313ffe83d2b59a63272ef91d95ebf",
+                "imagePullPolicy": "IfNotPresent",
+                "name": "camera-compressor",
+                "resources": {
+                    "limits": {
+                        "cpu": "2",
+                        "memory": "2Gi"
+                    },
+                    "requests": {
+                        "cpu": "250m",
+                        "memory": "512Mi"
+                    }
+                },
+                "securityContext": {
+                    "allowPrivilegeEscalation": false,
+                    "capabilities": {
+                        "drop": [
+                            "ALL"
+                        ]
+                    },
+                    "runAsNonRoot": true,
+                    "runAsUser": 1001340000
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "File",
+                "volumeMounts": [
+                    {
+                        "mountPath": "/phase6-bridges",
+                        "name": "bridge-config",
+                        "readOnly": true
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-br4cb",
+                        "readOnly": true
+                    }
+                ]
+            },
+            {
+                "args": [
+                    "-c",
+                    "/phase6-bridges/sim-bridge.json5"
+                ],
+                "env": [
+                    {
+                        "name": "ROS_DOMAIN_ID",
+                        "value": "81"
+                    },
+                    {
+                        "name": "ROS_DISTRO",
+                        "value": "jazzy"
+                    },
+                    {
+                        "name": "RMW_IMPLEMENTATION",
+                        "value": "rmw_cyclonedds_cpp"
+                    },
+                    {
+                        "name": "CYCLONEDDS_URI",
+                        "value": "file:///phase6-bridges/cyclonedds.xml"
+                    }
+                ],
+                "image": "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+                "imagePullPolicy": "IfNotPresent",
+                "name": "sim-zenoh-bridge",
+                "resources": {
+                    "limits": {
+                        "cpu": "500m",
+                        "memory": "512Mi"
+                    },
+                    "requests": {
+                        "cpu": "100m",
+                        "memory": "128Mi"
+                    }
+                },
+                "securityContext": {
+                    "allowPrivilegeEscalation": false,
+                    "capabilities": {
+                        "drop": [
+                            "ALL"
+                        ]
+                    },
+                    "runAsNonRoot": true,
+                    "runAsUser": 1001340000
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "File",
+                "volumeMounts": [
+                    {
+                        "mountPath": "/phase6-bridges",
+                        "name": "bridge-config",
+                        "readOnly": true
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-br4cb",
+                        "readOnly": true
+                    }
+                ]
+            }
+        ],
+        "dnsPolicy": "ClusterFirst",
+        "enableServiceLinks": true,
+        "imagePullSecrets": [
+            {
+                "name": "default-dockercfg-6jjg8"
+            }
+        ],
+        "nodeName": "ip-10-0-38-113.ec2.internal",
+        "nodeSelector": {
+            "kubernetes.io/hostname": "ip-10-0-38-113.ec2.internal"
+        },
+        "preemptionPolicy": "PreemptLowerPriority",
+        "priority": 0,
+        "restartPolicy": "Always",
+        "schedulerName": "default-scheduler",
+        "securityContext": {
+            "seLinuxOptions": {
+                "level": "s0:c37,c4"
+            },
+            "seccompProfile": {
+                "type": "RuntimeDefault"
+            }
+        },
+        "serviceAccount": "default",
+        "serviceAccountName": "default",
+        "terminationGracePeriodSeconds": 30,
+        "tolerations": [
+            {
+                "effect": "NoSchedule",
+                "key": "cpu-taint",
+                "operator": "Equal",
+                "value": "true"
+            },
+            {
+                "effect": "NoExecute",
+                "key": "node.kubernetes.io/not-ready",
+                "operator": "Exists",
+                "tolerationSeconds": 300
+            },
+            {
+                "effect": "NoExecute",
+                "key": "node.kubernetes.io/unreachable",
+                "operator": "Exists",
+                "tolerationSeconds": 300
+            },
+            {
+                "effect": "NoSchedule",
+                "key": "node.kubernetes.io/memory-pressure",
+                "operator": "Exists"
+            }
+        ],
+        "volumes": [
+            {
+                "configMap": {
+                    "defaultMode": 420,
+                    "name": "semantic-phase6-demo-bridge-config"
+                },
+                "name": "bridge-config"
+            },
+            {
+                "configMap": {
+                    "defaultMode": 420,
+                    "items": [
+                        {
+                            "key": "install_phase1_camera.py",
+                            "path": "install_phase1_camera.py"
+                        }
+                    ],
+                    "name": "semantic-phase6-d2-nav2-config-on"
+                },
+                "name": "phase6-demo-world-config"
+            },
+            {
+                "name": "kube-api-access-br4cb",
+                "projected": {
+                    "defaultMode": 420,
+                    "sources": [
+                        {
+                            "serviceAccountToken": {
+                                "expirationSeconds": 3607,
+                                "path": "token"
+                            }
+                        },
+                        {
+                            "configMap": {
+                                "items": [
+                                    {
+                                        "key": "ca.crt",
+                                        "path": "ca.crt"
+                                    }
+                                ],
+                                "name": "kube-root-ca.crt"
+                            }
+                        },
+                        {
+                            "downwardAPI": {
+                                "items": [
+                                    {
+                                        "fieldRef": {
+                                            "apiVersion": "v1",
+                                            "fieldPath": "metadata.namespace"
+                                        },
+                                        "path": "namespace"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "configMap": {
+                                "items": [
+                                    {
+                                        "key": "service-ca.crt",
+                                        "path": "service-ca.crt"
+                                    }
+                                ],
+                                "name": "openshift-service-ca.crt"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "status": {
+        "conditions": [
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-30T19:30:53Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "PodReadyToStartContainers"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-30T19:30:52Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "Initialized"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-30T19:30:53Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "Ready"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-30T19:30:53Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "ContainersReady"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-30T19:30:52Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "PodScheduled"
+            }
+        ],
+        "containerStatuses": [
+            {
+                "allocatedResources": {
+                    "cpu": "250m",
+                    "memory": "512Mi"
+                },
+                "containerID": "cri-o://659581b1583d265514ce8475078cbbd9f5900f865ab2a88482f63a5c799d4971",
+                "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:c3ba94bbcbbe2283f1c46ea0f2baba398da313ffe83d2b59a63272ef91d95ebf",
+                "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:c3ba94bbcbbe2283f1c46ea0f2baba398da313ffe83d2b59a63272ef91d95ebf",
+                "lastState": {},
+                "name": "camera-compressor",
+                "ready": true,
+                "resources": {
+                    "limits": {
+                        "cpu": "2",
+                        "memory": "2Gi"
+                    },
+                    "requests": {
+                        "cpu": "250m",
+                        "memory": "512Mi"
+                    }
+                },
+                "restartCount": 0,
+                "started": true,
+                "state": {
+                    "running": {
+                        "startedAt": "2026-10-30T19:30:52Z"
+                    }
+                },
+                "user": {
+                    "linux": {
+                        "gid": 0,
+                        "supplementalGroups": [
+                            0
+                        ],
+                        "uid": 1001340000
+                    }
+                },
+                "volumeMounts": [
+                    {
+                        "mountPath": "/phase6-bridges",
+                        "name": "bridge-config",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-br4cb",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    }
+                ]
+            },
+            {
+                "allocatedResources": {
+                    "cpu": "100m",
+                    "memory": "128Mi"
+                },
+                "containerID": "cri-o://6593bb788dad805bc38e9af38fbc34db1ab0e65714dc07c3f22748b3b4ee4a0a",
+                "image": "docker.io/eclipse/zenoh-bridge-ros2dds:1.5.0",
+                "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+                "lastState": {},
+                "name": "sim-zenoh-bridge",
+                "ready": true,
+                "resources": {
+                    "limits": {
+                        "cpu": "500m",
+                        "memory": "512Mi"
+                    },
+                    "requests": {
+                        "cpu": "100m",
+                        "memory": "128Mi"
+                    }
+                },
+                "restartCount": 0,
+                "started": true,
+                "state": {
+                    "running": {
+                        "startedAt": "2026-10-30T19:30:52Z"
+                    }
+                },
+                "user": {
+                    "linux": {
+                        "gid": 0,
+                        "supplementalGroups": [
+                            0
+                        ],
+                        "uid": 1001340000
+                    }
+                },
+                "volumeMounts": [
+                    {
+                        "mountPath": "/phase6-bridges",
+                        "name": "bridge-config",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-br4cb",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    }
+                ]
+            },
+            {
+                "allocatedResources": {
+                    "cpu": "10",
+                    "memory": "4Gi"
+                },
+                "containerID": "cri-o://dcc4fb78ed8907b27caf7bc69ebc60bd210ea90d8cc77b999bc28976de242a44",
+                "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:d417c9f252d1f89dd859290a4bca1f634bcfd7d3cde6d1702c409d432bd48894",
+                "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:d417c9f252d1f89dd859290a4bca1f634bcfd7d3cde6d1702c409d432bd48894",
+                "lastState": {},
+                "name": "simulator",
+                "ready": true,
+                "resources": {
+                    "limits": {
+                        "cpu": "12",
+                        "memory": "8Gi"
+                    },
+                    "requests": {
+                        "cpu": "10",
+                        "memory": "4Gi"
+                    }
+                },
+                "restartCount": 0,
+                "started": true,
+                "state": {
+                    "running": {
+                        "startedAt": "2026-10-30T19:30:52Z"
+                    }
+                },
+                "user": {
+                    "linux": {
+                        "gid": 0,
+                        "supplementalGroups": [
+                            0
+                        ],
+                        "uid": 1001340000
+                    }
+                },
+                "volumeMounts": [
+                    {
+                        "mountPath": "/phase6-bridges",
+                        "name": "bridge-config",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    },
+                    {
+                        "mountPath": "/opt/semantic-navigation/install_phase1_camera.py",
+                        "name": "phase6-demo-world-config",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-br4cb",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    }
+                ]
+            }
+        ],
+        "hostIP": "10.0.38.113",
+        "hostIPs": [
+            {
+                "ip": "10.0.38.113"
+            }
+        ],
+        "observedGeneration": 1,
+        "phase": "Running",
+        "podIP": "10.131.8.246",
+        "podIPs": [
+            {
+                "ip": "10.131.8.246"
+            }
+        ],
+        "qosClass": "Burstable",
+        "startTime": "2026-10-30T19:30:52Z"
+    }
+}

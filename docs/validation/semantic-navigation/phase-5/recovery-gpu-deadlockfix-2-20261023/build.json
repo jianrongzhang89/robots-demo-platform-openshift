@@ -1,0 +1,161 @@
+{
+  "apiVersion": "build.openshift.io/v1",
+  "kind": "Build",
+  "metadata": {
+    "annotations": {
+      "openshift.io/build-config.name": "semantic-safety-console-phase5",
+      "openshift.io/build.number": "21",
+      "openshift.io/build.pod-name": "semantic-safety-console-phase5-21-build"
+    },
+    "creationTimestamp": "2026-10-23T20:56:01Z",
+    "generation": 2,
+    "labels": {
+      "buildconfig": "semantic-safety-console-phase5",
+      "openshift.io/build-config.name": "semantic-safety-console-phase5",
+      "openshift.io/build.start-policy": "Serial"
+    },
+    "name": "semantic-safety-console-phase5-21",
+    "namespace": "semantic-navigation",
+    "ownerReferences": [
+      {
+        "apiVersion": "build.openshift.io/v1",
+        "controller": true,
+        "kind": "BuildConfig",
+        "name": "semantic-safety-console-phase5",
+        "uid": "22e3050b-68bd-4c47-818b-c6b3a771ca22"
+      }
+    ],
+    "resourceVersion": "461062157",
+    "uid": "262de586-82b9-41cd-9756-8fbb25e4430e"
+  },
+  "spec": {
+    "nodeSelector": null,
+    "output": {
+      "pushSecret": {
+        "name": "builder-dockercfg-htt4p"
+      },
+      "to": {
+        "kind": "ImageStreamTag",
+        "name": "semantic-safety:phase5-console-candidate"
+      }
+    },
+    "postCommit": {},
+    "resources": {
+      "limits": {
+        "cpu": "2",
+        "memory": "4Gi"
+      },
+      "requests": {
+        "cpu": "1",
+        "memory": "2Gi"
+      }
+    },
+    "revision": {
+      "git": {
+        "author": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "commit": "5136c3e42c5ecb2c1ba331dd637b11c6cfe575d5",
+        "committer": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "message": "Disable in-place goal rotation in the recovery profile\n\nProven deadlock from the October 23 GPU series trial 2: the goal checker\ntransforms the path end into the local costmap's odom frame at the\npath's planning stamp, so AMCL drift can hold that target outside\nxy tolerance while RPP's current-frame carrot is already inside. RPP's\nrotate-to-goal-heading then commands zero linear velocity and parks the\nrobot permanently between the two targets (measured: 0.185 m current vs\n0.203 m stale, 1.9 cm drift, five seconds of micro-rotation, checker\nnever firing). The passing trials won only by approach-creep momentum\nthrough the stale target - a coin flip on the drift. The straight 0.5 m\nprobe goal needs no in-place rotation; use_rotate_to_heading=false\nkeeps the approach creep carrying the robot to the checker's target,\nwith the 0.35 rad yaw tolerance covering the residual approach yaw.\nProfile change documented with the deadlock analysis; the checked-in\ncandidate YAML is regenerated and all 34 phase-5 + 170 safety tests\npass."
+      },
+      "type": "Git"
+    },
+    "serviceAccount": "builder",
+    "source": {
+      "binary": {},
+      "type": "Binary"
+    },
+    "strategy": {
+      "dockerStrategy": {
+        "dockerfilePath": "Containerfile.console"
+      },
+      "type": "Docker"
+    }
+  },
+  "status": {
+    "completionTimestamp": "2026-10-23T21:01:24Z",
+    "conditions": [
+      {
+        "lastTransitionTime": "2026-10-23T20:56:01Z",
+        "lastUpdateTime": "2026-10-23T20:56:01Z",
+        "status": "False",
+        "type": "New"
+      },
+      {
+        "lastTransitionTime": "2026-10-23T20:56:02Z",
+        "lastUpdateTime": "2026-10-23T20:56:02Z",
+        "status": "False",
+        "type": "Pending"
+      },
+      {
+        "lastTransitionTime": "2026-10-23T21:01:24Z",
+        "lastUpdateTime": "2026-10-23T21:01:24Z",
+        "status": "False",
+        "type": "Running"
+      },
+      {
+        "lastTransitionTime": "2026-10-23T21:01:24Z",
+        "lastUpdateTime": "2026-10-23T21:01:24Z",
+        "status": "True",
+        "type": "Complete"
+      }
+    ],
+    "config": {
+      "kind": "BuildConfig",
+      "name": "semantic-safety-console-phase5",
+      "namespace": "semantic-navigation"
+    },
+    "duration": 323000000000,
+    "output": {
+      "to": {
+        "imageDigest": "sha256:e1bc5f2b66a2457af4f733dd1ca2bfe3bfb10d94312db8bce2b143ee8260ed18"
+      }
+    },
+    "outputDockerImageReference": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety:phase5-console-candidate",
+    "phase": "Complete",
+    "stages": [
+      {
+        "durationMilliseconds": 125696,
+        "name": "PullImages",
+        "startTime": "2026-10-23T20:56:04Z",
+        "steps": [
+          {
+            "durationMilliseconds": 125696,
+            "name": "PullBaseImage",
+            "startTime": "2026-10-23T20:56:04Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 185607,
+        "name": "Build",
+        "startTime": "2026-10-23T20:58:10Z",
+        "steps": [
+          {
+            "durationMilliseconds": 185607,
+            "name": "DockerBuild",
+            "startTime": "2026-10-23T20:58:10Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 6109,
+        "name": "PushImage",
+        "startTime": "2026-10-23T21:01:15Z",
+        "steps": [
+          {
+            "durationMilliseconds": 6109,
+            "name": "PushDockerImage",
+            "startTime": "2026-10-23T21:01:15Z"
+          }
+        ]
+      }
+    ],
+    "startTimestamp": "2026-10-23T20:56:01Z"
+  }
+}

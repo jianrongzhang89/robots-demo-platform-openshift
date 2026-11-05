@@ -1,0 +1,161 @@
+{
+  "apiVersion": "build.openshift.io/v1",
+  "kind": "Build",
+  "metadata": {
+    "annotations": {
+      "openshift.io/build-config.name": "semantic-safety-console-phase5",
+      "openshift.io/build.number": "16",
+      "openshift.io/build.pod-name": "semantic-safety-console-phase5-16-build"
+    },
+    "creationTimestamp": "2026-10-23T17:43:23Z",
+    "generation": 2,
+    "labels": {
+      "buildconfig": "semantic-safety-console-phase5",
+      "openshift.io/build-config.name": "semantic-safety-console-phase5",
+      "openshift.io/build.start-policy": "Serial"
+    },
+    "name": "semantic-safety-console-phase5-16",
+    "namespace": "semantic-navigation",
+    "ownerReferences": [
+      {
+        "apiVersion": "build.openshift.io/v1",
+        "controller": true,
+        "kind": "BuildConfig",
+        "name": "semantic-safety-console-phase5",
+        "uid": "22e3050b-68bd-4c47-818b-c6b3a771ca22"
+      }
+    ],
+    "resourceVersion": "460538130",
+    "uid": "78e47c06-dcfe-47fa-b5f9-d342aaf4e9a8"
+  },
+  "spec": {
+    "nodeSelector": null,
+    "output": {
+      "pushSecret": {
+        "name": "builder-dockercfg-htt4p"
+      },
+      "to": {
+        "kind": "ImageStreamTag",
+        "name": "semantic-safety:phase5-console-candidate"
+      }
+    },
+    "postCommit": {},
+    "resources": {
+      "limits": {
+        "cpu": "2",
+        "memory": "4Gi"
+      },
+      "requests": {
+        "cpu": "1",
+        "memory": "2Gi"
+      }
+    },
+    "revision": {
+      "git": {
+        "author": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "commit": "e2435e2ddc322dc336c43f3e107813e080069702",
+        "committer": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "message": "Add opt-in Gazebo per-thread scheduler probe\n\nThe ten-trial recovery series stopped on a 158 ms in-pod physics stall\nduring FollowPath; existing evidence cannot distinguish run-queue\nstarvation from in-thread blocking. The resource probe now supports\n--watch-threads-of <comm>: a read-only /proc/<pid>/task/*/ sample of\nschedstat (on-CPU vs wait time), utime/stime, state, and context-switch\ncounters for every thread of the console Gazebo and Collision Monitor\nprocesses at 20 ms. Gated behind a new --gz-thread-probe runner flag\nrequiring the console-only hotel profile and excluded from the\nmoving-timing trace; recorded in the run summary. Diagnostic only: no\nsafety path, threshold, or qualification profile changes."
+      },
+      "type": "Git"
+    },
+    "serviceAccount": "builder",
+    "source": {
+      "binary": {},
+      "type": "Binary"
+    },
+    "strategy": {
+      "dockerStrategy": {
+        "dockerfilePath": "Containerfile.console"
+      },
+      "type": "Docker"
+    }
+  },
+  "status": {
+    "completionTimestamp": "2026-10-23T17:48:56Z",
+    "conditions": [
+      {
+        "lastTransitionTime": "2026-10-23T17:43:23Z",
+        "lastUpdateTime": "2026-10-23T17:43:23Z",
+        "status": "False",
+        "type": "New"
+      },
+      {
+        "lastTransitionTime": "2026-10-23T17:43:24Z",
+        "lastUpdateTime": "2026-10-23T17:43:24Z",
+        "status": "False",
+        "type": "Pending"
+      },
+      {
+        "lastTransitionTime": "2026-10-23T17:48:56Z",
+        "lastUpdateTime": "2026-10-23T17:48:56Z",
+        "status": "False",
+        "type": "Running"
+      },
+      {
+        "lastTransitionTime": "2026-10-23T17:48:56Z",
+        "lastUpdateTime": "2026-10-23T17:48:56Z",
+        "status": "True",
+        "type": "Complete"
+      }
+    ],
+    "config": {
+      "kind": "BuildConfig",
+      "name": "semantic-safety-console-phase5",
+      "namespace": "semantic-navigation"
+    },
+    "duration": 333000000000,
+    "output": {
+      "to": {
+        "imageDigest": "sha256:953766d423338e9e8168dcd279aad6aaef0ca8ed752e7bc81e4e7df6e0015c7e"
+      }
+    },
+    "outputDockerImageReference": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety:phase5-console-candidate",
+    "phase": "Complete",
+    "stages": [
+      {
+        "durationMilliseconds": 125563,
+        "name": "PullImages",
+        "startTime": "2026-10-23T17:43:27Z",
+        "steps": [
+          {
+            "durationMilliseconds": 125563,
+            "name": "PullBaseImage",
+            "startTime": "2026-10-23T17:43:27Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 195082,
+        "name": "Build",
+        "startTime": "2026-10-23T17:45:32Z",
+        "steps": [
+          {
+            "durationMilliseconds": 195082,
+            "name": "DockerBuild",
+            "startTime": "2026-10-23T17:45:32Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 6263,
+        "name": "PushImage",
+        "startTime": "2026-10-23T17:48:47Z",
+        "steps": [
+          {
+            "durationMilliseconds": 6263,
+            "name": "PushDockerImage",
+            "startTime": "2026-10-23T17:48:47Z"
+          }
+        ]
+      }
+    ],
+    "startTimestamp": "2026-10-23T17:43:23Z"
+  }
+}

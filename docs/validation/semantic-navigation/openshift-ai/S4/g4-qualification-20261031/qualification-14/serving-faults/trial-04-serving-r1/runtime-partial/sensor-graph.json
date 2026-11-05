@@ -1,0 +1,36 @@
+{
+  "/robot_1/scan": [
+    {
+      "node": "phase5_frame_bridge",
+      "namespace": "/",
+      "type": "sensor_msgs/msg/LaserScan"
+    }
+  ],
+  "/robot_1/scan_fixed": [
+    {
+      "node": "phase5_hotel_observer",
+      "namespace": "/",
+      "type": "sensor_msgs/msg/LaserScan"
+    },
+    {
+      "node": "collision_monitor",
+      "namespace": "/robot_1",
+      "type": "sensor_msgs/msg/LaserScan"
+    },
+    {
+      "node": "amcl",
+      "namespace": "/robot_1",
+      "type": "sensor_msgs/msg/LaserScan"
+    },
+    {
+      "node": "global_costmap",
+      "namespace": "/robot_1/global_costmap",
+      "type": "sensor_msgs/msg/LaserScan"
+    },
+    {
+      "node": "local_costmap",
+      "namespace": "/robot_1/local_costmap",
+      "type": "sensor_msgs/msg/LaserScan"
+    }
+  ]
+}

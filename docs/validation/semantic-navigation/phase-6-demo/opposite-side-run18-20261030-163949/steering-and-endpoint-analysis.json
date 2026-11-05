@@ -1,0 +1,38 @@
+{
+  "reporting_deadband_radps": 0.05,
+  "direction_changes": 1,
+  "same_direction_turn_phases_can_include_low_rate_or_straight_intervals": true,
+  "phases": [
+    {
+      "sign": 1,
+      "start_s": 0.207,
+      "end_s": 10.037,
+      "yaw_start_rad": 0.5264663205909417,
+      "yaw_end_rad": 1.629923284856726,
+      "peak_abs_w_radps": 0.20454449413996878,
+      "samples": 173
+    },
+    {
+      "sign": -1,
+      "start_s": 12.383,
+      "end_s": 54.595,
+      "yaw_start_rad": 1.6923298616346598,
+      "yaw_end_rad": -1.4256345474183687,
+      "peak_abs_w_radps": 0.2391649570133314,
+      "samples": 366
+    }
+  ],
+  "minimum_clearance_sample": {
+    "t_wall": 38.384,
+    "x_map": 18.0118,
+    "y_map": -30.0751,
+    "hull_clearance_m": 0.298,
+    "yaw_rad": -0.02476723459457036,
+    "w_radps": 0.0030359864966371733,
+    "wheel_w_radps": 0.0030568434145545375,
+    "cmd_w_radps": 0.0030480884011613654,
+    "v_mps": 0.12
+  },
+  "goal_distance_at_action_result_m": 0.14814914782070326,
+  "endpoint_is_east_of_mat_and_within_mat_y_span": true
+}

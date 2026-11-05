@@ -1,0 +1,33 @@
+{
+  "project-list": {
+    "http_status": 200,
+    "url": "https://rhods-dashboard-redhat-ods-applications.apps.ai-dev02.kni.syseng.devcluster.openshift.com/api/k8s/apis/project.openshift.io/v1/projects?labelSelector=opendatahub.io%2Fdashboard%3Dtrue&fieldSelector=metadata.name%3Dsemantic-model-serving",
+    "returned_names": [
+      "semantic-model-serving"
+    ],
+    "raw_response_item_count": 10,
+    "raw_response_sha256": "6c232ce7154b56ecaafddcba4cc77e0b1e8f81c68738e521e51cfe566106b527",
+    "evidence_filter": "Only the target project retained; the API returned additional dashboard projects despite fieldSelector."
+  },
+  "namespace": {
+    "http_status": 200,
+    "url": "https://rhods-dashboard-redhat-ods-applications.apps.ai-dev02.kni.syseng.devcluster.openshift.com/api/k8s/api/v1/namespaces/semantic-model-serving",
+    "returned_names": [
+      "semantic-model-serving"
+    ]
+  },
+  "inferenceservices": {
+    "http_status": 200,
+    "url": "https://rhods-dashboard-redhat-ods-applications.apps.ai-dev02.kni.syseng.devcluster.openshift.com/api/k8s/apis/serving.kserve.io/v1beta1/namespaces/semantic-model-serving/inferenceservices",
+    "returned_names": [
+      "sam3-mat-v1"
+    ]
+  },
+  "servingruntimes": {
+    "http_status": 200,
+    "url": "https://rhods-dashboard-redhat-ods-applications.apps.ai-dev02.kni.syseng.devcluster.openshift.com/api/k8s/apis/serving.kserve.io/v1alpha1/namespaces/semantic-model-serving/servingruntimes",
+    "returned_names": [
+      "sam3-runtime-v1"
+    ]
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "started_at": "2026-11-04T14:14:44.752477+00:00",
+  "status": "PASS",
+  "scope": "stopped replay CA and leaf rotation; no motion claim",
+  "server_certificate": "notBefore=Nov  4 14:14:48 2026 GMT\nnotAfter=Nov 11 14:14:48 2026 GMT\nsha256 Fingerprint=69:19:8D:36:3F:5D:9B:22:95:F0:D5:E7:F8:C0:C7:A3:D2:68:2B:C7:89:AB:E9:56:C0:8B:68:B4:A5:60:AC:68\nserial=6FF081E3D905008988BD0AB1CA79616DA7FCA5D1\n",
+  "client_certificate": "notBefore=Nov  4 14:14:49 2026 GMT\nnotAfter=Nov 11 14:14:49 2026 GMT\nsha256 Fingerprint=6D:0B:4A:89:DB:3E:A5:CE:44:D3:28:FA:34:E0:3D:A3:73:5C:92:1A:BC:7B:B4:81:DB:C7:1F:2B:F7:1E:14:34\nserial=6FF081E3D905008988BD0AB1CA79616DA7FCA5D2\n",
+  "new_pod_uid": "79dcf08e-7730-478b-9c68-ba3e7751eecb",
+  "new_credentials_metadata": {
+    "ready": true,
+    "deployment": {
+      "schema": "semantic-deployment/v1",
+      "model_name": "sam3-mat-v1",
+      "weights_sha256": "9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e",
+      "source_revision": "0570b3a5be9c4e694f23d85232fb55f4a6f1f7fc",
+      "container_digest": "sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+      "shared_sha256": {
+        "inference_contract.py": "d238d2490f826b6fbb70f07aa5579492dc425e8c858b780c8216679f121ffdef",
+        "sam3_backend.py": "3d83819971704e8ce642db98972194996307b314bb73cbb44257384e45714761",
+        "sam3_runtime_core.py": "683cf53a5b6378fa72d0cefe404bd899039b1420b4d5a2e7cfe3faecaf57085f"
+      },
+      "versions": {
+        "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+        "preprocess": "sam3-pil-rgb/v1",
+        "decoder": "sam3-binary-instances/v1"
+      },
+      "precision": "bfloat16",
+      "policy": "avoid-target/v1",
+      "prompt": "red mat",
+      "threshold": 0.5
+    }
+  },
+  "retired_client": {
+    "rejected": true,
+    "reason": "[SSL: TLSV1_ALERT_UNKNOWN_CA] tlsv1 alert unknown ca (_ssl.c:2570)"
+  },
+  "missing_client_certificate": {
+    "rejected": true,
+    "reason": "[SSL: TLSV13_ALERT_CERTIFICATE_REQUIRED] tlsv13 alert certificate required (_ssl.c:2570)"
+  },
+  "post_negative_metadata": {
+    "ready": true,
+    "deployment": {
+      "schema": "semantic-deployment/v1",
+      "model_name": "sam3-mat-v1",
+      "weights_sha256": "9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e",
+      "source_revision": "0570b3a5be9c4e694f23d85232fb55f4a6f1f7fc",
+      "container_digest": "sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+      "shared_sha256": {
+        "inference_contract.py": "d238d2490f826b6fbb70f07aa5579492dc425e8c858b780c8216679f121ffdef",
+        "sam3_backend.py": "3d83819971704e8ce642db98972194996307b314bb73cbb44257384e45714761",
+        "sam3_runtime_core.py": "683cf53a5b6378fa72d0cefe404bd899039b1420b4d5a2e7cfe3faecaf57085f"
+      },
+      "versions": {
+        "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+        "preprocess": "sam3-pil-rgb/v1",
+        "decoder": "sam3-binary-instances/v1"
+      },
+      "precision": "bfloat16",
+      "policy": "avoid-target/v1",
+      "prompt": "red mat",
+      "threshold": 0.5
+    }
+  }
+}

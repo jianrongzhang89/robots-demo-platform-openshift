@@ -1,0 +1,1324 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "internal.serving.kserve.io/agent": "true",
+                    "internal.serving.kserve.io/configMountPath": "/mnt/configs",
+                    "internal.serving.kserve.io/configVolumeName": "modelconfig-sam3-mat-v1-0",
+                    "internal.serving.kserve.io/modelDir": "/mnt/models",
+                    "k8s.ovn.org/pod-networks": "{\"default\":{\"ip_addresses\":[\"10.129.8.230/23\"],\"mac_address\":\"0a:58:0a:81:08:e6\",\"gateway_ips\":[\"10.129.8.1\"],\"routes\":[{\"dest\":\"10.128.0.0/14\",\"nextHop\":\"10.129.8.1\"},{\"dest\":\"172.30.0.0/16\",\"nextHop\":\"10.129.8.1\"},{\"dest\":\"169.254.0.5/32\",\"nextHop\":\"10.129.8.1\"},{\"dest\":\"100.64.0.0/16\",\"nextHop\":\"10.129.8.1\"}],\"ip_address\":\"10.129.8.230/23\",\"gateway_ip\":\"10.129.8.1\",\"role\":\"primary\"}}",
+                    "k8s.v1.cni.cncf.io/network-status": "[{\n    \"name\": \"ovn-kubernetes\",\n    \"interface\": \"eth0\",\n    \"ips\": [\n        \"10.129.8.230\"\n    ],\n    \"mac\": \"0a:58:0a:81:08:e6\",\n    \"default\": true,\n    \"dns\": {}\n}]",
+                    "openshift.io/scc": "restricted-v2",
+                    "seccomp.security.alpha.kubernetes.io/pod": "runtime/default",
+                    "security.opendatahub.io/enable-auth": "false",
+                    "security.openshift.io/validated-scc-subject-type": "user",
+                    "service.beta.openshift.io/serving-cert-secret-name": "sam3-mat-v1-predictor-serving-cert",
+                    "serving.kserve.io/deploymentMode": "Standard",
+                    "serving.kserve.io/enable-metric-aggregation": "false",
+                    "serving.kserve.io/enable-prometheus-scraping": "false",
+                    "serving.kserve.io/visibility": "cluster-local"
+                },
+                "creationTimestamp": "2026-10-31T14:09:54Z",
+                "generateName": "sam3-mat-v1-predictor-5cb7c9f7d5-",
+                "generation": 1,
+                "labels": {
+                    "app": "isvc.sam3-mat-v1-predictor",
+                    "component": "predictor",
+                    "opendatahub.io/dashboard": "true",
+                    "pod-template-hash": "5cb7c9f7d5",
+                    "serving.kserve.io/inferenceservice": "sam3-mat-v1"
+                },
+                "name": "sam3-mat-v1-predictor-5cb7c9f7d5-p4tgc",
+                "namespace": "semantic-model-serving",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "ReplicaSet",
+                        "name": "sam3-mat-v1-predictor-5cb7c9f7d5",
+                        "uid": "3acd45e3-41c2-4844-8d80-611b83863e4e"
+                    }
+                ],
+                "resourceVersion": "493640222",
+                "uid": "53394104-6568-4945-86f9-708e263b8deb"
+            },
+            "spec": {
+                "automountServiceAccountToken": false,
+                "containers": [
+                    {
+                        "env": [
+                            {
+                                "name": "RUNTIME_IMAGE_DIGEST",
+                                "value": "sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e"
+                            },
+                            {
+                                "name": "MODEL_DIR",
+                                "value": "/models"
+                            },
+                            {
+                                "name": "TLS_CERT",
+                                "value": "/tls/tls.crt"
+                            },
+                            {
+                                "name": "TLS_KEY",
+                                "value": "/tls/tls.key"
+                            },
+                            {
+                                "name": "CLIENT_CA",
+                                "value": "/tls/client-ca.crt"
+                            },
+                            {
+                                "name": "CLIENT_POLICY",
+                                "value": "/policy/clients.json"
+                            },
+                            {
+                                "name": "HOME",
+                                "value": "/tmp"
+                            },
+                            {
+                                "name": "HF_HUB_OFFLINE",
+                                "value": "1"
+                            },
+                            {
+                                "name": "TRANSFORMERS_OFFLINE",
+                                "value": "1"
+                            },
+                            {
+                                "name": "INFERENCE_SERVICE_NAME",
+                                "value": "sam3-mat-v1"
+                            }
+                        ],
+                        "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+                        "imagePullPolicy": "IfNotPresent",
+                        "livenessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/live",
+                                "port": 8080,
+                                "scheme": "HTTP"
+                            },
+                            "periodSeconds": 2,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 1
+                        },
+                        "name": "kserve-container",
+                        "ports": [
+                            {
+                                "containerPort": 8443,
+                                "name": "https",
+                                "protocol": "TCP"
+                            },
+                            {
+                                "containerPort": 8080,
+                                "name": "health",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "readinessProbe": {
+                            "failureThreshold": 1,
+                            "httpGet": {
+                                "path": "/ready",
+                                "port": 8080,
+                                "scheme": "HTTP"
+                            },
+                            "periodSeconds": 2,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 1
+                        },
+                        "resources": {
+                            "limits": {
+                                "cpu": "6",
+                                "memory": "24Gi",
+                                "nvidia.com/gpu": "1"
+                            },
+                            "requests": {
+                                "cpu": "3",
+                                "memory": "12Gi",
+                                "nvidia.com/gpu": "1"
+                            }
+                        },
+                        "securityContext": {
+                            "allowPrivilegeEscalation": false,
+                            "capabilities": {
+                                "drop": [
+                                    "ALL"
+                                ]
+                            },
+                            "readOnlyRootFilesystem": true,
+                            "runAsNonRoot": true,
+                            "runAsUser": 1000840000,
+                            "seccompProfile": {
+                                "type": "RuntimeDefault"
+                            }
+                        },
+                        "startupProbe": {
+                            "failureThreshold": 120,
+                            "httpGet": {
+                                "path": "/ready",
+                                "port": 8080,
+                                "scheme": "HTTP"
+                            },
+                            "periodSeconds": 5,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 1
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/models",
+                                "name": "model",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/tls",
+                                "name": "tls",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/policy",
+                                "name": "policy",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/tmp",
+                                "name": "tmp"
+                            },
+                            {
+                                "mountPath": "/mnt/models",
+                                "name": "model-dir"
+                            }
+                        ]
+                    },
+                    {
+                        "args": [
+                            "--enable-puller",
+                            "--config-dir",
+                            "/mnt/configs",
+                            "--model-dir",
+                            "/mnt/models",
+                            "--component-port",
+                            "8443"
+                        ],
+                        "env": [
+                            {
+                                "name": "SERVING_READINESS_PROBE",
+                                "value": "{\"httpGet\":{\"path\":\"/ready\",\"port\":8080,\"scheme\":\"HTTP\"},\"timeoutSeconds\":1,\"periodSeconds\":2,\"successThreshold\":1,\"failureThreshold\":1}"
+                            }
+                        ],
+                        "image": "registry.redhat.io/rhoai/odh-kserve-agent-rhel9@sha256:00869f9eb48fe189feb9659fd53d8e881b089fea9c81a467112a5fd23e1dfe84",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "agent",
+                        "ports": [
+                            {
+                                "containerPort": 9081,
+                                "name": "agent-port",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "readinessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "httpHeaders": [
+                                    {
+                                        "name": "K-Network-Probe",
+                                        "value": "queue"
+                                    }
+                                ],
+                                "path": "/",
+                                "port": 9081,
+                                "scheme": "HTTP"
+                            },
+                            "periodSeconds": 10,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 1
+                        },
+                        "resources": {
+                            "limits": {
+                                "cpu": "1",
+                                "memory": "1Gi"
+                            },
+                            "requests": {
+                                "cpu": "100m",
+                                "memory": "100Mi"
+                            }
+                        },
+                        "securityContext": {
+                            "allowPrivilegeEscalation": false,
+                            "capabilities": {
+                                "drop": [
+                                    "ALL"
+                                ]
+                            },
+                            "readOnlyRootFilesystem": true,
+                            "runAsNonRoot": true,
+                            "runAsUser": 1000840000,
+                            "seccompProfile": {
+                                "type": "RuntimeDefault"
+                            }
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/mnt/models",
+                                "name": "model-dir"
+                            },
+                            {
+                                "mountPath": "/mnt/configs",
+                                "name": "model-config"
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "imagePullSecrets": [
+                    {
+                        "name": "sam3-serving-dockercfg-vxfls"
+                    }
+                ],
+                "nodeName": "ip-10-0-55-175.ec2.internal",
+                "nodeSelector": {
+                    "kubernetes.io/hostname": "ip-10-0-55-175.ec2.internal",
+                    "nvidia.com/gpu.product": "NVIDIA-L40S"
+                },
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {
+                    "fsGroup": 1000840000,
+                    "seLinuxOptions": {
+                        "level": "s0:c29,c14"
+                    },
+                    "seccompProfile": {
+                        "type": "RuntimeDefault"
+                    }
+                },
+                "serviceAccount": "sam3-serving",
+                "serviceAccountName": "sam3-serving",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoSchedule",
+                        "key": "g6e-gpu",
+                        "operator": "Equal",
+                        "value": "true"
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoSchedule",
+                        "key": "node.kubernetes.io/memory-pressure",
+                        "operator": "Exists"
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "model",
+                        "persistentVolumeClaim": {
+                            "claimName": "sam3-checkpoint"
+                        }
+                    },
+                    {
+                        "name": "tls",
+                        "secret": {
+                            "defaultMode": 420,
+                            "secretName": "sam3-serving-tls"
+                        }
+                    },
+                    {
+                        "configMap": {
+                            "defaultMode": 420,
+                            "name": "sam3-client-policy"
+                        },
+                        "name": "policy"
+                    },
+                    {
+                        "emptyDir": {
+                            "sizeLimit": "2Gi"
+                        },
+                        "name": "tmp"
+                    },
+                    {
+                        "emptyDir": {},
+                        "name": "model-dir"
+                    },
+                    {
+                        "configMap": {
+                            "defaultMode": 420,
+                            "name": "modelconfig-sam3-mat-v1-0"
+                        },
+                        "name": "model-config"
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-10-31T14:09:55Z",
+                        "observedGeneration": 1,
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-10-31T14:09:54Z",
+                        "observedGeneration": 1,
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-10-31T14:13:19Z",
+                        "observedGeneration": 1,
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-10-31T14:13:19Z",
+                        "observedGeneration": 1,
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-10-31T14:09:54Z",
+                        "observedGeneration": 1,
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "allocatedResources": {
+                            "cpu": "100m",
+                            "memory": "100Mi"
+                        },
+                        "containerID": "cri-o://81c9d7f0c4ff7764862eb01069158779cd444c94d04bb57f8a68222377da9fe5",
+                        "image": "registry.redhat.io/rhoai/odh-kserve-agent-rhel9@sha256:00869f9eb48fe189feb9659fd53d8e881b089fea9c81a467112a5fd23e1dfe84",
+                        "imageID": "registry.redhat.io/rhoai/odh-kserve-agent-rhel9@sha256:00869f9eb48fe189feb9659fd53d8e881b089fea9c81a467112a5fd23e1dfe84",
+                        "lastState": {},
+                        "name": "agent",
+                        "ready": true,
+                        "resources": {
+                            "limits": {
+                                "cpu": "1",
+                                "memory": "1Gi"
+                            },
+                            "requests": {
+                                "cpu": "100m",
+                                "memory": "100Mi"
+                            }
+                        },
+                        "restartCount": 0,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-10-31T14:09:55Z"
+                            }
+                        },
+                        "user": {
+                            "linux": {
+                                "gid": 0,
+                                "supplementalGroups": [
+                                    0,
+                                    1000840000
+                                ],
+                                "uid": 1000840000
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/mnt/models",
+                                "name": "model-dir"
+                            },
+                            {
+                                "mountPath": "/mnt/configs",
+                                "name": "model-config"
+                            }
+                        ]
+                    },
+                    {
+                        "allocatedResources": {
+                            "cpu": "3",
+                            "memory": "12Gi",
+                            "nvidia.com/gpu": "1"
+                        },
+                        "containerID": "cri-o://1b109ce138e82e76d3da361a669536b495d12ee3cb200be9d313b5d59ace4409",
+                        "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+                        "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+                        "lastState": {
+                            "terminated": {
+                                "containerID": "cri-o://ed28a67fc1ff17937335b86c6b334cb33d6a58ad507e909dda10ba25158fb1ed",
+                                "exitCode": 137,
+                                "finishedAt": "2026-10-31T14:13:05Z",
+                                "reason": "Error",
+                                "startedAt": "2026-10-31T14:09:55Z"
+                            }
+                        },
+                        "name": "kserve-container",
+                        "ready": true,
+                        "resources": {
+                            "limits": {
+                                "cpu": "6",
+                                "memory": "24Gi",
+                                "nvidia.com/gpu": "1"
+                            },
+                            "requests": {
+                                "cpu": "3",
+                                "memory": "12Gi",
+                                "nvidia.com/gpu": "1"
+                            }
+                        },
+                        "restartCount": 1,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-10-31T14:13:05Z"
+                            }
+                        },
+                        "user": {
+                            "linux": {
+                                "gid": 0,
+                                "supplementalGroups": [
+                                    0,
+                                    1000840000
+                                ],
+                                "uid": 1000840000
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/models",
+                                "name": "model",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            },
+                            {
+                                "mountPath": "/tls",
+                                "name": "tls",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            },
+                            {
+                                "mountPath": "/policy",
+                                "name": "policy",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            },
+                            {
+                                "mountPath": "/tmp",
+                                "name": "tmp"
+                            },
+                            {
+                                "mountPath": "/mnt/models",
+                                "name": "model-dir"
+                            }
+                        ]
+                    }
+                ],
+                "hostIP": "10.0.55.175",
+                "hostIPs": [
+                    {
+                        "ip": "10.0.55.175"
+                    }
+                ],
+                "observedGeneration": 1,
+                "phase": "Running",
+                "podIP": "10.129.8.230",
+                "podIPs": [
+                    {
+                        "ip": "10.129.8.230"
+                    }
+                ],
+                "qosClass": "Burstable",
+                "startTime": "2026-10-31T14:09:54Z"
+            }
+        },
+        {
+            "apiVersion": "serving.kserve.io/v1beta1",
+            "kind": "InferenceService",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"serving.kserve.io/v1beta1\",\"kind\":\"InferenceService\",\"metadata\":{\"annotations\":{\"security.opendatahub.io/enable-auth\":\"false\",\"serving.kserve.io/deploymentMode\":\"RawDeployment\",\"serving.kserve.io/visibility\":\"cluster-local\"},\"labels\":{\"opendatahub.io/dashboard\":\"true\"},\"name\":\"sam3-mat-v1\",\"namespace\":\"semantic-model-serving\"},\"spec\":{\"predictor\":{\"automountServiceAccountToken\":false,\"maxReplicas\":1,\"minReplicas\":1,\"model\":{\"modelFormat\":{\"name\":\"sam3\",\"version\":\"1\"},\"protocolVersion\":\"v1\",\"resources\":{\"limits\":{\"cpu\":\"6\",\"memory\":\"24Gi\",\"nvidia.com/gpu\":\"1\"},\"requests\":{\"cpu\":\"3\",\"memory\":\"12Gi\",\"nvidia.com/gpu\":\"1\"}},\"runtime\":\"sam3-runtime-v1\"},\"nodeSelector\":{\"kubernetes.io/hostname\":\"ip-10-0-55-175.ec2.internal\",\"nvidia.com/gpu.product\":\"NVIDIA-L40S\"},\"serviceAccountName\":\"sam3-serving\",\"tolerations\":[{\"effect\":\"NoSchedule\",\"key\":\"g6e-gpu\",\"operator\":\"Equal\",\"value\":\"true\"}]}}}\n",
+                    "modelFormat": "sam3",
+                    "security.opendatahub.io/enable-auth": "false",
+                    "serving.kserve.io/deploymentMode": "Standard",
+                    "serving.kserve.io/visibility": "cluster-local"
+                },
+                "creationTimestamp": "2026-10-31T14:04:34Z",
+                "finalizers": [
+                    "inferenceservice.finalizers",
+                    "odh.inferenceservice.finalizers"
+                ],
+                "generation": 1,
+                "labels": {
+                    "opendatahub.io/dashboard": "true"
+                },
+                "name": "sam3-mat-v1",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493640232",
+                "uid": "9e81f3c5-2738-40f3-87c8-ee4ab88993e7"
+            },
+            "spec": {
+                "predictor": {
+                    "automountServiceAccountToken": false,
+                    "maxReplicas": 1,
+                    "minReplicas": 1,
+                    "model": {
+                        "modelFormat": {
+                            "name": "sam3",
+                            "version": "1"
+                        },
+                        "name": "",
+                        "protocolVersion": "v1",
+                        "resources": {
+                            "limits": {
+                                "cpu": "6",
+                                "memory": "24Gi",
+                                "nvidia.com/gpu": "1"
+                            },
+                            "requests": {
+                                "cpu": "3",
+                                "memory": "12Gi",
+                                "nvidia.com/gpu": "1"
+                            }
+                        },
+                        "runtime": "sam3-runtime-v1"
+                    },
+                    "nodeSelector": {
+                        "kubernetes.io/hostname": "ip-10-0-55-175.ec2.internal",
+                        "nvidia.com/gpu.product": "NVIDIA-L40S"
+                    },
+                    "serviceAccountName": "sam3-serving",
+                    "tolerations": [
+                        {
+                            "effect": "NoSchedule",
+                            "key": "g6e-gpu",
+                            "operator": "Equal",
+                            "value": "true"
+                        }
+                    ]
+                }
+            },
+            "status": {
+                "address": {
+                    "url": "http://sam3-mat-v1-predictor.semantic-model-serving.svc.cluster.local"
+                },
+                "components": {
+                    "predictor": {
+                        "url": "http://sam3-mat-v1-predictor-semantic-model-serving.example.com"
+                    }
+                },
+                "conditions": [
+                    {
+                        "lastTransitionTime": "2026-10-31T14:04:35Z",
+                        "status": "True",
+                        "type": "IngressReady"
+                    },
+                    {
+                        "lastTransitionTime": "2026-10-31T14:13:19Z",
+                        "message": "ReplicaSet \"sam3-mat-v1-predictor-5cb7c9f7d5\" has successfully progressed.",
+                        "reason": "NewReplicaSetAvailable",
+                        "status": "True",
+                        "type": "PredictorReady"
+                    },
+                    {
+                        "lastTransitionTime": "2026-10-31T14:13:19Z",
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastTransitionTime": "2026-10-31T14:04:35Z",
+                        "severity": "Info",
+                        "status": "False",
+                        "type": "Stopped"
+                    }
+                ],
+                "deploymentMode": "Standard",
+                "modelStatus": {
+                    "copies": {
+                        "failedCopies": 0,
+                        "totalCopies": 1
+                    },
+                    "states": {
+                        "activeModelState": "Loaded",
+                        "targetModelState": "Loaded"
+                    },
+                    "transitionStatus": "UpToDate"
+                },
+                "observedGeneration": 1,
+                "servingRuntimeName": "sam3-runtime-v1",
+                "url": "http://sam3-mat-v1-predictor.semantic-model-serving.svc.cluster.local"
+            }
+        },
+        {
+            "apiVersion": "serving.kserve.io/v1alpha1",
+            "kind": "ServingRuntime",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"serving.kserve.io/v1alpha1\",\"kind\":\"ServingRuntime\",\"metadata\":{\"annotations\":{\"openshift.io/display-name\":\"SAM3 semantic inference (custom JSON, mTLS)\"},\"name\":\"sam3-runtime-v1\",\"namespace\":\"semantic-model-serving\"},\"spec\":{\"containers\":[{\"env\":[{\"name\":\"RUNTIME_IMAGE_DIGEST\",\"value\":\"sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e\"},{\"name\":\"MODEL_DIR\",\"value\":\"/models\"},{\"name\":\"TLS_CERT\",\"value\":\"/tls/tls.crt\"},{\"name\":\"TLS_KEY\",\"value\":\"/tls/tls.key\"},{\"name\":\"CLIENT_CA\",\"value\":\"/tls/client-ca.crt\"},{\"name\":\"CLIENT_POLICY\",\"value\":\"/policy/clients.json\"},{\"name\":\"HOME\",\"value\":\"/tmp\"},{\"name\":\"HF_HUB_OFFLINE\",\"value\":\"1\"},{\"name\":\"TRANSFORMERS_OFFLINE\",\"value\":\"1\"}],\"image\":\"image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e\",\"livenessProbe\":{\"failureThreshold\":3,\"httpGet\":{\"path\":\"/live\",\"port\":8080},\"periodSeconds\":2},\"name\":\"kserve-container\",\"ports\":[{\"containerPort\":8443,\"name\":\"https\"},{\"containerPort\":8080,\"name\":\"health\"}],\"readinessProbe\":{\"failureThreshold\":1,\"httpGet\":{\"path\":\"/ready\",\"port\":8080},\"periodSeconds\":2},\"resources\":{\"limits\":{\"cpu\":\"6\",\"memory\":\"24Gi\",\"nvidia.com/gpu\":\"1\"},\"requests\":{\"cpu\":\"3\",\"memory\":\"12Gi\",\"nvidia.com/gpu\":\"1\"}},\"securityContext\":{\"allowPrivilegeEscalation\":false,\"capabilities\":{\"drop\":[\"ALL\"]},\"readOnlyRootFilesystem\":true,\"runAsNonRoot\":true,\"seccompProfile\":{\"type\":\"RuntimeDefault\"}},\"startupProbe\":{\"failureThreshold\":120,\"httpGet\":{\"path\":\"/ready\",\"port\":8080},\"periodSeconds\":5},\"volumeMounts\":[{\"mountPath\":\"/models\",\"name\":\"model\",\"readOnly\":true},{\"mountPath\":\"/tls\",\"name\":\"tls\",\"readOnly\":true},{\"mountPath\":\"/policy\",\"name\":\"policy\",\"readOnly\":true},{\"mountPath\":\"/tmp\",\"name\":\"tmp\"}]}],\"multiModel\":false,\"protocolVersions\":[\"v1\"],\"storageHelper\":{\"disabled\":true},\"supportedModelFormats\":[{\"autoSelect\":false,\"name\":\"sam3\",\"version\":\"1\"}],\"volumes\":[{\"name\":\"model\",\"persistentVolumeClaim\":{\"claimName\":\"sam3-checkpoint\"}},{\"name\":\"tls\",\"secret\":{\"secretName\":\"sam3-serving-tls\"}},{\"configMap\":{\"name\":\"sam3-client-policy\"},\"name\":\"policy\"},{\"emptyDir\":{\"sizeLimit\":\"2Gi\"},\"name\":\"tmp\"}]}}\n",
+                    "openshift.io/display-name": "SAM3 semantic inference (custom JSON, mTLS)"
+                },
+                "creationTimestamp": "2026-10-31T14:04:34Z",
+                "generation": 1,
+                "labels": {
+                    "opendatahub.io/dashboard": "true"
+                },
+                "name": "sam3-runtime-v1",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493664610",
+                "uid": "34cdc1f6-48fd-43cd-9b49-f468c537c842"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "env": [
+                            {
+                                "name": "RUNTIME_IMAGE_DIGEST",
+                                "value": "sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e"
+                            },
+                            {
+                                "name": "MODEL_DIR",
+                                "value": "/models"
+                            },
+                            {
+                                "name": "TLS_CERT",
+                                "value": "/tls/tls.crt"
+                            },
+                            {
+                                "name": "TLS_KEY",
+                                "value": "/tls/tls.key"
+                            },
+                            {
+                                "name": "CLIENT_CA",
+                                "value": "/tls/client-ca.crt"
+                            },
+                            {
+                                "name": "CLIENT_POLICY",
+                                "value": "/policy/clients.json"
+                            },
+                            {
+                                "name": "HOME",
+                                "value": "/tmp"
+                            },
+                            {
+                                "name": "HF_HUB_OFFLINE",
+                                "value": "1"
+                            },
+                            {
+                                "name": "TRANSFORMERS_OFFLINE",
+                                "value": "1"
+                            }
+                        ],
+                        "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+                        "livenessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/live",
+                                "port": 8080
+                            },
+                            "periodSeconds": 2
+                        },
+                        "name": "kserve-container",
+                        "ports": [
+                            {
+                                "containerPort": 8443,
+                                "name": "https",
+                                "protocol": "TCP"
+                            },
+                            {
+                                "containerPort": 8080,
+                                "name": "health",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "readinessProbe": {
+                            "failureThreshold": 1,
+                            "httpGet": {
+                                "path": "/ready",
+                                "port": 8080
+                            },
+                            "periodSeconds": 2
+                        },
+                        "resources": {
+                            "limits": {
+                                "cpu": "6",
+                                "memory": "24Gi",
+                                "nvidia.com/gpu": "1"
+                            },
+                            "requests": {
+                                "cpu": "3",
+                                "memory": "12Gi",
+                                "nvidia.com/gpu": "1"
+                            }
+                        },
+                        "securityContext": {
+                            "allowPrivilegeEscalation": false,
+                            "capabilities": {
+                                "drop": [
+                                    "ALL"
+                                ]
+                            },
+                            "readOnlyRootFilesystem": true,
+                            "runAsNonRoot": true,
+                            "seccompProfile": {
+                                "type": "RuntimeDefault"
+                            }
+                        },
+                        "startupProbe": {
+                            "failureThreshold": 120,
+                            "httpGet": {
+                                "path": "/ready",
+                                "port": 8080
+                            },
+                            "periodSeconds": 5
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/models",
+                                "name": "model",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/tls",
+                                "name": "tls",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/policy",
+                                "name": "policy",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/tmp",
+                                "name": "tmp"
+                            }
+                        ]
+                    }
+                ],
+                "multiModel": false,
+                "protocolVersions": [
+                    "v1"
+                ],
+                "storageHelper": {
+                    "disabled": true
+                },
+                "supportedModelFormats": [
+                    {
+                        "autoSelect": false,
+                        "name": "sam3",
+                        "version": "1"
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "model",
+                        "persistentVolumeClaim": {
+                            "claimName": "sam3-checkpoint"
+                        }
+                    },
+                    {
+                        "name": "tls",
+                        "secret": {
+                            "secretName": "sam3-serving-tls"
+                        }
+                    },
+                    {
+                        "configMap": {
+                            "name": "sam3-client-policy"
+                        },
+                        "name": "policy"
+                    },
+                    {
+                        "emptyDir": {
+                            "sizeLimit": "2Gi"
+                        },
+                        "name": "tmp"
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "apps/v1",
+            "kind": "Deployment",
+            "metadata": {
+                "annotations": {
+                    "deployment.kubernetes.io/revision": "1",
+                    "internal.serving.kserve.io/agent": "true",
+                    "internal.serving.kserve.io/configMountPath": "/mnt/configs",
+                    "internal.serving.kserve.io/configVolumeName": "modelconfig-sam3-mat-v1-0",
+                    "internal.serving.kserve.io/modelDir": "/mnt/models",
+                    "security.opendatahub.io/enable-auth": "false",
+                    "service.beta.openshift.io/serving-cert-secret-name": "sam3-mat-v1-predictor-serving-cert",
+                    "serving.kserve.io/deploymentMode": "Standard",
+                    "serving.kserve.io/visibility": "cluster-local"
+                },
+                "creationTimestamp": "2026-10-31T14:04:35Z",
+                "generation": 1,
+                "labels": {
+                    "app": "isvc.sam3-mat-v1-predictor",
+                    "component": "predictor",
+                    "opendatahub.io/dashboard": "true",
+                    "serving.kserve.io/inferenceservice": "sam3-mat-v1"
+                },
+                "name": "sam3-mat-v1-predictor",
+                "namespace": "semantic-model-serving",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "serving.kserve.io/v1beta1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "InferenceService",
+                        "name": "sam3-mat-v1",
+                        "uid": "9e81f3c5-2738-40f3-87c8-ee4ab88993e7"
+                    }
+                ],
+                "resourceVersion": "493640229",
+                "uid": "7af059ca-3754-427a-914c-1cabf9fd54dc"
+            },
+            "spec": {
+                "progressDeadlineSeconds": 600,
+                "replicas": 1,
+                "revisionHistoryLimit": 10,
+                "selector": {
+                    "matchLabels": {
+                        "app": "isvc.sam3-mat-v1-predictor"
+                    }
+                },
+                "strategy": {
+                    "rollingUpdate": {
+                        "maxSurge": "25%",
+                        "maxUnavailable": "25%"
+                    },
+                    "type": "RollingUpdate"
+                },
+                "template": {
+                    "metadata": {
+                        "annotations": {
+                            "internal.serving.kserve.io/agent": "true",
+                            "internal.serving.kserve.io/configMountPath": "/mnt/configs",
+                            "internal.serving.kserve.io/configVolumeName": "modelconfig-sam3-mat-v1-0",
+                            "internal.serving.kserve.io/modelDir": "/mnt/models",
+                            "security.opendatahub.io/enable-auth": "false",
+                            "service.beta.openshift.io/serving-cert-secret-name": "sam3-mat-v1-predictor-serving-cert",
+                            "serving.kserve.io/deploymentMode": "Standard",
+                            "serving.kserve.io/visibility": "cluster-local"
+                        },
+                        "labels": {
+                            "app": "isvc.sam3-mat-v1-predictor",
+                            "component": "predictor",
+                            "opendatahub.io/dashboard": "true",
+                            "serving.kserve.io/inferenceservice": "sam3-mat-v1"
+                        },
+                        "name": "sam3-mat-v1-predictor",
+                        "namespace": "semantic-model-serving"
+                    },
+                    "spec": {
+                        "automountServiceAccountToken": false,
+                        "containers": [
+                            {
+                                "env": [
+                                    {
+                                        "name": "RUNTIME_IMAGE_DIGEST",
+                                        "value": "sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e"
+                                    },
+                                    {
+                                        "name": "MODEL_DIR",
+                                        "value": "/models"
+                                    },
+                                    {
+                                        "name": "TLS_CERT",
+                                        "value": "/tls/tls.crt"
+                                    },
+                                    {
+                                        "name": "TLS_KEY",
+                                        "value": "/tls/tls.key"
+                                    },
+                                    {
+                                        "name": "CLIENT_CA",
+                                        "value": "/tls/client-ca.crt"
+                                    },
+                                    {
+                                        "name": "CLIENT_POLICY",
+                                        "value": "/policy/clients.json"
+                                    },
+                                    {
+                                        "name": "HOME",
+                                        "value": "/tmp"
+                                    },
+                                    {
+                                        "name": "HF_HUB_OFFLINE",
+                                        "value": "1"
+                                    },
+                                    {
+                                        "name": "TRANSFORMERS_OFFLINE",
+                                        "value": "1"
+                                    },
+                                    {
+                                        "name": "INFERENCE_SERVICE_NAME",
+                                        "value": "sam3-mat-v1"
+                                    }
+                                ],
+                                "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+                                "imagePullPolicy": "IfNotPresent",
+                                "livenessProbe": {
+                                    "failureThreshold": 3,
+                                    "httpGet": {
+                                        "path": "/live",
+                                        "port": 8080,
+                                        "scheme": "HTTP"
+                                    },
+                                    "periodSeconds": 2,
+                                    "successThreshold": 1,
+                                    "timeoutSeconds": 1
+                                },
+                                "name": "kserve-container",
+                                "ports": [
+                                    {
+                                        "containerPort": 8443,
+                                        "name": "https",
+                                        "protocol": "TCP"
+                                    },
+                                    {
+                                        "containerPort": 8080,
+                                        "name": "health",
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "readinessProbe": {
+                                    "failureThreshold": 1,
+                                    "httpGet": {
+                                        "path": "/ready",
+                                        "port": 8080,
+                                        "scheme": "HTTP"
+                                    },
+                                    "periodSeconds": 2,
+                                    "successThreshold": 1,
+                                    "timeoutSeconds": 1
+                                },
+                                "resources": {
+                                    "limits": {
+                                        "cpu": "6",
+                                        "memory": "24Gi",
+                                        "nvidia.com/gpu": "1"
+                                    },
+                                    "requests": {
+                                        "cpu": "3",
+                                        "memory": "12Gi",
+                                        "nvidia.com/gpu": "1"
+                                    }
+                                },
+                                "securityContext": {
+                                    "allowPrivilegeEscalation": false,
+                                    "capabilities": {
+                                        "drop": [
+                                            "ALL"
+                                        ]
+                                    },
+                                    "readOnlyRootFilesystem": true,
+                                    "runAsNonRoot": true,
+                                    "seccompProfile": {
+                                        "type": "RuntimeDefault"
+                                    }
+                                },
+                                "startupProbe": {
+                                    "failureThreshold": 120,
+                                    "httpGet": {
+                                        "path": "/ready",
+                                        "port": 8080,
+                                        "scheme": "HTTP"
+                                    },
+                                    "periodSeconds": 5,
+                                    "successThreshold": 1,
+                                    "timeoutSeconds": 1
+                                },
+                                "terminationMessagePath": "/dev/termination-log",
+                                "terminationMessagePolicy": "File",
+                                "volumeMounts": [
+                                    {
+                                        "mountPath": "/models",
+                                        "name": "model",
+                                        "readOnly": true
+                                    },
+                                    {
+                                        "mountPath": "/tls",
+                                        "name": "tls",
+                                        "readOnly": true
+                                    },
+                                    {
+                                        "mountPath": "/policy",
+                                        "name": "policy",
+                                        "readOnly": true
+                                    },
+                                    {
+                                        "mountPath": "/tmp",
+                                        "name": "tmp"
+                                    }
+                                ]
+                            }
+                        ],
+                        "dnsPolicy": "ClusterFirst",
+                        "nodeSelector": {
+                            "kubernetes.io/hostname": "ip-10-0-55-175.ec2.internal",
+                            "nvidia.com/gpu.product": "NVIDIA-L40S"
+                        },
+                        "restartPolicy": "Always",
+                        "schedulerName": "default-scheduler",
+                        "securityContext": {},
+                        "serviceAccount": "sam3-serving",
+                        "serviceAccountName": "sam3-serving",
+                        "terminationGracePeriodSeconds": 30,
+                        "tolerations": [
+                            {
+                                "effect": "NoSchedule",
+                                "key": "g6e-gpu",
+                                "operator": "Equal",
+                                "value": "true"
+                            }
+                        ],
+                        "volumes": [
+                            {
+                                "name": "model",
+                                "persistentVolumeClaim": {
+                                    "claimName": "sam3-checkpoint"
+                                }
+                            },
+                            {
+                                "name": "tls",
+                                "secret": {
+                                    "defaultMode": 420,
+                                    "secretName": "sam3-serving-tls"
+                                }
+                            },
+                            {
+                                "configMap": {
+                                    "defaultMode": 420,
+                                    "name": "sam3-client-policy"
+                                },
+                                "name": "policy"
+                            },
+                            {
+                                "emptyDir": {
+                                    "sizeLimit": "2Gi"
+                                },
+                                "name": "tmp"
+                            }
+                        ]
+                    }
+                }
+            },
+            "status": {
+                "availableReplicas": 1,
+                "conditions": [
+                    {
+                        "lastTransitionTime": "2026-10-31T14:04:35Z",
+                        "lastUpdateTime": "2026-10-31T14:05:20Z",
+                        "message": "ReplicaSet \"sam3-mat-v1-predictor-5cb7c9f7d5\" has successfully progressed.",
+                        "reason": "NewReplicaSetAvailable",
+                        "status": "True",
+                        "type": "Progressing"
+                    },
+                    {
+                        "lastTransitionTime": "2026-10-31T14:13:19Z",
+                        "lastUpdateTime": "2026-10-31T14:13:19Z",
+                        "message": "Deployment has minimum availability.",
+                        "reason": "MinimumReplicasAvailable",
+                        "status": "True",
+                        "type": "Available"
+                    }
+                ],
+                "observedGeneration": 1,
+                "readyReplicas": 1,
+                "replicas": 1,
+                "updatedReplicas": 1
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "metadata": {
+                "annotations": {
+                    "internal.serving.kserve.io/agent": "true",
+                    "internal.serving.kserve.io/configMountPath": "/mnt/configs",
+                    "internal.serving.kserve.io/configVolumeName": "modelconfig-sam3-mat-v1-0",
+                    "internal.serving.kserve.io/modelDir": "/mnt/models",
+                    "security.opendatahub.io/enable-auth": "false",
+                    "service.alpha.openshift.io/serving-cert-signed-by": "openshift-service-serving-signer@1779941974",
+                    "service.beta.openshift.io/serving-cert-secret-name": "sam3-mat-v1-predictor-serving-cert",
+                    "service.beta.openshift.io/serving-cert-signed-by": "openshift-service-serving-signer@1779941974",
+                    "serving.kserve.io/deploymentMode": "Standard",
+                    "serving.kserve.io/visibility": "cluster-local"
+                },
+                "creationTimestamp": "2026-10-31T14:04:35Z",
+                "labels": {
+                    "app": "isvc.sam3-mat-v1-predictor",
+                    "component": "predictor",
+                    "opendatahub.io/dashboard": "true",
+                    "serving.kserve.io/inferenceservice": "sam3-mat-v1"
+                },
+                "name": "sam3-mat-v1-predictor",
+                "namespace": "semantic-model-serving",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "serving.kserve.io/v1beta1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "InferenceService",
+                        "name": "sam3-mat-v1",
+                        "uid": "9e81f3c5-2738-40f3-87c8-ee4ab88993e7"
+                    }
+                ],
+                "resourceVersion": "493602797",
+                "uid": "ec0b212d-1aca-404d-912d-b6c2f0ac70fe"
+            },
+            "spec": {
+                "clusterIP": "172.30.14.141",
+                "clusterIPs": [
+                    "172.30.14.141"
+                ],
+                "internalTrafficPolicy": "Cluster",
+                "ipFamilies": [
+                    "IPv4"
+                ],
+                "ipFamilyPolicy": "SingleStack",
+                "ports": [
+                    {
+                        "name": "https",
+                        "port": 80,
+                        "protocol": "TCP",
+                        "targetPort": 8443
+                    },
+                    {
+                        "name": "health",
+                        "port": 8080,
+                        "protocol": "TCP",
+                        "targetPort": 8080
+                    }
+                ],
+                "selector": {
+                    "app": "isvc.sam3-mat-v1-predictor"
+                },
+                "sessionAffinity": "None",
+                "type": "ClusterIP"
+            },
+            "status": {
+                "loadBalancer": {}
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Service\",\"metadata\":{\"annotations\":{},\"name\":\"sam3-mat-v1-tls\",\"namespace\":\"semantic-model-serving\"},\"spec\":{\"ports\":[{\"name\":\"https\",\"port\":8443,\"targetPort\":8443}],\"selector\":{\"component\":\"predictor\",\"serving.kserve.io/inferenceservice\":\"sam3-mat-v1\"},\"type\":\"ClusterIP\"}}\n"
+                },
+                "creationTimestamp": "2026-10-31T02:57:55Z",
+                "name": "sam3-mat-v1-tls",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "490809615",
+                "uid": "9cd924d7-9e2e-427a-ac46-c83f4fe53765"
+            },
+            "spec": {
+                "clusterIP": "172.30.228.182",
+                "clusterIPs": [
+                    "172.30.228.182"
+                ],
+                "internalTrafficPolicy": "Cluster",
+                "ipFamilies": [
+                    "IPv4"
+                ],
+                "ipFamilyPolicy": "SingleStack",
+                "ports": [
+                    {
+                        "name": "https",
+                        "port": 8443,
+                        "protocol": "TCP",
+                        "targetPort": 8443
+                    }
+                ],
+                "selector": {
+                    "component": "predictor",
+                    "serving.kserve.io/inferenceservice": "sam3-mat-v1"
+                },
+                "sessionAffinity": "None",
+                "type": "ClusterIP"
+            },
+            "status": {
+                "loadBalancer": {}
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "ResourceQuota",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"ResourceQuota\",\"metadata\":{\"annotations\":{},\"name\":\"sam3-serving-budget\",\"namespace\":\"semantic-model-serving\"},\"spec\":{\"hard\":{\"limits.cpu\":\"16\",\"limits.memory\":\"56Gi\",\"persistentvolumeclaims\":\"1\",\"pods\":\"8\",\"requests.cpu\":\"8\",\"requests.memory\":\"28Gi\",\"requests.nvidia.com/gpu\":\"1\",\"requests.storage\":\"10Gi\"}}}\n"
+                },
+                "creationTimestamp": "2026-10-31T02:57:55Z",
+                "name": "sam3-serving-budget",
+                "namespace": "semantic-model-serving",
+                "resourceVersion": "493625228",
+                "uid": "6d469142-fd70-4b1b-a7c0-4379eb42dce9"
+            },
+            "spec": {
+                "hard": {
+                    "limits.cpu": "16",
+                    "limits.memory": "56Gi",
+                    "persistentvolumeclaims": "1",
+                    "pods": "8",
+                    "requests.cpu": "8",
+                    "requests.memory": "28Gi",
+                    "requests.nvidia.com/gpu": "1",
+                    "requests.storage": "10Gi"
+                }
+            },
+            "status": {
+                "hard": {
+                    "limits.cpu": "16",
+                    "limits.memory": "56Gi",
+                    "persistentvolumeclaims": "1",
+                    "pods": "8",
+                    "requests.cpu": "8",
+                    "requests.memory": "28Gi",
+                    "requests.nvidia.com/gpu": "1",
+                    "requests.storage": "10Gi"
+                },
+                "used": {
+                    "limits.cpu": "7",
+                    "limits.memory": "25Gi",
+                    "persistentvolumeclaims": "1",
+                    "pods": "1",
+                    "requests.cpu": "3100m",
+                    "requests.memory": "12388Mi",
+                    "requests.nvidia.com/gpu": "1",
+                    "requests.storage": "10Gi"
+                }
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": "",
+        "selfLink": ""
+    }
+}

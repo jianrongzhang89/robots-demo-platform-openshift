@@ -1,0 +1,15 @@
+{
+ "event": "standalone paired-series re-run 5 (November 3)",
+ "context": "Series 4 completed ALL 40 nominal trials plus the first negative (020-off), then stopped on trial 020-on-target_absent - which actually PASSED: the fixture's retained log shows 'suite passed: true' with every check green and the container exited 0. The loss was an evidence-retrieval race: the pod flipped out of Running (a sidecar's broken SIGTERM teardown exit failed the pod) inside the host's 2 s poll window, so the runner raised 'pod ended before evidence retrieval' before observing the completion marker.",
+ "changes": "Harness robustness only, no gate/check semantics: (1) phase6_tf_witness.py's shutdown path no longer exits 1 when the rclpy context was already shut down by the SIGTERM handler (the genuine bug that failed the pod); (2) the fixture container lingers 10 s after the suite finishes (exit code preserved through bash -e via the || rc=$? idiom) so the host poll reliably observes Running + the completion marker and retrieves evidence for passing AND failing trials.",
+ "setup": {
+  "topology": "g4_topology recycled fresh after 7+ hours (direct endpoint, no fault proxy); reservation remains deleted for the fixture's A10G rendering",
+  "series_output": "qualification-22/paired-series-5",
+  "phase5_evidence": "qualification-22/served-phase5-qualification.json",
+  "sampler": {
+   "output": "serving-resources-paired-series-5.jsonl",
+   "stop_file": "/tmp/g4-paired-series-5-monitor-stop"
+  }
+ },
+ "command": "run_phase6_series.py --output-dir qualification-22/paired-series-5 (same arguments as series 2/3/4)"
+}

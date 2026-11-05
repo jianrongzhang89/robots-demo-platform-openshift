@@ -1,0 +1,43 @@
+# Browser viewer for the isolated Phase 6D Gazebo demo only.
+# The simulator's x11vnc endpoint has no password; expose this route only for
+# an approved demo window and remove it when browser access is no longer needed.
+apiVersion: v1
+kind: Service
+metadata:
+  name: semantic-phase6-novnc
+  namespace: semantic-navigation
+  labels:
+    app.kubernetes.io/part-of: semantic-navigation-demo
+    semantic-navigation.robots-demo/phase: phase6d
+spec:
+  selector:
+    app: semantic-phase6-simulator
+    app.kubernetes.io/part-of: semantic-navigation-demo
+  ports:
+    - name: novnc
+      port: 6080
+      targetPort: 6080
+      protocol: TCP
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: semantic-phase6-novnc
+  namespace: semantic-navigation
+  labels:
+    app.kubernetes.io/part-of: semantic-navigation-demo
+    semantic-navigation.robots-demo/phase: phase6d
+  annotations:
+    haproxy.router.openshift.io/timeout: 10m
+    haproxy.router.openshift.io/websocket: "true"
+spec:
+  to:
+    kind: Service
+    name: semantic-phase6-novnc
+    weight: 100
+  port:
+    targetPort: novnc
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

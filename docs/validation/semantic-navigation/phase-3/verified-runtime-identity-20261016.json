@@ -1,0 +1,141 @@
+{
+  "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/sam3-runtime@sha256:e1edb46b7c500f1e3badb3a340164fa8a013f96eb3217b61e0c9ed2bc2b39bd7",
+  "node": "ip-10-0-18-251.ec2.internal",
+  "resources": {
+    "limits": {
+      "cpu": "6",
+      "memory": "24Gi",
+      "nvidia.com/gpu": "1"
+    },
+    "requests": {
+      "cpu": "3",
+      "memory": "12Gi",
+      "nvidia.com/gpu": "1"
+    }
+  },
+  "containerStatuses": [
+    {
+      "allocatedResources": {
+        "cpu": "100m",
+        "memory": "128Mi"
+      },
+      "containerID": "cri-o://00cb223770143ceea34e59ba0d8391ba12368fcb18597ada6b345acf62a1aff7",
+      "image": "docker.io/eclipse/zenoh-bridge-ros2dds:1.5.0",
+      "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+      "lastState": {},
+      "name": "inference-zenoh-bridge",
+      "ready": true,
+      "resources": {
+        "limits": {
+          "cpu": "500m",
+          "memory": "512Mi"
+        },
+        "requests": {
+          "cpu": "100m",
+          "memory": "128Mi"
+        }
+      },
+      "restartCount": 0,
+      "started": true,
+      "state": {
+        "running": {
+          "startedAt": "2026-10-16T15:20:46Z"
+        }
+      },
+      "user": {
+        "linux": {
+          "gid": 0,
+          "supplementalGroups": [
+            0,
+            1001340000
+          ],
+          "uid": 1001340000
+        }
+      },
+      "volumeMounts": [
+        {
+          "mountPath": "/phase3-config",
+          "name": "config",
+          "readOnly": true,
+          "recursiveReadOnly": "Disabled"
+        },
+        {
+          "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+          "name": "kube-api-access-2jv8s",
+          "readOnly": true,
+          "recursiveReadOnly": "Disabled"
+        }
+      ]
+    },
+    {
+      "allocatedResources": {
+        "cpu": "3",
+        "memory": "12Gi",
+        "nvidia.com/gpu": "1"
+      },
+      "containerID": "cri-o://cd79405fdba8def1860b179ce2d375e29e345c1b2b37d5cb670be02bf8a49058",
+      "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/sam3-runtime@sha256:e1edb46b7c500f1e3badb3a340164fa8a013f96eb3217b61e0c9ed2bc2b39bd7",
+      "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/sam3-runtime@sha256:e1edb46b7c500f1e3badb3a340164fa8a013f96eb3217b61e0c9ed2bc2b39bd7",
+      "lastState": {
+        "terminated": {
+          "containerID": "cri-o://0e56c22761fdd40898c73ce65263600af1e8c737df75d4ec8f1351fdd37c4cb1",
+          "exitCode": 0,
+          "finishedAt": "2026-10-16T15:36:04Z",
+          "reason": "Completed",
+          "startedAt": "2026-10-16T15:34:35Z"
+        }
+      },
+      "name": "sam3-inference",
+      "ready": true,
+      "resources": {
+        "limits": {
+          "cpu": "6",
+          "memory": "24Gi",
+          "nvidia.com/gpu": "1"
+        },
+        "requests": {
+          "cpu": "3",
+          "memory": "12Gi",
+          "nvidia.com/gpu": "1"
+        }
+      },
+      "restartCount": 2,
+      "started": true,
+      "state": {
+        "running": {
+          "startedAt": "2026-10-16T15:36:05Z"
+        }
+      },
+      "user": {
+        "linux": {
+          "gid": 0,
+          "supplementalGroups": [
+            0,
+            1001340000
+          ],
+          "uid": 1001340000
+        }
+      },
+      "volumeMounts": [
+        {
+          "mountPath": "/phase3-config",
+          "name": "config",
+          "readOnly": true,
+          "recursiveReadOnly": "Disabled"
+        },
+        {
+          "mountPath": "/models",
+          "name": "model",
+          "readOnly": true,
+          "recursiveReadOnly": "Disabled"
+        },
+        {
+          "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+          "name": "kube-api-access-2jv8s",
+          "readOnly": true,
+          "recursiveReadOnly": "Disabled"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: semantic-hotel-sim
+  namespace: semantic-navigation
+spec:
+  lookupPolicy:
+    local: true
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: semantic-hotel-sim-phase2
+  namespace: semantic-navigation
+spec:
+  runPolicy: Serial
+  source:
+    binary: {}
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Containerfile.semantic-navigation-phase2
+  output:
+    to:
+      kind: ImageStreamTag
+      name: semantic-hotel-sim:phase2
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: "2"
+      memory: 3Gi

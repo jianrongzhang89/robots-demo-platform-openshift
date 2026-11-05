@@ -1,0 +1,18 @@
+Warning: would violate PodSecurity "restricted:latest": host namespaces (hostNetwork=true, hostPID=true), privileged (container "container-00" must not set securityContext.privileged=true), allowPrivilegeEscalation != false (container "container-00" must set securityContext.allowPrivilegeEscalation=false), unrestricted capabilities (container "container-00" must set securityContext.capabilities.drop=["ALL"]), restricted volume types (volume "host" uses restricted volume type "hostPath"), runAsNonRoot != true (pod or container "container-00" must set securityContext.runAsNonRoot=true), runAsUser=0 (container "container-00" must not set runAsUser=0)
+Starting pod/ip-10-0-44-146ec2internal-debug ...
+To use host binaries, run `chroot /host`
+Reference ID    : A9FEA97B (169.254.169.123)
+Stratum         : 4
+Ref time (UTC)  : Sat Oct 31 20:09:04 2026
+System time     : 0.000005003 seconds fast of NTP time
+Last offset     : +0.000004724 seconds
+RMS offset      : 0.000009120 seconds
+Frequency       : 18.948 ppm slow
+Residual freq   : +0.004 ppm
+Skew            : 0.156 ppm
+Root delay      : 0.000674241 seconds
+Root dispersion : 0.000354082 seconds
+Update interval : 16.3 seconds
+Leap status     : Normal
+
+Removing debug pod ...

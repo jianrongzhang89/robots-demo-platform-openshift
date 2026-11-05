@@ -1,0 +1,191 @@
+{
+  "event": "phase5_owned_action_fixture",
+  "passed": true,
+  "checks": [
+    {
+      "case": "revoke_before_cancel_ack_and_wait_for_terminal",
+      "passed": true
+    },
+    {
+      "case": "late_acceptance_canceled_without_permission",
+      "passed": true
+    },
+    {
+      "case": "success_revokes_and_requires_new_request",
+      "passed": true
+    },
+    {
+      "case": "rejected_cancel_stays_inhibited_until_terminal",
+      "passed": true
+    },
+    {
+      "case": "backend_rejection_never_allows_command",
+      "passed": true
+    },
+    {
+      "case": "no_actuator_or_command_topics",
+      "passed": true
+    }
+  ],
+  "events": [
+    {
+      "event": "goal_requested",
+      "steady_ns": 3119505021885525,
+      "token": "b1c9eeb2-5de9-4716-950a-3cf8be81df9a"
+    },
+    {
+      "event": "goal_response",
+      "steady_ns": 3119505023606547,
+      "token": "b1c9eeb2-5de9-4716-950a-3cf8be81df9a",
+      "disposition": "run"
+    },
+    {
+      "event": "permission_revoked",
+      "steady_ns": 3119505023659633,
+      "token": "b1c9eeb2-5de9-4716-950a-3cf8be81df9a",
+      "reason": "camera_stale"
+    },
+    {
+      "event": "cancel_requested",
+      "steady_ns": 3119505023663117,
+      "token": "b1c9eeb2-5de9-4716-950a-3cf8be81df9a"
+    },
+    {
+      "event": "cancel_response",
+      "steady_ns": 3119505024826121,
+      "token": "b1c9eeb2-5de9-4716-950a-3cf8be81df9a",
+      "accepted": true
+    },
+    {
+      "event": "terminal_result",
+      "steady_ns": 3119507032843517,
+      "token": "b1c9eeb2-5de9-4716-950a-3cf8be81df9a",
+      "status": 5
+    },
+    {
+      "event": "goal_requested",
+      "steady_ns": 3119507032944651,
+      "token": "c31082e5-86cc-41bd-a23e-8686da288d1c"
+    },
+    {
+      "event": "permission_revoked",
+      "steady_ns": 3119507033081043,
+      "token": "c31082e5-86cc-41bd-a23e-8686da288d1c",
+      "reason": "cancel_before_accept"
+    },
+    {
+      "event": "goal_response",
+      "steady_ns": 3119507034120023,
+      "token": "c31082e5-86cc-41bd-a23e-8686da288d1c",
+      "disposition": "cancel"
+    },
+    {
+      "event": "cancel_requested",
+      "steady_ns": 3119507034156763,
+      "token": "c31082e5-86cc-41bd-a23e-8686da288d1c"
+    },
+    {
+      "event": "cancel_response",
+      "steady_ns": 3119507035175735,
+      "token": "c31082e5-86cc-41bd-a23e-8686da288d1c",
+      "accepted": true
+    },
+    {
+      "event": "terminal_result",
+      "steady_ns": 3119507036129217,
+      "token": "c31082e5-86cc-41bd-a23e-8686da288d1c",
+      "status": 5
+    },
+    {
+      "event": "goal_requested",
+      "steady_ns": 3119507036205577,
+      "token": "e48560ba-03d3-4851-bf7f-d03f8f4ebebc"
+    },
+    {
+      "event": "goal_response",
+      "steady_ns": 3119507037224018,
+      "token": "e48560ba-03d3-4851-bf7f-d03f8f4ebebc",
+      "disposition": "run"
+    },
+    {
+      "event": "permission_revoked",
+      "steady_ns": 3119507038175995,
+      "token": "e48560ba-03d3-4851-bf7f-d03f8f4ebebc",
+      "reason": "goal_succeeded"
+    },
+    {
+      "event": "terminal_result",
+      "steady_ns": 3119507038179291,
+      "token": "e48560ba-03d3-4851-bf7f-d03f8f4ebebc",
+      "status": 4
+    },
+    {
+      "event": "goal_requested",
+      "steady_ns": 3119507038249278,
+      "token": "cd68ec89-25a4-4ad9-a54d-142e252b5b5b"
+    },
+    {
+      "event": "goal_response",
+      "steady_ns": 3119507039274086,
+      "token": "cd68ec89-25a4-4ad9-a54d-142e252b5b5b",
+      "disposition": "run"
+    },
+    {
+      "event": "permission_revoked",
+      "steady_ns": 3119507039307008,
+      "token": "cd68ec89-25a4-4ad9-a54d-142e252b5b5b",
+      "reason": "tf_stale"
+    },
+    {
+      "event": "cancel_requested",
+      "steady_ns": 3119507039308910,
+      "token": "cd68ec89-25a4-4ad9-a54d-142e252b5b5b"
+    },
+    {
+      "event": "cancel_response",
+      "steady_ns": 3119507040177774,
+      "token": "cd68ec89-25a4-4ad9-a54d-142e252b5b5b",
+      "accepted": false
+    },
+    {
+      "event": "terminal_result",
+      "steady_ns": 3119507041074110,
+      "token": "cd68ec89-25a4-4ad9-a54d-142e252b5b5b",
+      "status": 6
+    },
+    {
+      "event": "goal_requested",
+      "steady_ns": 3119507041136365,
+      "token": "f929ae5f-a933-4d2a-9396-2fe1ad7ff8bd"
+    },
+    {
+      "event": "goal_response",
+      "steady_ns": 3119507041891430,
+      "token": "f929ae5f-a933-4d2a-9396-2fe1ad7ff8bd",
+      "disposition": "rejected"
+    },
+    {
+      "event": "permission_revoked",
+      "steady_ns": 3119507041894530,
+      "token": "f929ae5f-a933-4d2a-9396-2fe1ad7ff8bd",
+      "reason": "goal_rejected"
+    }
+  ],
+  "topics": {
+    "/parameter_events": [
+      "rcl_interfaces/msg/ParameterEvent"
+    ],
+    "/phase5/task_status": [
+      "std_msgs/msg/String"
+    ],
+    "/phase5_fixture/navigate_to_pose/_action/feedback": [
+      "nav2_msgs/action/NavigateToPose_FeedbackMessage"
+    ],
+    "/phase5_fixture/navigate_to_pose/_action/status": [
+      "action_msgs/msg/GoalStatusArray"
+    ],
+    "/rosout": [
+      "rcl_interfaces/msg/Log"
+    ]
+  }
+}

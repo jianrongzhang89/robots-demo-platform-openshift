@@ -1,0 +1,14 @@
+{
+ "event": "standalone paired-series re-run 15 (November 4)",
+ "context": "Series 14 passed 11 trials then stopped on 005-on to a GENUINE failure - the known goal-approach TF tail (goal_aborted, terminal_status 6; the copy succeeded, no environmental loss; the trial's own checks failed). This is the analyzed ~3-4% per on-arm-trial residual class.",
+ "setup": {
+  "topology": "G4 topology up (direct endpoint); the series' per-trial recycle manages it; reservation remains deleted",
+  "series_output": "qualification-22/paired-series-15",
+  "phase5_evidence": "qualification-22/served-phase5-qualification.json",
+  "sampler": {
+   "output": "serving-resources-paired-series-15.jsonl",
+   "stop_file": "/tmp/g4-paired-series-15-monitor-stop"
+  }
+ },
+ "command": "run_phase6_series.py --output-dir qualification-22/paired-series-15 (same arguments as series 2-14)"
+}

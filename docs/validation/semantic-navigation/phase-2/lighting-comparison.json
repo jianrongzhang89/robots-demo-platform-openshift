@@ -1,0 +1,25 @@
+{
+  "status": "RENDERING_CHANGE_VERIFIED_MODEL_NOT_SCORED",
+  "capture_count": 1,
+  "profiles": {
+    "baseline": {
+      "image": "scene-preview/lighting-baseline/baseline-0000.jpg",
+      "sha256": "1b0b69390e85547339fcc9d078e679351458457b23ad2280f66c3683efbbd222",
+      "mean_bgr": [186.24, 189.50, 193.87],
+      "top_220_mean_bgr": [231, 231, 231],
+      "red_color_threshold_pixels": 8756,
+      "geometry_silhouette_pixels": 9516
+    },
+    "dim": {
+      "image": "scene-preview/lighting-dim/dim-0000.jpg",
+      "sha256": "6c71d0d009f39c8f2df34080b7fe1527bfb9cfc7858326108626455aa9920b5f",
+      "mean_bgr": [71.38, 72.65, 73.75],
+      "top_220_mean_bgr": [97, 97, 97],
+      "red_color_threshold_pixels": 0,
+      "geometry_silhouette_pixels": 6152
+    }
+  },
+  "mean_absolute_pixel_difference": 117.28,
+  "mean_absolute_pixel_difference_top_220_rows": 134,
+  "interpretation": "The static SDF lighting profile changes the robot-camera image substantially. The former color-threshold labeler fails in the dim profile; a manually inspected full-box geometry projection supplies a candidate independent mask for this unoccluded scene. No SAM3 dim-profile score has been run, and one image per profile is not lighting qualification."
+}

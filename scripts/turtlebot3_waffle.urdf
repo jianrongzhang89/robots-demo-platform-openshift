@@ -113,4 +113,19 @@
     <child link="base_scan"/>
     <origin xyz="-0.064 0 0.172" rpy="0 0 0"/>
   </joint>
+
+  <!-- Phase 1 semantic-navigation RGB-D sensor frames. The Gazebo camera
+       uses the body convention; consumers use the REP-103 optical frame. -->
+  <link name="camera_link"/>
+  <joint name="camera_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="camera_link"/>
+    <origin xyz="0.11 0 0.15" rpy="0 0 0"/>
+  </joint>
+  <link name="camera_color_optical_frame"/>
+  <joint name="camera_color_optical_joint" type="fixed">
+    <parent link="camera_link"/>
+    <child link="camera_color_optical_frame"/>
+    <origin xyz="0 0 0" rpy="-1.57079632679 0 -1.57079632679"/>
+  </joint>
 </robot>

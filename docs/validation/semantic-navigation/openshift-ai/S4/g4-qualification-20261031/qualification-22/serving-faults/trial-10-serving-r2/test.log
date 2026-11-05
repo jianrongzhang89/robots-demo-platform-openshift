@@ -1,0 +1,309 @@
+test_missing_evidence_does_not_pass (test_baseline_metrics.MetricsTests.test_missing_evidence_does_not_pass) ... ok
+test_native_stop_before_current_arm_is_never_accepted (test_baseline_metrics.MetricsTests.test_native_stop_before_current_arm_is_never_accepted) ... ok
+test_native_watchdog_can_stop_before_coordinator (test_baseline_metrics.MetricsTests.test_native_watchdog_can_stop_before_coordinator) ... ok
+test_prior_zero_wrong_session_and_resumed_motion_are_not_accepted (test_baseline_metrics.MetricsTests.test_prior_zero_wrong_session_and_resumed_motion_are_not_accepted) ... ok
+test_quiet_must_persist (test_baseline_metrics.MetricsTests.test_quiet_must_persist) ... ok
+test_uninjected_native_stop_requires_bound_arm_and_session (test_baseline_metrics.MetricsTests.test_uninjected_native_stop_requires_bound_arm_and_session) ... ok
+test_capacity_and_session_barriers (test_capture_joiner.JoinerTests.test_capacity_and_session_barriers) ... ok
+test_checked_before_source_is_joined (test_capture_joiner.JoinerTests.test_checked_before_source_is_joined) ... ok
+test_pending_cannot_renew_expired_source (test_capture_joiner.JoinerTests.test_pending_cannot_renew_expired_source) ... ok
+test_reset_does_not_deliver_pending_runtime_command (test_capture_joiner.JoinerTests.test_reset_does_not_deliver_pending_runtime_command) ... ok
+test_runtime_delivery_is_once_and_raw_precedes_checked (test_capture_joiner.JoinerTests.test_runtime_delivery_is_once_and_raw_precedes_checked) ... ok
+test_wait_bound_cannot_be_extended (test_capture_joiner.JoinerTests.test_wait_bound_cannot_be_extended) ... ok
+test_waits_for_native_upper_bracket (test_capture_joiner.JoinerTests.test_waits_for_native_upper_bracket) ... ok
+test_duplicate_named_publisher_not_hidden_by_set (test_command_audit.AuditTests.test_duplicate_named_publisher_not_hidden_by_set) ... ok
+test_future_capture_bound_and_missing_source_time (test_command_audit.AuditTests.test_future_capture_bound_and_missing_source_time) ... ok
+test_missing_evidence_rejected (test_command_audit.AuditTests.test_missing_evidence_rejected) ... ok
+test_no_receipt_time_substitution_required_for_unmapped_evidence (test_command_audit.AuditTests.test_no_receipt_time_substitution_required_for_unmapped_evidence) ... ok
+test_publisher_binding_is_separate_from_command_semantics (test_command_audit.AuditTests.test_publisher_binding_is_separate_from_command_semantics) ... ok
+test_real_profile_shape (test_command_audit.AuditTests.test_real_profile_shape) ... ok
+test_restarted_writer_requires_new_discovered_identity (test_command_audit.AuditTests.test_restarted_writer_requires_new_discovered_identity) ... ok
+test_reused_gid (test_command_audit.AuditTests.test_reused_gid) ... ok
+test_unexpected_writer_rejected (test_command_audit.AuditTests.test_unexpected_writer_rejected) ... ok
+test_wrong_topic_source_or_frame (test_command_audit.AuditTests.test_wrong_topic_source_or_frame) ... ok
+test_delayed_raw_and_invalid_velocity_rejected (test_command_ledger.LedgerTests.test_delayed_raw_and_invalid_velocity_rejected) ... ok
+test_duplicate_cannot_change_wall_capture (test_command_ledger.LedgerTests.test_duplicate_cannot_change_wall_capture) ... ok
+test_old_capture_and_pre_rearm_commands_rejected (test_command_ledger.LedgerTests.test_old_capture_and_pre_rearm_commands_rejected) ... ok
+test_raw_source_accepts_pre_monitor_rotation_magnitude (test_command_ledger.LedgerTests.test_raw_source_accepts_pre_monitor_rotation_magnitude)
+The provenance path records the pre-monitor raw; the applied bound ... ok
+test_smoothing_does_not_renew_deadline (test_command_ledger.LedgerTests.test_smoothing_does_not_renew_deadline) ... ok
+test_stamp_and_session_required (test_command_ledger.LedgerTests.test_stamp_and_session_required) ... ok
+test_wall_capture_cannot_be_hidden_by_slow_simulation (test_command_ledger.LedgerTests.test_wall_capture_cannot_be_hidden_by_slow_simulation) ... ok
+test_file_or_loaded_recorder_fails (test_console_evidence.ConsoleEvidenceTests.test_file_or_loaded_recorder_fails) ... ok
+test_identity_requires_executable_and_source_hash_match (test_console_evidence.ConsoleEvidenceTests.test_identity_requires_executable_and_source_hash_match) ... ok
+test_incomplete_or_overlapping_teardown_is_not_success (test_console_evidence.ConsoleEvidenceTests.test_incomplete_or_overlapping_teardown_is_not_success) ... ok
+test_requires_one_world_without_log_plugin (test_console_evidence.ConsoleEvidenceTests.test_requires_one_world_without_log_plugin) ... ok
+test_shutdown_serializes_join_before_destruction (test_console_evidence.ConsoleEvidenceTests.test_shutdown_serializes_join_before_destruction) ... ok
+test_caster_inventory_requires_explicit_mode_and_all_six_names (test_contact_evidence.ContactTests.test_caster_inventory_requires_explicit_mode_and_all_six_names) ... ok
+test_chassis_floor_is_not_accepted_as_support (test_contact_evidence.ContactTests.test_chassis_floor_is_not_accepted_as_support) ... ok
+test_contact_is_not_hidden_by_floor_substring (test_contact_evidence.ContactTests.test_contact_is_not_hidden_by_floor_substring) ... ok
+test_covered_support_only (test_contact_evidence.ContactTests.test_covered_support_only) ... ok
+test_instrument_only_robot_and_reject_double_patch (test_contact_evidence.ContactTests.test_instrument_only_robot_and_reject_double_patch) ... ok
+test_missing_component_and_rollback_fail (test_contact_evidence.ContactTests.test_missing_component_and_rollback_fail) ... ok
+test_silence_and_unbracketed_window_fail (test_contact_evidence.ContactTests.test_silence_and_unbracketed_window_fail) ... ok
+test_wall_stall_and_malformed_evidence_fail_closed (test_contact_evidence.ContactTests.test_wall_stall_and_malformed_evidence_fail_closed) ... ok
+test_every_mode_has_a_qualified_reason_and_wait (test_fault_stop_probe.FaultStopProbeTests.test_every_mode_has_a_qualified_reason_and_wait) ... ok
+test_physical_obstacle_wait_is_longer_than_chain_faults (test_fault_stop_probe.FaultStopProbeTests.test_physical_obstacle_wait_is_longer_than_chain_faults) ... ok
+test_post_model_is_a_named_embeddable_model (test_fault_stop_probe.FaultStopProbeTests.test_post_model_is_a_named_embeddable_model) ... ok
+test_scan_loss_requires_the_input_freshness_latency_band (test_fault_stop_probe.FaultStopProbeTests.test_scan_loss_requires_the_input_freshness_latency_band) ... ok
+test_spawn_pose_is_ahead_and_left_of_the_physical_pose (test_fault_stop_probe.FaultStopProbeTests.test_spawn_pose_is_ahead_and_left_of_the_physical_pose) ... ok
+test_spawned_post_is_inside_envelope_but_outside_hull (test_fault_stop_probe.FaultStopProbeTests.test_spawned_post_is_inside_envelope_but_outside_hull) ... ok
+test_staging_pose_is_far_off_the_corridor (test_fault_stop_probe.FaultStopProbeTests.test_staging_pose_is_far_off_the_corridor) ... ok
+test_stop_reason_qualification (test_fault_stop_probe.FaultStopProbeTests.test_stop_reason_qualification) ... ok
+test_checked_forwards_immediately_without_extending_deadline (test_guarded_coordinator.CoordinatorTests.test_checked_forwards_immediately_without_extending_deadline) ... ok
+test_cold_start_needs_native_zero_not_idle_nav2_heartbeat (test_guarded_coordinator.CoordinatorTests.test_cold_start_needs_native_zero_not_idle_nav2_heartbeat) ... ok
+test_collision_stop_does_not_resume_when_clear (test_guarded_coordinator.CoordinatorTests.test_collision_stop_does_not_resume_when_clear) ... ok
+test_command_grace_requires_a_newer_recorded_source (test_guarded_coordinator.CoordinatorTests.test_command_grace_requires_a_newer_recorded_source)
+The admission-scheduling grace fires only with a newer validated ... ok
+test_command_grace_saves_a_late_admission (test_guarded_coordinator.CoordinatorTests.test_command_grace_saves_a_late_admission)
+The race the grace exists for: the next source's checked admission ... ok
+test_expired_gate_retains_native_stop_token (test_guarded_coordinator.CoordinatorTests.test_expired_gate_retains_native_stop_token) ... ok
+test_heartbeat_accelerates_near_end_of_life (test_guarded_coordinator.CoordinatorTests.test_heartbeat_accelerates_near_end_of_life)
+Series-17 trial 001-on: the 20 ms heartbeat cadence lets the ... ok
+test_idle_race_before_dispatch (test_guarded_coordinator.CoordinatorTests.test_idle_race_before_dispatch) ... ok
+test_late_arm_ack_after_cancel_never_dispatches_goal (test_guarded_coordinator.CoordinatorTests.test_late_arm_ack_after_cancel_never_dispatches_goal) ... ok
+test_live_preconditions_not_caller_boolean_arm (test_guarded_coordinator.CoordinatorTests.test_live_preconditions_not_caller_boolean_arm) ... ok
+test_missing_sensor_evidence_blocks_arm (test_guarded_coordinator.CoordinatorTests.test_missing_sensor_evidence_blocks_arm) ... ok
+test_native_ack_and_matching_session_both_required (test_guarded_coordinator.CoordinatorTests.test_native_ack_and_matching_session_both_required) ... ok
+test_native_loss_stops_pending_task (test_guarded_coordinator.CoordinatorTests.test_native_loss_stops_pending_task) ... ok
+test_negative_or_wrong_session_ack_cannot_activate (test_guarded_coordinator.CoordinatorTests.test_negative_or_wrong_session_ack_cannot_activate) ... ok
+test_old_command_drained_by_session_barrier (test_guarded_coordinator.CoordinatorTests.test_old_command_drained_by_session_barrier) ... ok
+test_ownership_loss_before_admission (test_guarded_coordinator.CoordinatorTests.test_ownership_loss_before_admission) ... ok
+test_queue_failure_revokes_without_blocking (test_guarded_coordinator.CoordinatorTests.test_queue_failure_revokes_without_blocking) ... ok
+test_terminal_zero_renewal_requires_the_unbindable_newer_source (test_guarded_coordinator.CoordinatorTests.test_terminal_zero_renewal_requires_the_unbindable_newer_source)
+The terminal-deceleration hold (series-14 trial 003-on): a newer ... ok
+test_unowned_active_task_revokes (test_guarded_coordinator.CoordinatorTests.test_unowned_active_task_revokes) ... ok
+test_wait_hold_requires_native_settling_tail (test_guarded_coordinator.CoordinatorTests.test_wait_hold_requires_native_settling_tail) ... ok
+test_wait_renewal_blocked_outside_settling_tail (test_guarded_coordinator.CoordinatorTests.test_wait_renewal_blocked_outside_settling_tail) ... ok
+test_wait_renewal_precedes_native_confirmation (test_guarded_coordinator.CoordinatorTests.test_wait_renewal_precedes_native_confirmation) ... ok
+test_empty_nan_and_unknown_geometry_fail (test_hotel_sensor_validation.SensorValidationTests.test_empty_nan_and_unknown_geometry_fail) ... ok
+test_odom_nonfinite_and_bad_quaternion_fail (test_hotel_sensor_validation.SensorValidationTests.test_odom_nonfinite_and_bad_quaternion_fail) ... ok
+test_scan_valid_and_infinity_is_no_return (test_hotel_sensor_validation.SensorValidationTests.test_scan_valid_and_infinity_is_no_return) ... ok
+test_virtual_sensor_range_requires_explicit_matching_contract (test_hotel_sensor_validation.SensorValidationTests.test_virtual_sensor_range_requires_explicit_matching_contract) ... ok
+test_backup_wait_children_require_explicit_recovery_profile (test_hotel_task_registry.RegistryTests.test_backup_wait_children_require_explicit_recovery_profile) ... ok
+test_cancel_ack_or_empty_status_does_not_clear_active (test_hotel_task_registry.RegistryTests.test_cancel_ack_or_empty_status_does_not_clear_active) ... ok
+test_graph_loss_revokes (test_hotel_task_registry.RegistryTests.test_graph_loss_revokes) ... ok
+test_legitimate_child_uuid_differs_from_parent (test_hotel_task_registry.RegistryTests.test_legitimate_child_uuid_differs_from_parent) ... ok
+test_only_expected_private_clients_may_be_frozen (test_hotel_task_registry.RegistryTests.test_only_expected_private_clients_may_be_frozen) ... ok
+test_other_parent_is_rejected (test_hotel_task_registry.RegistryTests.test_other_parent_is_rejected) ... ok
+test_recovery_graph_does_not_authorize_other_behavior_actions (test_hotel_task_registry.RegistryTests.test_recovery_graph_does_not_authorize_other_behavior_actions) ... ok
+test_recovery_not_in_baseline_tree_is_rejected (test_hotel_task_registry.RegistryTests.test_recovery_not_in_baseline_tree_is_rejected) ... ok
+test_terminal_reactivation_fault_latches (test_hotel_task_registry.RegistryTests.test_terminal_reactivation_fault_latches) ... ok
+test_unknown_endpoint_is_not_silently_inventoried (test_hotel_task_registry.RegistryTests.test_unknown_endpoint_is_not_silently_inventoried) ... ok
+test_unprimed_is_not_idle (test_hotel_task_registry.RegistryTests.test_unprimed_is_not_idle) ... ok
+test_armed_resets_window (test_native_clock.ClockTests.test_armed_resets_window) ... ok
+test_clock_jump_rejected (test_native_clock.ClockTests.test_clock_jump_rejected) ... ok
+test_duplicate_does_not_refresh (test_native_clock.ClockTests.test_duplicate_does_not_refresh) ... ok
+test_large_bracket_rejected (test_native_clock.ClockTests.test_large_bracket_rejected) ... ok
+test_malformed_velocity_and_future_capture_rejected (test_native_clock.ClockTests.test_malformed_velocity_and_future_capture_rejected) ... ok
+test_mapping_strictly_earlier_not_interpolated_or_receipt (test_native_clock.ClockTests.test_mapping_strictly_earlier_not_interpolated_or_receipt) ... ok
+test_moving_invalidates_stationary (test_native_clock.ClockTests.test_moving_invalidates_stationary) ... ok
+test_nonfinite_pose_rejected (test_native_clock.ClockTests.test_nonfinite_pose_rejected) ... ok
+test_pause_and_rollback_latch (test_native_clock.ClockTests.test_pause_and_rollback_latch) ... ok
+test_rebound_with_linear_speed_resets (test_native_clock.ClockTests.test_rebound_with_linear_speed_resets) ... ok
+test_rebound_with_rotating_pose_resets (test_native_clock.ClockTests.test_rebound_with_rotating_pose_resets) ... ok
+test_rebound_with_translation_resets (test_native_clock.ClockTests.test_rebound_with_translation_resets) ... ok
+test_restart_latches_until_explicit_new_binding (test_native_clock.ClockTests.test_restart_latches_until_explicit_new_binding) ... ok
+test_stationary_requires_contiguous_fresh_capture (test_native_clock.ClockTests.test_stationary_requires_contiguous_fresh_capture) ... ok
+test_velocity_rebound_over_static_pose_stays_quiet (test_native_clock.ClockTests.test_velocity_rebound_over_static_pose_stays_quiet)
+The series-19 trial 005-on replay: the angular-velocity norm ... ok
+test_window_never_opens_without_velocity_quiet (test_native_clock.ClockTests.test_window_never_opens_without_velocity_quiet)
+Fail-closed: a window opens only on the velocity criterion — ... ok
+test_missing_or_changed_geometry_fails_closed (test_phase5_timing_profile.MovingTraceProfileTests.test_missing_or_changed_geometry_fails_closed) ... ok
+test_numeric_cli_serializations_are_equivalent (test_phase5_timing_profile.MovingTraceProfileTests.test_numeric_cli_serializations_are_equivalent) ... ok
+test_cells_in_rectangle_with_margin (test_phase6_semantic_checks.GridTests.test_cells_in_rectangle_with_margin) ... ok
+test_clearance_bound_sums_the_phase4_components (test_phase6_semantic_checks.GridTests.test_clearance_bound_sums_the_phase4_components) ... ok
+test_cost_cells_are_world_centers (test_phase6_semantic_checks.GridTests.test_cost_cells_are_world_centers) ... ok
+test_costs_at_target_fails_on_outside_cells_or_local_layer (test_phase6_semantic_checks.GridTests.test_costs_at_target_fails_on_outside_cells_or_local_layer) ... ok
+test_costs_at_target_passes_with_global_cells_and_full_containment (test_phase6_semantic_checks.GridTests.test_costs_at_target_passes_with_global_cells_and_full_containment) ... ok
+test_histogram_and_soft_cost_only (test_phase6_semantic_checks.GridTests.test_histogram_and_soft_cost_only) ... ok
+test_normalize_grid_flattens_a_costmap_message (test_phase6_semantic_checks.GridTests.test_normalize_grid_flattens_a_costmap_message) ... ok
+test_removal_pose_is_behind_and_beside_the_robot (test_phase6_semantic_checks.RemovalPoseTests.test_removal_pose_is_behind_and_beside_the_robot) ... ok
+test_removal_pose_preserves_the_mat_surface_height (test_phase6_semantic_checks.RemovalPoseTests.test_removal_pose_preserves_the_mat_surface_height) ... ok
+test_pooled_fraction_over_stationary_results (test_phase6_semantic_checks.SmokeSummaryTests.test_pooled_fraction_over_stationary_results) ... ok
+test_small_pixel_results_are_excluded (test_phase6_semantic_checks.SmokeSummaryTests.test_small_pixel_results_are_excluded) ... ok
+test_too_few_results_or_low_fraction_fails (test_phase6_semantic_checks.SmokeSummaryTests.test_too_few_results_or_low_fraction_fails) ... ok
+test_extrinsics (test_prepare_assets.AssetsTests.test_extrinsics) ... ok
+test_micro_world_preserves_robot_but_removes_sensors (test_prepare_assets.AssetsTests.test_micro_world_preserves_robot_but_removes_sensors) ... ok
+test_native_odometry_rate_override_does_not_change_frames (test_prepare_assets.AssetsTests.test_native_odometry_rate_override_does_not_change_frames) ... ok
+test_only_private_drive_topic_and_one_watchdog (test_prepare_assets.AssetsTests.test_only_private_drive_topic_and_one_watchdog) ... ok
+test_private_lidar_rate_override (test_prepare_assets.AssetsTests.test_private_lidar_rate_override) ... ok
+test_private_step_and_virtual_range_preserve_sensor_pose_and_drive (test_prepare_assets.AssetsTests.test_private_step_and_virtual_range_preserve_sensor_pose_and_drive) ... ok
+test_unknown_geometry_and_double_patch_rejected (test_prepare_assets.AssetsTests.test_unknown_geometry_and_double_patch_rejected) ... ok
+test_bounded_priority_and_guard_before_diagnostics (test_priority_pump.PriorityPumpTests.test_bounded_priority_and_guard_before_diagnostics) ... ok
+test_busy_ingress_cannot_starve_other_work (test_priority_pump.PriorityPumpTests.test_busy_ingress_cannot_starve_other_work) ... ok
+test_dictionary_metadata_does_not_overwrite_original_source (test_priority_pump.PriorityPumpTests.test_dictionary_metadata_does_not_overwrite_original_source) ... ok
+test_timing_preserves_exception_and_records_duration (test_priority_pump.PriorityPumpTests.test_timing_preserves_exception_and_records_duration) ... ok
+test_timing_returns_value_and_retains_bounded_slow_samples (test_priority_pump.PriorityPumpTests.test_timing_returns_value_and_retains_bounded_slow_samples) ... ok
+test_accepted_graceful_request_avoids_signal (test_process_shutdown.ShutdownTests.test_accepted_graceful_request_avoids_signal) ... ok
+test_already_exited_is_not_misreported_alive (test_process_shutdown.ShutdownTests.test_already_exited_is_not_misreported_alive) ... ok
+test_display_outlives_gazebo (test_process_shutdown.ShutdownTests.test_display_outlives_gazebo) ... ok
+test_failed_graceful_request_is_retained_with_signal_fallback (test_process_shutdown.ShutdownTests.test_failed_graceful_request_is_retained_with_signal_fallback) ... ok
+test_failed_snapshot_still_kills (test_process_shutdown.ShutdownTests.test_failed_snapshot_still_kills) ... ok
+test_positive_ack_cannot_hide_failure_to_exit (test_process_shutdown.ShutdownTests.test_positive_ack_cannot_hide_failure_to_exit) ... ok
+test_service_requires_private_transport_and_positive_ack (test_process_shutdown.ShutdownTests.test_service_requires_private_transport_and_positive_ack) ... ok
+test_smoke_uses_separate_transport_and_rejects_non_stop_request (test_process_shutdown.ShutdownTests.test_smoke_uses_separate_transport_and_rejects_non_stop_request) ... ok
+test_snapshot_only_after_failure_and_cannot_hide_forced_kill (test_process_shutdown.ShutdownTests.test_snapshot_only_after_failure_and_cannot_hide_forced_kill) ... ok
+test_snapshot_retains_partial_debugger_output (test_process_shutdown.ShutdownTests.test_snapshot_retains_partial_debugger_output) ... ok
+test_snapshot_unavailable_process_and_debugger_is_evidence (test_process_shutdown.ShutdownTests.test_snapshot_unavailable_process_and_debugger_is_evidence) ... ok
+test_timeout_retains_forced_failure_evidence (test_process_shutdown.ShutdownTests.test_timeout_retains_forced_failure_evidence) ... ok
+test_cpu_counters_remain_integer (test_resource_probe.ResourceProbeTests.test_cpu_counters_remain_integer) ... ok
+test_missing_sources_are_explicit_not_zero (test_resource_probe.ResourceProbeTests.test_missing_sources_are_explicit_not_zero) ... ok
+test_pressure_preserves_cumulative_microseconds (test_resource_probe.ResourceProbeTests.test_pressure_preserves_cumulative_microseconds) ... ok
+test_process_name_and_stat_field_positions (test_resource_probe.ResourceProbeTests.test_process_name_and_stat_field_positions) ... ok
+test_watched_main_thread_schedstat_is_pinned_by_kernel_comm (test_resource_probe.ResourceProbeTests.test_watched_main_thread_schedstat_is_pinned_by_kernel_comm) ... ok
+test_clock_jump_and_restart_stop (test_safety_core.ReceiverTests.test_clock_jump_and_restart_stop) ... ok
+test_late_packet_never_renews_expired_receiver (test_safety_core.ReceiverTests.test_late_packet_never_renews_expired_receiver) ... ok
+test_lost_supervisor_or_transport_expires_locally (test_safety_core.ReceiverTests.test_lost_supervisor_or_transport_expires_locally) ... ok
+test_no_session_reuse_or_rearm_while_running (test_safety_core.ReceiverTests.test_no_session_reuse_or_rearm_while_running) ... ok
+test_renewals_and_explicit_revoke (test_safety_core.ReceiverTests.test_renewals_and_explicit_revoke) ... ok
+test_replay_wrong_session_bad_velocity_and_deadline_latch (test_safety_core.ReceiverTests.test_replay_wrong_session_bad_velocity_and_deadline_latch) ... ok
+test_startup_packet_does_not_arm (test_safety_core.ReceiverTests.test_startup_packet_does_not_arm) ... ok
+test_worst_timer_phase_is_within_100ms_lease_budget (test_safety_core.ReceiverTests.test_worst_timer_phase_is_within_100ms_lease_budget) ... ok
+test_arm_requires_all_inputs_and_idle_stationary_neutral (test_safety_core.SafetyGateTests.test_arm_requires_all_inputs_and_idle_stationary_neutral) ... ok
+test_bounded_zero_motion_setup_does_not_extend_first_real_command (test_safety_core.SafetyGateTests.test_bounded_zero_motion_setup_does_not_extend_first_real_command) ... ok
+test_capture_age_not_arrival_age (test_safety_core.SafetyGateTests.test_capture_age_not_arrival_age) ... ok
+test_clock_rollback_latches_and_clears (test_safety_core.SafetyGateTests.test_clock_rollback_latches_and_clears) ... ok
+test_command_expiry_and_late_command_cannot_resume (test_safety_core.SafetyGateTests.test_command_expiry_and_late_command_cannot_resume) ... ok
+test_command_grace_extends_once_only_while_imminent (test_safety_core.SafetyGateTests.test_command_grace_extends_once_only_while_imminent)
+The admission-scheduling grace: one-shot, bounded, imminent-only. ... ok
+test_command_grace_resets_on_each_accepted_command (test_safety_core.SafetyGateTests.test_command_grace_resets_on_each_accepted_command) ... ok
+test_delayed_callback_cannot_conceal_command_expiry (test_safety_core.SafetyGateTests.test_delayed_callback_cannot_conceal_command_expiry) ... ok
+test_delayed_inputs_during_recovery_do_not_chase_barrier (test_safety_core.SafetyGateTests.test_delayed_inputs_during_recovery_do_not_chase_barrier) ... ok
+test_each_missing_input_stops_by_deadline (test_safety_core.SafetyGateTests.test_each_missing_input_stops_by_deadline) ... ok
+test_epoch_change_latches (test_safety_core.SafetyGateTests.test_epoch_change_latches) ... ok
+test_future_expired_and_malformed_inputs (test_safety_core.SafetyGateTests.test_future_expired_and_malformed_inputs) ... ok
+test_geometry_baseline_is_separate_startup_policy (test_safety_core.SafetyGateTests.test_geometry_baseline_is_separate_startup_policy) ... ok
+test_invalid_velocity_latches (test_safety_core.SafetyGateTests.test_invalid_velocity_latches) ... ok
+test_late_success_cannot_hide_input_deadline (test_safety_core.SafetyGateTests.test_late_success_cannot_hide_input_deadline) ... ok
+test_local_and_remote_faults_share_stop_path (test_safety_core.SafetyGateTests.test_local_and_remote_faults_share_stop_path) ... ok
+test_normal_motion_and_bounds (test_safety_core.SafetyGateTests.test_normal_motion_and_bounds) ... ok
+test_packet_cannot_extend_command_authority (test_safety_core.SafetyGateTests.test_packet_cannot_extend_command_authority) ... ok
+test_paused_simulation_still_expires (test_safety_core.SafetyGateTests.test_paused_simulation_still_expires) ... ok
+test_rearm_requires_new_evidence_and_changes_session (test_safety_core.SafetyGateTests.test_rearm_requires_new_evidence_and_changes_session) ... ok
+test_repeated_capture_does_not_refresh_lease (test_safety_core.SafetyGateTests.test_repeated_capture_does_not_refresh_lease) ... ok
+test_reset_capture_barrier_includes_clock_uncertainty (test_safety_core.SafetyGateTests.test_reset_capture_barrier_includes_clock_uncertainty) ... ok
+test_second_fault_during_recovery_clears_partial_inputs (test_safety_core.SafetyGateTests.test_second_fault_during_recovery_clears_partial_inputs) ... ok
+test_setup_still_requires_fresh_inputs_and_has_fixed_end (test_safety_core.SafetyGateTests.test_setup_still_requires_fresh_inputs_and_has_fixed_end) ... ok
+test_startup_never_moves (test_safety_core.SafetyGateTests.test_startup_never_moves) ... ok
+test_terminal_zero_hold_permits_the_settling_tail_only (test_safety_core.SafetyGateTests.test_terminal_zero_hold_permits_the_settling_tail_only)
+The terminal-deceleration hold (series-14 design): the settling ... ok
+test_unbounded_setup_rejected (test_safety_core.SafetyGateTests.test_unbounded_setup_rejected) ... ok
+test_wall_jump_latches (test_safety_core.SafetyGateTests.test_wall_jump_latches) ... ok
+test_zero_wait_hold_cannot_convert_motion_to_zero_or_revive_expired_gate (test_safety_core.SafetyGateTests.test_zero_wait_hold_cannot_convert_motion_to_zero_or_revive_expired_gate) ... ok
+test_zero_wait_hold_normalizes_only_terminal_near_zero (test_safety_core.SafetyGateTests.test_zero_wait_hold_normalizes_only_terminal_near_zero) ... ok
+test_zero_wait_hold_still_checks_sensor_freshness (test_safety_core.SafetyGateTests.test_zero_wait_hold_still_checks_sensor_freshness) ... ok
+test_zero_wait_holds_only_existing_zero_and_preserves_source_stamp (test_safety_core.SafetyGateTests.test_zero_wait_holds_only_existing_zero_and_preserves_source_stamp) ... ok
+test_decode_mask_rejects_mismatched_payloads (test_sam3_observation.Sam3ObservationTests.test_decode_mask_rejects_mismatched_payloads) ... ok
+test_mat_ground_truth_requires_the_model (test_sam3_observation.Sam3ObservationTests.test_mat_ground_truth_requires_the_model) ... ok
+test_points_in_rectangle_counts_and_fractions (test_sam3_observation.Sam3ObservationTests.test_points_in_rectangle_counts_and_fractions) ... ok
+test_registration_summary_requires_moving_results_and_fraction (test_sam3_observation.Sam3ObservationTests.test_registration_summary_requires_moving_results_and_fraction) ... ok
+test_timing_summary_enforces_age_and_rate (test_sam3_observation.Sam3ObservationTests.test_timing_summary_enforces_age_and_rate) ... ok
+test_transform_points_applies_a_rigid_transform (test_sam3_observation.Sam3ObservationTests.test_transform_points_applies_a_rigid_transform) ... ok
+test_every_mode_has_a_qualified_reason_set (test_semantic_fault_probe.SemanticFaultProbeTests.test_every_mode_has_a_qualified_reason_set) ... ok
+test_fresh_dense_results_grow_the_streak (test_semantic_fault_probe.SemanticFaultProbeTests.test_fresh_dense_results_grow_the_streak) ... ok
+test_late_success_key_and_waits (test_semantic_fault_probe.SemanticFaultProbeTests.test_late_success_key_and_waits) ... ok
+test_observation_window_scopes_to_the_pre_fault_period (test_semantic_fault_probe.SemanticFaultProbeTests.test_observation_window_scopes_to_the_pre_fault_period) ... ok
+test_observation_window_trims_the_leading_warmup (test_semantic_fault_probe.SemanticFaultProbeTests.test_observation_window_trims_the_leading_warmup) ... ok
+test_result_gap_resets_the_streak (test_semantic_fault_probe.SemanticFaultProbeTests.test_result_gap_resets_the_streak) ... ok
+test_semantic_faults_qualify_through_the_semantic_leases (test_semantic_fault_probe.SemanticFaultProbeTests.test_semantic_faults_qualify_through_the_semantic_leases) ... ok
+test_semantic_leases_do_not_qualify_a_navigation_timeout (test_semantic_fault_probe.SemanticFaultProbeTests.test_semantic_leases_do_not_qualify_a_navigation_timeout) ... ok
+test_stale_result_resets_the_streak (test_semantic_fault_probe.SemanticFaultProbeTests.test_stale_result_resets_the_streak) ... ok
+test_stopped_results_report_zero_streak (test_semantic_fault_probe.SemanticFaultProbeTests.test_stopped_results_report_zero_streak) ... ok
+test_tf_loss_keeps_the_geometry_only_acceptance (test_semantic_fault_probe.SemanticFaultProbeTests.test_tf_loss_keeps_the_geometry_only_acceptance) ... ok
+test_serving_failures_require_semantic_stop_and_recovered_result (test_served_fault_probe.ServedFaultPolicyTests.test_serving_failures_require_semantic_stop_and_recovered_result) ... ok
+test_missing_or_malformed_capture_grants_no_lease (test_served_fault_probe.ServedHeartbeatTests.test_missing_or_malformed_capture_grants_no_lease) ... ok
+test_uses_source_publication_and_successful_capture_not_receiver_clock (test_served_fault_probe.ServedHeartbeatTests.test_uses_source_publication_and_successful_capture_not_receiver_clock) ... ok
+test_preserves_original_links_and_adds_rolling_supports_within_hull (test_support_geometry.SupportTests.test_preserves_original_links_and_adds_rolling_supports_within_hull) ... ok
+test_refuses_double_patch_and_unknown_geometry (test_support_geometry.SupportTests.test_refuses_double_patch_and_unknown_geometry) ... ok
+test_cancel_ack_does_not_clear_task (test_task_session.TaskTests.test_cancel_ack_does_not_clear_task) ... ok
+test_cancel_before_acceptance_cancels_late_handle (test_task_session.TaskTests.test_cancel_before_acceptance_cancels_late_handle) ... ok
+test_cancel_rejection_and_invalid_result_stay_blocked (test_task_session.TaskTests.test_cancel_rejection_and_invalid_result_stay_blocked) ... ok
+test_duplicate_request_denied (test_task_session.TaskTests.test_duplicate_request_denied) ... ok
+test_late_acceptance_does_not_hide_timeout (test_task_session.TaskTests.test_late_acceptance_does_not_hide_timeout) ... ok
+test_late_success_preserves_fault_and_does_not_resume (test_task_session.TaskTests.test_late_success_preserves_fault_and_does_not_resume) ... ok
+test_old_callbacks_cannot_change_new_session (test_task_session.TaskTests.test_old_callbacks_cannot_change_new_session) ... ok
+test_only_accepted_current_goal_allows_command (test_task_session.TaskTests.test_only_accepted_current_goal_allows_command) ... ok
+test_success_revokes_and_requires_new_explicit_request (test_task_session.TaskTests.test_success_revokes_and_requires_new_explicit_request) ... ok
+test_only_advanced_lookup_poll_changes (test_tf2_polling_patch.Tf2PollingPatchTests.test_only_advanced_lookup_poll_changes) ... ok
+test_refuses_unexpected_or_already_patched_source (test_tf2_polling_patch.Tf2PollingPatchTests.test_refuses_unexpected_or_already_patched_source) ... ok
+test_earlier_command_stop_is_only_qualified_for_publisher_outage (test_tf_fault_probe.TfFaultProbeTests.test_earlier_command_stop_is_only_qualified_for_publisher_outage) ... ok
+test_filter_only_drops_selected_edge_and_can_restore (test_tf_fault_probe.TfFaultProbeTests.test_filter_only_drops_selected_edge_and_can_restore) ... ok
+test_map_failure_requires_new_capture_frozen_map_and_live_odom (test_tf_fault_probe.TfFaultProbeTests.test_map_failure_requires_new_capture_frozen_map_and_live_odom) ... ok
+test_big_tail_wrong_session_or_lost_authority_fail (test_wait_metrics.WaitMetricsTests.test_big_tail_wrong_session_or_lost_authority_fail) ... ok
+test_bounded_initial_tail_is_separate_from_exact_native_zero (test_wait_metrics.WaitMetricsTests.test_bounded_initial_tail_is_separate_from_exact_native_zero) ... ok
+test_late_zero_missing_samples_and_coverage_fail (test_wait_metrics.WaitMetricsTests.test_late_zero_missing_samples_and_coverage_fail) ... ok
+test_no_nonzero_after_first_native_zero (test_wait_metrics.WaitMetricsTests.test_no_nonzero_after_first_native_zero) ... ok
+test_pre_confirmation_decel_step_precedes_the_confirmed_anchor (test_wait_metrics.WaitMetricsTests.test_pre_confirmation_decel_step_precedes_the_confirmed_anchor) ... ok
+
+----------------------------------------------------------------------
+Ran 228 tests in 0.064s
+
+OK
+test_delayed_capture_does_not_restart_deadline (__main__.FrameTests.test_delayed_capture_does_not_restart_deadline) ... ok
+test_pose_and_stamp_preserved_no_map_edge (__main__.FrameTests.test_pose_and_stamp_preserved_no_map_edge) ... ok
+test_rollback_latches (__main__.FrameTests.test_rollback_latches) ... ok
+test_scan_stamp_preserved_and_sensor_offset_frame_used (__main__.FrameTests.test_scan_stamp_preserved_and_sensor_offset_frame_used) ... ok
+test_stale_and_missing_clock_rejected (__main__.FrameTests.test_stale_and_missing_clock_rejected) ... ok
+test_unknown_frames_and_invalid_pose_fail_closed (__main__.FrameTests.test_unknown_frames_and_invalid_pose_fail_closed) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.102s
+
+OK
+test_collision_message_is_delivered_to_latched_coordinator (__main__.AdapterTests.test_collision_message_is_delivered_to_latched_coordinator) ... ok
+test_foreign_writer_never_enters_joiner (__main__.AdapterTests.test_foreign_writer_never_enters_joiner) ... ok
+test_missing_capture_transform_never_uses_latest_as_evidence (__main__.AdapterTests.test_missing_capture_transform_never_uses_latest_as_evidence) ... ok
+test_no_admission_when_task_not_authorized (__main__.AdapterTests.test_no_admission_when_task_not_authorized) ... ok
+test_odometry_capture_not_receipt_time (__main__.AdapterTests.test_odometry_capture_not_receipt_time) ... ok
+test_probe_buffer_drops_map_edge_without_changing_other_buffer_or_static_tf (__main__.AdapterTests.test_probe_buffer_drops_map_edge_without_changing_other_buffer_or_static_tf) ... ok
+test_qualified_transform_is_not_requeried_or_renewed (__main__.AdapterTests.test_qualified_transform_is_not_requeried_or_renewed) ... ok
+test_transform_uses_exact_capture_not_latest (__main__.AdapterTests.test_transform_uses_exact_capture_not_latest) ... ok
+test_valid_command_enqueued_with_original_stamp (__main__.AdapterTests.test_valid_command_enqueued_with_original_stamp) ... ok
+test_wrong_frame_rejected_before_admission (__main__.AdapterTests.test_wrong_frame_rejected_before_admission) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.003s
+
+OK
+Running main() from ./googletest/src/gtest_main.cc
+[==========] Running 15 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 15 tests from Lease
+[ RUN      ] Lease.Startup
+[       OK ] Lease.Startup (0 ms)
+[ RUN      ] Lease.StationaryRequired
+[       OK ] Lease.StationaryRequired (0 ms)
+[ RUN      ] Lease.Expiration
+[       OK ] Lease.Expiration (0 ms)
+[ RUN      ] Lease.LateCallback
+[       OK ] Lease.LateCallback (0 ms)
+[ RUN      ] Lease.NoSessionReuse
+[       OK ] Lease.NoSessionReuse (0 ms)
+[ RUN      ] Lease.NewSessionExplicit
+[       OK ] Lease.NewSessionExplicit (0 ms)
+[ RUN      ] Lease.InvalidPacketsLatch
+[       OK ] Lease.InvalidPacketsLatch (0 ms)
+[ RUN      ] Lease.Replay
+[       OK ] Lease.Replay (0 ms)
+[ RUN      ] Lease.ClockJump
+[       OK ] Lease.ClockJump (0 ms)
+[ RUN      ] Lease.Malformed
+[       OK ] Lease.Malformed (0 ms)
+[ RUN      ] Lease.UpstreamShorterDeadline
+[       OK ] Lease.UpstreamShorterDeadline (0 ms)
+[ RUN      ] Lease.StopRetainsFirstReason
+[       OK ] Lease.StopRetainsFirstReason (0 ms)
+[ RUN      ] Lease.PendingHandshakeNeverGrantsMotion
+[       OK ] Lease.PendingHandshakeNeverGrantsMotion (0 ms)
+[ RUN      ] Lease.HandshakeTimeoutAndCancelInvalidateSession
+[       OK ] Lease.HandshakeTimeoutAndCancelInvalidateSession (0 ms)
+[ RUN      ] Lease.ExpiredPreArmTrafficCannotBlockFreshFirstPacket
+[       OK ] Lease.ExpiredPreArmTrafficCannotBlockFreshFirstPacket (0 ms)
+[----------] 15 tests from Lease (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 15 tests from 1 test suite ran. (0 ms total)
+[  PASSED  ] 15 tests.
+{"passed": true, "checks": [{"case": "console_server_preflight", "passed": true, "checks": [{"case": "wrong_domain", "passed": true, "returncode": 2, "stdout": "", "stderr": "private fixture world and new console directory required\n"}, {"case": "wrong_transport", "passed": true, "returncode": 2, "stdout": "", "stderr": "private fixture world and new console directory required\n"}, {"case": "wrong_partition", "passed": true, "returncode": 2, "stdout": "", "stderr": "private fixture world and new console directory required\n"}, {"case": "missing_world", "passed": true, "returncode": 2, "stdout": "", "stderr": ""}, {"case": "invalid_console_path", "passed": true, "returncode": 2, "stdout": "", "stderr": ""}, {"case": "existing_console_path", "passed": true, "returncode": 2, "stdout": "", "stderr": ""}, {"case": "existing_log_preserved", "passed": true}, {"case": "valid_server_stays_alive", "passed": true}, {"case": "non_stop_request_rejected", "passed": true, "reply": {"passed": false, "returncode": 0, "stdout": "\n", "stderr": ""}}, {"case": "bounded_serialized_shutdown", "passed": true, "returncode": 0, "reply": {"passed": true, "returncode": 0, "stdout": "data: true\n\n", "stderr": ""}, "lifecycle": {"passed": true, "marker_positions": {"stop_begin": 80, "stop_end": 109, "stop_worker_joined": 176, "destructor_begin": 213, "destructor_end": 248}, "run_returned_position": 136}}, {"case": "no_world_recording", "passed": true, "recording_files": [], "recording_libraries": []}]}, {"case": "real_hotel_rgbd_scan_odom_clock", "passed": true, "sensors": {"odom": {"stamp": 1728000000, "frame": "odom", "wall_received": 1793649533816562210, "count": 288, "rollback": false}, "scan": {"stamp": 1700000000, "frame": "lidar_frame", "wall_received": 1793649533786302318, "count": 5, "rollback": false, "samples": 360, "finite": 277}, "rgb": {"stamp": 1684000000, "frame": "camera_color_optical_frame", "wall_received": 1793649533809642485, "count": 15, "rollback": false, "transport": "gz", "traced": true}, "depth": {"stamp": 1684000000, "frame": "camera_color_optical_frame", "wall_received": 1793649533809642485, "count": 15, "rollback": false, "transport": "gz", "traced": true}}}, {"case": "console_sensors_system_override_loaded", "passed": true}, {"case": "console_server_identity", "passed": true, "executable": "/opt/semantic-safety/bin/phase5_console_server", "sha256": "0583215863aa70ba1fe1deb8003a37496b935ce6d2d9934c5c6bed3cf81ae437", "source_hashes": {"CMakeLists.txt": "dd5a65c3a67f446fc865d7f97624e1b9aead4ec49a6c5c55b88250af043324f5", "console_server.cc": "5cab7c1d53c7aa2d3d0ec8d43503154f1d7a873ac2499c00d86f57bd9dc5aef2"}}, {"case": "console_server_recording_absent_before_arm", "passed": true, "recording_files": [], "recording_libraries": []}, {"case": "native_contact_components_live", "passed": true}, {"case": "settled_support_geometry", "enforced_before_arm": true, "passed": true, "reason": "clear", "unexpected": [], "samples": 15, "steps": 267, "qualification": "exact allowlisted support contacts only; no force/depth exemption"}, {"case": "amcl_and_corrected_static_sensor_frames", "passed": true, "amcl": {"stamp": 2600000000, "x": 15.40323448279606, "y": -31.592912182999108, "covariance": [0.00973518742520696, 6.147309602511086e-05, 0.0, 0.0, 0.0, 0.0, 6.147309602511086e-05, 0.009667023135762065, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.010012707198015709]}}, {"case": "nav2_action_endpoint_inventory_recorded", "passed": true, "action_names": ["/robot_1/backup", "/robot_1/compute_path_through_poses", "/robot_1/compute_path_to_pose", "/robot_1/drive_on_heading", "/robot_1/follow_path", "/robot_1/navigate_through_poses", "/robot_1/navigate_to_pose", "/robot_1/smooth_path", "/robot_1/spin", "/robot_1/wait"]}, {"case": "actual_candidate_lifecycle_active", "passed": true, "states": {"map_server": {"id": 3, "label": "active"}, "amcl": {"id": 3, "label": "active"}, "controller_server": {"id": 3, "label": "active"}, "smoother_server": {"id": 3, "label": "active"}, "planner_server": {"id": 3, "label": "active"}, "behavior_server": {"id": 3, "label": "active"}, "velocity_smoother": {"id": 3, "label": "active"}, "collision_monitor": {"id": 3, "label": "active"}, "bt_navigator": {"id": 3, "label": "active"}}}, {"case": "actual_costmaps_subscribe_to_corrected_lidar", "passed": true}, {"case": "actual_command_publisher_routes", "passed": true}, {"case": "unexpected_writer_and_publisher_restart_binding", "passed": true, "first_guid": [1, 16, 5, 153, 212, 109, 182, 107, 177, 167, 201, 148, 0, 0, 134, 3], "replacement_guid": [1, 16, 5, 153, 212, 109, 182, 107, 177, 167, 201, 148, 0, 0, 151, 3], "both_resolved_and_rejected": true}, {"case": "actual_hotel_plan_one_meter", "passed": true, "points": 39, "goal_distance_m": 1.0, "goal_xy": null}, {"case": "sam3_observation_ready", "passed": true, "labels": {"active_labels": [0, 2], "generation": 1, "labels": {"0": "unobserved", "1": "traversable", "2": "avoid_target"}, "policy": "avoid-target/v1", "prompt": "red mat"}}, {"case": "semantic_fault_serving", "passed": true, "mode": "serving", "stage": "observed_fault_and_stop", "input_freshness_ms": 500, "command_zero_limit_ms": 100, "reason": "semantic_stale", "injection_to_trigger_ms": 1386.772492}, {"case": "cancellation_terminal_and_acknowledged", "passed": true}, {"case": "native_stationary_after_task", "passed": true}, {"case": "late_success_does_not_resume_motion", "passed": true, "mode": "serving", "stage": "late_success_observed", "native_samples": 488, "late_success_key": "semantic"}, {"case": "guarded_semantic_fault_terminal", "passed": true, "terminal_status": 5, "reason": "semantic_stale"}, {"case": "closed_graph_and_descendants_terminal", "passed": true}, {"case": "real_nav2_nonzero_chain_and_terminal_result", "passed": true, "positive_checked": 455, "terminal_status": 5}, {"case": "real_command_capture_mapping", "passed": true, "matched_positive_checked": 444, "clock_fault": null}, {"case": "per_message_publisher_binding", "passed": true}, {"case": "command_frame_and_axes", "passed": true}, {"case": "actual_capture_time_sensor_to_map_transforms", "passed": true}, {"case": "independent_native_motion_observed", "passed": true, "minimum_required_m": 0.2}, {"case": "semantic_fault_native_stop_metrics", "passed": true, "reason": "semantic_stale", "measurement_origin": "native_watchdog", "first_trigger_to_applied_zero_ms": 2.607107, "revoke_to_applied_zero_ms": 0.607197, "pretrigger_sample_gap_ms": 2.136185, "first_trigger_to_confirmed_stationary_ms": 832.537462, "revoke_to_confirmed_stationary_ms": 830.537552, "sampled_distance_to_confirmed_stationary_m": 0.0020147053534557502, "maximum_applied_forward_mps": 0.15, "displacement_m": 0.4416381145265829, "scope": "private serving armed-semantic fault trial; zero within 100 ms of the 500 ms semantic freshness trigger; not the full matrix"}, {"case": "baseline_contact_window", "start_sim": 8908000000, "end_sim": 16218000000, "passed": true, "reason": "clear", "unexpected": [], "samples": 216, "steps": 3729, "qualification": "exact allowlisted support contacts only; no force/depth exemption"}, {"case": "sam3_registration_under_motion", "passed": true, "moving_results": 30, "pooled_selected_points": 236522, "pooled_inside_fraction": 0.9999788603174334, "minimum_result_fraction": 0.9998353638459005, "contract": ">= 95% of capture-time projected points inside the ground-truth mat over >= 10 moving results with >= 50 selected pixels", "scope": "observation-only registration on the private guarded fixture; no semantic cost influence on navigation"}, {"case": "sam3_observation_timing", "passed": true, "p95_capture_age_ms": 236.217124, "p95_capture_age_limit_ms": 500.0, "results_per_second": 7.088802041812081, "rate_limit_per_s": 5.0, "records": 133}, {"case": "sam3_semantic_isolation", "passed": true, "semantic_topics": ["/robot_1/semantic/label_info", "/robot_1/semantic/mask", "/robot_1/semantic/points", "/robot_1/semantic/ready", "/robot_1/semantic/status", "/robot_1/semantic/timing"], "subscribing_nodes": ["phase5_sam3_observer"], "costmap_subscriptions": []}, {"case": "console_server_shutdown", "passed": true, "returncode": 0, "forced": false, "lifecycle": {"passed": true, "marker_positions": {"stop_begin": 10240, "stop_end": 10309, "stop_worker_joined": 10336, "destructor_begin": 10373, "destructor_end": 10408}, "run_returned_position": 10269}}, {"case": "console_server_recording_absent", "passed": true, "recording_files": [], "recording_libraries": []}], "sensors": {"odom": {"stamp": 16710000000, "frame": "odom", "wall_received": 1793649556249059638, "count": 2784, "rollback": false}, "scan": {"stamp": 16600000000, "frame": "lidar_frame", "wall_received": 1793649556109252073, "count": 154, "rollback": false, "samples": 360, "finite": 279}, "rgb": {"stamp": 16568000000, "frame": "camera_color_optical_frame", "wall_received": 1793649556063973941, "count": 466, "rollback": false, "transport": "gz", "traced": true}, "depth": {"stamp": 16568000000, "frame": "camera_color_optical_frame", "wall_received": 1793649556063973941, "count": 466, "rollback": false, "transport": "gz", "traced": true}}, "states": {"map_server": {"id": 3, "label": "active"}, "amcl": {"id": 3, "label": "active"}, "controller_server": {"id": 3, "label": "active"}, "smoother_server": {"id": 3, "label": "active"}, "planner_server": {"id": 3, "label": "active"}, "behavior_server": {"id": 3, "label": "active"}, "velocity_smoother": {"id": 3, "label": "active"}, "collision_monitor": {"id": 3, "label": "active"}, "bt_navigator": {"id": 3, "label": "active"}}, "controller_endpoint_capture": false, "collision_monitor_diagnostics": false, "moving_timing_trace": false, "gz_thread_probe": false, "fault_stop_probe": false, "fault_stop_mode": "", "sam3_observation": true, "semantic_fault_probe": true, "semantic_fault_mode": "serving", "phase6_semantic_arm": "", "phase6_stationary_smoke": false, "phase6_diagnostic_no_85_bridge": false, "phase6_tf_probe": false, "phase6_cost_cells_timeline": false, "phase6_lethal_experiment": false, "phase6_target_absent": false, "phase6_target_removal": false, "phase6_tf_witness": false, "phase6_tf_witness_stats": {"last_seq": -1, "last_read": 0.0, "records": 0, "stale": 0, "applied": 0}, "phase6_goal_xy": null, "phase6_mat_ground_truth": null, "phase6_candidate_yaml": null, "headless_gpu_rendering": true, "console_only_server": true, "world_record_period_s": 0.0, "world_recording": false, "diagnostic_only": "", "clock_fault": null, "qualification": "private serving armed-semantic fault trial; supervisor armed with semantic leases, costs excluded; zero <=100 ms after the 500 ms trigger; NOT full Phase 5"}
+{"event": "native_suite_finished", "results": [{"command": ["/usr/bin/python3", "-m", "unittest", "discover", "-s", "/phase5-native/..2026_11_02_19_58_40.3136844657", "-p", "test_*.py", "-v"], "returncode": 0}, {"command": ["/usr/bin/python3", "/phase5-native/..2026_11_02_19_58_40.3136844657/verify_frame_bridge.py"], "returncode": 0}, {"command": ["/usr/bin/python3", "/phase5-native/..2026_11_02_19_58_40.3136844657/verify_hotel_adapter.py"], "returncode": 0}, {"command": ["/opt/semantic-safety/build/test_native_lease"], "returncode": 0}, {"command": ["/usr/bin/python3", "/phase5-native/..2026_11_02_19_58_40.3136844657/verify_hotel_stack.py"], "returncode": 0}]}

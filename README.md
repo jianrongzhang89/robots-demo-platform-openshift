@@ -16,6 +16,11 @@ For the first use case, see [U1 Fleet Copilot: Detailed Design and Gated Impleme
 covering external-model integration, RMF mission and telemetry contracts, phased acceptance
 gates, and migration to local OpenShift AI inference.
 
+For semantic costmap navigation after Phase 6, see the
+[OpenShift AI serving design and gated implementation plan](docs/semantic-navigation-openshift-ai-serving-proposal.md),
+covering SAM3 model serving, capture-time freshness, navigation regression,
+model lifecycle operations, and multi-robot capacity verification.
+
 ---
 
 ## Hotel Multi-Level Navigation Demos

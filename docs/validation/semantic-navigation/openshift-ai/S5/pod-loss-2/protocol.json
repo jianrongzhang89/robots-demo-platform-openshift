@@ -1,0 +1,35 @@
+{
+  "freshness_ms": 500,
+  "zero_command_ms": 100,
+  "attempts": 1,
+  "mode": "serving",
+  "injection": "delete actual model-serving pod after motion_verified; no response proxy",
+  "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:348fc584e70b07c6f73f9e428623240da5fc4c81ead630f0cb051c18de2d4371",
+  "model_identity": {
+    "schema": "semantic-deployment/v1",
+    "model_name": "sam3-mat-v1",
+    "weights_sha256": "9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e",
+    "source_revision": "0570b3a5be9c4e694f23d85232fb55f4a6f1f7fc",
+    "container_digest": "sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+    "shared_sha256": {
+      "inference_contract.py": "d238d2490f826b6fbb70f07aa5579492dc425e8c858b780c8216679f121ffdef",
+      "sam3_backend.py": "3d83819971704e8ce642db98972194996307b314bb73cbb44257384e45714761",
+      "sam3_runtime_core.py": "683cf53a5b6378fa72d0cefe404bd899039b1420b4d5a2e7cfe3faecaf57085f"
+    },
+    "versions": {
+      "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+      "preprocess": "sam3-pil-rgb/v1",
+      "decoder": "sam3-binary-instances/v1"
+    },
+    "precision": "bfloat16",
+    "policy": "avoid-target/v1",
+    "prompt": "red mat",
+    "threshold": 0.5
+  },
+  "source_hashes": {
+    "scripts/semantic-navigation/run_g5_pod_loss.py": "5b6db3e8aa0b7c2c5a75bced6b7dcbfa9e1a3f9cec647e01efc57965b36c43b5",
+    "scripts/semantic-navigation/run_phase5_native.py": "9e15c10902be473afdf4d547426faf3f8b2153731836b49a8f13e49080aa7c12",
+    "scripts/semantic-navigation/run_g4_faults.py": "cd68c6dc96c22966eafd630f982572b455b83c3f5c89239557be289a5569646d",
+    "apps/semantic-safety/semantic_fault_probe.py": "1bf439ad7056bb9ce8f63a0d06ac6b63fa2faa0b61edf428e6d3005a30174bc7"
+  }
+}

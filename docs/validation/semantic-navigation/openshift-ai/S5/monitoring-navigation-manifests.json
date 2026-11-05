@@ -1,0 +1,1155 @@
+{
+  "apiVersion": "v1",
+  "kind": "List",
+  "items": [
+    {
+      "apiVersion": "monitoring.coreos.com/v1",
+      "kind": "ServiceMonitor",
+      "metadata": {
+        "name": "sam3-g5-authenticated",
+        "namespace": "semantic-model-serving"
+      },
+      "spec": {
+        "selector": {
+          "matchLabels": {
+            "semantic-g5-monitor": "sam3"
+          }
+        },
+        "endpoints": [
+          {
+            "port": "https",
+            "path": "/metrics",
+            "scheme": "https",
+            "interval": "15s",
+            "scrapeTimeout": "5s",
+            "tlsConfig": {
+              "serverName": "sam3-mat-v1-tls.semantic-model-serving.svc",
+              "ca": {
+                "secret": {
+                  "name": "sam3-g5-monitor-tls",
+                  "key": "ca.crt"
+                }
+              },
+              "cert": {
+                "secret": {
+                  "name": "sam3-g5-monitor-tls",
+                  "key": "tls.crt"
+                }
+              },
+              "keySecret": {
+                "name": "sam3-g5-monitor-tls",
+                "key": "tls.key"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "networking.k8s.io/v1",
+      "kind": "NetworkPolicy",
+      "metadata": {
+        "name": "sam3-g5-monitor-ingress",
+        "namespace": "semantic-model-serving"
+      },
+      "spec": {
+        "podSelector": {
+          "matchLabels": {
+            "serving.kserve.io/inferenceservice": "sam3-mat-v1",
+            "component": "predictor"
+          }
+        },
+        "policyTypes": [
+          "Ingress"
+        ],
+        "ingress": [
+          {
+            "from": [
+              {
+                "namespaceSelector": {
+                  "matchLabels": {
+                    "kubernetes.io/metadata.name": "openshift-user-workload-monitoring"
+                  }
+                },
+                "podSelector": {
+                  "matchLabels": {
+                    "prometheus": "user-workload"
+                  }
+                }
+              }
+            ],
+            "ports": [
+              {
+                "protocol": "TCP",
+                "port": 8443
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "perses.dev/v1alpha2",
+      "kind": "PersesDashboard",
+      "metadata": {
+        "name": "semantic-g5-serving",
+        "namespace": "redhat-ods-monitoring",
+        "labels": {
+          "app.opendatahub.io/dashboard": "true"
+        }
+      },
+      "spec": {
+        "config": {
+          "display": {
+            "name": "SAM3 G5 serving and navigation",
+            "description": "G5 HOLD. Missing series mean unavailable, never healthy zero. Candidate histograms are absent on the accepted rollback image. Navigation data is passive operator telemetry; missing or stale sources are unavailable. Costmap latency is absent when the fixture does not expose applied updates. Evidence: https://github.com/jianrongzhang89/robots-demo-platform-openshift/tree/be091bd2/docs/validation/semantic-navigation/openshift-ai/S4"
+          },
+          "duration": "1h",
+          "panels": {
+            "scrape": {
+              "kind": "Panel",
+              "spec": {
+                "display": {
+                  "name": "Authenticated scrape health"
+                },
+                "plugin": {
+                  "kind": "TimeSeriesChart",
+                  "spec": {
+                    "visual": {
+                      "display": "line",
+                      "connectNulls": false
+                    },
+                    "yAxis": {
+                      "format": {
+                        "unit": "decimal"
+                      },
+                      "min": 0
+                    }
+                  }
+                },
+                "queries": [
+                  {
+                    "kind": "TimeSeriesQuery",
+                    "spec": {
+                      "plugin": {
+                        "kind": "PrometheusTimeSeriesQuery",
+                        "spec": {
+                          "datasource": {
+                            "kind": "PrometheusDatasource",
+                            "name": "cluster-prometheus-tenancy-datasource"
+                          },
+                          "query": "up{namespace=\"semantic-model-serving\",service=\"sam3-mat-v1-tls\"}"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "rate": {
+              "kind": "Panel",
+              "spec": {
+                "display": {
+                  "name": "Inference requests / second by status"
+                },
+                "plugin": {
+                  "kind": "TimeSeriesChart",
+                  "spec": {
+                    "visual": {
+                      "display": "line",
+                      "connectNulls": false
+                    },
+                    "yAxis": {
+                      "format": {
+                        "unit": "decimal"
+                      },
+                      "min": 0
+                    }
+                  }
+                },
+                "queries": [
+                  {
+                    "kind": "TimeSeriesQuery",
+                    "spec": {
+                      "plugin": {
+                        "kind": "PrometheusTimeSeriesQuery",
+                        "spec": {
+                          "datasource": {
+                            "kind": "PrometheusDatasource",
+                            "name": "cluster-prometheus-tenancy-datasource"
+                          },
+                          "query": "sum by (status) (rate(semantic_requests_total{namespace=\"semantic-model-serving\",service=\"sam3-mat-v1-tls\"}[5m]))"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "count": {
+              "kind": "Panel",
+              "spec": {
+                "display": {
+                  "name": "Inference outcomes since worker start"
+                },
+                "plugin": {
+                  "kind": "TimeSeriesChart",
+                  "spec": {
+                    "visual": {
+                      "display": "line",
+                      "connectNulls": false
+                    },
+                    "yAxis": {
+                      "format": {
+                        "unit": "decimal"
+                      },
+                      "min": 0
+                    }
+                  }
+                },
+                "queries": [
+                  {
+                    "kind": "TimeSeriesQuery",
+                    "spec": {
+                      "plugin": {
+                        "kind": "PrometheusTimeSeriesQuery",
+                        "spec": {
+                          "datasource": {
+                            "kind": "PrometheusDatasource",
+                            "name": "cluster-prometheus-tenancy-datasource"
+                          },
+                          "query": "sum by (status) (semantic_requests_total{namespace=\"semantic-model-serving\",service=\"sam3-mat-v1-tls\"})"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "ready": {
+              "kind": "Panel",
+              "spec": {
+                "display": {
+                  "name": "Worker ready"
+                },
+                "plugin": {
+                  "kind": "TimeSeriesChart",
+                  "spec": {
+                    "visual": {
+                      "display": "line",
+                      "connectNulls": false
+                    },
+                    "yAxis": {
+                      "format": {
+                        "unit": "decimal"
+                      },
+                      "min": 0
+                    }
+                  }
+                },
+                "queries": [
+                  {
+                    "kind": "TimeSeriesQuery",
+                    "spec": {
+                      "plugin": {
+                        "kind": "PrometheusTimeSeriesQuery",
+                        "spec": {
+                          "datasource": {
+                            "kind": "PrometheusDatasource",
+                            "name": "cluster-prometheus-tenancy-datasource"
+                          },
+                          "query": "semantic_worker_ready{namespace=\"semantic-model-serving\",service=\"sam3-mat-v1-tls\"}"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "busy": {
+              "kind": "Panel",
+              "spec": {
+                "display": {
+                  "name": "Worker busy"
+                },
+                "plugin": {
+                  "kind": "TimeSeriesChart",
+                  "spec": {
+                    "visual": {
+                      "display": "line",
+                      "connectNulls": false
+                    },
+                    "yAxis": {
+                      "format": {
+                        "unit": "decimal"
+                      },
+                      "min": 0
+                    }
+                  }
+                },
+                "queries": [
+                  {
+                    "kind": "TimeSeriesQuery",
+                    "spec": {
+                      "plugin": {
+                        "kind": "PrometheusTimeSeriesQuery",
+                        "spec": {
+                          "datasource": {
+                            "kind": "PrometheusDatasource",
+                            "name": "cluster-prometheus-tenancy-datasource"
+                          },
+                          "query": "semantic_worker_busy{namespace=\"semantic-model-serving\",service=\"sam3-mat-v1-tls\"}"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "backend": {
+              "kind": "Panel",
+              "spec": {
+                "display": {
+                  "name": "Candidate backend p95 (not capture latency)"
+                },
+                "plugin": {
+                  "kind": "TimeSeriesChart",
+                  "spec": {
+                    "visual": {
+                      "display": "line",
+                      "connectNulls": false
+                    },
+                    "yAxis": {
+                      "format": {
+                        "unit": "seconds"
+                      },
+                      "min": 0
+                    }
+                  }
+                },
+                "queries": [
+                  {
+                    "kind": "TimeSeriesQuery",
+                    "spec": {
+                      "plugin": {
+                        "kind": "PrometheusTimeSeriesQuery",
+                        "spec": {
+                          "datasource": {
+                            "kind": "PrometheusDatasource",
+                            "name": "cluster-prometheus-tenancy-datasource"
+                          },
+                          "query": "histogram_quantile(0.95, sum by (le) (rate(semantic_backend_duration_seconds_bucket{namespace=\"semantic-model-serving\",service=\"sam3-mat-v1-tls\"}[5m])))"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "admission": {
+              "kind": "Panel",
+              "spec": {
+                "display": {
+                  "name": "Candidate admission p95"
+                },
+                "plugin": {
+                  "kind": "TimeSeriesChart",
+                  "spec": {
+                    "visual": {
+                      "display": "line",
+                      "connectNulls": false
+                    },
+                    "yAxis": {
+                      "format": {
+                        "unit": "seconds"
+                      },
+                      "min": 0
+                    }
+                  }
+                },
+                "queries": [
+                  {
+                    "kind": "TimeSeriesQuery",
+                    "spec": {
+                      "plugin": {
+                        "kind": "PrometheusTimeSeriesQuery",
+                        "spec": {
+                          "datasource": {
+                            "kind": "PrometheusDatasource",
+                            "name": "cluster-prometheus-tenancy-datasource"
+                          },
+                          "query": "histogram_quantile(0.95, sum by (le) (rate(semantic_admission_duration_seconds_bucket{namespace=\"semantic-model-serving\",service=\"sam3-mat-v1-tls\"}[5m])))"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "queue": {
+              "kind": "Panel",
+              "spec": {
+                "display": {
+                  "name": "Candidate queue capacity (zero = immediate rejection)"
+                },
+                "plugin": {
+                  "kind": "TimeSeriesChart",
+                  "spec": {
+                    "visual": {
+                      "display": "line",
+                      "connectNulls": false
+                    },
+                    "yAxis": {
+                      "format": {
+                        "unit": "decimal"
+                      },
+                      "min": 0
+                    }
+                  }
+                },
+                "queries": [
+                  {
+                    "kind": "TimeSeriesQuery",
+                    "spec": {
+                      "plugin": {
+                        "kind": "PrometheusTimeSeriesQuery",
+                        "spec": {
+                          "datasource": {
+                            "kind": "PrometheusDatasource",
+                            "name": "cluster-prometheus-tenancy-datasource"
+                          },
+                          "query": "semantic_queue_capacity{namespace=\"semantic-model-serving\",service=\"sam3-mat-v1-tls\"}"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "gpu": {
+              "kind": "Panel",
+              "spec": {
+                "display": {
+                  "name": "Serving GPU utilization"
+                },
+                "plugin": {
+                  "kind": "TimeSeriesChart",
+                  "spec": {
+                    "visual": {
+                      "display": "line",
+                      "connectNulls": false
+                    },
+                    "yAxis": {
+                      "format": {
+                        "unit": "percent"
+                      },
+                      "min": 0
+                    }
+                  }
+                },
+                "queries": [
+                  {
+                    "kind": "TimeSeriesQuery",
+                    "spec": {
+                      "plugin": {
+                        "kind": "PrometheusTimeSeriesQuery",
+                        "spec": {
+                          "datasource": {
+                            "kind": "PrometheusDatasource",
+                            "name": "cluster-prometheus-tenancy-datasource"
+                          },
+                          "query": "accelerator_gpu_utilization{exported_namespace=\"semantic-model-serving\"}"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "memory": {
+              "kind": "Panel",
+              "spec": {
+                "display": {
+                  "name": "Serving GPU memory used"
+                },
+                "plugin": {
+                  "kind": "TimeSeriesChart",
+                  "spec": {
+                    "visual": {
+                      "display": "line",
+                      "connectNulls": false
+                    },
+                    "yAxis": {
+                      "format": {
+                        "unit": "bytes"
+                      },
+                      "min": 0
+                    }
+                  }
+                },
+                "queries": [
+                  {
+                    "kind": "TimeSeriesQuery",
+                    "spec": {
+                      "plugin": {
+                        "kind": "PrometheusTimeSeriesQuery",
+                        "spec": {
+                          "datasource": {
+                            "kind": "PrometheusDatasource",
+                            "name": "cluster-prometheus-tenancy-datasource"
+                          },
+                          "query": "accelerator_memory_used_bytes{exported_namespace=\"semantic-model-serving\"}"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "identity": {
+              "kind": "Panel",
+              "spec": {
+                "display": {
+                  "name": "Running image identity (pod inventory)"
+                },
+                "plugin": {
+                  "kind": "Table",
+                  "spec": {
+                    "columnSettings": [
+                      {
+                        "name": "timestamp",
+                        "hide": true
+                      },
+                      {
+                        "name": "image_id",
+                        "header": "Image digest"
+                      }
+                    ]
+                  }
+                },
+                "queries": [
+                  {
+                    "kind": "TimeSeriesQuery",
+                    "spec": {
+                      "plugin": {
+                        "kind": "PrometheusTimeSeriesQuery",
+                        "spec": {
+                          "datasource": {
+                            "kind": "PrometheusDatasource",
+                            "name": "cluster-prometheus-tenancy-datasource"
+                          },
+                          "query": "kube_pod_container_info{namespace=\"semantic-model-serving\",container=\"kserve-container\"}"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "navigation_source": {
+              "kind": "Panel",
+              "spec": {
+                "display": {
+                  "name": "Navigation snapshot available"
+                },
+                "plugin": {
+                  "kind": "TimeSeriesChart",
+                  "spec": {
+                    "visual": {
+                      "display": "line",
+                      "connectNulls": false
+                    },
+                    "yAxis": {
+                      "format": {
+                        "unit": "decimal"
+                      },
+                      "min": 0
+                    }
+                  }
+                },
+                "queries": [
+                  {
+                    "kind": "TimeSeriesQuery",
+                    "spec": {
+                      "plugin": {
+                        "kind": "PrometheusTimeSeriesQuery",
+                        "spec": {
+                          "datasource": {
+                            "kind": "PrometheusDatasource",
+                            "name": "cluster-prometheus-tenancy-datasource"
+                          },
+                          "query": "g5_navigation_snapshot_available{namespace=\"semantic-navigation\",service=\"semantic-g5-navigation-metrics\"}"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "navigation_capture": {
+              "kind": "Panel",
+              "spec": {
+                "display": {
+                  "name": "Wall age of last valid capture"
+                },
+                "plugin": {
+                  "kind": "TimeSeriesChart",
+                  "spec": {
+                    "visual": {
+                      "display": "line",
+                      "connectNulls": false
+                    },
+                    "yAxis": {
+                      "format": {
+                        "unit": "seconds"
+                      },
+                      "min": 0
+                    }
+                  }
+                },
+                "queries": [
+                  {
+                    "kind": "TimeSeriesQuery",
+                    "spec": {
+                      "plugin": {
+                        "kind": "PrometheusTimeSeriesQuery",
+                        "spec": {
+                          "datasource": {
+                            "kind": "PrometheusDatasource",
+                            "name": "cluster-prometheus-tenancy-datasource"
+                          },
+                          "query": "time() - g5_navigation_last_capture_timestamp_seconds{namespace=\"semantic-navigation\",service=\"semantic-g5-navigation-metrics\"}"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "navigation_result": {
+              "kind": "Panel",
+              "spec": {
+                "display": {
+                  "name": "Last capture-to-result latency"
+                },
+                "plugin": {
+                  "kind": "TimeSeriesChart",
+                  "spec": {
+                    "visual": {
+                      "display": "line",
+                      "connectNulls": false
+                    },
+                    "yAxis": {
+                      "format": {
+                        "unit": "seconds"
+                      },
+                      "min": 0
+                    }
+                  }
+                },
+                "queries": [
+                  {
+                    "kind": "TimeSeriesQuery",
+                    "spec": {
+                      "plugin": {
+                        "kind": "PrometheusTimeSeriesQuery",
+                        "spec": {
+                          "datasource": {
+                            "kind": "PrometheusDatasource",
+                            "name": "cluster-prometheus-tenancy-datasource"
+                          },
+                          "query": "g5_navigation_capture_to_result_seconds{namespace=\"semantic-navigation\",service=\"semantic-g5-navigation-metrics\"}"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "navigation_costmap_source": {
+              "kind": "Panel",
+              "spec": {
+                "display": {
+                  "name": "Applied costmap telemetry available"
+                },
+                "plugin": {
+                  "kind": "TimeSeriesChart",
+                  "spec": {
+                    "visual": {
+                      "display": "line",
+                      "connectNulls": false
+                    },
+                    "yAxis": {
+                      "format": {
+                        "unit": "decimal"
+                      },
+                      "min": 0
+                    }
+                  }
+                },
+                "queries": [
+                  {
+                    "kind": "TimeSeriesQuery",
+                    "spec": {
+                      "plugin": {
+                        "kind": "PrometheusTimeSeriesQuery",
+                        "spec": {
+                          "datasource": {
+                            "kind": "PrometheusDatasource",
+                            "name": "cluster-prometheus-tenancy-datasource"
+                          },
+                          "query": "g5_navigation_costmap_available{namespace=\"semantic-navigation\",service=\"semantic-g5-navigation-metrics\"}"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "navigation_costmap": {
+              "kind": "Panel",
+              "spec": {
+                "display": {
+                  "name": "Capture-to-costmap (absent when not observed)"
+                },
+                "plugin": {
+                  "kind": "TimeSeriesChart",
+                  "spec": {
+                    "visual": {
+                      "display": "line",
+                      "connectNulls": false
+                    },
+                    "yAxis": {
+                      "format": {
+                        "unit": "seconds"
+                      },
+                      "min": 0
+                    }
+                  }
+                },
+                "queries": [
+                  {
+                    "kind": "TimeSeriesQuery",
+                    "spec": {
+                      "plugin": {
+                        "kind": "PrometheusTimeSeriesQuery",
+                        "spec": {
+                          "datasource": {
+                            "kind": "PrometheusDatasource",
+                            "name": "cluster-prometheus-tenancy-datasource"
+                          },
+                          "query": "g5_navigation_capture_to_costmap_seconds{namespace=\"semantic-navigation\",service=\"semantic-g5-navigation-metrics\"}"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "navigation_rtf": {
+              "kind": "Panel",
+              "spec": {
+                "display": {
+                  "name": "Observed capture-stream RTF"
+                },
+                "plugin": {
+                  "kind": "TimeSeriesChart",
+                  "spec": {
+                    "visual": {
+                      "display": "line",
+                      "connectNulls": false
+                    },
+                    "yAxis": {
+                      "format": {
+                        "unit": "decimal"
+                      },
+                      "min": 0
+                    }
+                  }
+                },
+                "queries": [
+                  {
+                    "kind": "TimeSeriesQuery",
+                    "spec": {
+                      "plugin": {
+                        "kind": "PrometheusTimeSeriesQuery",
+                        "spec": {
+                          "datasource": {
+                            "kind": "PrometheusDatasource",
+                            "name": "cluster-prometheus-tenancy-datasource"
+                          },
+                          "query": "g5_navigation_capture_stream_rtf{namespace=\"semantic-navigation\",service=\"semantic-g5-navigation-metrics\"}"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "navigation_armed": {
+              "kind": "Panel",
+              "spec": {
+                "display": {
+                  "name": "Semantic supervisor armed"
+                },
+                "plugin": {
+                  "kind": "TimeSeriesChart",
+                  "spec": {
+                    "visual": {
+                      "display": "line",
+                      "connectNulls": false
+                    },
+                    "yAxis": {
+                      "format": {
+                        "unit": "decimal"
+                      },
+                      "min": 0
+                    }
+                  }
+                },
+                "queries": [
+                  {
+                    "kind": "TimeSeriesQuery",
+                    "spec": {
+                      "plugin": {
+                        "kind": "PrometheusTimeSeriesQuery",
+                        "spec": {
+                          "datasource": {
+                            "kind": "PrometheusDatasource",
+                            "name": "cluster-prometheus-tenancy-datasource"
+                          },
+                          "query": "g5_navigation_armed{namespace=\"semantic-navigation\",service=\"semantic-g5-navigation-metrics\"}"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "navigation_reason": {
+              "kind": "Panel",
+              "spec": {
+                "display": {
+                  "name": "Supervisor gate / stop reason"
+                },
+                "plugin": {
+                  "kind": "TimeSeriesChart",
+                  "spec": {
+                    "visual": {
+                      "display": "line",
+                      "connectNulls": false
+                    },
+                    "yAxis": {
+                      "format": {
+                        "unit": "decimal"
+                      },
+                      "min": 0
+                    }
+                  }
+                },
+                "queries": [
+                  {
+                    "kind": "TimeSeriesQuery",
+                    "spec": {
+                      "plugin": {
+                        "kind": "PrometheusTimeSeriesQuery",
+                        "spec": {
+                          "datasource": {
+                            "kind": "PrometheusDatasource",
+                            "name": "cluster-prometheus-tenancy-datasource"
+                          },
+                          "query": "g5_navigation_stop_reason{namespace=\"semantic-navigation\",service=\"semantic-g5-navigation-metrics\"}"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "navigation_drops": {
+              "kind": "Panel",
+              "spec": {
+                "display": {
+                  "name": "Adapter work queue drops"
+                },
+                "plugin": {
+                  "kind": "TimeSeriesChart",
+                  "spec": {
+                    "visual": {
+                      "display": "line",
+                      "connectNulls": false
+                    },
+                    "yAxis": {
+                      "format": {
+                        "unit": "decimal"
+                      },
+                      "min": 0
+                    }
+                  }
+                },
+                "queries": [
+                  {
+                    "kind": "TimeSeriesQuery",
+                    "spec": {
+                      "plugin": {
+                        "kind": "PrometheusTimeSeriesQuery",
+                        "spec": {
+                          "datasource": {
+                            "kind": "PrometheusDatasource",
+                            "name": "cluster-prometheus-tenancy-datasource"
+                          },
+                          "query": "g5_navigation_work_queue_drops{namespace=\"semantic-navigation\",service=\"semantic-g5-navigation-metrics\"}"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "navigation_safety_source": {
+              "kind": "Panel",
+              "spec": {
+                "display": {
+                  "name": "Safety status available"
+                },
+                "plugin": {
+                  "kind": "TimeSeriesChart",
+                  "spec": {
+                    "visual": {
+                      "display": "line",
+                      "connectNulls": false
+                    },
+                    "yAxis": {
+                      "format": {
+                        "unit": "decimal"
+                      },
+                      "min": 0
+                    }
+                  }
+                },
+                "queries": [
+                  {
+                    "kind": "TimeSeriesQuery",
+                    "spec": {
+                      "plugin": {
+                        "kind": "PrometheusTimeSeriesQuery",
+                        "spec": {
+                          "datasource": {
+                            "kind": "PrometheusDatasource",
+                            "name": "cluster-prometheus-tenancy-datasource"
+                          },
+                          "query": "g5_navigation_safety_available{namespace=\"semantic-navigation\",service=\"semantic-g5-navigation-metrics\"}"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "layouts": [
+            {
+              "kind": "Grid",
+              "spec": {
+                "display": {
+                  "title": "Authenticated serving telemetry"
+                },
+                "items": [
+                  {
+                    "content": {
+                      "$ref": "#/spec/panels/scrape"
+                    },
+                    "x": 0,
+                    "y": 0,
+                    "width": 12,
+                    "height": 8
+                  },
+                  {
+                    "content": {
+                      "$ref": "#/spec/panels/rate"
+                    },
+                    "x": 12,
+                    "y": 0,
+                    "width": 12,
+                    "height": 8
+                  },
+                  {
+                    "content": {
+                      "$ref": "#/spec/panels/count"
+                    },
+                    "x": 0,
+                    "y": 8,
+                    "width": 12,
+                    "height": 8
+                  },
+                  {
+                    "content": {
+                      "$ref": "#/spec/panels/ready"
+                    },
+                    "x": 12,
+                    "y": 8,
+                    "width": 12,
+                    "height": 8
+                  },
+                  {
+                    "content": {
+                      "$ref": "#/spec/panels/busy"
+                    },
+                    "x": 0,
+                    "y": 16,
+                    "width": 12,
+                    "height": 8
+                  },
+                  {
+                    "content": {
+                      "$ref": "#/spec/panels/backend"
+                    },
+                    "x": 12,
+                    "y": 16,
+                    "width": 12,
+                    "height": 8
+                  },
+                  {
+                    "content": {
+                      "$ref": "#/spec/panels/admission"
+                    },
+                    "x": 0,
+                    "y": 24,
+                    "width": 12,
+                    "height": 8
+                  },
+                  {
+                    "content": {
+                      "$ref": "#/spec/panels/queue"
+                    },
+                    "x": 12,
+                    "y": 24,
+                    "width": 12,
+                    "height": 8
+                  },
+                  {
+                    "content": {
+                      "$ref": "#/spec/panels/gpu"
+                    },
+                    "x": 0,
+                    "y": 32,
+                    "width": 12,
+                    "height": 8
+                  },
+                  {
+                    "content": {
+                      "$ref": "#/spec/panels/memory"
+                    },
+                    "x": 12,
+                    "y": 32,
+                    "width": 12,
+                    "height": 8
+                  },
+                  {
+                    "content": {
+                      "$ref": "#/spec/panels/identity"
+                    },
+                    "x": 0,
+                    "y": 40,
+                    "width": 24,
+                    "height": 8
+                  },
+                  {
+                    "content": {
+                      "$ref": "#/spec/panels/navigation_source"
+                    },
+                    "x": 0,
+                    "y": 48,
+                    "width": 12,
+                    "height": 8
+                  },
+                  {
+                    "content": {
+                      "$ref": "#/spec/panels/navigation_capture"
+                    },
+                    "x": 12,
+                    "y": 48,
+                    "width": 12,
+                    "height": 8
+                  },
+                  {
+                    "content": {
+                      "$ref": "#/spec/panels/navigation_result"
+                    },
+                    "x": 0,
+                    "y": 56,
+                    "width": 12,
+                    "height": 8
+                  },
+                  {
+                    "content": {
+                      "$ref": "#/spec/panels/navigation_costmap_source"
+                    },
+                    "x": 12,
+                    "y": 56,
+                    "width": 12,
+                    "height": 8
+                  },
+                  {
+                    "content": {
+                      "$ref": "#/spec/panels/navigation_costmap"
+                    },
+                    "x": 0,
+                    "y": 64,
+                    "width": 12,
+                    "height": 8
+                  },
+                  {
+                    "content": {
+                      "$ref": "#/spec/panels/navigation_rtf"
+                    },
+                    "x": 12,
+                    "y": 64,
+                    "width": 12,
+                    "height": 8
+                  },
+                  {
+                    "content": {
+                      "$ref": "#/spec/panels/navigation_armed"
+                    },
+                    "x": 0,
+                    "y": 72,
+                    "width": 12,
+                    "height": 8
+                  },
+                  {
+                    "content": {
+                      "$ref": "#/spec/panels/navigation_reason"
+                    },
+                    "x": 12,
+                    "y": 72,
+                    "width": 12,
+                    "height": 8
+                  },
+                  {
+                    "content": {
+                      "$ref": "#/spec/panels/navigation_drops"
+                    },
+                    "x": 0,
+                    "y": 80,
+                    "width": 12,
+                    "height": 8
+                  },
+                  {
+                    "content": {
+                      "$ref": "#/spec/panels/navigation_safety_source"
+                    },
+                    "x": 12,
+                    "y": 80,
+                    "width": 12,
+                    "height": 8
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

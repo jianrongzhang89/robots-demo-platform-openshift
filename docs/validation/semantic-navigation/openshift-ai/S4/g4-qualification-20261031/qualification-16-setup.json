@@ -1,0 +1,28 @@
+{
+ "event": "qualification-16 setup",
+ "date": "2026-11-02",
+ "preconditions": {
+  "S1": "PASS accepted",
+  "S2": "PASS accepted",
+  "S3": "PASS accepted",
+  "leftover_g4_or_fixture_resources": "none",
+  "pilot": "serving-transport-pilot-10 PASS (all five fault-stop modes at 0.3 m injection)",
+  "prior_attempt": "qualification-15 stopped on trial-03 (overload-r1): native_session_lost from a 126 ms receive stall inside the pinned native drive watchdog (second occurrence ever, ~1 in 60 trials; supervisor loop and semantic lease healthy throughout). Re-running unchanged per the standing approach for residual pinned-component transients."
+ },
+ "candidate": "unchanged from qualification-15",
+ "environment": "adapter node ip-10-0-53-174 freed (hotel-sim at 0 replicas); keep hotel-sim at 0 while G4 runs",
+ "rendering_reservation": "deleted to free the A10G for the G4 fixture; run_g4_suite.py finally restores it from rendering-reservation-saved.json",
+ "proxy_certificate": {
+  "secret": "semantic-g4-proxy-tls",
+  "subject": "CN=localhost",
+  "notBefore": "Nov 2 16:16:07 2026 GMT",
+  "notAfter": "Nov 5 16:16:07 2026 GMT",
+  "sha256_fingerprint": "AE:2F:58:7D:27:96:5F:DB:0E:45:C4:37:BB:8C:1E:C6:BA:8D:36:D3:DD:D9:E5:64:46:E8:2B:38:5B:24:52:8B",
+  "key_material_retained": false
+ },
+ "sampler": {
+  "output": "serving-resources-qualification-16.jsonl",
+  "stop_file": "/tmp/g4-qualification-16-monitor-stop"
+ },
+ "command": "run_g4_suite.py --output-dir qualification-16 --reservation rendering-reservation-saved.json"
+}

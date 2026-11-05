@@ -1,0 +1,153 @@
+{
+  "kind": "router_disconnection",
+  "quiescent_observation_s": 3,
+  "masks_during_outage": 0,
+  "heartbeat_unchanged": true,
+  "initial_status": {
+    "confidence_threshold": 0.5,
+    "emitted_results": 4661,
+    "input_queue_depths": {
+      "camera_info": 1,
+      "depth": 0,
+      "rgb": 0
+    },
+    "input_queue_drops": 0,
+    "last_result": {
+      "capture": {
+        "frame_id": "camera_color_optical_frame",
+        "stamp_ns": 881000000000
+      },
+      "identity": {
+        "epoch": "76c40501-834c-4b35-8e53-30dfa40fe33d",
+        "generation": 1,
+        "request_id": "1b581d5a-9bc9-40b0-b901-a38e7ffbea57",
+        "robot": "robot_1",
+        "sequence": 7208,
+        "stream": "camera/color"
+      },
+      "receiver_processing_age_ms": 131.02994998916984,
+      "result_wall_ns": 1792164768384587300
+    },
+    "last_valid_result_age_ms": 9.12,
+    "model": "facebook/sam3-original",
+    "model_revision": "3c879f39826c281e95690f02c7821c4de09afae7",
+    "paired_triplets": 7209,
+    "policy": "avoid-target/v1",
+    "policy_generation": 1,
+    "prompt": "red mat",
+    "ready": true,
+    "reason": null,
+    "state": "ready",
+    "stream_epoch": "76c40501-834c-4b35-8e53-30dfa40fe33d",
+    "timestamp_discards": {
+      "depth": 1,
+      "info": 0,
+      "rgb": 1
+    },
+    "versions": {
+      "decoder": "sam3-binary-instances/v1",
+      "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+      "preprocess": "sam3-pil-rgb/v1"
+    },
+    "work_queue_depth": 0,
+    "work_queue_drops": 2499
+  },
+  "failure_status": {
+    "confidence_threshold": 0.5,
+    "emitted_results": 5157,
+    "input_queue_depths": {
+      "camera_info": 4,
+      "depth": 0,
+      "rgb": 0
+    },
+    "input_queue_drops": 0,
+    "last_result": {
+      "capture": {
+        "frame_id": "camera_color_optical_frame",
+        "stamp_ns": 950200000000
+      },
+      "identity": {
+        "epoch": "76c40501-834c-4b35-8e53-30dfa40fe33d",
+        "generation": 1,
+        "request_id": "1398566f-864f-43ee-be55-1c3c635eef9b",
+        "robot": "robot_1",
+        "sequence": 7900,
+        "stream": "camera/color"
+      },
+      "receiver_processing_age_ms": 118.12682286836207,
+      "result_wall_ns": 1792164837878619000
+    },
+    "last_valid_result_age_ms": 2015.22,
+    "model": "facebook/sam3-original",
+    "model_revision": "3c879f39826c281e95690f02c7821c4de09afae7",
+    "paired_triplets": 7900,
+    "policy": "avoid-target/v1",
+    "policy_generation": 1,
+    "prompt": "red mat",
+    "ready": false,
+    "reason": "stale_input_or_result",
+    "state": "not_ready",
+    "stream_epoch": "76c40501-834c-4b35-8e53-30dfa40fe33d",
+    "timestamp_discards": {
+      "depth": 1,
+      "info": 0,
+      "rgb": 1
+    },
+    "versions": {
+      "decoder": "sam3-binary-instances/v1",
+      "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+      "preprocess": "sam3-pil-rgb/v1"
+    },
+    "work_queue_depth": 0,
+    "work_queue_drops": 2695
+  },
+  "recovered_status": {
+    "confidence_threshold": 0.5,
+    "emitted_results": 5158,
+    "input_queue_depths": {
+      "camera_info": 1,
+      "depth": 0,
+      "rgb": 0
+    },
+    "input_queue_drops": 0,
+    "last_result": {
+      "capture": {
+        "frame_id": "camera_color_optical_frame",
+        "stamp_ns": 961700000000
+      },
+      "identity": {
+        "epoch": "76c40501-834c-4b35-8e53-30dfa40fe33d",
+        "generation": 1,
+        "request_id": "35189a9a-23d8-4147-8503-258f245cd656",
+        "robot": "robot_1",
+        "sequence": 7901,
+        "stream": "camera/color"
+      },
+      "receiver_processing_age_ms": 113.79934102296829,
+      "result_wall_ns": 1792164849073252400
+    },
+    "last_valid_result_age_ms": 70.48,
+    "model": "facebook/sam3-original",
+    "model_revision": "3c879f39826c281e95690f02c7821c4de09afae7",
+    "paired_triplets": 7902,
+    "policy": "avoid-target/v1",
+    "policy_generation": 1,
+    "prompt": "red mat",
+    "ready": true,
+    "reason": null,
+    "state": "ready",
+    "stream_epoch": "76c40501-834c-4b35-8e53-30dfa40fe33d",
+    "timestamp_discards": {
+      "depth": 1,
+      "info": 4,
+      "rgb": 1
+    },
+    "versions": {
+      "decoder": "sam3-binary-instances/v1",
+      "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+      "preprocess": "sam3-pil-rgb/v1"
+    },
+    "work_queue_depth": 0,
+    "work_queue_drops": 2695
+  }
+}

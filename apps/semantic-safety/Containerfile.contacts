@@ -1,0 +1,9 @@
+FROM image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:1a2811410a9f9d3342f8a6484f3c6a9cf9937da35200fe0bbb9de55c02065435
+USER 0
+COPY native/contact_audit.cpp /opt/semantic-safety/src/native/contact_audit.cpp
+COPY CMakeLists.txt /opt/semantic-safety/src/CMakeLists.txt
+RUN . /opt/ros/jazzy/setup.sh \
+    && cmake -S /opt/semantic-safety/src -B /opt/semantic-safety/build \
+    && cmake --build /opt/semantic-safety/build --target phase5_contact_audit -j2 \
+    && cp /opt/semantic-safety/build/libphase5_contact_audit.so /opt/semantic-safety/lib/
+USER 1001

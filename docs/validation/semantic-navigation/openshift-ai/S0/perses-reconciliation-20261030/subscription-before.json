@@ -1,0 +1,113 @@
+{
+  "apiVersion": "operators.coreos.com/v1alpha1",
+  "kind": "Subscription",
+  "metadata": {
+    "annotations": {
+      "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"operators.coreos.com/v1alpha1\",\"kind\":\"Subscription\",\"metadata\":{\"annotations\":{},\"name\":\"cluster-observability-operator\",\"namespace\":\"openshift-cluster-observability-operator\"},\"spec\":{\"channel\":\"stable\",\"installPlanApproval\":\"Automatic\",\"name\":\"cluster-observability-operator\",\"source\":\"redhat-operators\",\"sourceNamespace\":\"openshift-marketplace\"}}\n",
+      "meta.helm.sh/release-name": "dependency-operators",
+      "meta.helm.sh/release-namespace": "default"
+    },
+    "creationTimestamp": "2026-08-10T18:18:52Z",
+    "generation": 2,
+    "labels": {
+      "app.kubernetes.io/instance": "dependency-operators",
+      "app.kubernetes.io/managed-by": "Helm",
+      "app.kubernetes.io/name": "install-operators",
+      "app.kubernetes.io/version": "0.1.0",
+      "helm.sh/chart": "install-operators-0.1.0",
+      "operators.coreos.com/cluster-observability-operator.openshift-cluster-observability": ""
+    },
+    "name": "cluster-observability-operator",
+    "namespace": "openshift-cluster-observability-operator",
+    "resourceVersion": "481267639",
+    "uid": "67daab54-c88e-45d5-89f9-9ef4c2338d06"
+  },
+  "spec": {
+    "channel": "stable",
+    "installPlanApproval": "Automatic",
+    "name": "cluster-observability-operator",
+    "source": "redhat-operators",
+    "sourceNamespace": "openshift-marketplace",
+    "startingCSV": "cluster-observability-operator.v1.5.1"
+  },
+  "status": {
+    "catalogHealth": [
+      {
+        "catalogSourceRef": {
+          "apiVersion": "operators.coreos.com/v1alpha1",
+          "kind": "CatalogSource",
+          "name": "certified-operators",
+          "namespace": "openshift-marketplace",
+          "resourceVersion": "196880401",
+          "uid": "ca56b069-8698-485a-9d41-c70be088ff30"
+        },
+        "healthy": true,
+        "lastUpdated": "2026-08-10T18:19:19Z"
+      },
+      {
+        "catalogSourceRef": {
+          "apiVersion": "operators.coreos.com/v1alpha1",
+          "kind": "CatalogSource",
+          "name": "community-operators",
+          "namespace": "openshift-marketplace",
+          "resourceVersion": "196880447",
+          "uid": "a2b38b96-4954-4251-860a-b68a41fda31d"
+        },
+        "healthy": true,
+        "lastUpdated": "2026-08-10T18:19:19Z"
+      },
+      {
+        "catalogSourceRef": {
+          "apiVersion": "operators.coreos.com/v1alpha1",
+          "kind": "CatalogSource",
+          "name": "redhat-marketplace",
+          "namespace": "openshift-marketplace",
+          "resourceVersion": "196880390",
+          "uid": "fdd0aec1-53fb-4ee2-95d3-4ca9450c703d"
+        },
+        "healthy": true,
+        "lastUpdated": "2026-08-10T18:19:19Z"
+      },
+      {
+        "catalogSourceRef": {
+          "apiVersion": "operators.coreos.com/v1alpha1",
+          "kind": "CatalogSource",
+          "name": "redhat-operators",
+          "namespace": "openshift-marketplace",
+          "resourceVersion": "196884768",
+          "uid": "6659d269-fd3a-4d0e-b66c-30d3eba5b28f"
+        },
+        "healthy": true,
+        "lastUpdated": "2026-08-10T18:19:19Z"
+      }
+    ],
+    "conditions": [
+      {
+        "lastTransitionTime": "2026-08-10T18:19:21Z",
+        "message": "all available catalogsources are healthy",
+        "reason": "AllCatalogSourcesHealthy",
+        "status": "False",
+        "type": "CatalogSourcesUnhealthy"
+      }
+    ],
+    "currentCSV": "cluster-observability-operator.v1.5.1",
+    "installPlanGeneration": 1,
+    "installPlanRef": {
+      "apiVersion": "operators.coreos.com/v1alpha1",
+      "kind": "InstallPlan",
+      "name": "install-5m892",
+      "namespace": "openshift-cluster-observability-operator",
+      "resourceVersion": "196890789",
+      "uid": "b25ba05f-1b09-4f8b-a706-3f24024798a6"
+    },
+    "installedCSV": "cluster-observability-operator.v1.5.1",
+    "installplan": {
+      "apiVersion": "operators.coreos.com/v1alpha1",
+      "kind": "InstallPlan",
+      "name": "install-5m892",
+      "uuid": "b25ba05f-1b09-4f8b-a706-3f24024798a6"
+    },
+    "lastUpdated": "2026-10-28T20:27:32Z",
+    "state": "UpgradePending"
+  }
+}

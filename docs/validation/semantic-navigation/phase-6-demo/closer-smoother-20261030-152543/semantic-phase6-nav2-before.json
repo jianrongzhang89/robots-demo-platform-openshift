@@ -1,0 +1,1146 @@
+{
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+        "annotations": {
+            "k8s.ovn.org/pod-networks": "{\"default\":{\"ip_addresses\":[\"10.128.12.53/23\"],\"mac_address\":\"0a:58:0a:80:0c:35\",\"gateway_ips\":[\"10.128.12.1\"],\"routes\":[{\"dest\":\"10.128.0.0/14\",\"nextHop\":\"10.128.12.1\"},{\"dest\":\"172.30.0.0/16\",\"nextHop\":\"10.128.12.1\"},{\"dest\":\"169.254.0.5/32\",\"nextHop\":\"10.128.12.1\"},{\"dest\":\"100.64.0.0/16\",\"nextHop\":\"10.128.12.1\"}],\"ip_address\":\"10.128.12.53/23\",\"gateway_ip\":\"10.128.12.1\",\"role\":\"primary\"}}",
+            "k8s.v1.cni.cncf.io/network-status": "[{\n    \"name\": \"ovn-kubernetes\",\n    \"interface\": \"eth0\",\n    \"ips\": [\n        \"10.128.12.53\"\n    ],\n    \"mac\": \"0a:58:0a:80:0c:35\",\n    \"default\": true,\n    \"dns\": {}\n}]",
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Pod\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"semantic-phase6-nav2\",\"app.kubernetes.io/part-of\":\"semantic-navigation-demo\",\"semantic-navigation.robots-demo/phase\":\"phase6d-d2-on\"},\"name\":\"semantic-phase6-nav2\",\"namespace\":\"semantic-navigation\"},\"spec\":{\"containers\":[{\"command\":[\"/bin/bash\",\"/phase6-nav2-config/entrypoint_phase6_nav2.sh\"],\"env\":[{\"name\":\"ROS_DISTRO\",\"value\":\"jazzy\"},{\"name\":\"ROS_DOMAIN_ID\",\"value\":\"87\"},{\"name\":\"RMW_IMPLEMENTATION\",\"value\":\"rmw_cyclonedds_cpp\"},{\"name\":\"CYCLONEDDS_URI\",\"value\":\"file:///phase6-nav2-config/cyclonedds.xml\"},{\"name\":\"PHASE6_PARAMS\",\"value\":\"/phase6-nav2-config/phase6-demo-nav2-on.yaml\"},{\"name\":\"HOME\",\"value\":\"/tmp/phase6-nav2-home\"},{\"name\":\"ROS_LOG_DIR\",\"value\":\"/tmp/phase6-nav2-logs\"}],\"image\":\"image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e\",\"imagePullPolicy\":\"IfNotPresent\",\"name\":\"nav2\",\"resources\":{\"limits\":{\"cpu\":\"4\",\"memory\":\"4Gi\"},\"requests\":{\"cpu\":\"2\",\"memory\":\"2Gi\"}},\"volumeMounts\":[{\"mountPath\":\"/phase6-nav2-config\",\"name\":\"nav2-config\",\"readOnly\":true}]},{\"args\":[\"-c\",\"/phase6-bridges/nav2-sim-input-bridge.json5\"],\"env\":[{\"name\":\"ROS_DOMAIN_ID\",\"value\":\"87\"},{\"name\":\"ROS_DISTRO\",\"value\":\"jazzy\"},{\"name\":\"RMW_IMPLEMENTATION\",\"value\":\"rmw_cyclonedds_cpp\"},{\"name\":\"CYCLONEDDS_URI\",\"value\":\"file:///phase6-bridges/cyclonedds.xml\"}],\"image\":\"eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18\",\"name\":\"sim-input-bridge\",\"resources\":{\"limits\":{\"cpu\":\"500m\",\"memory\":\"512Mi\"},\"requests\":{\"cpu\":\"150m\",\"memory\":\"128Mi\"}},\"volumeMounts\":[{\"mountPath\":\"/phase6-bridges\",\"name\":\"bridge-config\",\"readOnly\":true}]},{\"args\":[\"-c\",\"/phase6-bridges/nav2-semantic-input-bridge.json5\"],\"env\":[{\"name\":\"ROS_DOMAIN_ID\",\"value\":\"87\"},{\"name\":\"ROS_DISTRO\",\"value\":\"jazzy\"},{\"name\":\"RMW_IMPLEMENTATION\",\"value\":\"rmw_cyclonedds_cpp\"},{\"name\":\"CYCLONEDDS_URI\",\"value\":\"file:///phase6-bridges/cyclonedds.xml\"}],\"image\":\"eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18\",\"name\":\"semantic-input-bridge\",\"resources\":{\"limits\":{\"cpu\":\"500m\",\"memory\":\"512Mi\"},\"requests\":{\"cpu\":\"150m\",\"memory\":\"128Mi\"}},\"volumeMounts\":[{\"mountPath\":\"/phase6-bridges\",\"name\":\"bridge-config\",\"readOnly\":true}]},{\"args\":[\"-c\",\"/phase6-bridges/nav2-clock-bridge.json5\"],\"env\":[{\"name\":\"ROS_DOMAIN_ID\",\"value\":\"87\"},{\"name\":\"ROS_DISTRO\",\"value\":\"jazzy\"},{\"name\":\"RMW_IMPLEMENTATION\",\"value\":\"rmw_cyclonedds_cpp\"},{\"name\":\"CYCLONEDDS_URI\",\"value\":\"file:///phase6-bridges/cyclonedds.xml\"}],\"image\":\"eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18\",\"name\":\"clock-bridge\",\"resources\":{\"limits\":{\"cpu\":\"500m\",\"memory\":\"512Mi\"},\"requests\":{\"cpu\":\"150m\",\"memory\":\"128Mi\"}},\"volumeMounts\":[{\"mountPath\":\"/phase6-bridges\",\"name\":\"bridge-config\",\"readOnly\":true}]},{\"args\":[\"export HOME=/tmp/phase6-odom-home ROS_LOG_DIR=/tmp/phase6-odom-logs; mkdir -p \\\"$ROS_LOG_DIR\\\"; source /opt/ros/jazzy/setup.bash; exec python3 -u /opt/ros2-demo/scripts/federated_odom_tf.py\"],\"command\":[\"/bin/bash\",\"-lc\"],\"env\":[{\"name\":\"ROS_DISTRO\",\"value\":\"jazzy\"},{\"name\":\"ROS_DOMAIN_ID\",\"value\":\"87\"},{\"name\":\"RMW_IMPLEMENTATION\",\"value\":\"rmw_cyclonedds_cpp\"},{\"name\":\"CYCLONEDDS_URI\",\"value\":\"file:///phase6-nav2-config/cyclonedds.xml\"},{\"name\":\"INITIAL_X\",\"value\":\"15.402\"},{\"name\":\"INITIAL_Y\",\"value\":\"-31.594\"}],\"image\":\"image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e\",\"name\":\"odom-tf\",\"resources\":{\"limits\":{\"cpu\":\"500m\",\"memory\":\"512Mi\"},\"requests\":{\"cpu\":\"150m\",\"memory\":\"128Mi\"}},\"volumeMounts\":[{\"mountPath\":\"/phase6-nav2-config\",\"name\":\"nav2-config\",\"readOnly\":true}]},{\"args\":[\"export HOME=/tmp/phase6-scan-home ROS_LOG_DIR=/tmp/phase6-scan-logs; mkdir -p \\\"$ROS_LOG_DIR\\\"; source /opt/ros/jazzy/setup.bash; exec python3 -u /opt/ros2-demo/scripts/scan_frame_rewriter.py\"],\"command\":[\"/bin/bash\",\"-lc\"],\"env\":[{\"name\":\"ROS_DISTRO\",\"value\":\"jazzy\"},{\"name\":\"ROS_DOMAIN_ID\",\"value\":\"87\"},{\"name\":\"RMW_IMPLEMENTATION\",\"value\":\"rmw_cyclonedds_cpp\"},{\"name\":\"CYCLONEDDS_URI\",\"value\":\"file:///phase6-nav2-config/cyclonedds.xml\"},{\"name\":\"SCAN_INPUT_TOPIC\",\"value\":\"/scan\"},{\"name\":\"SCAN_OUTPUT_TOPIC\",\"value\":\"/scan_fixed\"}],\"image\":\"image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e\",\"name\":\"scan-frame-rewriter\",\"resources\":{\"limits\":{\"cpu\":\"500m\",\"memory\":\"512Mi\"},\"requests\":{\"cpu\":\"150m\",\"memory\":\"128Mi\"}},\"volumeMounts\":[{\"mountPath\":\"/phase6-nav2-config\",\"name\":\"nav2-config\",\"readOnly\":true}]},{\"args\":[\"-c\",\"/phase6-bridges/nav2-motion-output-gated.json5\"],\"env\":[{\"name\":\"ROS_DOMAIN_ID\",\"value\":\"87\"},{\"name\":\"ROS_DISTRO\",\"value\":\"jazzy\"},{\"name\":\"RMW_IMPLEMENTATION\",\"value\":\"rmw_cyclonedds_cpp\"},{\"name\":\"CYCLONEDDS_URI\",\"value\":\"file:///phase6-bridges/cyclonedds.xml\"}],\"image\":\"eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18\",\"name\":\"motion-output-bridge\",\"resources\":{\"limits\":{\"cpu\":\"500m\",\"memory\":\"512Mi\"},\"requests\":{\"cpu\":\"150m\",\"memory\":\"128Mi\"}},\"volumeMounts\":[{\"mountPath\":\"/phase6-bridges\",\"name\":\"bridge-config\",\"readOnly\":true}]},{\"args\":[\"-c\",\"/phase6-bridges/nav2-cmd-vel-keepalive.json5\"],\"env\":[{\"name\":\"ROS_DOMAIN_ID\",\"value\":\"87\"},{\"name\":\"ROS_DISTRO\",\"value\":\"jazzy\"},{\"name\":\"RMW_IMPLEMENTATION\",\"value\":\"rmw_cyclonedds_cpp\"},{\"name\":\"CYCLONEDDS_URI\",\"value\":\"file:///phase6-bridges/cyclonedds.xml\"}],\"image\":\"eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18\",\"name\":\"cmd-vel-route-keepalive\",\"resources\":{\"limits\":{\"cpu\":\"200m\",\"memory\":\"128Mi\"},\"requests\":{\"cpu\":\"100m\",\"memory\":\"64Mi\"}},\"volumeMounts\":[{\"mountPath\":\"/phase6-bridges\",\"name\":\"bridge-config\",\"readOnly\":true}]}],\"nodeSelector\":{\"kubernetes.io/hostname\":\"ip-10-0-39-214.ec2.internal\"},\"restartPolicy\":\"Always\",\"tolerations\":[{\"effect\":\"NoSchedule\",\"key\":\"cpu-taint\",\"operator\":\"Equal\",\"value\":\"true\"},{\"effect\":\"NoSchedule\",\"key\":\"g5-gpu\",\"operator\":\"Equal\",\"value\":\"true\"}],\"volumes\":[{\"configMap\":{\"name\":\"semantic-phase6-d2-nav2-config-on\"},\"name\":\"nav2-config\"},{\"configMap\":{\"name\":\"semantic-phase6-demo-bridge-config\"},\"name\":\"bridge-config\"}]}}\n",
+            "openshift.io/scc": "openshift-ai-llminferenceservice-scc",
+            "seccomp.security.alpha.kubernetes.io/pod": "runtime/default",
+            "security.openshift.io/validated-scc-subject-type": "user"
+        },
+        "creationTimestamp": "2026-10-30T16:20:32Z",
+        "generation": 1,
+        "labels": {
+            "app": "semantic-phase6-nav2",
+            "app.kubernetes.io/part-of": "semantic-navigation-demo",
+            "semantic-navigation.robots-demo/phase": "phase6d-d2-on"
+        },
+        "name": "semantic-phase6-nav2",
+        "namespace": "semantic-navigation",
+        "resourceVersion": "488996954",
+        "uid": "424cdf00-63da-4db3-a901-8e90fbda350e"
+    },
+    "spec": {
+        "containers": [
+            {
+                "command": [
+                    "/bin/bash",
+                    "/phase6-nav2-config/entrypoint_phase6_nav2.sh"
+                ],
+                "env": [
+                    {
+                        "name": "ROS_DISTRO",
+                        "value": "jazzy"
+                    },
+                    {
+                        "name": "ROS_DOMAIN_ID",
+                        "value": "87"
+                    },
+                    {
+                        "name": "RMW_IMPLEMENTATION",
+                        "value": "rmw_cyclonedds_cpp"
+                    },
+                    {
+                        "name": "CYCLONEDDS_URI",
+                        "value": "file:///phase6-nav2-config/cyclonedds.xml"
+                    },
+                    {
+                        "name": "PHASE6_PARAMS",
+                        "value": "/phase6-nav2-config/phase6-demo-nav2-on.yaml"
+                    },
+                    {
+                        "name": "HOME",
+                        "value": "/tmp/phase6-nav2-home"
+                    },
+                    {
+                        "name": "ROS_LOG_DIR",
+                        "value": "/tmp/phase6-nav2-logs"
+                    }
+                ],
+                "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e",
+                "imagePullPolicy": "IfNotPresent",
+                "name": "nav2",
+                "resources": {
+                    "limits": {
+                        "cpu": "4",
+                        "memory": "4Gi"
+                    },
+                    "requests": {
+                        "cpu": "2",
+                        "memory": "2Gi"
+                    }
+                },
+                "securityContext": {
+                    "allowPrivilegeEscalation": false,
+                    "capabilities": {
+                        "drop": [
+                            "ALL"
+                        ]
+                    },
+                    "runAsNonRoot": true,
+                    "runAsUser": 1001340000
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "File",
+                "volumeMounts": [
+                    {
+                        "mountPath": "/phase6-nav2-config",
+                        "name": "nav2-config",
+                        "readOnly": true
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-mr8t9",
+                        "readOnly": true
+                    }
+                ]
+            },
+            {
+                "args": [
+                    "-c",
+                    "/phase6-bridges/nav2-sim-input-bridge.json5"
+                ],
+                "env": [
+                    {
+                        "name": "ROS_DOMAIN_ID",
+                        "value": "87"
+                    },
+                    {
+                        "name": "ROS_DISTRO",
+                        "value": "jazzy"
+                    },
+                    {
+                        "name": "RMW_IMPLEMENTATION",
+                        "value": "rmw_cyclonedds_cpp"
+                    },
+                    {
+                        "name": "CYCLONEDDS_URI",
+                        "value": "file:///phase6-bridges/cyclonedds.xml"
+                    }
+                ],
+                "image": "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+                "imagePullPolicy": "IfNotPresent",
+                "name": "sim-input-bridge",
+                "resources": {
+                    "limits": {
+                        "cpu": "500m",
+                        "memory": "512Mi"
+                    },
+                    "requests": {
+                        "cpu": "150m",
+                        "memory": "128Mi"
+                    }
+                },
+                "securityContext": {
+                    "allowPrivilegeEscalation": false,
+                    "capabilities": {
+                        "drop": [
+                            "ALL"
+                        ]
+                    },
+                    "runAsNonRoot": true,
+                    "runAsUser": 1001340000
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "File",
+                "volumeMounts": [
+                    {
+                        "mountPath": "/phase6-bridges",
+                        "name": "bridge-config",
+                        "readOnly": true
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-mr8t9",
+                        "readOnly": true
+                    }
+                ]
+            },
+            {
+                "args": [
+                    "-c",
+                    "/phase6-bridges/nav2-semantic-input-bridge.json5"
+                ],
+                "env": [
+                    {
+                        "name": "ROS_DOMAIN_ID",
+                        "value": "87"
+                    },
+                    {
+                        "name": "ROS_DISTRO",
+                        "value": "jazzy"
+                    },
+                    {
+                        "name": "RMW_IMPLEMENTATION",
+                        "value": "rmw_cyclonedds_cpp"
+                    },
+                    {
+                        "name": "CYCLONEDDS_URI",
+                        "value": "file:///phase6-bridges/cyclonedds.xml"
+                    }
+                ],
+                "image": "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+                "imagePullPolicy": "IfNotPresent",
+                "name": "semantic-input-bridge",
+                "resources": {
+                    "limits": {
+                        "cpu": "500m",
+                        "memory": "512Mi"
+                    },
+                    "requests": {
+                        "cpu": "150m",
+                        "memory": "128Mi"
+                    }
+                },
+                "securityContext": {
+                    "allowPrivilegeEscalation": false,
+                    "capabilities": {
+                        "drop": [
+                            "ALL"
+                        ]
+                    },
+                    "runAsNonRoot": true,
+                    "runAsUser": 1001340000
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "File",
+                "volumeMounts": [
+                    {
+                        "mountPath": "/phase6-bridges",
+                        "name": "bridge-config",
+                        "readOnly": true
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-mr8t9",
+                        "readOnly": true
+                    }
+                ]
+            },
+            {
+                "args": [
+                    "-c",
+                    "/phase6-bridges/nav2-clock-bridge.json5"
+                ],
+                "env": [
+                    {
+                        "name": "ROS_DOMAIN_ID",
+                        "value": "87"
+                    },
+                    {
+                        "name": "ROS_DISTRO",
+                        "value": "jazzy"
+                    },
+                    {
+                        "name": "RMW_IMPLEMENTATION",
+                        "value": "rmw_cyclonedds_cpp"
+                    },
+                    {
+                        "name": "CYCLONEDDS_URI",
+                        "value": "file:///phase6-bridges/cyclonedds.xml"
+                    }
+                ],
+                "image": "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+                "imagePullPolicy": "IfNotPresent",
+                "name": "clock-bridge",
+                "resources": {
+                    "limits": {
+                        "cpu": "500m",
+                        "memory": "512Mi"
+                    },
+                    "requests": {
+                        "cpu": "150m",
+                        "memory": "128Mi"
+                    }
+                },
+                "securityContext": {
+                    "allowPrivilegeEscalation": false,
+                    "capabilities": {
+                        "drop": [
+                            "ALL"
+                        ]
+                    },
+                    "runAsNonRoot": true,
+                    "runAsUser": 1001340000
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "File",
+                "volumeMounts": [
+                    {
+                        "mountPath": "/phase6-bridges",
+                        "name": "bridge-config",
+                        "readOnly": true
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-mr8t9",
+                        "readOnly": true
+                    }
+                ]
+            },
+            {
+                "args": [
+                    "export HOME=/tmp/phase6-odom-home ROS_LOG_DIR=/tmp/phase6-odom-logs; mkdir -p \"$ROS_LOG_DIR\"; source /opt/ros/jazzy/setup.bash; exec python3 -u /opt/ros2-demo/scripts/federated_odom_tf.py"
+                ],
+                "command": [
+                    "/bin/bash",
+                    "-lc"
+                ],
+                "env": [
+                    {
+                        "name": "ROS_DISTRO",
+                        "value": "jazzy"
+                    },
+                    {
+                        "name": "ROS_DOMAIN_ID",
+                        "value": "87"
+                    },
+                    {
+                        "name": "RMW_IMPLEMENTATION",
+                        "value": "rmw_cyclonedds_cpp"
+                    },
+                    {
+                        "name": "CYCLONEDDS_URI",
+                        "value": "file:///phase6-nav2-config/cyclonedds.xml"
+                    },
+                    {
+                        "name": "INITIAL_X",
+                        "value": "15.402"
+                    },
+                    {
+                        "name": "INITIAL_Y",
+                        "value": "-31.594"
+                    }
+                ],
+                "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e",
+                "imagePullPolicy": "IfNotPresent",
+                "name": "odom-tf",
+                "resources": {
+                    "limits": {
+                        "cpu": "500m",
+                        "memory": "512Mi"
+                    },
+                    "requests": {
+                        "cpu": "150m",
+                        "memory": "128Mi"
+                    }
+                },
+                "securityContext": {
+                    "allowPrivilegeEscalation": false,
+                    "capabilities": {
+                        "drop": [
+                            "ALL"
+                        ]
+                    },
+                    "runAsNonRoot": true,
+                    "runAsUser": 1001340000
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "File",
+                "volumeMounts": [
+                    {
+                        "mountPath": "/phase6-nav2-config",
+                        "name": "nav2-config",
+                        "readOnly": true
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-mr8t9",
+                        "readOnly": true
+                    }
+                ]
+            },
+            {
+                "args": [
+                    "export HOME=/tmp/phase6-scan-home ROS_LOG_DIR=/tmp/phase6-scan-logs; mkdir -p \"$ROS_LOG_DIR\"; source /opt/ros/jazzy/setup.bash; exec python3 -u /opt/ros2-demo/scripts/scan_frame_rewriter.py"
+                ],
+                "command": [
+                    "/bin/bash",
+                    "-lc"
+                ],
+                "env": [
+                    {
+                        "name": "ROS_DISTRO",
+                        "value": "jazzy"
+                    },
+                    {
+                        "name": "ROS_DOMAIN_ID",
+                        "value": "87"
+                    },
+                    {
+                        "name": "RMW_IMPLEMENTATION",
+                        "value": "rmw_cyclonedds_cpp"
+                    },
+                    {
+                        "name": "CYCLONEDDS_URI",
+                        "value": "file:///phase6-nav2-config/cyclonedds.xml"
+                    },
+                    {
+                        "name": "SCAN_INPUT_TOPIC",
+                        "value": "/scan"
+                    },
+                    {
+                        "name": "SCAN_OUTPUT_TOPIC",
+                        "value": "/scan_fixed"
+                    }
+                ],
+                "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e",
+                "imagePullPolicy": "IfNotPresent",
+                "name": "scan-frame-rewriter",
+                "resources": {
+                    "limits": {
+                        "cpu": "500m",
+                        "memory": "512Mi"
+                    },
+                    "requests": {
+                        "cpu": "150m",
+                        "memory": "128Mi"
+                    }
+                },
+                "securityContext": {
+                    "allowPrivilegeEscalation": false,
+                    "capabilities": {
+                        "drop": [
+                            "ALL"
+                        ]
+                    },
+                    "runAsNonRoot": true,
+                    "runAsUser": 1001340000
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "File",
+                "volumeMounts": [
+                    {
+                        "mountPath": "/phase6-nav2-config",
+                        "name": "nav2-config",
+                        "readOnly": true
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-mr8t9",
+                        "readOnly": true
+                    }
+                ]
+            },
+            {
+                "args": [
+                    "-c",
+                    "/phase6-bridges/nav2-motion-output-gated.json5"
+                ],
+                "env": [
+                    {
+                        "name": "ROS_DOMAIN_ID",
+                        "value": "87"
+                    },
+                    {
+                        "name": "ROS_DISTRO",
+                        "value": "jazzy"
+                    },
+                    {
+                        "name": "RMW_IMPLEMENTATION",
+                        "value": "rmw_cyclonedds_cpp"
+                    },
+                    {
+                        "name": "CYCLONEDDS_URI",
+                        "value": "file:///phase6-bridges/cyclonedds.xml"
+                    }
+                ],
+                "image": "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+                "imagePullPolicy": "IfNotPresent",
+                "name": "motion-output-bridge",
+                "resources": {
+                    "limits": {
+                        "cpu": "500m",
+                        "memory": "512Mi"
+                    },
+                    "requests": {
+                        "cpu": "150m",
+                        "memory": "128Mi"
+                    }
+                },
+                "securityContext": {
+                    "allowPrivilegeEscalation": false,
+                    "capabilities": {
+                        "drop": [
+                            "ALL"
+                        ]
+                    },
+                    "runAsNonRoot": true,
+                    "runAsUser": 1001340000
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "File",
+                "volumeMounts": [
+                    {
+                        "mountPath": "/phase6-bridges",
+                        "name": "bridge-config",
+                        "readOnly": true
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-mr8t9",
+                        "readOnly": true
+                    }
+                ]
+            },
+            {
+                "args": [
+                    "-c",
+                    "/phase6-bridges/nav2-cmd-vel-keepalive.json5"
+                ],
+                "env": [
+                    {
+                        "name": "ROS_DOMAIN_ID",
+                        "value": "87"
+                    },
+                    {
+                        "name": "ROS_DISTRO",
+                        "value": "jazzy"
+                    },
+                    {
+                        "name": "RMW_IMPLEMENTATION",
+                        "value": "rmw_cyclonedds_cpp"
+                    },
+                    {
+                        "name": "CYCLONEDDS_URI",
+                        "value": "file:///phase6-bridges/cyclonedds.xml"
+                    }
+                ],
+                "image": "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+                "imagePullPolicy": "IfNotPresent",
+                "name": "cmd-vel-route-keepalive",
+                "resources": {
+                    "limits": {
+                        "cpu": "200m",
+                        "memory": "128Mi"
+                    },
+                    "requests": {
+                        "cpu": "100m",
+                        "memory": "64Mi"
+                    }
+                },
+                "securityContext": {
+                    "allowPrivilegeEscalation": false,
+                    "capabilities": {
+                        "drop": [
+                            "ALL"
+                        ]
+                    },
+                    "runAsNonRoot": true,
+                    "runAsUser": 1001340000
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "File",
+                "volumeMounts": [
+                    {
+                        "mountPath": "/phase6-bridges",
+                        "name": "bridge-config",
+                        "readOnly": true
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-mr8t9",
+                        "readOnly": true
+                    }
+                ]
+            }
+        ],
+        "dnsPolicy": "ClusterFirst",
+        "enableServiceLinks": true,
+        "imagePullSecrets": [
+            {
+                "name": "default-dockercfg-6jjg8"
+            }
+        ],
+        "nodeName": "ip-10-0-39-214.ec2.internal",
+        "nodeSelector": {
+            "kubernetes.io/hostname": "ip-10-0-39-214.ec2.internal"
+        },
+        "preemptionPolicy": "PreemptLowerPriority",
+        "priority": 0,
+        "restartPolicy": "Always",
+        "schedulerName": "default-scheduler",
+        "securityContext": {
+            "seLinuxOptions": {
+                "level": "s0:c37,c4"
+            },
+            "seccompProfile": {
+                "type": "RuntimeDefault"
+            }
+        },
+        "serviceAccount": "default",
+        "serviceAccountName": "default",
+        "terminationGracePeriodSeconds": 30,
+        "tolerations": [
+            {
+                "effect": "NoSchedule",
+                "key": "cpu-taint",
+                "operator": "Equal",
+                "value": "true"
+            },
+            {
+                "effect": "NoSchedule",
+                "key": "g5-gpu",
+                "operator": "Equal",
+                "value": "true"
+            },
+            {
+                "effect": "NoExecute",
+                "key": "node.kubernetes.io/not-ready",
+                "operator": "Exists",
+                "tolerationSeconds": 300
+            },
+            {
+                "effect": "NoExecute",
+                "key": "node.kubernetes.io/unreachable",
+                "operator": "Exists",
+                "tolerationSeconds": 300
+            },
+            {
+                "effect": "NoSchedule",
+                "key": "node.kubernetes.io/memory-pressure",
+                "operator": "Exists"
+            }
+        ],
+        "volumes": [
+            {
+                "configMap": {
+                    "defaultMode": 420,
+                    "name": "semantic-phase6-d2-nav2-config-on"
+                },
+                "name": "nav2-config"
+            },
+            {
+                "configMap": {
+                    "defaultMode": 420,
+                    "name": "semantic-phase6-demo-bridge-config"
+                },
+                "name": "bridge-config"
+            },
+            {
+                "name": "kube-api-access-mr8t9",
+                "projected": {
+                    "defaultMode": 420,
+                    "sources": [
+                        {
+                            "serviceAccountToken": {
+                                "expirationSeconds": 3607,
+                                "path": "token"
+                            }
+                        },
+                        {
+                            "configMap": {
+                                "items": [
+                                    {
+                                        "key": "ca.crt",
+                                        "path": "ca.crt"
+                                    }
+                                ],
+                                "name": "kube-root-ca.crt"
+                            }
+                        },
+                        {
+                            "downwardAPI": {
+                                "items": [
+                                    {
+                                        "fieldRef": {
+                                            "apiVersion": "v1",
+                                            "fieldPath": "metadata.namespace"
+                                        },
+                                        "path": "namespace"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "configMap": {
+                                "items": [
+                                    {
+                                        "key": "service-ca.crt",
+                                        "path": "service-ca.crt"
+                                    }
+                                ],
+                                "name": "openshift-service-ca.crt"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "status": {
+        "conditions": [
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-30T16:20:34Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "PodReadyToStartContainers"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-30T16:20:32Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "Initialized"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-30T16:20:34Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "Ready"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-30T16:20:34Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "ContainersReady"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-10-30T16:20:32Z",
+                "observedGeneration": 1,
+                "status": "True",
+                "type": "PodScheduled"
+            }
+        ],
+        "containerStatuses": [
+            {
+                "allocatedResources": {
+                    "cpu": "150m",
+                    "memory": "128Mi"
+                },
+                "containerID": "cri-o://3416aeab3e161d5a8e77e39d2cbcd4b6ae386d110df2619171991e5e44eb904f",
+                "image": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+                "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+                "lastState": {},
+                "name": "clock-bridge",
+                "ready": true,
+                "resources": {
+                    "limits": {
+                        "cpu": "500m",
+                        "memory": "512Mi"
+                    },
+                    "requests": {
+                        "cpu": "150m",
+                        "memory": "128Mi"
+                    }
+                },
+                "restartCount": 0,
+                "started": true,
+                "state": {
+                    "running": {
+                        "startedAt": "2026-10-30T16:20:33Z"
+                    }
+                },
+                "user": {
+                    "linux": {
+                        "gid": 0,
+                        "supplementalGroups": [
+                            0
+                        ],
+                        "uid": 1001340000
+                    }
+                },
+                "volumeMounts": [
+                    {
+                        "mountPath": "/phase6-bridges",
+                        "name": "bridge-config",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-mr8t9",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    }
+                ]
+            },
+            {
+                "allocatedResources": {
+                    "cpu": "100m",
+                    "memory": "64Mi"
+                },
+                "containerID": "cri-o://ad0410275074848c28ded8986ea167119d5e09916df3d6268a42e98f4446034d",
+                "image": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+                "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+                "lastState": {},
+                "name": "cmd-vel-route-keepalive",
+                "ready": true,
+                "resources": {
+                    "limits": {
+                        "cpu": "200m",
+                        "memory": "128Mi"
+                    },
+                    "requests": {
+                        "cpu": "100m",
+                        "memory": "64Mi"
+                    }
+                },
+                "restartCount": 0,
+                "started": true,
+                "state": {
+                    "running": {
+                        "startedAt": "2026-10-30T16:20:33Z"
+                    }
+                },
+                "user": {
+                    "linux": {
+                        "gid": 0,
+                        "supplementalGroups": [
+                            0
+                        ],
+                        "uid": 1001340000
+                    }
+                },
+                "volumeMounts": [
+                    {
+                        "mountPath": "/phase6-bridges",
+                        "name": "bridge-config",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-mr8t9",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    }
+                ]
+            },
+            {
+                "allocatedResources": {
+                    "cpu": "150m",
+                    "memory": "128Mi"
+                },
+                "containerID": "cri-o://fb8b06363b7c59e741f64d3a6107382726058e7026b2f6592c7b86ce44568819",
+                "image": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+                "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+                "lastState": {},
+                "name": "motion-output-bridge",
+                "ready": true,
+                "resources": {
+                    "limits": {
+                        "cpu": "500m",
+                        "memory": "512Mi"
+                    },
+                    "requests": {
+                        "cpu": "150m",
+                        "memory": "128Mi"
+                    }
+                },
+                "restartCount": 0,
+                "started": true,
+                "state": {
+                    "running": {
+                        "startedAt": "2026-10-30T16:20:33Z"
+                    }
+                },
+                "user": {
+                    "linux": {
+                        "gid": 0,
+                        "supplementalGroups": [
+                            0
+                        ],
+                        "uid": 1001340000
+                    }
+                },
+                "volumeMounts": [
+                    {
+                        "mountPath": "/phase6-bridges",
+                        "name": "bridge-config",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-mr8t9",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    }
+                ]
+            },
+            {
+                "allocatedResources": {
+                    "cpu": "2",
+                    "memory": "2Gi"
+                },
+                "containerID": "cri-o://e6fd5f5bf230d486c8dc7639e88d241a4c97515ba151fd8685f12f6f5128e273",
+                "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e",
+                "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e",
+                "lastState": {},
+                "name": "nav2",
+                "ready": true,
+                "resources": {
+                    "limits": {
+                        "cpu": "4",
+                        "memory": "4Gi"
+                    },
+                    "requests": {
+                        "cpu": "2",
+                        "memory": "2Gi"
+                    }
+                },
+                "restartCount": 0,
+                "started": true,
+                "state": {
+                    "running": {
+                        "startedAt": "2026-10-30T16:20:33Z"
+                    }
+                },
+                "user": {
+                    "linux": {
+                        "gid": 0,
+                        "supplementalGroups": [
+                            0
+                        ],
+                        "uid": 1001340000
+                    }
+                },
+                "volumeMounts": [
+                    {
+                        "mountPath": "/phase6-nav2-config",
+                        "name": "nav2-config",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-mr8t9",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    }
+                ]
+            },
+            {
+                "allocatedResources": {
+                    "cpu": "150m",
+                    "memory": "128Mi"
+                },
+                "containerID": "cri-o://0a3f85b16ea3a9e13aaf9070af2c1e862008f644df8e5692ec67c87395f83d35",
+                "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e",
+                "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e",
+                "lastState": {},
+                "name": "odom-tf",
+                "ready": true,
+                "resources": {
+                    "limits": {
+                        "cpu": "500m",
+                        "memory": "512Mi"
+                    },
+                    "requests": {
+                        "cpu": "150m",
+                        "memory": "128Mi"
+                    }
+                },
+                "restartCount": 0,
+                "started": true,
+                "state": {
+                    "running": {
+                        "startedAt": "2026-10-30T16:20:33Z"
+                    }
+                },
+                "user": {
+                    "linux": {
+                        "gid": 0,
+                        "supplementalGroups": [
+                            0
+                        ],
+                        "uid": 1001340000
+                    }
+                },
+                "volumeMounts": [
+                    {
+                        "mountPath": "/phase6-nav2-config",
+                        "name": "nav2-config",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-mr8t9",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    }
+                ]
+            },
+            {
+                "allocatedResources": {
+                    "cpu": "150m",
+                    "memory": "128Mi"
+                },
+                "containerID": "cri-o://3fb75cbd0ba351bcdda02148a6768ff04360f73e85ebe6e0e473c2632170ca5a",
+                "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e",
+                "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e",
+                "lastState": {},
+                "name": "scan-frame-rewriter",
+                "ready": true,
+                "resources": {
+                    "limits": {
+                        "cpu": "500m",
+                        "memory": "512Mi"
+                    },
+                    "requests": {
+                        "cpu": "150m",
+                        "memory": "128Mi"
+                    }
+                },
+                "restartCount": 0,
+                "started": true,
+                "state": {
+                    "running": {
+                        "startedAt": "2026-10-30T16:20:33Z"
+                    }
+                },
+                "user": {
+                    "linux": {
+                        "gid": 0,
+                        "supplementalGroups": [
+                            0
+                        ],
+                        "uid": 1001340000
+                    }
+                },
+                "volumeMounts": [
+                    {
+                        "mountPath": "/phase6-nav2-config",
+                        "name": "nav2-config",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-mr8t9",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    }
+                ]
+            },
+            {
+                "allocatedResources": {
+                    "cpu": "150m",
+                    "memory": "128Mi"
+                },
+                "containerID": "cri-o://86df566381b6868d768918364ea2dc677c6c931caff954e8919adb24173bfb23",
+                "image": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+                "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+                "lastState": {},
+                "name": "semantic-input-bridge",
+                "ready": true,
+                "resources": {
+                    "limits": {
+                        "cpu": "500m",
+                        "memory": "512Mi"
+                    },
+                    "requests": {
+                        "cpu": "150m",
+                        "memory": "128Mi"
+                    }
+                },
+                "restartCount": 0,
+                "started": true,
+                "state": {
+                    "running": {
+                        "startedAt": "2026-10-30T16:20:33Z"
+                    }
+                },
+                "user": {
+                    "linux": {
+                        "gid": 0,
+                        "supplementalGroups": [
+                            0
+                        ],
+                        "uid": 1001340000
+                    }
+                },
+                "volumeMounts": [
+                    {
+                        "mountPath": "/phase6-bridges",
+                        "name": "bridge-config",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-mr8t9",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    }
+                ]
+            },
+            {
+                "allocatedResources": {
+                    "cpu": "150m",
+                    "memory": "128Mi"
+                },
+                "containerID": "cri-o://bad9ab9127831226655e936d6af7d3667e38e219392c2001c626603f5b031e33",
+                "image": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+                "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18",
+                "lastState": {},
+                "name": "sim-input-bridge",
+                "ready": true,
+                "resources": {
+                    "limits": {
+                        "cpu": "500m",
+                        "memory": "512Mi"
+                    },
+                    "requests": {
+                        "cpu": "150m",
+                        "memory": "128Mi"
+                    }
+                },
+                "restartCount": 0,
+                "started": true,
+                "state": {
+                    "running": {
+                        "startedAt": "2026-10-30T16:20:33Z"
+                    }
+                },
+                "user": {
+                    "linux": {
+                        "gid": 0,
+                        "supplementalGroups": [
+                            0
+                        ],
+                        "uid": 1001340000
+                    }
+                },
+                "volumeMounts": [
+                    {
+                        "mountPath": "/phase6-bridges",
+                        "name": "bridge-config",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-mr8t9",
+                        "readOnly": true,
+                        "recursiveReadOnly": "Disabled"
+                    }
+                ]
+            }
+        ],
+        "hostIP": "10.0.39.214",
+        "hostIPs": [
+            {
+                "ip": "10.0.39.214"
+            }
+        ],
+        "observedGeneration": 1,
+        "phase": "Running",
+        "podIP": "10.128.12.53",
+        "podIPs": [
+            {
+                "ip": "10.128.12.53"
+            }
+        ],
+        "qosClass": "Burstable",
+        "startTime": "2026-10-30T16:20:32Z"
+    }
+}

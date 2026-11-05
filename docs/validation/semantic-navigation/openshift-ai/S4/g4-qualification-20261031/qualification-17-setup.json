@@ -1,0 +1,29 @@
+{
+ "event": "qualification-17 setup",
+ "date": "2026-11-02",
+ "preconditions": {
+  "S1": "PASS accepted",
+  "S2": "PASS accepted",
+  "S3": "PASS accepted",
+  "leftover_g4_or_fixture_resources": "none",
+  "pilot": "serving-transport-pilot-10 PASS (all five fault-stop modes at 0.3 m injection)",
+  "prior_attempt": "qualification-16 passed serving-faults 12/12 and observation 10/10, then stopped on recovery trial-01: the watchdog lease expired at a command boundary where the coordinator's leases carried shrinking windows (down to 0.56 ms) as the backup command aged toward its 100 ms wall deadline - a race in the accepted safety core exposed by the candidate's lower RTF (0.675 vs ~0.9 historical). User approved send-path instrumentation + re-run."
+ },
+ "instrumentation": "native_link.py logs every lease enqueue (including silent queue-full drops, a newly identified suspect) and every worker sendto with timestamps and carried windows, retained as runtime/native-link-sends.jsonl; logging only, no send semantics changed",
+ "candidate": "unchanged from qualification-16 plus the native-link send-path logging",
+ "environment": "adapter node ip-10-0-53-174 freed (hotel-sim at 0 replicas); keep hotel-sim at 0 while G4 runs",
+ "rendering_reservation": "deleted to free the A10G for the G4 fixture; run_g4_suite.py finally restores it from rendering-reservation-saved.json",
+ "proxy_certificate": {
+  "secret": "semantic-g4-proxy-tls",
+  "subject": "CN=localhost",
+  "notBefore": "Nov 2 18:25:51 2026 GMT",
+  "notAfter": "Nov 5 18:25:51 2026 GMT",
+  "sha256_fingerprint": "3D:BB:CC:B1:22:A8:30:F9:10:37:F5:97:A3:3E:C1:0E:85:26:C9:98:1B:F9:35:5B:F5:6E:BC:28:74:E1:A4:B9",
+  "key_material_retained": false
+ },
+ "sampler": {
+  "output": "serving-resources-qualification-17.jsonl",
+  "stop_file": "/tmp/g4-qualification-17-monitor-stop"
+ },
+ "command": "run_g4_suite.py --output-dir qualification-17 --reservation rendering-reservation-saved.json"
+}

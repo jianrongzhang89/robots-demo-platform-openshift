@@ -1,0 +1,15 @@
+{
+ "event": "standalone paired-series re-run 7 (November 3)",
+ "context": "Series 6 passed 19 trials then stopped on 009-on-nominal at full commanded speed mid-route (~92 ms command gap vs the pinned 100 ms command deadline). The native-link instrumentation fully attributed it: 10,348 enqueues / 10,346 sends / 0 drops / microsecond latency - the sender perfect; the controller's command cadence (40 sim-Hz = ~27 Hz wall at RTF 0.675, vs ~36 Hz wall at the historical RTF ~0.9) was the exposure.",
+ "change": "User-approved RTF recalibration: controller_frequency 40 -> 60 simulation-Hz in phase6-nav2-candidate.yaml (~40 Hz wall at RTF 0.675, restoring the historical Phase 6 wall-domain command cadence under the pinned 100 ms deadline). No safety deadline, watchdog, or gate change; the controller becomes more responsive, not less. Documented at the site.",
+ "setup": {
+  "topology": "the series' per-trial recycle (now retry-hardened) manages it; reservation remains deleted for the fixture's A10G rendering",
+  "series_output": "qualification-22/paired-series-7",
+  "phase5_evidence": "qualification-22/served-phase5-qualification.json",
+  "sampler": {
+   "output": "serving-resources-paired-series-7.jsonl",
+   "stop_file": "/tmp/g4-paired-series-7-monitor-stop"
+  }
+ },
+ "command": "run_phase6_series.py --output-dir qualification-22/paired-series-7 (same arguments as series 2-6)"
+}

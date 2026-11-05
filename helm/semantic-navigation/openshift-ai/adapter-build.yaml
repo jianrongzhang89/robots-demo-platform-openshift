@@ -1,0 +1,26 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: semantic-cpu-adapter
+  namespace: semantic-navigation
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: semantic-cpu-adapter-s2
+  namespace: semantic-navigation
+spec:
+  runPolicy: Serial
+  source:
+    binary: {}
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: apps/semantic-perception/Containerfile.cpu
+  output:
+    to:
+      kind: ImageStreamTag
+      name: semantic-cpu-adapter:s2
+  resources:
+    requests: {cpu: '1', memory: 2Gi}
+    limits: {cpu: '4', memory: 8Gi}

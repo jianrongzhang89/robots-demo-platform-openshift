@@ -1,0 +1,10 @@
+{
+  "checked_utc": "2026-10-16 around 15:45 UTC",
+  "method": "oc debug node -- chroot /host chronyc tracking; read-only",
+  "source_node": "ip-10-0-38-113.ec2.internal",
+  "inference_node": "ip-10-0-18-251.ec2.internal",
+  "source": "Reference ID    : A9FEA97B (169.254.169.123)\nStratum         : 4\nRef time (UTC)  : Fri Oct 16 15:44:53 2026\nSystem time     : 0.000001770 seconds fast of NTP time\nLast offset     : +0.000000877 seconds\nRMS offset      : 0.000002239 seconds\nFrequency       : 13.429 ppm slow\nResidual freq   : +0.000 ppm\nSkew            : 0.029 ppm\nRoot delay      : 0.000563637 seconds\nRoot dispersion : 0.000320920 seconds\nUpdate interval : 16.3 seconds\nLeap status     : Normal\n\nRemoving debug pod ...\n",
+  "inference": "Reference ID    : A9FEA97B (169.254.169.123)\nStratum         : 4\nRef time (UTC)  : Fri Oct 16 15:45:02 2026\nSystem time     : 0.000005710 seconds slow of NTP time\nLast offset     : -0.000022638 seconds\nRMS offset      : 0.000013468 seconds\nFrequency       : 48.413 ppm slow\nResidual freq   : -0.022 ppm\nSkew            : 0.200 ppm\nRoot delay      : 0.000604285 seconds\nRoot dispersion : 0.000339349 seconds\nUpdate interval : 16.1 seconds\nLeap status     : Normal\n\nRemoving debug pod ...\n",
+  "configured_combined_uncertainty_ms": 2,
+  "limitation": "Snapshot, not continuous clock synchronization monitoring; repeat after measurements."
+}

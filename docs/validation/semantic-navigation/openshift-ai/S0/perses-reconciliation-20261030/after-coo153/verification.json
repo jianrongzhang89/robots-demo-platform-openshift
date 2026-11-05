@@ -1,0 +1,44 @@
+{
+  "recorded_at": "2026-10-31T02:38:21.955525+00:00",
+  "coo_csv": "cluster-observability-operator.v1.5.3",
+  "coo_phase": "Succeeded",
+  "conversion_strategy": "Webhook",
+  "conversion_ca_bundle_present": true,
+  "dashboard_version_views_equivalent": true,
+  "maas_dashboard_version_views_equivalent": true,
+  "maas_v1alpha1_server_side_apply_dry_run": "PASS",
+  "maas_dry_run_command": "oc apply --server-side --dry-run=server --field-manager=perses-conversion-check -f /private/tmp/maas-dashboard-conversion-dry-run.json",
+  "dashboard_ready_replicas": 2,
+  "dashboard_updated_replicas": 2,
+  "perses_pod_ready": true,
+  "perses_image": "registry.redhat.io/cluster-observability-operator/perses-rhel9@sha256:27553fd6d4b4983475a0d9a4ccc7d7fa63b1bd4b48f0e5cb2d18963fe232cfd5",
+  "perses_restart_count": 0,
+  "dsc_conditions": [
+    {
+      "lastTransitionTime": "2026-10-31T02:37:51Z",
+      "message": "Some components are not ready: modelsasservice",
+      "reason": "NotReady",
+      "status": "False",
+      "type": "Ready"
+    },
+    {
+      "lastTransitionTime": "2026-10-31T02:37:51Z",
+      "status": "True",
+      "type": "DashboardReady"
+    },
+    {
+      "lastTransitionTime": "2026-10-31T02:37:51Z",
+      "message": "apply: apply PersesDashboard redhat-ods-applications/dashboard-3-maas-usage-admin: failed to prune fields: failed add back owned items: failed to convert merged object at version perses.dev/v1alpha2: .spec.duration: field not declared in schema",
+      "reason": "PlatformReconcileFailed",
+      "status": "False",
+      "type": "ModelsAsServiceReady"
+    }
+  ],
+  "remaining_issue": "MaaS controller OOMKilled at 512Mi, 51 restarts in observed snapshot; ModelsAsServiceReady remains False and still reports the previous schema error. The v1alpha1 server-side dry-run now succeeds.",
+  "actions_by_assistant": [
+    "Read-only verification and server-side dry-run",
+    "Gracefully deleted only failed data-science-perses-0 pod after verifying corrected StatefulSet template; PVC and custom resources preserved"
+  ],
+  "coo_installation": "Performed by user",
+  "g0_status": "HOLD; remaining platform and robotics prerequisites not passed"
+}

@@ -1,0 +1,100 @@
+--- a/src/systems/sensors/Sensors.cc	2026-10-28 08:51:55
++++ b/src/systems/sensors/Sensors.cc	2026-10-28 10:29:23
+@@ -19,6 +19,7 @@
+ 
+ #include <atomic>
+ #include <chrono>
++#include <iostream>
+ #include <set>
+ #include <unordered_map>
+ #include <unordered_set>
+@@ -695,6 +696,11 @@
+     EventManager &_eventMgr)
+ {
+   gzdbg << "Configuring Sensors system" << std::endl;
++  // Private phase5 override marker: proves THIS library (not the system
++  // libgz-sim-sensors-system.so) is the loaded plugin. The fixture's
++  // console_sensors_system_override_loaded check fails closed without it.
++  std::cout << "phase5 sensors-system override: non-blocking PostUpdate active"
++            << std::endl;
+ 
+   // Setup rendering
+   std::string engineName =
+@@ -964,16 +970,33 @@
+       // still ECM changes that still need to be propagated to the scene,
+       // i.e. wait until renderUtil.Update(), has taken place in the
+       // rendering thread
+-      std::unique_lock<std::mutex> lock(this->dataPtr->renderUtilMutex);
+-      this->dataPtr->updateTimeCv.wait(lock, [this]()
++      // Private phase5 override (user-approved October 28, 2026): the
++      // physics thread must never block on the render thread's scene
++      // update. Upstream waits here on updateTimeCv until the render
++      // thread's renderUtil.Update() consumes the pending ECM update; the
++      // render thread holds renderUtilMutex for that ENTIRE call (the
++      // slow scene/geometry application at a viewpoint change), so even
++      // replacing the wait with a predicate check left the physics thread
++      // blocking on the mutex acquisition itself. try_to_lock: when the
++      // render thread holds the mutex, or the previous update is still
++      // unconsumed, skip this cycle's ECM update entirely. The in-flight
++      // render keeps its already-buffered state; the next cycle refreshes
++      // from the current ECM. The scene lags at most one render iteration
++      // and sensor stamps stay simulation-correct.
++      std::unique_lock<std::mutex> lock(this->dataPtr->renderUtilMutex,
++                                        std::try_to_lock);
++      if (!lock.owns_lock() ||
++          (this->dataPtr->updateAvailable &&
++           this->dataPtr->updateTimeToApply !=
++           this->dataPtr->updateTimeApplied))
+       {
+-        return !this->dataPtr->updateAvailable ||
+-               (this->dataPtr->updateTimeToApply ==
+-               this->dataPtr->updateTimeApplied);
+-      });
+-
+-      this->dataPtr->renderUtil.UpdateFromECM(_info, _ecm);
+-      this->dataPtr->updateTime = _info.simTime;
++        // skipped this cycle
++      }
++      else
++      {
++        this->dataPtr->renderUtil.UpdateFromECM(_info, _ecm);
++        this->dataPtr->updateTime = _info.simTime;
++      }
+     }
+ 
+     // check connections to render events
+@@ -1012,9 +1035,31 @@
+         this->dataPtr->UpdateBatteryState(_ecm);
+ 
+       {
+-        std::unique_lock<std::mutex> cvLock(this->dataPtr->renderMutex);
+-        this->dataPtr->renderCv.wait(cvLock, [this] {
+-          return !this->dataPtr->running || !this->dataPtr->updateAvailable; });
++        // Private phase5 override (user-approved October 28, 2026): a
++        // rendering iteration still in flight must never block the physics
++        // thread. Upstream waits on renderCv until the ongoing render
++        // completes; the render thread holds renderMutex around the
++        // ENTIRE sensorManager.RunOnce() (render + publish), so even a
++        // non-blocking predicate check behind
++        // std::unique_lock(renderMutex) stalled the physics thread for the
++        // render's full duration (sensors-override-stallprobe-1: the
++        // physics thread futex-waiting on the heap renderMutex while the
++        // render thread burned a full core through a pathological
++        // goal-approach frame). The busy flags are std::atomic — read them
++        // WITHOUT the mutex. If a render is in flight, skip arming this
++        // cycle; the render thread clears updateAvailable when it finishes
++        // and the next PostUpdate arms the following render. The cost is
++        // bounded sensor lag (at most one render duration) with unchanged
++        // simulation-stamped captures; the 500 ms freshness contracts keep
++        // their margin against the worst observed render. The arm block
++        // below still takes renderMutex, but only when no render is in
++        // flight — the render thread then sits in its 1 ms poll with the
++        // mutex released, so that acquisition is bounded.
++        if (this->dataPtr->running.load() &&
++            this->dataPtr->updateAvailable.load())
++        {
++          return;
++        }
+       }
+ 
+       if (!this->dataPtr->running)

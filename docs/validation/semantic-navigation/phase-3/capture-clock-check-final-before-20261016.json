@@ -1,0 +1,22 @@
+{
+  "read_only": true,
+  "uncertainty_allowance_ms": 2,
+  "results": [
+    {
+      "node": "ip-10-0-38-113.ec2.internal",
+      "chunk_id": "ad8e0c",
+      "wall_time_seconds": 1.001487417,
+      "original_token_count": 187,
+      "output": "Warning: would violate PodSecurity \"restricted:latest\": host namespaces (hostNetwork=true, hostPID=true), privileged (container \"container-00\" must not set securityContext.privileged=true), allowPrivilegeEscalation != false (container \"container-00\" must set securityContext.allowPrivilegeEscalation=false), unrestricted capabilities (container \"container-00\" must set securityContext.capabilities.drop=[\"ALL\"]), restricted volume types (volume \"host\" uses restricted volume type \"hostPath\"), runAsNonRoot != true (pod or container \"container-00\" must set securityContext.runAsNonRoot=true), runAsUser=0 (container \"container-00\" must not set runAsUser=0)\nStarting pod/ip-10-0-38-113ec2internal-debug ...\nTo use host binaries, run `chroot /host`\nReference ID    : A9FEA97B (169.254.169.123)\nStratum         : 4\nRef time (UTC)  : Fri Oct 16 16:34:59 2026\nSystem time     : 0.000000137 seconds fast of NTP time\nLast offset     : -0.000000025 seconds\nRMS offset      : 0.000001140 seconds\nFrequency       : 13.436 ppm slow\nResidual freq   : -0.000 ppm\nSkew            : 0.036 ppm\nRoot delay      : 0.000562796 seconds\nRoot dispersion : 0.000321275 seconds\nUpdate interval : 16.3 seconds\nLeap status     : Normal\n\nRemoving debug pod ...\n",
+      "exit_code": 0
+    },
+    {
+      "node": "ip-10-0-18-251.ec2.internal",
+      "chunk_id": "53b100",
+      "wall_time_seconds": 1.001472417,
+      "original_token_count": 187,
+      "output": "Warning: would violate PodSecurity \"restricted:latest\": host namespaces (hostNetwork=true, hostPID=true), privileged (container \"container-00\" must not set securityContext.privileged=true), allowPrivilegeEscalation != false (container \"container-00\" must set securityContext.allowPrivilegeEscalation=false), unrestricted capabilities (container \"container-00\" must set securityContext.capabilities.drop=[\"ALL\"]), restricted volume types (volume \"host\" uses restricted volume type \"hostPath\"), runAsNonRoot != true (pod or container \"container-00\" must set securityContext.runAsNonRoot=true), runAsUser=0 (container \"container-00\" must not set runAsUser=0)\nStarting pod/ip-10-0-18-251ec2internal-debug ...\nTo use host binaries, run `chroot /host`\nReference ID    : A9FEA97B (169.254.169.123)\nStratum         : 4\nRef time (UTC)  : Fri Oct 16 16:34:51 2026\nSystem time     : 0.000003433 seconds slow of NTP time\nLast offset     : +0.000004228 seconds\nRMS offset      : 0.000038807 seconds\nFrequency       : 50.062 ppm slow\nResidual freq   : -0.012 ppm\nSkew            : 1.492 ppm\nRoot delay      : 0.000650919 seconds\nRoot dispersion : 0.000368803 seconds\nUpdate interval : 16.2 seconds\nLeap status     : Normal\n\nRemoving debug pod ...\n",
+      "exit_code": 0
+    }
+  ]
+}

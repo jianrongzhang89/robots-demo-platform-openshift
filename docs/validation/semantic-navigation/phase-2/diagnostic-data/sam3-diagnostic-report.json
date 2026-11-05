@@ -1,0 +1,38 @@
+{
+  "status": "SCORED_NOT_ACCEPTED",
+  "purpose": "Exploratory diagnostic only; labels are provisional color-derived masks, not independent ground truth.",
+  "split": "development",
+  "model": "facebook/sam3 (local checkpoint)",
+  "checkpoint_sha256": "9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e",
+  "device": "NVIDIA L40S / CUDA",
+  "prompt": "red floor mat",
+  "confidence_threshold": 0.5,
+  "image_count": 2,
+  "positive_count": 1,
+  "negative_count": 1,
+  "positive_recall_iou_ge_0_5": 1.0,
+  "positive_median_iou_including_misses": 0.997093,
+  "negative_false_positive_frame_rate": 0.0,
+  "inference_seconds_median": 0.4800795,
+  "inference_seconds_p95": 0.82503825,
+  "peak_gpu_allocated_bytes": 5451595776,
+  "peak_gpu_reserved_bytes": 5676990464,
+  "results": [
+    {
+      "image": "../scene-preview/occluded/occluded-0000.jpg",
+      "presence": "positive",
+      "iou": 0.997093,
+      "detected": true,
+      "scores": [0.65625, 0.5703125],
+      "inference_seconds": 0.863367
+    },
+    {
+      "image": "../scene-preview/distractor-negative/distractor-negative-0000.jpg",
+      "presence": "negative",
+      "iou": 0.0,
+      "detected": false,
+      "scores": [],
+      "inference_seconds": 0.096792
+    }
+  ]
+}

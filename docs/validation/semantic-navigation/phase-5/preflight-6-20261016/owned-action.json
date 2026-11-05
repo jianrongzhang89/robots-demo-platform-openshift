@@ -1,0 +1,262 @@
+{
+  "event": "phase5_owned_action_fixture",
+  "passed": true,
+  "checks": [
+    {
+      "case": "revoke_before_cancel_ack_and_wait_for_terminal",
+      "passed": true
+    },
+    {
+      "case": "late_acceptance_canceled_without_permission",
+      "passed": true
+    },
+    {
+      "case": "success_revokes_and_requires_new_request",
+      "passed": true
+    },
+    {
+      "case": "rejected_cancel_stays_inhibited_until_terminal",
+      "passed": true
+    },
+    {
+      "case": "late_backend_success_not_reported_as_task_success",
+      "passed": true
+    },
+    {
+      "case": "prior_session_callback_errors_do_not_change_current_task",
+      "passed": true
+    },
+    {
+      "case": "backend_rejection_never_allows_command",
+      "passed": true
+    },
+    {
+      "case": "no_actuator_or_command_topics",
+      "passed": true
+    }
+  ],
+  "events": [
+    {
+      "event": "goal_requested",
+      "steady_ns": 3119650120288981,
+      "token": "da984904-3671-4e98-95bd-004688f6de07"
+    },
+    {
+      "event": "goal_response",
+      "steady_ns": 3119650121966302,
+      "token": "da984904-3671-4e98-95bd-004688f6de07",
+      "disposition": "run"
+    },
+    {
+      "event": "permission_revoked",
+      "steady_ns": 3119650122045328,
+      "token": "da984904-3671-4e98-95bd-004688f6de07",
+      "reason": "camera_stale"
+    },
+    {
+      "event": "cancel_requested",
+      "steady_ns": 3119650122048950,
+      "token": "da984904-3671-4e98-95bd-004688f6de07"
+    },
+    {
+      "event": "cancel_response",
+      "steady_ns": 3119650123086869,
+      "token": "da984904-3671-4e98-95bd-004688f6de07",
+      "accepted": true
+    },
+    {
+      "event": "terminal_result",
+      "steady_ns": 3119652131135518,
+      "token": "da984904-3671-4e98-95bd-004688f6de07",
+      "status": 5,
+      "outcome": "stopped"
+    },
+    {
+      "event": "goal_requested",
+      "steady_ns": 3119652131228113,
+      "token": "d913c245-3ceb-4c12-8717-c6d65d793b57"
+    },
+    {
+      "event": "permission_revoked",
+      "steady_ns": 3119652131342598,
+      "token": "d913c245-3ceb-4c12-8717-c6d65d793b57",
+      "reason": "cancel_before_accept"
+    },
+    {
+      "event": "goal_response",
+      "steady_ns": 3119652132488292,
+      "token": "d913c245-3ceb-4c12-8717-c6d65d793b57",
+      "disposition": "cancel"
+    },
+    {
+      "event": "cancel_requested",
+      "steady_ns": 3119652132524721,
+      "token": "d913c245-3ceb-4c12-8717-c6d65d793b57"
+    },
+    {
+      "event": "cancel_response",
+      "steady_ns": 3119652133483112,
+      "token": "d913c245-3ceb-4c12-8717-c6d65d793b57",
+      "accepted": true
+    },
+    {
+      "event": "terminal_result",
+      "steady_ns": 3119652134355186,
+      "token": "d913c245-3ceb-4c12-8717-c6d65d793b57",
+      "status": 5,
+      "outcome": "stopped"
+    },
+    {
+      "event": "goal_requested",
+      "steady_ns": 3119652134421809,
+      "token": "082bee06-68ce-4f4b-8ce2-bd50275d6b86"
+    },
+    {
+      "event": "goal_response",
+      "steady_ns": 3119652135487767,
+      "token": "082bee06-68ce-4f4b-8ce2-bd50275d6b86",
+      "disposition": "run"
+    },
+    {
+      "event": "permission_revoked",
+      "steady_ns": 3119652136627793,
+      "token": "082bee06-68ce-4f4b-8ce2-bd50275d6b86",
+      "reason": "goal_succeeded"
+    },
+    {
+      "event": "terminal_result",
+      "steady_ns": 3119652136631319,
+      "token": "082bee06-68ce-4f4b-8ce2-bd50275d6b86",
+      "status": 4,
+      "outcome": "succeeded"
+    },
+    {
+      "event": "goal_requested",
+      "steady_ns": 3119652136695471,
+      "token": "09a8660d-dea6-4c74-b99a-b7f77bd2ebf9"
+    },
+    {
+      "event": "goal_response",
+      "steady_ns": 3119652137720735,
+      "token": "09a8660d-dea6-4c74-b99a-b7f77bd2ebf9",
+      "disposition": "run"
+    },
+    {
+      "event": "permission_revoked",
+      "steady_ns": 3119652137754832,
+      "token": "09a8660d-dea6-4c74-b99a-b7f77bd2ebf9",
+      "reason": "tf_stale"
+    },
+    {
+      "event": "cancel_requested",
+      "steady_ns": 3119652137756554,
+      "token": "09a8660d-dea6-4c74-b99a-b7f77bd2ebf9"
+    },
+    {
+      "event": "cancel_response",
+      "steady_ns": 3119652138576753,
+      "token": "09a8660d-dea6-4c74-b99a-b7f77bd2ebf9",
+      "accepted": false
+    },
+    {
+      "event": "terminal_result",
+      "steady_ns": 3119652139714592,
+      "token": "09a8660d-dea6-4c74-b99a-b7f77bd2ebf9",
+      "status": 6,
+      "outcome": "stopped"
+    },
+    {
+      "event": "goal_requested",
+      "steady_ns": 3119652139783945,
+      "token": "c151de33-5947-441d-8b62-77cdbb86b82a"
+    },
+    {
+      "event": "goal_response",
+      "steady_ns": 3119652140943018,
+      "token": "c151de33-5947-441d-8b62-77cdbb86b82a",
+      "disposition": "run"
+    },
+    {
+      "event": "permission_revoked",
+      "steady_ns": 3119652140976811,
+      "token": "c151de33-5947-441d-8b62-77cdbb86b82a",
+      "reason": "backend_timeout"
+    },
+    {
+      "event": "cancel_requested",
+      "steady_ns": 3119652140978588,
+      "token": "c151de33-5947-441d-8b62-77cdbb86b82a"
+    },
+    {
+      "event": "cancel_response",
+      "steady_ns": 3119652141914057,
+      "token": "c151de33-5947-441d-8b62-77cdbb86b82a",
+      "accepted": false
+    },
+    {
+      "event": "terminal_result",
+      "steady_ns": 3119652142808083,
+      "token": "c151de33-5947-441d-8b62-77cdbb86b82a",
+      "status": 4,
+      "outcome": "stopped"
+    },
+    {
+      "event": "goal_requested",
+      "steady_ns": 3119652142871045,
+      "token": "7a739892-1eca-46be-ae30-13596c5a52ec"
+    },
+    {
+      "event": "goal_response",
+      "steady_ns": 3119652144169442,
+      "token": "7a739892-1eca-46be-ae30-13596c5a52ec",
+      "disposition": "run"
+    },
+    {
+      "event": "permission_revoked",
+      "steady_ns": 3119652145242875,
+      "token": "7a739892-1eca-46be-ae30-13596c5a52ec",
+      "reason": "goal_succeeded"
+    },
+    {
+      "event": "terminal_result",
+      "steady_ns": 3119652145246592,
+      "token": "7a739892-1eca-46be-ae30-13596c5a52ec",
+      "status": 4,
+      "outcome": "succeeded"
+    },
+    {
+      "event": "goal_requested",
+      "steady_ns": 3119652145311239,
+      "token": "9a4284b1-affa-4f01-9f49-2d8032ff1828"
+    },
+    {
+      "event": "goal_response",
+      "steady_ns": 3119652146150291,
+      "token": "9a4284b1-affa-4f01-9f49-2d8032ff1828",
+      "disposition": "rejected"
+    },
+    {
+      "event": "permission_revoked",
+      "steady_ns": 3119652146153531,
+      "token": "9a4284b1-affa-4f01-9f49-2d8032ff1828",
+      "reason": "goal_rejected"
+    }
+  ],
+  "topics": {
+    "/parameter_events": [
+      "rcl_interfaces/msg/ParameterEvent"
+    ],
+    "/phase5/task_status": [
+      "std_msgs/msg/String"
+    ],
+    "/phase5_fixture/navigate_to_pose/_action/feedback": [
+      "nav2_msgs/action/NavigateToPose_FeedbackMessage"
+    ],
+    "/phase5_fixture/navigate_to_pose/_action/status": [
+      "action_msgs/msg/GoalStatusArray"
+    ],
+    "/rosout": [
+      "rcl_interfaces/msg/Log"
+    ]
+  }
+}

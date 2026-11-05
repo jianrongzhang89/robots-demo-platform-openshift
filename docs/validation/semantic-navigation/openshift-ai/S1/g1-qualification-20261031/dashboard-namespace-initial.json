@@ -1,0 +1,95 @@
+{
+  "kind": "Namespace",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "semantic-model-serving",
+    "uid": "d707d48b-072e-4748-8478-d8a4a45571f1",
+    "resourceVersion": "490809588",
+    "creationTimestamp": "2026-10-31T02:57:55Z",
+    "labels": {
+      "kubernetes.io/metadata.name": "semantic-model-serving",
+      "modelmesh-enabled": "false",
+      "opendatahub.io/dashboard": "true",
+      "pod-security.kubernetes.io/audit": "restricted",
+      "pod-security.kubernetes.io/audit-version": "latest",
+      "pod-security.kubernetes.io/warn": "restricted",
+      "pod-security.kubernetes.io/warn-version": "latest"
+    },
+    "annotations": {
+      "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Namespace\",\"metadata\":{\"annotations\":{\"openshift.io/display-name\":\"Semantic model serving\"},\"labels\":{\"modelmesh-enabled\":\"false\",\"opendatahub.io/dashboard\":\"true\"},\"name\":\"semantic-model-serving\"}}\n",
+      "openshift.io/display-name": "Semantic model serving",
+      "openshift.io/sa.scc.mcs": "s0:c29,c14",
+      "openshift.io/sa.scc.supplemental-groups": "1000840000/10000",
+      "openshift.io/sa.scc.uid-range": "1000840000/10000",
+      "security.openshift.io/MinimallySufficientPodSecurityStandard": "restricted"
+    },
+    "managedFields": [
+      {
+        "manager": "cluster-policy-controller",
+        "operation": "Apply",
+        "apiVersion": "v1",
+        "time": "2026-10-31T02:57:55Z",
+        "fieldsType": "FieldsV1",
+        "fieldsV1": {
+          "f:metadata": {
+            "f:annotations": {
+              "f:openshift.io/sa.scc.mcs": {},
+              "f:openshift.io/sa.scc.supplemental-groups": {},
+              "f:openshift.io/sa.scc.uid-range": {}
+            }
+          }
+        }
+      },
+      {
+        "manager": "pod-security-admission-label-synchronization-controller",
+        "operation": "Apply",
+        "apiVersion": "v1",
+        "time": "2026-10-31T02:57:55Z",
+        "fieldsType": "FieldsV1",
+        "fieldsV1": {
+          "f:metadata": {
+            "f:annotations": {
+              "f:security.openshift.io/MinimallySufficientPodSecurityStandard": {}
+            },
+            "f:labels": {
+              "f:pod-security.kubernetes.io/audit": {},
+              "f:pod-security.kubernetes.io/audit-version": {},
+              "f:pod-security.kubernetes.io/warn": {},
+              "f:pod-security.kubernetes.io/warn-version": {}
+            }
+          }
+        }
+      },
+      {
+        "manager": "kubectl-client-side-apply",
+        "operation": "Update",
+        "apiVersion": "v1",
+        "time": "2026-10-31T02:57:55Z",
+        "fieldsType": "FieldsV1",
+        "fieldsV1": {
+          "f:metadata": {
+            "f:annotations": {
+              ".": {},
+              "f:kubectl.kubernetes.io/last-applied-configuration": {},
+              "f:openshift.io/display-name": {}
+            },
+            "f:labels": {
+              ".": {},
+              "f:kubernetes.io/metadata.name": {},
+              "f:modelmesh-enabled": {},
+              "f:opendatahub.io/dashboard": {}
+            }
+          }
+        }
+      }
+    ]
+  },
+  "spec": {
+    "finalizers": [
+      "kubernetes"
+    ]
+  },
+  "status": {
+    "phase": "Active"
+  }
+}

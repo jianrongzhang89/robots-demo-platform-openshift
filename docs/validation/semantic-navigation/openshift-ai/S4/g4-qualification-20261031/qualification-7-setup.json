@@ -1,0 +1,33 @@
+{
+ "event": "qualification-7 setup",
+ "date": "2026-11-02",
+ "preconditions": {
+  "S1": "PASS accepted",
+  "S2": "PASS accepted",
+  "S3": "PASS accepted",
+  "leftover_g4_or_fixture_resources": "none",
+  "pilot": "pilot-5 PASS (ordered restore validated)"
+ },
+ "environment_change": {
+  "date": "2026-11-02",
+  "action": "User-approved: scale deployment semantic-hotel-sim to 0 replicas and delete the stuck not-ready pod semantic-s2-adapter",
+  "reason": "The pinned G4 adapter node ip-10-0-53-174 ran at 82% CPU, dominated by the Phase-3-era leftover hotel simulator (10.9 cores). The adapter pod's inference bursts were intermittently starved, spiking backend+work_wait+delivery by 75-105 ms and pushing armed semantic-lease margins negative at the worker (qualification-4 trial-07, qualification-6 trial-01, and qualification-5 trial-02's delivery spike). After the change the node idles at ~9% CPU. hotel-sim is not part of any accepted S1-S4 gate; scaling is reversible.",
+  "node_cpu_before": "12800m (82%)",
+  "node_cpu_after": "1450m (9%)"
+ },
+ "rendering_reservation": "deleted to free the A10G for the G4 fixture; run_g4_suite.py finally restores it from rendering-reservation-saved.json",
+ "proxy_certificate": {
+  "secret": "semantic-g4-proxy-tls",
+  "subject": "CN=localhost",
+  "notBefore": "Nov 2 00:17:51 2026 GMT",
+  "notAfter": "Nov 5 00:17:51 2026 GMT",
+  "sha256_fingerprint": "05:DB:BA:E9:B1:C8:6B:38:F4:2F:A1:7B:FD:65:10:53:DC:31:F3:42:EB:44:FC:5D:E0:DC:25:1C:D6:61:30:B4",
+  "key_material_retained": false
+ },
+ "sampler": {
+  "output": "serving-resources-qualification-7.jsonl",
+  "stop_file": "/tmp/g4-qualification-7-monitor-stop"
+ },
+ "source_state": "unchanged from qualification-6 (lease-transport fix, deadline-aware fast poll, ordered restore with flow proof)",
+ "command": "run_g4_suite.py --output-dir qualification-7 --reservation rendering-reservation-saved.json"
+}

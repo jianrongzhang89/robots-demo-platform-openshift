@@ -1,0 +1,15 @@
+{
+ "event": "standalone paired-series re-run 3 (user-approved protocol, November 2)",
+ "context": "Series 2 passed 19 trials (its phase6_trial ladder absorbed two infrastructure deaths) then stopped on trial 009-on-nominal: the regulated-pure-pursuit controller's path transform pruned all poses at the goal approach (~89 s in) - the second identical on-arm failure in 29 on-trials (~7%). Root cause class: RTF-coupled nav2 transform tolerances.",
+ "change": "User-approved RTF recalibration of the candidate's nav2 transform tolerances in helm/semantic-navigation/phase6-nav2-candidate.yaml: amcl, controller_server (RPP), and both planner costmaps 0.2 s -> 0.3 s wall; collision_monitor 0.1 s -> 0.15 s wall. At the 30 Hz candidate's measured RTF 0.675 this restores the historical Phase 6 (RTF ~0.9) sim-time-equivalent TF budgets (0.2x0.9/0.675 = 0.27 s; 0.1x0.9/0.675 = 0.13 s). Documented at each site in the yaml. No navigation semantic, velocity, footprint, or costmap change.",
+ "setup": {
+  "topology": "g4_topology recycled fresh (direct endpoint, no fault proxy); reservation remains deleted for the fixture's A10G rendering",
+  "series_output": "qualification-22/paired-series-3",
+  "phase5_evidence": "qualification-22/served-phase5-qualification.json",
+  "sampler": {
+   "output": "serving-resources-paired-series-3.jsonl",
+   "stop_file": "/tmp/g4-paired-series-3-monitor-stop"
+  }
+ },
+ "command": "run_phase6_series.py --output-dir qualification-22/paired-series-3 --serving-backend http --pairs 20 --negative-pairs 3 --hull-radius 0.246 --region-xmin 16.9514 --region-xmax 17.8514 --region-ymin -31.919 --region-ymax -31.269 --gpu-rendering --phase5-evidence qualification-22/served-phase5-qualification.json --reserved-window-note 'User authorized G4 after G3 sign-off; private A10G rendering reservation handed to G4 fixture.' --trial-command <python> phase6_trial.py {arm} {case} {trial} {output}"
+}

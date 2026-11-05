@@ -1,0 +1,28 @@
+{
+  "classification": "retained failed presentation setup; never armed",
+  "native_samples": 23507,
+  "all_disarmed": true,
+  "all_zero_received_packets": true,
+  "all_zero_applied_commands": true,
+  "coordinator_events": [],
+  "clock_events": [
+    {
+      "event": "bound_while_disarmed",
+      "wall_ns": 1793806180153918686,
+      "sim_ns": 7386000000
+    },
+    {
+      "event": "latched_clock_fault",
+      "reason": "native_capture_stale",
+      "sim_ns": 83842000000,
+      "capture_wall_ns": 1793806324493190046,
+      "status_wall_ns": 1793806324493190046,
+      "callback_wall_ns": 1793806324498479782,
+      "processed_wall_ns": 1793806324597482675,
+      "capture_age_at_native_publish_ms": 0.0,
+      "capture_age_at_callback_ms": 5.289736,
+      "capture_age_at_processing_ms": 104.292629
+    }
+  ],
+  "fix": "Operator hold moved ahead of original costmap inspection/planning and native-clock binding. No bound clock reset and no threshold changes. New attempt has a fresh epoch, token, pod and retained source."
+}

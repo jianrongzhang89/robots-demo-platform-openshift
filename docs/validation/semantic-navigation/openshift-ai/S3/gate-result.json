@@ -1,0 +1,419 @@
+{
+  "gate": "G3",
+  "status": "PASS",
+  "accepted": true,
+  "reviewer": "User (explicit sign-off in conversation)",
+  "acceptance_note": "User signed off G3 PASS and authorized G4 qualification.",
+  "recorded_at": "2026-10-31T19:18:11.604658+00:00",
+  "commit": "ca60315af0a586967ae7137433659245862429b8",
+  "working_tree_dirty": true,
+  "source_hashes": "g3-qualification-20261031/source-hashes.json",
+  "runtime_image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-cpu-adapter@sha256:20ea4f5e6bc30646f48b29895eb071d40403f8c20b0c1526aeacf06dce716d4b",
+  "model_runtime_image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+  "costmap_observer_image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-g3-costmap@sha256:456f2707026b9de64275669f6a5d14bda1ef927c15ab35aa848801b1e94b2ec9",
+  "installed_costmap_base": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-costmap@sha256:447c6ee36d2eff0707a69133881c4131e0033dab5c38099750844173d416c92f",
+  "deployment_identity": {
+    "schema": "semantic-deployment/v1",
+    "model_name": "sam3-mat-v1",
+    "weights_sha256": "9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e",
+    "source_revision": "0570b3a5be9c4e694f23d85232fb55f4a6f1f7fc",
+    "container_digest": "sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+    "shared_sha256": {
+      "inference_contract.py": "d238d2490f826b6fbb70f07aa5579492dc425e8c858b780c8216679f121ffdef",
+      "sam3_backend.py": "3d83819971704e8ce642db98972194996307b314bb73cbb44257384e45714761",
+      "sam3_runtime_core.py": "683cf53a5b6378fa72d0cefe404bd899039b1420b4d5a2e7cfe3faecaf57085f"
+    },
+    "versions": {
+      "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+      "preprocess": "sam3-pil-rgb/v1",
+      "decoder": "sam3-binary-instances/v1"
+    },
+    "precision": "bfloat16",
+    "policy": "avoid-target/v1",
+    "prompt": "red mat",
+    "threshold": 0.5
+  },
+  "model_sha256": "9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e",
+  "policy": "avoid-target/v1",
+  "prompt": "red mat",
+  "threshold": 0.5,
+  "precision": "bfloat16",
+  "cluster_versions": {
+    "ocp": "4.21.16",
+    "openshift_ai": "3.4.2",
+    "coo": "1.5.3"
+  },
+  "hardware_resource_profile": "g3-qualification-20261031/resources-final.json",
+  "tuning": {
+    "max_work_wait_ms": 60,
+    "dds_receive_buffer_bytes": 4194304,
+    "node_rmem_max_bytes": 8388608,
+    "tuned_profile": "semantic-g3-adapter",
+    "tuned_node": "ip-10-0-53-174.ec2.internal"
+  },
+  "evaluation_set": "Pinned private Gazebo scene with capture-origin RGB-D: one stationary and two bounded yaw-observation runs. No semantic navigation influence.",
+  "evaluation_set_sha256": "e2e33baf033eaec26fe65a45094dfe766f969ae1505333c464eb67041027935b",
+  "run_count": 3,
+  "total_timed_results": 10223,
+  "runs": [
+    {
+      "run": 1,
+      "profile": "stationary",
+      "status": "PASS",
+      "pod_uid": "94f0b7b9-5e08-4c6f-afa0-7e6a47579349",
+      "duration_s": 600.026650801301,
+      "timed_outputs": 3389,
+      "paired": 3389,
+      "pairing_fraction": 0.9997050147492625,
+      "fresh_results_per_s": 5.648082456794521,
+      "capture_result_ms": {
+        "count": 3389,
+        "max": 269.441037,
+        "p50": 179.765725,
+        "p95": 231.1521378
+      },
+      "validated_consumer_ms": {
+        "count": 3389,
+        "max": 282.35876,
+        "p50": 193.687587,
+        "p95": 244.8689976
+      },
+      "costmap_ms": {
+        "global_semantic": {
+          "p50": 205.18557850000002,
+          "p95": 259.12379130000005,
+          "max": 306.842271
+        },
+        "local_semantic": {
+          "p50": 205.750205,
+          "p95": 259.84839155,
+          "max": 307.357252
+        }
+      },
+      "publication_gap_ms": {
+        "count": 3388,
+        "max": 246.400169,
+        "p50": 183.6438225,
+        "p95": 202.05856789999999
+      },
+      "gaps_over_500ms": 0,
+      "errors": {
+        "identity_errors": 0,
+        "age_errors": 0,
+        "order_errors": 0,
+        "payload_binding_errors": 0
+      },
+      "drops": {
+        "input_queue_drops": 0,
+        "work_queue_drops": 742,
+        "work_wait_drops": 1869,
+        "trace_errors": 0
+      },
+      "memory_bytes": {
+        "first": 112689152,
+        "last": 164507648,
+        "min": 112689152,
+        "max": 165105664
+      },
+      "adapter_rss_bytes": {
+        "min": 104140800,
+        "max": 105713664
+      },
+      "udp_receive_errors_delta": 0,
+      "source_simulation_wall_ratio": 0.999999799346598,
+      "motion": null,
+      "costmap_correlation": {
+        "global_semantic": {
+          "coverage": 0.9988197108291531,
+          "wrong_capture_or_stream": [],
+          "unexpected_inside_window": []
+        },
+        "local_semantic": {
+          "coverage": 0.9988197108291531,
+          "wrong_capture_or_stream": [],
+          "unexpected_inside_window": []
+        }
+      },
+      "checks": {
+        "duration": true,
+        "fresh_rate": true,
+        "capture_result_p95": true,
+        "validated_consumer_p95": true,
+        "pairing": true,
+        "no_wrong_pairs": true,
+        "publication_gaps": true,
+        "global_costmap_p95": true,
+        "local_costmap_p95": true,
+        "bounded_costmap_buffers": true,
+        "bounded_adapter_buffers": true,
+        "memory_limit": true,
+        "no_restarts": true
+      }
+    },
+    {
+      "run": 2,
+      "profile": "bounded yaw observation",
+      "status": "PASS",
+      "pod_uid": "6b5e2094-fe21-4bac-a47e-9508416dcc91",
+      "duration_s": 600.0282157883048,
+      "timed_outputs": 3427,
+      "paired": 3427,
+      "pairing_fraction": 0.999708284714119,
+      "fresh_results_per_s": 5.711398080668053,
+      "capture_result_ms": {
+        "count": 3427,
+        "max": 275.328876,
+        "p50": 179.545419,
+        "p95": 231.0445193
+      },
+      "validated_consumer_ms": {
+        "count": 3427,
+        "max": 289.052364,
+        "p50": 193.339692,
+        "p95": 244.9136237
+      },
+      "costmap_ms": {
+        "global_semantic": {
+          "p50": 205.37885849999998,
+          "p95": 259.27581295000005,
+          "max": 313.046403
+        },
+        "local_semantic": {
+          "p50": 205.9833365,
+          "p95": 259.8523474,
+          "max": 313.589391
+        }
+      },
+      "publication_gap_ms": {
+        "count": 3426,
+        "max": 245.631279,
+        "p50": 170.7030505,
+        "p95": 200.971019
+      },
+      "gaps_over_500ms": 0,
+      "errors": {
+        "identity_errors": 0,
+        "age_errors": 0,
+        "order_errors": 0,
+        "payload_binding_errors": 0
+      },
+      "drops": {
+        "input_queue_drops": 0,
+        "work_queue_drops": 833,
+        "work_wait_drops": 1740,
+        "trace_errors": 0
+      },
+      "memory_bytes": {
+        "first": 114524160,
+        "last": 166375424,
+        "min": 114524160,
+        "max": 166375424
+      },
+      "adapter_rss_bytes": {
+        "min": 105099264,
+        "max": 107196416
+      },
+      "udp_receive_errors_delta": 0,
+      "source_simulation_wall_ratio": 0.999999996277713,
+      "motion": {
+        "pass": true,
+        "stopped": true,
+        "moving_fraction": 0.9457315138051412
+      },
+      "costmap_correlation": {
+        "global_semantic": {
+          "coverage": 0.9991245987744383,
+          "wrong_capture_or_stream": [],
+          "unexpected_inside_window": []
+        },
+        "local_semantic": {
+          "coverage": 0.9991245987744383,
+          "wrong_capture_or_stream": [],
+          "unexpected_inside_window": []
+        }
+      },
+      "checks": {
+        "duration": true,
+        "fresh_rate": true,
+        "capture_result_p95": true,
+        "validated_consumer_p95": true,
+        "pairing": true,
+        "no_wrong_pairs": true,
+        "publication_gaps": true,
+        "global_costmap_p95": true,
+        "local_costmap_p95": true,
+        "bounded_costmap_buffers": true,
+        "bounded_adapter_buffers": true,
+        "memory_limit": true,
+        "no_restarts": true
+      }
+    },
+    {
+      "run": 3,
+      "profile": "bounded yaw observation",
+      "status": "PASS",
+      "pod_uid": "719af5fc-f169-4abc-a40f-2131ea3b1467",
+      "duration_s": 600.002007111907,
+      "timed_outputs": 3407,
+      "paired": 3407,
+      "pairing_fraction": 1.0,
+      "fresh_results_per_s": 5.678314338312799,
+      "capture_result_ms": {
+        "count": 3407,
+        "max": 271.256593,
+        "p50": 179.511136,
+        "p95": 230.8603934
+      },
+      "validated_consumer_ms": {
+        "count": 3407,
+        "max": 285.022528,
+        "p50": 193.168543,
+        "p95": 244.2852442
+      },
+      "costmap_ms": {
+        "global_semantic": {
+          "p50": 205.967671,
+          "p95": 259.0775682,
+          "max": 312.750077
+        },
+        "local_semantic": {
+          "p50": 206.555439,
+          "p95": 259.75833279999995,
+          "max": 313.325271
+        }
+      },
+      "publication_gap_ms": {
+        "count": 3406,
+        "max": 256.891672,
+        "p50": 181.1256855,
+        "p95": 201.40906274999998
+      },
+      "gaps_over_500ms": 0,
+      "errors": {
+        "identity_errors": 0,
+        "age_errors": 0,
+        "order_errors": 0,
+        "payload_binding_errors": 0
+      },
+      "drops": {
+        "input_queue_drops": 0,
+        "work_queue_drops": 785,
+        "work_wait_drops": 1807,
+        "trace_errors": 0
+      },
+      "memory_bytes": {
+        "first": 110002176,
+        "last": 164970496,
+        "min": 110002176,
+        "max": 165593088
+      },
+      "adapter_rss_bytes": {
+        "min": 104849408,
+        "max": 107077632
+      },
+      "udp_receive_errors_delta": 0,
+      "source_simulation_wall_ratio": 1.0000001761660586,
+      "motion": {
+        "pass": true,
+        "stopped": true,
+        "moving_fraction": 0.9406349206349206
+      },
+      "costmap_correlation": {
+        "global_semantic": {
+          "coverage": 0.9991194599354271,
+          "wrong_capture_or_stream": [],
+          "unexpected_inside_window": []
+        },
+        "local_semantic": {
+          "coverage": 0.9991194599354271,
+          "wrong_capture_or_stream": [],
+          "unexpected_inside_window": []
+        }
+      },
+      "checks": {
+        "duration": true,
+        "fresh_rate": true,
+        "capture_result_p95": true,
+        "validated_consumer_p95": true,
+        "pairing": true,
+        "no_wrong_pairs": true,
+        "publication_gaps": true,
+        "global_costmap_p95": true,
+        "local_costmap_p95": true,
+        "bounded_costmap_buffers": true,
+        "bounded_adapter_buffers": true,
+        "memory_limit": true,
+        "no_restarts": true
+      }
+    }
+  ],
+  "tests": {
+    "projection_lifecycle_cpp": 23,
+    "remote_ros_faults": 12,
+    "cloud_validation_equivalence": 2,
+    "audit_evaluator": 4,
+    "costmap_correlation": 3,
+    "live_lifecycle_checks": 4
+  },
+  "fault_outcomes": {
+    "clear": "PASS",
+    "deactivate_reactivate": "PASS",
+    "paused_expiry": "PASS",
+    "clock_reset": "PASS",
+    "g2_remote_fault_regression": "PASS",
+    "moving_stop_verification": "PASS",
+    "cross_consumer_capture_binding": "PASS"
+  },
+  "retained_attempts": {
+    "pilots": 5,
+    "pilots_failing_final_criteria": 4,
+    "passing_final_profile_pilot": 5,
+    "failed_ten_minute_runs": 0,
+    "setup_events": "g3-qualification-20261031/setup-events.json"
+  },
+  "deviations": [
+    "Headless private sensor world and odometry-frame diagnostic costmaps; no production localization or navigation influence.",
+    "The moving-observation profile uses bounded yaw sweeps, not a navigation mission.",
+    "Consumer timing was additionally required to pass 250 ms p95 before long qualification."
+  ],
+  "waivers": [
+    "Standing recognition waiver remains unchanged."
+  ],
+  "cleanup": {
+    "g3_fixture_objects": "removed",
+    "rendering_reservation": "restored Ready",
+    "accepted_local_sam3": "Ready",
+    "g1_endpoint": "Ready",
+    "g2_adapter": "Running, idle not Ready",
+    "tuned_profile": "retained and applied"
+  },
+  "certificate_leaf_not_after": "2026-11-07T02:58:59Z",
+  "next_gate": "G4: served-navigation paired series and moving serving/network/auth/overload/hang/wrong-version stop tests",
+  "evidence": [
+    "report.md",
+    "g3-qualification-20261031/qualification-plan-final.json",
+    "g3-qualification-20261031/resources-final.json",
+    "g3-qualification-20261031/run-summary.json",
+    "g3-qualification-20261031/run-1/evaluation.json",
+    "g3-qualification-20261031/run-2/evaluation.json",
+    "g3-qualification-20261031/run-3/evaluation.json",
+    "g3-qualification-20261031/run-1/correlation.json",
+    "g3-qualification-20261031/run-2/correlation.json",
+    "g3-qualification-20261031/run-3/correlation.json",
+    "g3-qualification-20261031/lifecycle-1/result.json",
+    "g3-qualification-20261031/costmap-build-1.log",
+    "g3-qualification-20261031/adapter-final-ros-tests.txt",
+    "g3-qualification-20261031/cloud-validator-tests.txt",
+    "g3-qualification-20261031/final-audit-tests.txt",
+    "g3-qualification-20261031/clock-bounds.json",
+    "g3-qualification-20261031/isolation-final.json",
+    "g3-qualification-20261031/restored-state.json",
+    "g3-qualification-20261031/cleanup.log",
+    "g3-qualification-20261031/source-hashes.json",
+    "g3-qualification-20261031/evidence-hashes.json"
+  ],
+  "technical_reviewer": "Codex (automated technical verification)",
+  "accepted_on": "2026-10-31",
+  "acceptance_timezone": "America/New_York",
+  "approval_statement": "OK. Now G3 is signed off. Move to G4."
+}

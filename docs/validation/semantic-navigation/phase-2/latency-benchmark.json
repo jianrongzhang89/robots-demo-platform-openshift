@@ -1,0 +1,21 @@
+{
+  "status": "BENCHMARK_ONLY_NOT_END_TO_END_QUALIFICATION",
+  "model": "facebook/sam3",
+  "checkpoint_sha256": "9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e",
+  "device": "NVIDIA L40S",
+  "image": "scene-preview/lighting-dim/dim-0000.jpg",
+  "image_size": [640, 480],
+  "prompt": "red floor mat",
+  "confidence_threshold": 0.5,
+  "warmup_inferences": 3,
+  "measured_inferences": 20,
+  "warm_latency_seconds_median": 0.095029,
+  "warm_latency_seconds_p95": 0.095735,
+  "warm_latency_seconds_max": 0.096742,
+  "model_load_seconds": 31.094142,
+  "first_positive_inference_seconds_observed_separately": 0.87146,
+  "mask_returned_in_all_measured_repeats": true,
+  "peak_gpu_allocated_bytes": 5336111616,
+  "peak_gpu_reserved_bytes": 5588910080,
+  "limitations": "The 20 measurements reuse one fixed image and prompt after warmup. This isolates model work on the L40S; it excludes ROS transport, depth/cloud pairing, inference queueing, simulator load, and long-duration resource behavior. The first-run value is from a separate one-image diagnostic, not a paired cold-versus-warm run."
+}

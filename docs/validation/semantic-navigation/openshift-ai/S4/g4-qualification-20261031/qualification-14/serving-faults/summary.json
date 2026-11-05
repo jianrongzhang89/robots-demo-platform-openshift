@@ -1,0 +1,51 @@
+{
+  "passed": false,
+  "planned": 12,
+  "attempted": 4,
+  "results": [
+    {
+      "mode": "auth",
+      "passed": true,
+      "returncode": 0,
+      "evidence": "docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/qualification-14/serving-faults/trial-01-auth-r1/runtime/summary.json",
+      "injected": true,
+      "restored": true,
+      "prearm_liveness_retries": 1,
+      "prearm_topology_recycles": 0,
+      "repeat": 1
+    },
+    {
+      "mode": "wrong_version",
+      "passed": true,
+      "returncode": 0,
+      "evidence": "docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/qualification-14/serving-faults/trial-02-wrong_version-r1/runtime/summary.json",
+      "injected": true,
+      "restored": true,
+      "prearm_liveness_retries": 0,
+      "prearm_topology_recycles": 0,
+      "repeat": 1
+    },
+    {
+      "mode": "overload",
+      "passed": true,
+      "returncode": 0,
+      "evidence": "docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/qualification-14/serving-faults/trial-03-overload-r1/runtime/summary.json",
+      "injected": true,
+      "restored": true,
+      "prearm_liveness_retries": 0,
+      "prearm_topology_recycles": 0,
+      "repeat": 1
+    },
+    {
+      "mode": "serving",
+      "passed": false,
+      "returncode": 1,
+      "evidence": "docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/qualification-14/serving-faults/trial-04-serving-r1/runtime/summary.json",
+      "injected": true,
+      "restored": true,
+      "prearm_liveness_retries": 0,
+      "prearm_topology_recycles": 0,
+      "repeat": 1
+    }
+  ]
+}

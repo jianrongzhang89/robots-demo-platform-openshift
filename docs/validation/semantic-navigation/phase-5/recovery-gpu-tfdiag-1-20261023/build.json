@@ -1,0 +1,161 @@
+{
+  "apiVersion": "build.openshift.io/v1",
+  "kind": "Build",
+  "metadata": {
+    "annotations": {
+      "openshift.io/build-config.name": "semantic-safety-console-phase5",
+      "openshift.io/build.number": "20",
+      "openshift.io/build.pod-name": "semantic-safety-console-phase5-20-build"
+    },
+    "creationTimestamp": "2026-10-23T20:36:13Z",
+    "generation": 2,
+    "labels": {
+      "buildconfig": "semantic-safety-console-phase5",
+      "openshift.io/build-config.name": "semantic-safety-console-phase5",
+      "openshift.io/build.start-policy": "Serial"
+    },
+    "name": "semantic-safety-console-phase5-20",
+    "namespace": "semantic-navigation",
+    "ownerReferences": [
+      {
+        "apiVersion": "build.openshift.io/v1",
+        "controller": true,
+        "kind": "BuildConfig",
+        "name": "semantic-safety-console-phase5",
+        "uid": "22e3050b-68bd-4c47-818b-c6b3a771ca22"
+      }
+    ],
+    "resourceVersion": "461008674",
+    "uid": "9cdd24d7-e6c3-4865-aae3-30cfcaf5e87d"
+  },
+  "spec": {
+    "nodeSelector": null,
+    "output": {
+      "pushSecret": {
+        "name": "builder-dockercfg-htt4p"
+      },
+      "to": {
+        "kind": "ImageStreamTag",
+        "name": "semantic-safety:phase5-console-candidate"
+      }
+    },
+    "postCommit": {},
+    "resources": {
+      "limits": {
+        "cpu": "2",
+        "memory": "4Gi"
+      },
+      "requests": {
+        "cpu": "1",
+        "memory": "2Gi"
+      }
+    },
+    "revision": {
+      "git": {
+        "author": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "commit": "d7c7fc809ecdc01415794ecbae6cdbe582ef07de",
+        "committer": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "message": "Record map->odom TF edge arrivals in the hotel fixture\n\nA read-only /tf subscription now records every map->odom edge (stamp\nplus wall receipt) and odom->base_footprint gaps over 50 ms, written to\ntf-edges.json. The controller's synchronous current-time lookups wait on\ntransform edges, and AMCL publishes map->odom per scan, so correlating\nedge arrivals with any controller block directly confirms or refutes\nthe late-edge mechanism. Passive evidence only: no authority, no\nbehavior change, no threshold change. 170 safety tests pass."
+      },
+      "type": "Git"
+    },
+    "serviceAccount": "builder",
+    "source": {
+      "binary": {},
+      "type": "Binary"
+    },
+    "strategy": {
+      "dockerStrategy": {
+        "dockerfilePath": "Containerfile.console"
+      },
+      "type": "Docker"
+    }
+  },
+  "status": {
+    "completionTimestamp": "2026-10-23T20:41:39Z",
+    "conditions": [
+      {
+        "lastTransitionTime": "2026-10-23T20:36:13Z",
+        "lastUpdateTime": "2026-10-23T20:36:13Z",
+        "status": "False",
+        "type": "New"
+      },
+      {
+        "lastTransitionTime": "2026-10-23T20:36:14Z",
+        "lastUpdateTime": "2026-10-23T20:36:14Z",
+        "status": "False",
+        "type": "Pending"
+      },
+      {
+        "lastTransitionTime": "2026-10-23T20:41:39Z",
+        "lastUpdateTime": "2026-10-23T20:41:39Z",
+        "status": "False",
+        "type": "Running"
+      },
+      {
+        "lastTransitionTime": "2026-10-23T20:41:39Z",
+        "lastUpdateTime": "2026-10-23T20:41:39Z",
+        "status": "True",
+        "type": "Complete"
+      }
+    ],
+    "config": {
+      "kind": "BuildConfig",
+      "name": "semantic-safety-console-phase5",
+      "namespace": "semantic-navigation"
+    },
+    "duration": 326000000000,
+    "output": {
+      "to": {
+        "imageDigest": "sha256:89a057050f6459ad21ded592019669151f9ebe01b685465869a456e42a56211e"
+      }
+    },
+    "outputDockerImageReference": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety:phase5-console-candidate",
+    "phase": "Complete",
+    "stages": [
+      {
+        "durationMilliseconds": 126255,
+        "name": "PullImages",
+        "startTime": "2026-10-23T20:36:17Z",
+        "steps": [
+          {
+            "durationMilliseconds": 126255,
+            "name": "PullBaseImage",
+            "startTime": "2026-10-23T20:36:17Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 187581,
+        "name": "Build",
+        "startTime": "2026-10-23T20:38:23Z",
+        "steps": [
+          {
+            "durationMilliseconds": 187581,
+            "name": "DockerBuild",
+            "startTime": "2026-10-23T20:38:23Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 7235,
+        "name": "PushImage",
+        "startTime": "2026-10-23T20:41:30Z",
+        "steps": [
+          {
+            "durationMilliseconds": 7235,
+            "name": "PushDockerImage",
+            "startTime": "2026-10-23T20:41:30Z"
+          }
+        ]
+      }
+    ],
+    "startTimestamp": "2026-10-23T20:36:13Z"
+  }
+}

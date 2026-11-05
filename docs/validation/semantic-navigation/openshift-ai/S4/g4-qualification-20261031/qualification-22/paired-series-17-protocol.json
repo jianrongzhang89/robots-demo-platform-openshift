@@ -1,0 +1,14 @@
+{
+ "event": "standalone paired-series re-run 17 (November 4)",
+ "context": "Series 16 passed 52 trials - all 40 nominal pairs, all 6 target-absent, and 2 target-removal pairs (the deepest run yet; the ladder absorbed several infrastructure deaths along the way) - then stopped on 021-on-target_removal to a genuine goal-abort (the ~3.5% goal-approach TF tail; evidence copy succeeded, the trial's own checks failed).",
+ "setup": {
+  "topology": "G4 topology up (direct endpoint); the series' per-trial recycle manages it; reservation remains deleted",
+  "series_output": "qualification-22/paired-series-17",
+  "phase5_evidence": "qualification-22/served-phase5-qualification.json",
+  "sampler": {
+   "output": "serving-resources-paired-series-17.jsonl",
+   "stop_file": "/tmp/g4-paired-series-17-monitor-stop"
+  }
+ },
+ "command": "run_phase6_series.py --output-dir qualification-22/paired-series-17 (same arguments as series 2-16)"
+}

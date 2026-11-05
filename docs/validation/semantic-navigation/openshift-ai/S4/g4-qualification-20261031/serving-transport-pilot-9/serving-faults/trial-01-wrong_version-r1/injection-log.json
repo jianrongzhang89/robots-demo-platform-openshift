@@ -1,0 +1,42 @@
+[
+  {
+    "event": "inject",
+    "mode": "wrong_version",
+    "fixture_state": {
+      "phase": "motion_verified",
+      "mode": "wrong_version",
+      "armed": true,
+      "gate_reason": "armed",
+      "leases": {
+        "camera": 311,
+        "semantic": 105,
+        "inference_heartbeat": 486
+      },
+      "written_wall_ns": 1793626885066198197
+    },
+    "controller_wall_ns": 1793626874903507000,
+    "returncode": 0
+  },
+  {
+    "event": "restore_flow_verified",
+    "attempt": 1,
+    "baseline_semantic_sequence": 113
+  },
+  {
+    "event": "restore",
+    "mode": "wrong_version",
+    "fixture_state": {
+      "phase": "stopped",
+      "mode": "wrong_version",
+      "armed": false,
+      "gate_reason": "semantic_stale",
+      "leases": {
+        "camera": 356,
+        "semantic": 113,
+        "inference_heartbeat": 531
+      },
+      "written_wall_ns": 1793626887335521192
+    },
+    "controller_wall_ns": 1793626906660075000
+  }
+]

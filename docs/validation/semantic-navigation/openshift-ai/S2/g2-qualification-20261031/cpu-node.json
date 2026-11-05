@@ -1,0 +1,666 @@
+{
+    "apiVersion": "v1",
+    "kind": "Node",
+    "metadata": {
+        "annotations": {
+            "cloud.network.openshift.io/egress-ipconfig": "[{\"interface\":\"eni-0a0d31f646a0de653\",\"ifaddr\":{\"ipv4\":\"10.0.0.0/18\"},\"capacity\":{\"ipv4\":29,\"ipv6\":30}}]",
+            "csi.volume.kubernetes.io/nodeid": "{\"ebs.csi.aws.com\":\"i-088caf1d35528c5f1\"}",
+            "k8s.ovn.org/host-cidrs": "[\"10.0.53.174/18\"]",
+            "k8s.ovn.org/l3-gateway-config": "{\"default\":{\"mode\":\"shared\",\"bridge-id\":\"br-ex\",\"interface-id\":\"br-ex_ip-10-0-53-174.ec2.internal\",\"mac-address\":\"0a:ff:cb:ca:23:63\",\"ip-addresses\":[\"10.0.53.174/18\"],\"ip-address\":\"10.0.53.174/18\",\"next-hops\":[\"10.0.0.1\"],\"next-hop\":\"10.0.0.1\",\"node-port-enable\":\"true\",\"vlan-id\":\"0\"}}",
+            "k8s.ovn.org/layer2-topology-version": "2.0",
+            "k8s.ovn.org/node-chassis-id": "c66c244c-3d03-43ef-955a-be2f629cd856",
+            "k8s.ovn.org/node-encap-ips": "[\"10.0.53.174\"]",
+            "k8s.ovn.org/node-id": "9",
+            "k8s.ovn.org/node-masquerade-subnet": "{\"ipv4\":\"169.254.0.0/17\",\"ipv6\":\"fd69::/112\"}",
+            "k8s.ovn.org/node-primary-ifaddr": "{\"ipv4\":\"10.0.53.174/18\"}",
+            "k8s.ovn.org/node-subnets": "{\"default\":[\"10.131.2.0/23\"]}",
+            "k8s.ovn.org/node-transit-switch-port-ifaddr": "{\"ipv4\":\"100.88.0.9/16\"}",
+            "k8s.ovn.org/zone-name": "ip-10-0-53-174.ec2.internal",
+            "machine.openshift.io/machine": "openshift-machine-api/ai-dev02-4j98z-worker-us-east-1a-zzd5j",
+            "machineconfiguration.openshift.io/controlPlaneTopology": "HighlyAvailable",
+            "machineconfiguration.openshift.io/currentConfig": "rendered-worker-6891222a8ce96711dbd2f8fce4b57cb7",
+            "machineconfiguration.openshift.io/desiredConfig": "rendered-worker-6891222a8ce96711dbd2f8fce4b57cb7",
+            "machineconfiguration.openshift.io/desiredDrain": "uncordon-rendered-worker-6891222a8ce96711dbd2f8fce4b57cb7",
+            "machineconfiguration.openshift.io/lastAppliedDrain": "uncordon-rendered-worker-6891222a8ce96711dbd2f8fce4b57cb7",
+            "machineconfiguration.openshift.io/lastObservedServerCAAnnotation": "false",
+            "machineconfiguration.openshift.io/lastSyncedControllerConfigResourceVersion": "493729123",
+            "machineconfiguration.openshift.io/reason": "",
+            "machineconfiguration.openshift.io/state": "Done",
+            "nfd.node.kubernetes.io/feature-labels": "cpu-cpuid.ADX,cpu-cpuid.AESNI,cpu-cpuid.AMXFP8,cpu-cpuid.AVX,cpu-cpuid.AVX2,cpu-cpuid.AVX512BITALG,cpu-cpuid.AVX512BW,cpu-cpuid.AVX512CD,cpu-cpuid.AVX512DQ,cpu-cpuid.AVX512F,cpu-cpuid.AVX512IFMA,cpu-cpuid.AVX512VBMI,cpu-cpuid.AVX512VBMI2,cpu-cpuid.AVX512VL,cpu-cpuid.AVX512VNNI,cpu-cpuid.AVX512VPOPCNTDQ,cpu-cpuid.CMPXCHG8,cpu-cpuid.FLUSH_L1D,cpu-cpuid.FMA3,cpu-cpuid.FXSR,cpu-cpuid.FXSROPT,cpu-cpuid.GFNI,cpu-cpuid.HYPERVISOR,cpu-cpuid.IA32_ARCH_CAP,cpu-cpuid.IBPB,cpu-cpuid.LAHF,cpu-cpuid.MD_CLEAR,cpu-cpuid.MOVBE,cpu-cpuid.OSXSAVE,cpu-cpuid.SHA,cpu-cpuid.SPEC_CTRL_SSBD,cpu-cpuid.STIBP,cpu-cpuid.SYSCALL,cpu-cpuid.SYSEE,cpu-cpuid.TME,cpu-cpuid.VAES,cpu-cpuid.VPCLMULQDQ,cpu-cpuid.WBNOINVD,cpu-cpuid.X87,cpu-cpuid.XGETBV1,cpu-cpuid.XSAVE,cpu-cpuid.XSAVEC,cpu-cpuid.XSAVEOPT,cpu-cpuid.XSAVES,cpu-hardware_multithreading,cpu-model.family,cpu-model.id,cpu-model.vendor_id,kernel-config.NO_HZ,kernel-config.NO_HZ_FULL,kernel-selinux.enabled,kernel-version.full,kernel-version.major,kernel-version.minor,kernel-version.revision,pci-1d0f.present,rdma.available,storage-nonrotationaldisk,system-os_release.ID,system-os_release.OPENSHIFT_VERSION,system-os_release.OSTREE_VERSION,system-os_release.VERSION_ID,system-os_release.VERSION_ID.major,system-os_release.VERSION_ID.minor",
+            "volumes.kubernetes.io/controller-managed-attach-detach": "true"
+        },
+        "creationTimestamp": "2026-05-28T05:02:57Z",
+        "labels": {
+            "beta.kubernetes.io/arch": "amd64",
+            "beta.kubernetes.io/instance-type": "m6i.4xlarge",
+            "beta.kubernetes.io/os": "linux",
+            "failure-domain.beta.kubernetes.io/region": "us-east-1",
+            "failure-domain.beta.kubernetes.io/zone": "us-east-1a",
+            "feature.node.kubernetes.io/cpu-cpuid.ADX": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.AESNI": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.AMXFP8": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.AVX": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.AVX2": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.AVX512BITALG": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.AVX512BW": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.AVX512CD": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.AVX512DQ": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.AVX512F": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.AVX512IFMA": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.AVX512VBMI": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.AVX512VBMI2": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.AVX512VL": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.AVX512VNNI": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.AVX512VPOPCNTDQ": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.CMPXCHG8": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.FLUSH_L1D": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.FMA3": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.FXSR": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.FXSROPT": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.GFNI": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.HYPERVISOR": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.IA32_ARCH_CAP": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.IBPB": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.LAHF": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.MD_CLEAR": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.MOVBE": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.OSXSAVE": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.SHA": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.SPEC_CTRL_SSBD": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.STIBP": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.SYSCALL": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.SYSEE": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.TME": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.VAES": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.VPCLMULQDQ": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.WBNOINVD": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.X87": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.XGETBV1": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.XSAVE": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.XSAVEC": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.XSAVEOPT": "true",
+            "feature.node.kubernetes.io/cpu-cpuid.XSAVES": "true",
+            "feature.node.kubernetes.io/cpu-hardware_multithreading": "true",
+            "feature.node.kubernetes.io/cpu-model.family": "6",
+            "feature.node.kubernetes.io/cpu-model.id": "106",
+            "feature.node.kubernetes.io/cpu-model.vendor_id": "Intel",
+            "feature.node.kubernetes.io/kernel-config.NO_HZ": "true",
+            "feature.node.kubernetes.io/kernel-config.NO_HZ_FULL": "true",
+            "feature.node.kubernetes.io/kernel-selinux.enabled": "true",
+            "feature.node.kubernetes.io/kernel-version.full": "5.14.0-570.113.1.el9_6.x86_64",
+            "feature.node.kubernetes.io/kernel-version.major": "5",
+            "feature.node.kubernetes.io/kernel-version.minor": "14",
+            "feature.node.kubernetes.io/kernel-version.revision": "0",
+            "feature.node.kubernetes.io/pci-1d0f.present": "true",
+            "feature.node.kubernetes.io/rdma.available": "true",
+            "feature.node.kubernetes.io/storage-nonrotationaldisk": "true",
+            "feature.node.kubernetes.io/system-os_release.ID": "rhel",
+            "feature.node.kubernetes.io/system-os_release.OPENSHIFT_VERSION": "4.21",
+            "feature.node.kubernetes.io/system-os_release.OSTREE_VERSION": "9.6.20260510-0",
+            "feature.node.kubernetes.io/system-os_release.VERSION_ID": "9.6",
+            "feature.node.kubernetes.io/system-os_release.VERSION_ID.major": "9",
+            "feature.node.kubernetes.io/system-os_release.VERSION_ID.minor": "6",
+            "kubernetes.io/arch": "amd64",
+            "kubernetes.io/hostname": "ip-10-0-53-174.ec2.internal",
+            "kubernetes.io/os": "linux",
+            "node": "groundx-node",
+            "node-role.kubernetes.io/worker": "",
+            "node.kubernetes.io/instance-type": "m6i.4xlarge",
+            "node.openshift.io/os_id": "rhel",
+            "topology.ebs.csi.aws.com/zone": "us-east-1a",
+            "topology.k8s.aws/zone-id": "use1-az4",
+            "topology.kubernetes.io/region": "us-east-1",
+            "topology.kubernetes.io/zone": "us-east-1a"
+        },
+        "name": "ip-10-0-53-174.ec2.internal",
+        "resourceVersion": "493808721",
+        "uid": "f0f79b55-b0eb-4a03-b70c-5183a0f920c3"
+    },
+    "spec": {
+        "providerID": "aws:///us-east-1a/i-088caf1d35528c5f1"
+    },
+    "status": {
+        "addresses": [
+            {
+                "address": "10.0.53.174",
+                "type": "InternalIP"
+            },
+            {
+                "address": "ip-10-0-53-174.ec2.internal",
+                "type": "InternalDNS"
+            },
+            {
+                "address": "ip-10-0-53-174.ec2.internal",
+                "type": "Hostname"
+            }
+        ],
+        "allocatable": {
+            "cpu": "15500m",
+            "ephemeral-storage": "230309947829",
+            "hugepages-1Gi": "0",
+            "hugepages-2Mi": "0",
+            "memory": "60495920Ki",
+            "pods": "250"
+        },
+        "capacity": {
+            "cpu": "16",
+            "ephemeral-storage": "251067372Ki",
+            "hugepages-1Gi": "0",
+            "hugepages-2Mi": "0",
+            "memory": "64792624Ki",
+            "pods": "250"
+        },
+        "conditions": [
+            {
+                "lastHeartbeatTime": "2026-10-31T14:53:52Z",
+                "lastTransitionTime": "2026-06-23T15:13:03Z",
+                "message": "kubelet has sufficient memory available",
+                "reason": "KubeletHasSufficientMemory",
+                "status": "False",
+                "type": "MemoryPressure"
+            },
+            {
+                "lastHeartbeatTime": "2026-10-31T14:53:52Z",
+                "lastTransitionTime": "2026-10-28T13:04:55Z",
+                "message": "kubelet has no disk pressure",
+                "reason": "KubeletHasNoDiskPressure",
+                "status": "False",
+                "type": "DiskPressure"
+            },
+            {
+                "lastHeartbeatTime": "2026-10-31T14:53:52Z",
+                "lastTransitionTime": "2026-06-23T15:13:03Z",
+                "message": "kubelet has sufficient PID available",
+                "reason": "KubeletHasSufficientPID",
+                "status": "False",
+                "type": "PIDPressure"
+            },
+            {
+                "lastHeartbeatTime": "2026-10-31T14:53:52Z",
+                "lastTransitionTime": "2026-06-23T15:13:03Z",
+                "message": "kubelet is posting ready status",
+                "reason": "KubeletReady",
+                "status": "True",
+                "type": "Ready"
+            }
+        ],
+        "daemonEndpoints": {
+            "kubeletEndpoint": {
+                "Port": 10250
+            }
+        },
+        "features": {
+            "supplementalGroupsPolicy": true
+        },
+        "images": [
+            {
+                "names": [
+                    "quay.io/rh-ai-quickstart/agent-mesh-for-sw-modernization-data-generation@sha256:5a0024f92f39dc45f5840b03eebf81c622cc56578459c91e91193e63ab37332b",
+                    "quay.io/rh-ai-quickstart/agent-mesh-for-sw-modernization-data-generation:v0.1.7"
+                ],
+                "sizeBytes": 10082452435
+            },
+            {
+                "names": [
+                    "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e"
+                ],
+                "sizeBytes": 8418281354
+            },
+            {
+                "names": [
+                    "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:4e163b62f3e2fe39eca7c6ef917b1471700afb27a0b3c7e37b14e388dfc92fc3",
+                    "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim:phase2-pairer-diag"
+                ],
+                "sizeBytes": 5081591271
+            },
+            {
+                "names": [
+                    "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:e68c674aab3f4c806197e42a5767b5d840b02834a0291016a8eec0d816d8ff35",
+                    "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim:phase2"
+                ],
+                "sizeBytes": 5081550399
+            },
+            {
+                "names": [
+                    "quay.io/jianrzha/ros2-rmf@sha256:f55d19147fe9f9ef718ec0f43108eaf65c511a2a428d2493724ba750bb681d22",
+                    "quay.io/jianrzha/ros2-rmf:open-rmf"
+                ],
+                "sizeBytes": 3672913142
+            },
+            {
+                "names": [
+                    "quay.io/ganeshmurthy/ai-virtual-agent@sha256:9f8b8ba0bc2d5e92ff34bea099055866995e37606420643eb9362bc6b209772c",
+                    "quay.io/ganeshmurthy/ai-virtual-agent:1.1.17"
+                ],
+                "sizeBytes": 2959505008
+            },
+            {
+                "names": [
+                    "docker.io/ogxai/distribution-starter@sha256:162e234647f1e8e26d26fa2698da81ca882044890d92888b00607c11e891f2c9",
+                    "docker.io/ogxai/distribution-starter@sha256:fe9a39dd21bfccaca695a635aac063c7cf2a20c6e3169513739edeb89c66bd23",
+                    "docker.io/ogxai/distribution-starter:0.6.1"
+                ],
+                "sizeBytes": 2785632046
+            },
+            {
+                "names": [
+                    "docker.io/bitnamilegacy/elasticsearch@sha256:4a7d14222c876a87c1ddd38e1128d8e42df80071b09ec54db5c32586c9cf5a38",
+                    "docker.io/bitnamilegacy/elasticsearch@sha256:e03c628fab2d833b6b7f5a00bafa943e25ba1a30caa78d2bc3b93527a4ec2b06",
+                    "docker.io/bitnamilegacy/elasticsearch:8.18.0-debian-12-r2"
+                ],
+                "sizeBytes": 1527992744
+            },
+            {
+                "names": [
+                    "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:dff1ab737ea0bb1abf5d3de9b35ac44e404c70c5b11412c6593edbfe5fc7057c"
+                ],
+                "sizeBytes": 1420870654
+            },
+            {
+                "names": [
+                    "registry.redhat.io/rhoai/odh-feature-server-rhel9@sha256:27ab3584ebdc960bad5fcd25f05386b9fd270aa49e29286097f2681fdcdd8ec2",
+                    "registry.redhat.io/rhoai/odh-feature-server-rhel9@sha256:9b5344f307512ddc9bfbc968eb784e02bc21b455c7d4f821aa81fd0955f70a42"
+                ],
+                "sizeBytes": 1330513638
+            },
+            {
+                "names": [
+                    "registry.redhat.io/rhoai/odh-feature-server-rhel9@sha256:61b302187a3c7f61efa744c768a610881521901f2cb32d938ef75ac3524b42ac",
+                    "registry.redhat.io/rhoai/odh-feature-server-rhel9@sha256:91f557b4b37b5b5af656bc1671f7b8733bfb8d8e01e03f1d302a645a7f02b3bb"
+                ],
+                "sizeBytes": 1274351036
+            },
+            {
+                "names": [
+                    "registry.redhat.io/rhoai/odh-mlflow-rhel9@sha256:3760d0ab0576d19db4ddb8e702f0650683ad8f901060544f9a68534110b82c67",
+                    "registry.redhat.io/rhoai/odh-mlflow-rhel9@sha256:d5498faf0dc9be9be5e6e4e3a3229c41153f70d095c9c411e9316784783f87f3"
+                ],
+                "sizeBytes": 1209742296
+            },
+            {
+                "names": [
+                    "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:f81608748cca27b8925ca61feff389e3611dd64609ab1d469b5bbf3e524b3dc5"
+                ],
+                "sizeBytes": 1191158342
+            },
+            {
+                "names": [
+                    "registry.redhat.io/ubi9/python-311@sha256:7b6cb58d3ff034df7b300800bd89a469d9bd2f739d43250d76b9c9e805307ab5",
+                    "registry.redhat.io/ubi9/python-311@sha256:a0bdb55576fc5b8d6704279307817828ef027e1065533ceba133fe9516003a6c",
+                    "registry.redhat.io/ubi9/python-311:latest"
+                ],
+                "sizeBytes": 1102960195
+            },
+            {
+                "names": [
+                    "quay.io/robertsandoval/general-sim-postgres@sha256:cf352f210a42102a3992235518c0d003c88826cbee8125134f8bad3cb2df7205"
+                ],
+                "sizeBytes": 947939448
+            },
+            {
+                "names": [
+                    "quay.io/rh-ai-quickstart/alm-aap-log-collector@sha256:e8e2c3e1546a1055d3f672f24079ce79d60f77993bc724f943ea5b32266b0308",
+                    "quay.io/rh-ai-quickstart/alm-aap-log-collector:latest"
+                ],
+                "sizeBytes": 922200699
+            },
+            {
+                "names": [
+                    "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:cdda633d9516f3f8125b86a5767a20afbbf3505d72c7a4c532cce6f8fe2bec4a"
+                ],
+                "sizeBytes": 886323634
+            },
+            {
+                "names": [
+                    "registry.redhat.io/rhoai/odh-dashboard-rhel9@sha256:01e401aa34481cae15d5459d5f030825cb842fe48d5e6fbe12b40ceb0c890023",
+                    "registry.redhat.io/rhoai/odh-dashboard-rhel9@sha256:14de74aaafa0ee8eaa1f7b9f0d75519cc8699d844936e6e6451cc2eedef07dac"
+                ],
+                "sizeBytes": 792108208
+            },
+            {
+                "names": [
+                    "quay.io/rh-ai-quickstart/general-sim-neo4j@sha256:42a80936eacc5f5b13b0fb6f387dc637bda42b7b41eb95b6fe0fbb180b72cad0",
+                    "quay.io/rh-ai-quickstart/general-sim-neo4j:latest"
+                ],
+                "sizeBytes": 790744566
+            },
+            {
+                "names": [
+                    "docker.io/grafana/grafana@sha256:35c41e0fd0295f5d0ee5db7e780cf33506abfaf47686196f825364889dee878b",
+                    "docker.io/grafana/grafana@sha256:aa42cb1d973fc3d10609cd579455470f7255c535c9d3c3059c390c583709c14a",
+                    "docker.io/grafana/grafana:12.2.1"
+                ],
+                "sizeBytes": 740295268
+            },
+            {
+                "names": [
+                    "image-registry.openshift-image-registry.svc:5000/openshift/tools@sha256:955cbfbcf74e1c27f2ecbbdf024137c9bb886c98a60019f150b3cc3585ad88b3",
+                    "image-registry.openshift-image-registry.svc:5000/openshift/tools:latest"
+                ],
+                "sizeBytes": 696191742
+            },
+            {
+                "names": [
+                    "docker.io/library/neo4j@sha256:6c162e2432f861f2c4e3da77a6ba478e7f10e2160b870541f85294532bc6ff5f",
+                    "docker.io/library/neo4j@sha256:d2aab54ab30de3a9755acb2844f5017ab296b664746d2630e30171d684ccb140",
+                    "docker.io/library/neo4j:2026.05.0"
+                ],
+                "sizeBytes": 642563772
+            },
+            {
+                "names": [
+                    "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:2a5a1a3c96b15175a0029df3fe1fa586b5ba9d97b814dca7c11c162da18d52d0"
+                ],
+                "sizeBytes": 590347227
+            },
+            {
+                "names": [
+                    "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:9f195b837108c5f88ce874a3d1960eb2a1a58f621e07a5113c664c0af7acd2b8"
+                ],
+                "sizeBytes": 547679354
+            },
+            {
+                "names": [
+                    "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:5922a7de9e999ac41a4f495bb2b36bd266c069931846c7f07fba11e3b4aa7d45"
+                ],
+                "sizeBytes": 532694529
+            },
+            {
+                "names": [
+                    "registry.redhat.io/openshift4/ose-node-feature-discovery-rhel9@sha256:ab98ed20441a0af60b4e47625ed87431bca1d956e2a7789b07ebd7215c5083fe",
+                    "registry.redhat.io/openshift4/ose-node-feature-discovery-rhel9@sha256:e3762ef48647119957bc4233994b34cc63631ddaa28e1e346b12fe8de1539eb8"
+                ],
+                "sizeBytes": 502603549
+            },
+            {
+                "names": [
+                    "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:3ad7e974983ea4c90610bd20854a5cc351b26cd225264c97f57f1ac934adccfb"
+                ],
+                "sizeBytes": 494445310
+            },
+            {
+                "names": [
+                    "docker.io/grafana/alloy@sha256:427c2579a5e8dc8b9b63a5b22a1f60954c055561907b5dbfe527147da3fc5062",
+                    "docker.io/grafana/alloy@sha256:8c7256f412feb9f5f48f9f6f9394dc97ca887f63dea9304f347970ecc1787669",
+                    "docker.io/grafana/alloy:v1.11.3"
+                ],
+                "sizeBytes": 489499238
+            },
+            {
+                "names": [
+                    "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:59822c2d1fd4e0529d0099fee7e497733ba20e6738dcfafff5e051856f332198"
+                ],
+                "sizeBytes": 484655443
+            },
+            {
+                "names": [
+                    "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:33bb961a4e8f90dd2c39f1f376c1b32a654d7f9ae99a31c05b3087755a7993b5"
+                ],
+                "sizeBytes": 466117111
+            },
+            {
+                "names": [
+                    "registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:767e04a881378b4c06e3ebc7a805c188981a2fd71884f3fd76f3c832fe53e431",
+                    "registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:a60f9f1bfd06c27ed1f1a6495517671adfe20ff9c085a7d31f1275f7d2409a4d"
+                ],
+                "sizeBytes": 464059318
+            },
+            {
+                "names": [
+                    "registry.redhat.io/rhoai/odh-data-science-pipelines-argo-argoexec-rhel9@sha256:8d6b14a290adfceb30a1f86d2167beaa93901896cb00da92b79181e5146d35a0",
+                    "registry.redhat.io/rhoai/odh-data-science-pipelines-argo-argoexec-rhel9@sha256:b94cad89c15b097de0a03948946aa8418a73bbd3d8c7fb054f9ee07cca88acf6"
+                ],
+                "sizeBytes": 462848643
+            },
+            {
+                "names": [
+                    "docker.io/pgvector/pgvector@sha256:cf134a767f474095eeba57e0117be8e568e011a63f33fbf252f14c9b760f8e6f",
+                    "docker.io/pgvector/pgvector@sha256:dca0d688bbb31d3f851502ffcb9c7791387b4fcc544ae434dab41761e5ece317",
+                    "docker.io/pgvector/pgvector:pg17"
+                ],
+                "sizeBytes": 450654914
+            },
+            {
+                "names": [
+                    "registry.redhat.io/openshift-serverless-1/kn-ekb-dispatcher-rhel9@sha256:4ed4c086c0e1f2b0f085c16429624b70e38887183a62b2299dbb1f877862e841",
+                    "registry.redhat.io/openshift-serverless-1/kn-ekb-dispatcher-rhel9@sha256:7c74095227f1c654d69f5e48c3844391246802d827b13fbca4ec127abfb5d872"
+                ],
+                "sizeBytes": 445513200
+            },
+            {
+                "names": [
+                    "registry.redhat.io/rhel9/mariadb-105@sha256:451583e8509429468577283407a33e29411f56e343f7381f7d722f8488de0fe9",
+                    "registry.redhat.io/rhel9/mariadb-105@sha256:8bc59974eeb48f958b9bc8dc940d37b648921687703ea30b5e4ee12ca1c93533"
+                ],
+                "sizeBytes": 445321233
+            },
+            {
+                "names": [
+                    "registry.redhat.io/rhel9/mariadb-105@sha256:04b4c4d865e6d56d44e6bad3e100ae14e66052ee0ea84368c74b014b883647e4",
+                    "registry.redhat.io/rhel9/mariadb-105@sha256:dd4e78ea1930104cd276f997a2705a40689bcebb4a2a819e0fe1cb016f52a431"
+                ],
+                "sizeBytes": 443914955
+            },
+            {
+                "names": [
+                    "docker.io/apache/kafka@sha256:5cc2a2fd93fa2687b44015eee04fb2c3edd9e526bd64bf8bec5ff1e268772e0e",
+                    "docker.io/apache/kafka@sha256:d50ab7b5df612b3c303f9d8afe8fee59626a5de798addfd626fe1924e3205965",
+                    "docker.io/apache/kafka:4.1.2"
+                ],
+                "sizeBytes": 435870128
+            },
+            {
+                "names": [
+                    "registry.redhat.io/rhel9/postgresql-16@sha256:56fa16102d33d68c1e7f7c59f4fd28533c43f52eca967898d391d80c79ddaa82",
+                    "registry.redhat.io/rhel9/postgresql-16@sha256:a2122d1d4c7aa7278c05722dd48d3d879a47f2c10d562adbefdc4607f8ae9da7",
+                    "registry.redhat.io/rhel9/postgresql-16:latest"
+                ],
+                "sizeBytes": 403301593
+            },
+            {
+                "names": [
+                    "quay.io/rh-ai-quickstart/noc-ran-rca-service@sha256:3588e6fa791b48795073ceaa49cc85b59fb60b7d40245d07336dd0b969ab4e9f",
+                    "quay.io/rh-ai-quickstart/noc-ran-rca-service:0.1.5"
+                ],
+                "sizeBytes": 383693928
+            },
+            {
+                "names": [
+                    "quay.io/fercoli/noc-agent-service@sha256:ec52c0986a39d6312bb5620b0c2c1dceb0583362d00814392b32f21cac423936",
+                    "quay.io/fercoli/noc-agent-service:0.0.1.Verify"
+                ],
+                "sizeBytes": 379470948
+            },
+            {
+                "names": [
+                    "quay.io/fercoli/noc-agent-service@sha256:f49cebb3acf196a11686c049cd847d2578c508f7fde5b26566a5d7c4815c4a07"
+                ],
+                "sizeBytes": 379469922
+            },
+            {
+                "names": [
+                    "registry.redhat.io/rhoai/odh-ml-pipelines-launcher-rhel9@sha256:613e796b6fa2551dfa2858bf81a7756afb84881ea5656faa54fafad5d4375359",
+                    "registry.redhat.io/rhoai/odh-ml-pipelines-launcher-rhel9@sha256:e47f5857cb44e35c3ea88d111aee8e641f17d11193a37e3730b9972eb5bf10c7"
+                ],
+                "sizeBytes": 364960541
+            },
+            {
+                "names": [
+                    "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:6706869298676b652e089d05095338088a0c5d0df0a521cd80ef593d79529f29"
+                ],
+                "sizeBytes": 359135945
+            },
+            {
+                "names": [
+                    "image-registry.openshift-image-registry.svc:5000/openshift/cli@sha256:50b833978643e8bf0e011b3dd34dbb2fd6699fae6717cd6a67f93e1273c3e33f",
+                    "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:50b833978643e8bf0e011b3dd34dbb2fd6699fae6717cd6a67f93e1273c3e33f",
+                    "image-registry.openshift-image-registry.svc:5000/openshift/cli:latest"
+                ],
+                "sizeBytes": 356487488
+            },
+            {
+                "names": [
+                    "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:31b0ba3025f4ac681b3132d07795382364d2a8b47ddd882c084a7b9079b9b513"
+                ],
+                "sizeBytes": 352958092
+            },
+            {
+                "names": [
+                    "docker.io/bitnamilegacy/postgresql@sha256:42a8200d35971f931b869ef5252d996e137c6beb4b8f1b6d2181dc7d1b6f62e0",
+                    "docker.io/bitnamilegacy/postgresql@sha256:42dc33a0ec412e92fc3e0ffcb38996eb76c12e9e537f5fbff11f735d6f6a32d1",
+                    "docker.io/bitnamilegacy/postgresql:17.5.0-debian-12-r20"
+                ],
+                "sizeBytes": 351446840
+            },
+            {
+                "names": [
+                    "quay.io/rh-ai-quickstart/noc-ingestion-pipeline@sha256:677e8f9ba374837eb431502f73605b015fba2f552353ea1505937f7f69026a9a",
+                    "quay.io/rh-ai-quickstart/noc-ingestion-pipeline:0.1.5"
+                ],
+                "sizeBytes": 345681606
+            },
+            {
+                "names": [
+                    "quay.io/fercoli/noc-ingestion-pipeline@sha256:63280d034223402ab3ef80e81af12ffd65405ec6a041ce0c89a69ad14915b389",
+                    "quay.io/fercoli/noc-ingestion-pipeline:0.0.1.Verify"
+                ],
+                "sizeBytes": 345681605
+            },
+            {
+                "names": [
+                    "quay.io/rh-ai-quickstart/noc-ingestion-pipeline@sha256:3d32eefd391b49761ad1e5cbc281bc2f0d836c4a3fee157f27d3afdd0be17d92"
+                ],
+                "sizeBytes": 345630770
+            },
+            {
+                "names": [
+                    "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:d6ca6f874189c4add729868364b75d89592187d407b8d4d6588522305081c1b0"
+                ],
+                "sizeBytes": 340104808
+            }
+        ],
+        "nodeInfo": {
+            "architecture": "amd64",
+            "bootID": "be1b45ca-0a07-4fa0-a7d7-5898aaa07a4b",
+            "containerRuntimeVersion": "cri-o://1.34.8-3.rhaos4.21.git91b4b0b.el9",
+            "kernelVersion": "5.14.0-570.113.1.el9_6.x86_64",
+            "kubeProxyVersion": "",
+            "kubeletVersion": "v1.34.7",
+            "machineID": "ec27d1c37de960f84e8d9d6b04824ebf",
+            "operatingSystem": "linux",
+            "osImage": "Red Hat Enterprise Linux CoreOS 9.6.20260510-0 (Plow)",
+            "systemUUID": "ec27d1c3-7de9-60f8-4e8d-9d6b04824ebf"
+        },
+        "runtimeHandlers": [
+            {
+                "features": {
+                    "recursiveReadOnlyMounts": true,
+                    "userNamespaces": true
+                },
+                "name": "crun"
+            },
+            {
+                "features": {
+                    "recursiveReadOnlyMounts": true,
+                    "userNamespaces": true
+                },
+                "name": ""
+            },
+            {
+                "features": {
+                    "recursiveReadOnlyMounts": true,
+                    "userNamespaces": true
+                },
+                "name": "runc"
+            }
+        ],
+        "volumesAttached": [
+            {
+                "devicePath": "",
+                "name": "kubernetes.io/csi/ebs.csi.aws.com^vol-01ff07b09917f1be0"
+            },
+            {
+                "devicePath": "",
+                "name": "kubernetes.io/csi/ebs.csi.aws.com^vol-0fce1067e9580543d"
+            },
+            {
+                "devicePath": "",
+                "name": "kubernetes.io/csi/ebs.csi.aws.com^vol-015b92288f7590900"
+            },
+            {
+                "devicePath": "",
+                "name": "kubernetes.io/csi/ebs.csi.aws.com^vol-06029552f8c8bec6f"
+            },
+            {
+                "devicePath": "",
+                "name": "kubernetes.io/csi/ebs.csi.aws.com^vol-039040fb79cbd8399"
+            },
+            {
+                "devicePath": "",
+                "name": "kubernetes.io/csi/ebs.csi.aws.com^vol-0c062649cc0d8a200"
+            },
+            {
+                "devicePath": "",
+                "name": "kubernetes.io/csi/ebs.csi.aws.com^vol-06c6c3eb11cd7c675"
+            },
+            {
+                "devicePath": "",
+                "name": "kubernetes.io/csi/ebs.csi.aws.com^vol-0e43dccd880f1d08c"
+            },
+            {
+                "devicePath": "",
+                "name": "kubernetes.io/csi/ebs.csi.aws.com^vol-079c79fadd6115085"
+            },
+            {
+                "devicePath": "",
+                "name": "kubernetes.io/csi/ebs.csi.aws.com^vol-0940361b782a720f1"
+            },
+            {
+                "devicePath": "",
+                "name": "kubernetes.io/csi/ebs.csi.aws.com^vol-0782df84eb96ffc31"
+            },
+            {
+                "devicePath": "",
+                "name": "kubernetes.io/csi/ebs.csi.aws.com^vol-06723b536c7e85c76"
+            },
+            {
+                "devicePath": "",
+                "name": "kubernetes.io/csi/ebs.csi.aws.com^vol-0316a6269dae6cf2d"
+            },
+            {
+                "devicePath": "",
+                "name": "kubernetes.io/csi/ebs.csi.aws.com^vol-08358810254cafb5d"
+            },
+            {
+                "devicePath": "",
+                "name": "kubernetes.io/csi/ebs.csi.aws.com^vol-0cbf4e027fb016501"
+            },
+            {
+                "devicePath": "",
+                "name": "kubernetes.io/csi/ebs.csi.aws.com^vol-09937838e38d6f6fb"
+            },
+            {
+                "devicePath": "",
+                "name": "kubernetes.io/csi/ebs.csi.aws.com^vol-0a047a956617d32b7"
+            }
+        ],
+        "volumesInUse": [
+            "kubernetes.io/csi/ebs.csi.aws.com^vol-015b92288f7590900",
+            "kubernetes.io/csi/ebs.csi.aws.com^vol-01ff07b09917f1be0",
+            "kubernetes.io/csi/ebs.csi.aws.com^vol-0316a6269dae6cf2d",
+            "kubernetes.io/csi/ebs.csi.aws.com^vol-039040fb79cbd8399",
+            "kubernetes.io/csi/ebs.csi.aws.com^vol-06029552f8c8bec6f",
+            "kubernetes.io/csi/ebs.csi.aws.com^vol-06723b536c7e85c76",
+            "kubernetes.io/csi/ebs.csi.aws.com^vol-06c6c3eb11cd7c675",
+            "kubernetes.io/csi/ebs.csi.aws.com^vol-0782df84eb96ffc31",
+            "kubernetes.io/csi/ebs.csi.aws.com^vol-079c79fadd6115085",
+            "kubernetes.io/csi/ebs.csi.aws.com^vol-08358810254cafb5d",
+            "kubernetes.io/csi/ebs.csi.aws.com^vol-0940361b782a720f1",
+            "kubernetes.io/csi/ebs.csi.aws.com^vol-09937838e38d6f6fb",
+            "kubernetes.io/csi/ebs.csi.aws.com^vol-0a047a956617d32b7",
+            "kubernetes.io/csi/ebs.csi.aws.com^vol-0c062649cc0d8a200",
+            "kubernetes.io/csi/ebs.csi.aws.com^vol-0e43dccd880f1d08c",
+            "kubernetes.io/csi/ebs.csi.aws.com^vol-0fce1067e9580543d"
+        ]
+    }
+}

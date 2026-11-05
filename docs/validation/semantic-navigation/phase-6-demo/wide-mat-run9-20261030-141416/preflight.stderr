@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/tmp/run_phase6_demo_d2_trial.py", line 443, in <module>
+    main()
+  File "/tmp/run_phase6_demo_d2_trial.py", line 435, in main
+    trial.run()
+  File "/tmp/run_phase6_demo_d2_trial.py", line 252, in run
+    path_preflight = self.compute_preflight_path()
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/run_phase6_demo_d2_trial.py", line 224, in compute_preflight_path
+    raise RuntimeError(
+RuntimeError: semantic-on preflight violates the 0.10 m circumscribed-hull clearance envelope; no goal was dispatched
+command terminated with exit code 1

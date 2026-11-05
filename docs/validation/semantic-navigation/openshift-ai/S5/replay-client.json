@@ -1,0 +1,78 @@
+{
+  "apiVersion": "v1",
+  "kind": "Pod",
+  "metadata": {
+    "name": "sam3-g5-client",
+    "namespace": "semantic-navigation",
+    "labels": {
+      "semantic-serving-client": "sam3-mat-v1",
+      "semantic-g5": "replay"
+    }
+  },
+  "spec": {
+    "serviceAccountName": "sam3-replay",
+    "automountServiceAccountToken": false,
+    "restartPolicy": "Never",
+    "terminationGracePeriodSeconds": 5,
+    "containers": [
+      {
+        "name": "client",
+        "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+        "command": [
+          "/opt/sam3-venv/bin/python",
+          "-c",
+          "import time;time.sleep(21600)"
+        ],
+        "resources": {
+          "requests": {
+            "cpu": "100m",
+            "memory": "512Mi"
+          },
+          "limits": {
+            "cpu": "2",
+            "memory": "2Gi"
+          }
+        },
+        "securityContext": {
+          "allowPrivilegeEscalation": false,
+          "runAsNonRoot": true,
+          "readOnlyRootFilesystem": true,
+          "capabilities": {
+            "drop": [
+              "ALL"
+            ]
+          },
+          "seccompProfile": {
+            "type": "RuntimeDefault"
+          }
+        },
+        "volumeMounts": [
+          {
+            "name": "cert",
+            "mountPath": "/cert",
+            "readOnly": true
+          },
+          {
+            "name": "tmp",
+            "mountPath": "/tmp"
+          }
+        ]
+      }
+    ],
+    "volumes": [
+      {
+        "name": "cert",
+        "secret": {
+          "secretName": "sam3-replay-tls"
+        }
+      },
+      {
+        "name": "tmp",
+        "emptyDir": {
+          "sizeLimit": "512Mi"
+        }
+      }
+    ],
+    "activeDeadlineSeconds": 14400
+  }
+}

@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "/tmp/g3_observation_motion.py", line 60, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/tmp/g3_observation_motion.py", line 18, in main
+    rclpy.init();node=Node('g3_private_observation_motion');pub=node.create_publisher(Twist,'/robot_1/cmd_vel',10)
+    ^^^^^^^^^^^^
+  File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/__init__.py", line 88, in init
+    context.init(args, domain_id=domain_id)
+  File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/context.py", line 106, in init
+    _rclpy.rclpy_logging_configure(self.__context)
+rclpy._rclpy_pybind11.RCLError: failed to initialize logging: Failed to create log directory '//.ros/log': 13, at ./src/rcl_logging_spdlog.cpp:154
+command terminated with exit code 1

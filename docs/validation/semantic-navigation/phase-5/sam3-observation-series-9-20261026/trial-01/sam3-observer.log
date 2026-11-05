@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/phase5-native/sam3_observer_worker.py", line 233, in <module>
+    main()
+  File "/phase5-native/sam3_observer_worker.py", line 70, in main
+    rclpy.init(context=safety_context)
+  File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/__init__.py", line 88, in init
+    context.init(args, domain_id=domain_id)
+  File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/context.py", line 106, in init
+    _rclpy.rclpy_logging_configure(self.__context)
+rclpy._rclpy_pybind11.RCLError: failed to initialize logging: Failed to create log directory '//.ros/log': 13, at ./src/rcl_logging_spdlog.cpp:154

@@ -1,0 +1,493 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "k8s.ovn.org/pod-networks": "{\"default\":{\"ip_addresses\":[\"10.131.3.120/23\"],\"mac_address\":\"0a:58:0a:83:03:78\",\"gateway_ips\":[\"10.131.2.1\"],\"routes\":[{\"dest\":\"10.128.0.0/14\",\"nextHop\":\"10.131.2.1\"},{\"dest\":\"172.30.0.0/16\",\"nextHop\":\"10.131.2.1\"},{\"dest\":\"169.254.0.5/32\",\"nextHop\":\"10.131.2.1\"},{\"dest\":\"100.64.0.0/16\",\"nextHop\":\"10.131.2.1\"}],\"ip_address\":\"10.131.3.120/23\",\"gateway_ip\":\"10.131.2.1\",\"role\":\"primary\"}}",
+                    "k8s.v1.cni.cncf.io/network-status": "[{\n    \"name\": \"ovn-kubernetes\",\n    \"interface\": \"eth0\",\n    \"ips\": [\n        \"10.131.3.120\"\n    ],\n    \"mac\": \"0a:58:0a:83:03:78\",\n    \"default\": true,\n    \"dns\": {}\n}]",
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Pod\",\"metadata\":{\"annotations\":{},\"labels\":{\"semantic-serving-client\":\"sam3-mat-v1\"},\"name\":\"sam3-g0-client\",\"namespace\":\"semantic-navigation\"},\"spec\":{\"automountServiceAccountToken\":false,\"containers\":[{\"command\":[\"/opt/sam3-venv/bin/python\",\"-c\",\"import time;time.sleep(3600)\"],\"image\":\"image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e\",\"name\":\"client\",\"resources\":{\"limits\":{\"cpu\":\"1\",\"memory\":\"1Gi\"},\"requests\":{\"cpu\":\"50m\",\"memory\":\"256Mi\"}},\"securityContext\":{\"allowPrivilegeEscalation\":false,\"capabilities\":{\"drop\":[\"ALL\"]},\"readOnlyRootFilesystem\":true,\"runAsNonRoot\":true,\"seccompProfile\":{\"type\":\"RuntimeDefault\"}},\"volumeMounts\":[{\"mountPath\":\"/cert\",\"name\":\"cert\",\"readOnly\":true},{\"mountPath\":\"/unbound\",\"name\":\"unbound\",\"readOnly\":true}]}],\"restartPolicy\":\"Never\",\"serviceAccountName\":\"sam3-replay\",\"volumes\":[{\"name\":\"cert\",\"secret\":{\"secretName\":\"sam3-replay-tls\"}},{\"name\":\"unbound\",\"secret\":{\"secretName\":\"sam3-g0-unbound-tls\"}}]}}\n",
+                    "openshift.io/scc": "openshift-ai-llminferenceservice-scc",
+                    "seccomp.security.alpha.kubernetes.io/pod": "runtime/default",
+                    "security.openshift.io/validated-scc-subject-type": "user"
+                },
+                "creationTimestamp": "2026-10-31T02:59:29Z",
+                "generation": 1,
+                "labels": {
+                    "semantic-serving-client": "sam3-mat-v1"
+                },
+                "name": "sam3-g0-client",
+                "namespace": "semantic-navigation",
+                "resourceVersion": "490828977",
+                "uid": "341b2866-0593-4440-ad5b-718dbbf46e5b"
+            },
+            "spec": {
+                "automountServiceAccountToken": false,
+                "containers": [
+                    {
+                        "command": [
+                            "/opt/sam3-venv/bin/python",
+                            "-c",
+                            "import time;time.sleep(3600)"
+                        ],
+                        "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "client",
+                        "resources": {
+                            "limits": {
+                                "cpu": "1",
+                                "memory": "1Gi"
+                            },
+                            "requests": {
+                                "cpu": "50m",
+                                "memory": "256Mi"
+                            }
+                        },
+                        "securityContext": {
+                            "allowPrivilegeEscalation": false,
+                            "capabilities": {
+                                "drop": [
+                                    "ALL"
+                                ]
+                            },
+                            "readOnlyRootFilesystem": true,
+                            "runAsNonRoot": true,
+                            "runAsUser": 1001340000,
+                            "seccompProfile": {
+                                "type": "RuntimeDefault"
+                            }
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/cert",
+                                "name": "cert",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/unbound",
+                                "name": "unbound",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "imagePullSecrets": [
+                    {
+                        "name": "sam3-replay-dockercfg-2qhdk"
+                    }
+                ],
+                "nodeName": "ip-10-0-53-174.ec2.internal",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Never",
+                "schedulerName": "default-scheduler",
+                "securityContext": {
+                    "seLinuxOptions": {
+                        "level": "s0:c37,c4"
+                    },
+                    "seccompProfile": {
+                        "type": "RuntimeDefault"
+                    }
+                },
+                "serviceAccount": "sam3-replay",
+                "serviceAccountName": "sam3-replay",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoSchedule",
+                        "key": "node.kubernetes.io/memory-pressure",
+                        "operator": "Exists"
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "cert",
+                        "secret": {
+                            "defaultMode": 420,
+                            "secretName": "sam3-replay-tls"
+                        }
+                    },
+                    {
+                        "name": "unbound",
+                        "secret": {
+                            "defaultMode": 420,
+                            "secretName": "sam3-g0-unbound-tls"
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-10-31T03:02:30Z",
+                        "observedGeneration": 1,
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-10-31T02:59:30Z",
+                        "observedGeneration": 1,
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-10-31T03:02:30Z",
+                        "observedGeneration": 1,
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-10-31T03:02:30Z",
+                        "observedGeneration": 1,
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-10-31T02:59:29Z",
+                        "observedGeneration": 1,
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "allocatedResources": {
+                            "cpu": "50m",
+                            "memory": "256Mi"
+                        },
+                        "containerID": "cri-o://5dcde65531a3dcfb8db3ce7aed994dd0c2ebbe08eec73a6c663e66cc7670ad6a",
+                        "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+                        "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+                        "lastState": {},
+                        "name": "client",
+                        "ready": true,
+                        "resources": {
+                            "limits": {
+                                "cpu": "1",
+                                "memory": "1Gi"
+                            },
+                            "requests": {
+                                "cpu": "50m",
+                                "memory": "256Mi"
+                            }
+                        },
+                        "restartCount": 0,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-10-31T03:02:29Z"
+                            }
+                        },
+                        "user": {
+                            "linux": {
+                                "gid": 0,
+                                "supplementalGroups": [
+                                    0
+                                ],
+                                "uid": 1001340000
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/cert",
+                                "name": "cert",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            },
+                            {
+                                "mountPath": "/unbound",
+                                "name": "unbound",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            }
+                        ]
+                    }
+                ],
+                "hostIP": "10.0.53.174",
+                "hostIPs": [
+                    {
+                        "ip": "10.0.53.174"
+                    }
+                ],
+                "observedGeneration": 1,
+                "phase": "Running",
+                "podIP": "10.131.3.120",
+                "podIPs": [
+                    {
+                        "ip": "10.131.3.120"
+                    }
+                ],
+                "qosClass": "Burstable",
+                "startTime": "2026-10-31T02:59:30Z"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "k8s.ovn.org/pod-networks": "{\"default\":{\"ip_addresses\":[\"10.131.3.121/23\"],\"mac_address\":\"0a:58:0a:83:03:79\",\"gateway_ips\":[\"10.131.2.1\"],\"routes\":[{\"dest\":\"10.128.0.0/14\",\"nextHop\":\"10.131.2.1\"},{\"dest\":\"172.30.0.0/16\",\"nextHop\":\"10.131.2.1\"},{\"dest\":\"169.254.0.5/32\",\"nextHop\":\"10.131.2.1\"},{\"dest\":\"100.64.0.0/16\",\"nextHop\":\"10.131.2.1\"}],\"ip_address\":\"10.131.3.121/23\",\"gateway_ip\":\"10.131.2.1\",\"role\":\"primary\"}}",
+                    "k8s.v1.cni.cncf.io/network-status": "[{\n    \"name\": \"ovn-kubernetes\",\n    \"interface\": \"eth0\",\n    \"ips\": [\n        \"10.131.3.121\"\n    ],\n    \"mac\": \"0a:58:0a:83:03:79\",\n    \"default\": true,\n    \"dns\": {}\n}]",
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Pod\",\"metadata\":{\"annotations\":{},\"labels\":{},\"name\":\"sam3-g0-denied\",\"namespace\":\"semantic-navigation\"},\"spec\":{\"automountServiceAccountToken\":false,\"containers\":[{\"command\":[\"/opt/sam3-venv/bin/python\",\"-c\",\"import time;time.sleep(3600)\"],\"image\":\"image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e\",\"name\":\"client\",\"resources\":{\"limits\":{\"cpu\":\"1\",\"memory\":\"1Gi\"},\"requests\":{\"cpu\":\"50m\",\"memory\":\"256Mi\"}},\"securityContext\":{\"allowPrivilegeEscalation\":false,\"capabilities\":{\"drop\":[\"ALL\"]},\"readOnlyRootFilesystem\":true,\"runAsNonRoot\":true,\"seccompProfile\":{\"type\":\"RuntimeDefault\"}},\"volumeMounts\":[{\"mountPath\":\"/cert\",\"name\":\"cert\",\"readOnly\":true},{\"mountPath\":\"/unbound\",\"name\":\"unbound\",\"readOnly\":true}]}],\"restartPolicy\":\"Never\",\"serviceAccountName\":\"sam3-replay\",\"volumes\":[{\"name\":\"cert\",\"secret\":{\"secretName\":\"sam3-replay-tls\"}},{\"name\":\"unbound\",\"secret\":{\"secretName\":\"sam3-g0-unbound-tls\"}}]}}\n",
+                    "openshift.io/scc": "openshift-ai-llminferenceservice-scc",
+                    "seccomp.security.alpha.kubernetes.io/pod": "runtime/default",
+                    "security.openshift.io/validated-scc-subject-type": "user"
+                },
+                "creationTimestamp": "2026-10-31T02:59:31Z",
+                "generation": 1,
+                "name": "sam3-g0-denied",
+                "namespace": "semantic-navigation",
+                "resourceVersion": "490828974",
+                "uid": "071d6a7e-e81d-4f15-9e0b-0e65512217e4"
+            },
+            "spec": {
+                "automountServiceAccountToken": false,
+                "containers": [
+                    {
+                        "command": [
+                            "/opt/sam3-venv/bin/python",
+                            "-c",
+                            "import time;time.sleep(3600)"
+                        ],
+                        "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "client",
+                        "resources": {
+                            "limits": {
+                                "cpu": "1",
+                                "memory": "1Gi"
+                            },
+                            "requests": {
+                                "cpu": "50m",
+                                "memory": "256Mi"
+                            }
+                        },
+                        "securityContext": {
+                            "allowPrivilegeEscalation": false,
+                            "capabilities": {
+                                "drop": [
+                                    "ALL"
+                                ]
+                            },
+                            "readOnlyRootFilesystem": true,
+                            "runAsNonRoot": true,
+                            "runAsUser": 1001340000,
+                            "seccompProfile": {
+                                "type": "RuntimeDefault"
+                            }
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/cert",
+                                "name": "cert",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/unbound",
+                                "name": "unbound",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "imagePullSecrets": [
+                    {
+                        "name": "sam3-replay-dockercfg-2qhdk"
+                    }
+                ],
+                "nodeName": "ip-10-0-53-174.ec2.internal",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Never",
+                "schedulerName": "default-scheduler",
+                "securityContext": {
+                    "seLinuxOptions": {
+                        "level": "s0:c37,c4"
+                    },
+                    "seccompProfile": {
+                        "type": "RuntimeDefault"
+                    }
+                },
+                "serviceAccount": "sam3-replay",
+                "serviceAccountName": "sam3-replay",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoSchedule",
+                        "key": "node.kubernetes.io/memory-pressure",
+                        "operator": "Exists"
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "cert",
+                        "secret": {
+                            "defaultMode": 420,
+                            "secretName": "sam3-replay-tls"
+                        }
+                    },
+                    {
+                        "name": "unbound",
+                        "secret": {
+                            "defaultMode": 420,
+                            "secretName": "sam3-g0-unbound-tls"
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-10-31T03:02:30Z",
+                        "observedGeneration": 1,
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-10-31T02:59:31Z",
+                        "observedGeneration": 1,
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-10-31T03:02:30Z",
+                        "observedGeneration": 1,
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-10-31T03:02:30Z",
+                        "observedGeneration": 1,
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-10-31T02:59:31Z",
+                        "observedGeneration": 1,
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "allocatedResources": {
+                            "cpu": "50m",
+                            "memory": "256Mi"
+                        },
+                        "containerID": "cri-o://fff8ba4576a9392d84890ca2e79ac5d24f80241ae38cea1ad0e8737ed55f0537",
+                        "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+                        "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+                        "lastState": {},
+                        "name": "client",
+                        "ready": true,
+                        "resources": {
+                            "limits": {
+                                "cpu": "1",
+                                "memory": "1Gi"
+                            },
+                            "requests": {
+                                "cpu": "50m",
+                                "memory": "256Mi"
+                            }
+                        },
+                        "restartCount": 0,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-10-31T03:02:29Z"
+                            }
+                        },
+                        "user": {
+                            "linux": {
+                                "gid": 0,
+                                "supplementalGroups": [
+                                    0
+                                ],
+                                "uid": 1001340000
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/cert",
+                                "name": "cert",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            },
+                            {
+                                "mountPath": "/unbound",
+                                "name": "unbound",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            }
+                        ]
+                    }
+                ],
+                "hostIP": "10.0.53.174",
+                "hostIPs": [
+                    {
+                        "ip": "10.0.53.174"
+                    }
+                ],
+                "observedGeneration": 1,
+                "phase": "Running",
+                "podIP": "10.131.3.121",
+                "podIPs": [
+                    {
+                        "ip": "10.131.3.121"
+                    }
+                ],
+                "qosClass": "Burstable",
+                "startTime": "2026-10-31T02:59:31Z"
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": "",
+        "selfLink": ""
+    }
+}

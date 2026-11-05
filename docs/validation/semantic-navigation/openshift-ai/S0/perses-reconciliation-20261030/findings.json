@@ -1,0 +1,167 @@
+{
+  "recorded_at": "2026-10-31T01:59:57.743987+00:00",
+  "cluster_changes_made": false,
+  "finding": "Stale COO subscription with missing installed CSV and all operator deployments; Perses conversion disabled",
+  "coo_subscription_state": "UpgradePending",
+  "coo_claimed_installed_csv": "cluster-observability-operator.v1.5.1",
+  "coo_actual_csv_present": false,
+  "coo_actual_deployments": [],
+  "coo_actual_pods": [],
+  "coo_actual_services": [],
+  "operatorgroups": 1,
+  "catalog_candidate": "cluster-observability-operator.v1.5.3",
+  "crds": [
+    {
+      "name": "perses.perses.dev",
+      "conversion": {
+        "strategy": "None"
+      },
+      "storedVersions": [
+        "v1alpha2"
+      ],
+      "versions": [
+        {
+          "name": "v1alpha1",
+          "storage": false,
+          "served": true,
+          "spec_keys": [
+            "affinity",
+            "args",
+            "client",
+            "config",
+            "containerPort",
+            "image",
+            "livenessProbe",
+            "metadata",
+            "nodeSelector",
+            "readinessProbe",
+            "replicas",
+            "service",
+            "serviceAccountName",
+            "storage",
+            "tls",
+            "tolerations"
+          ]
+        },
+        {
+          "name": "v1alpha2",
+          "storage": true,
+          "served": true,
+          "spec_keys": [
+            "affinity",
+            "args",
+            "client",
+            "config",
+            "containerPort",
+            "image",
+            "livenessProbe",
+            "logLevel",
+            "logMethodTrace",
+            "metadata",
+            "nodeSelector",
+            "podSecurityContext",
+            "provisioning",
+            "readinessProbe",
+            "replicas",
+            "resources",
+            "service",
+            "serviceAccountName",
+            "storage",
+            "tls",
+            "tolerations",
+            "volumeMounts",
+            "volumes"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "persesdashboards.perses.dev",
+      "conversion": {
+        "strategy": "None"
+      },
+      "storedVersions": [
+        "v1alpha2"
+      ],
+      "versions": [
+        {
+          "name": "v1alpha1",
+          "storage": false,
+          "served": true,
+          "spec_keys": [
+            "datasources",
+            "display",
+            "duration",
+            "layouts",
+            "links",
+            "panels",
+            "refreshInterval",
+            "variables"
+          ]
+        },
+        {
+          "name": "v1alpha2",
+          "storage": true,
+          "served": true,
+          "spec_keys": [
+            "config",
+            "instanceSelector"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "persesdatasources.perses.dev",
+      "conversion": {
+        "strategy": "None"
+      },
+      "storedVersions": [
+        "v1alpha2"
+      ],
+      "versions": [
+        {
+          "name": "v1alpha1",
+          "storage": false,
+          "served": true,
+          "spec_keys": [
+            "client",
+            "config"
+          ]
+        },
+        {
+          "name": "v1alpha2",
+          "storage": true,
+          "served": true,
+          "spec_keys": [
+            "client",
+            "config",
+            "instanceSelector"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "persesglobaldatasources.perses.dev",
+      "conversion": {
+        "strategy": "None"
+      },
+      "storedVersions": [
+        "v1alpha2"
+      ],
+      "versions": [
+        {
+          "name": "v1alpha2",
+          "storage": true,
+          "served": true,
+          "spec_keys": [
+            "client",
+            "config",
+            "instanceSelector"
+          ]
+        }
+      ]
+    }
+  ],
+  "repair_status": "Prepared; not applied. Validate restored conversion and reconciliation after reinstall.",
+  "ai_upgrade": "Keep 3.4.2 during recovery; separate pending 3.5.2 plan not required for this repair."
+}

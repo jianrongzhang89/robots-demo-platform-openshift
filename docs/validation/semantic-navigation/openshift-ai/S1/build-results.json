@@ -1,0 +1,96 @@
+{
+  "builds": [
+    {
+      "name": "semantic-model-server-s1-1",
+      "phase": "Complete",
+      "started": "2026-10-30T23:14:34Z",
+      "completed": "2026-10-30T23:18:54Z",
+      "digest": "sha256:341858d55d047636de45c92dd7c6fcc544541b1d10ca52cc4c9019ef73a24ad0",
+      "stages": [
+        {
+          "durationMilliseconds": 232438,
+          "name": "PullImages",
+          "startTime": "2026-10-30T23:14:42Z",
+          "steps": [
+            {
+              "durationMilliseconds": 232438,
+              "name": "PullBaseImage",
+              "startTime": "2026-10-30T23:14:42Z"
+            }
+          ]
+        },
+        {
+          "durationMilliseconds": 13079,
+          "name": "Build",
+          "startTime": "2026-10-30T23:18:34Z",
+          "steps": [
+            {
+              "durationMilliseconds": 13079,
+              "name": "DockerBuild",
+              "startTime": "2026-10-30T23:18:34Z"
+            }
+          ]
+        },
+        {
+          "durationMilliseconds": 4340,
+          "name": "PushImage",
+          "startTime": "2026-10-30T23:18:48Z",
+          "steps": [
+            {
+              "durationMilliseconds": 4340,
+              "name": "PushDockerImage",
+              "startTime": "2026-10-30T23:18:48Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "semantic-model-server-s1-2",
+      "phase": "Complete",
+      "started": "2026-10-30T23:18:54Z",
+      "completed": "2026-10-30T23:23:09Z",
+      "digest": "sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+      "stages": [
+        {
+          "durationMilliseconds": 233277,
+          "name": "PullImages",
+          "startTime": "2026-10-30T23:18:58Z",
+          "steps": [
+            {
+              "durationMilliseconds": 233277,
+              "name": "PullBaseImage",
+              "startTime": "2026-10-30T23:18:58Z"
+            }
+          ]
+        },
+        {
+          "durationMilliseconds": 14474,
+          "name": "Build",
+          "startTime": "2026-10-30T23:22:51Z",
+          "steps": [
+            {
+              "durationMilliseconds": 14474,
+              "name": "DockerBuild",
+              "startTime": "2026-10-30T23:22:51Z"
+            }
+          ]
+        },
+        {
+          "durationMilliseconds": 2522,
+          "name": "PushImage",
+          "startTime": "2026-10-30T23:23:05Z",
+          "steps": [
+            {
+              "durationMilliseconds": 2522,
+              "name": "PushDockerImage",
+              "startTime": "2026-10-30T23:23:05Z"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "final_image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-model-server@sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+  "build_2_check": "import server, artifact; assert not server.ModelService({}).ready()"
+}

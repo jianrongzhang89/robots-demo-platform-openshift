@@ -1,0 +1,36 @@
+[
+  {
+    "command": [
+      "/usr/bin/python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "/phase5-native/..2026_10_17_15_04_41.3721243466",
+      "-p",
+      "test_*.py",
+      "-v"
+    ],
+    "returncode": 0
+  },
+  {
+    "command": [
+      "/usr/bin/python3",
+      "/phase5-native/..2026_10_17_15_04_41.3721243466/verify_frame_bridge.py"
+    ],
+    "returncode": 0
+  },
+  {
+    "command": [
+      "/opt/semantic-safety/build/test_native_lease"
+    ],
+    "returncode": 0
+  },
+  {
+    "command": [
+      "/usr/bin/python3",
+      "/phase5-native/..2026_10_17_15_04_41.3721243466/verify_hotel_stack.py"
+    ],
+    "returncode": 1
+  }
+]

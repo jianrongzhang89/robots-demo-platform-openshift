@@ -1,0 +1,39 @@
+{
+  "pump": {
+    "stages": {
+      "native": {
+        "calls": 124320,
+        "maximum_ns": 728064
+      },
+      "ingress": {
+        "calls": 82880,
+        "maximum_ns": 7046036
+      },
+      "observer": {
+        "calls": 82880,
+        "maximum_ns": 9354450
+      },
+      "task": {
+        "calls": 20720,
+        "maximum_ns": 8698088
+      },
+      "guard": {
+        "calls": 20720,
+        "maximum_ns": 9905382
+      },
+      "diagnostics": {
+        "calls": 20720,
+        "maximum_ns": 4948915
+      }
+    },
+    "slow": [],
+    "dropped": 0,
+    "threshold_ns": 10000000
+  },
+  "adapter": {
+    "stages": {},
+    "slow": [],
+    "dropped": 0,
+    "threshold_ns": 10000000
+  }
+}

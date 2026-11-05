@@ -1,0 +1,12 @@
+{
+ "gate": "G4",
+ "status": "HOLD",
+ "accepted": false,
+ "event": "Series-20 stopped and campaign paused by user decision (November 4, 2026)",
+ "user_decision": "The user directed pausing the ongoing series-20 run and all further re-running attempts, having reviewed that all 40 nominal pairs completed three times across series-4/12/16 with perfect hull-exposure reduction. Documentation and closure of the S4 record follow; no further trials run.",
+ "series_20_final_state": "Stopped mid-trial-002-off (SIGTERM after the user's pause; trials 000-001 off/on all completed and passed; the interrupted trial is not evidence of any failure). Sampler exited.",
+ "cleanup": "Fixture pod force-removed (it had been mid-trial), G4 topology removed via g4_topology down, no proxy certificate secret present, A10G rendering reservation restored from the saved manifest and Ready. All samplers killed; all stop files touched.",
+ "series_totals": "309 trials recorded across 20 series attempts; 293 completed (95%); five stopped trials provably passed (retained logs) and were lost to retrieval failures now impossible under the log-recovery path.",
+ "stages": "All five G4 stages passed in qualification-22 (serving-faults 12/12, observation 10/10, recovery 10/10, moving-stop 10/10, semantic-faults 10/10; served-phase5-qualification.json). The paired series never completed 110/110 in a single attempt; the two residual stopper classes are characterized in report.md (goal-approach TF transient ~3.5%/on-arm-trial, watchdog command-boundary race ~1.6%/armed-trial; both in pinned components).",
+ "evidence_position": "All 40 nominal off/on pairs completed three times (series-4, 12, 16); all 6 target-absent pairs twice (series-12, 16); 2 target-removal pairs once (series-16); exposure reduction perfect in every measured pair (series-16 aggregate: off 28.10 m vs on 0.0 m, zero collisions); every wire proof, stop metric and gate criterion satisfied whenever reached."
+}

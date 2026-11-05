@@ -1,0 +1,68 @@
+{
+  "pilot": "serving-unavailable lease-transport fix",
+  "passed": true,
+  "trial_passed": true,
+  "cleanup_ok": true,
+  "events": [
+    {
+      "event": "model_serving_preflight",
+      "running_ready": 1
+    },
+    {
+      "event": "rendering_reservation_removed"
+    },
+    {
+      "event": "proxy_certificate_provisioned",
+      "returncode": 0,
+      "metadata": "subject=CN=localhost\nissuer=CN=localhost\nnotBefore=Nov  2 02:04:20 2026 GMT\nnotAfter=Nov  5 02:04:20 2026 GMT\nsha256 Fingerprint=41:78:DD:37:D0:B9:C7:CA:52:0F:6D:E9:2D:FE:A4:1C:09:57:7B:23:03:F0:46:BE:3C:CF:38:BD:5D:08:DE:BE\n",
+      "key_retained": false
+    },
+    {
+      "event": "sampler_started",
+      "stop_file": "docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/serving-transport-pilot-6/monitor-stop"
+    },
+    {
+      "event": "runner_started",
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/Users/zhangj/devt/src/robots-demo-platform-openshift/scripts/semantic-navigation/run_g4_faults.py",
+        "--modes",
+        "serving",
+        "--repetitions",
+        "1",
+        "--output-dir",
+        "docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/serving-transport-pilot-6/serving-faults"
+      ]
+    },
+    {
+      "event": "runner_finished",
+      "returncode": 0
+    }
+  ],
+  "cleanup": [
+    {
+      "action": "stop serving sampler",
+      "returncode": 0,
+      "stopped": true
+    },
+    {
+      "action": "remove G4 topology",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "action": "remove fault injector certificate",
+      "returncode": 0
+    },
+    {
+      "action": "restore rendering reservation",
+      "returncode": 0,
+      "stderr": ""
+    },
+    {
+      "action": "reservation Ready",
+      "returncode": 0
+    }
+  ]
+}

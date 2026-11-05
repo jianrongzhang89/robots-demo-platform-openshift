@@ -1,0 +1,30 @@
+[
+  {
+    "command": [
+      "/usr/bin/python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "/phase5-native/..2026_11_05_03_12_22.2216594406",
+      "-p",
+      "test_*.py",
+      "-v"
+    ],
+    "returncode": 0
+  },
+  {
+    "command": [
+      "/usr/bin/python3",
+      "/phase5-native/..2026_11_05_03_12_22.2216594406/verify_frame_bridge.py"
+    ],
+    "returncode": 0
+  },
+  {
+    "command": [
+      "/usr/bin/python3",
+      "/phase5-native/..2026_11_05_03_12_22.2216594406/verify_hotel_adapter.py"
+    ],
+    "returncode": 1
+  }
+]

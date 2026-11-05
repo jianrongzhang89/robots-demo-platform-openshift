@@ -1,0 +1,26 @@
+{
+  "status": "SUPERSEDED_FRAME_CONVENTION_INVALID_AFTER_PLANAR_TRANSLATION",
+  "world_to_odom_convention": "Do not reuse a pitched world-to-odom anchor with planar odometry across translation. The pitch rotates odometry x displacement into a false world-z shift. Capture-time Gazebo world_from_base_link is now recorded per sample and is the supported geometry input.",
+  "views": [
+    {
+      "capture": "scene-preview/anchor-corrected/anchor-corrected-0000.jpg",
+      "odom_x_m": 0.0,
+      "rgb_depth_camera_info_skew_ms": 0.0,
+      "target_pixels_checked": 5872,
+      "valid_depth_fraction": 1.0,
+      "target_surface_distance_p95_m": 0.00906,
+      "target_surface_distance_max_m": 0.01109
+    },
+    {
+      "capture": "scene-preview/projection-view2/view2-0000.jpg",
+      "odom_x_m": 0.231,
+      "rgb_depth_camera_info_skew_ms": 0.0,
+      "target_pixels_checked": 8756,
+      "valid_depth_fraction": 1.0,
+      "target_surface_distance_p95_m": 0.01510,
+      "target_surface_distance_max_m": 0.01522
+    }
+  ],
+  "motion_stop_verified": "The second capture followed a 0.231 m physical x translation; explicit zero-velocity commands were sent and odometry reported zero velocity.",
+  "limitations": "This check is retained as an audit record, not a passing validation. Its reused pitched anchor produces about 7 mm false height error after 0.1195 m planar translation and 13.5 mm after 0.231 m. Do not use these results as projection or label qualification. See capture-pilot-v2 for the corrected per-capture direct-pose pilot; it remains development-only and unqualified."
+}

@@ -1,0 +1,18 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata: {name: semantic-g3-costmap, namespace: semantic-navigation}
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata: {name: semantic-g3-costmap, namespace: semantic-navigation}
+spec:
+  runPolicy: Serial
+  source: {binary: {}}
+  strategy:
+    type: Docker
+    dockerStrategy: {dockerfilePath: Containerfile.g3}
+  output:
+    to: {kind: ImageStreamTag, name: 'semantic-g3-costmap:s3'}
+  resources:
+    requests: {cpu: '1', memory: 1Gi}
+    limits: {cpu: '2', memory: 4Gi}

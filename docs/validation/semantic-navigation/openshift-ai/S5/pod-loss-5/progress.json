@@ -1,0 +1,28 @@
+{
+  "started_at": "2026-11-04T14:57:57.244028+00:00",
+  "passed": false,
+  "injected": true,
+  "replacement_ready": false,
+  "events": [
+    {
+      "event": "delete_serving_pod",
+      "at_wall_ns": 1793804362229705000,
+      "uid": "27b189f1-a8a4-4af3-918f-14543aeceb0c",
+      "fixture": {
+        "phase": "motion_verified",
+        "mode": "serving",
+        "armed": true,
+        "gate_reason": "armed",
+        "leases": {
+          "camera": 318,
+          "semantic": 111,
+          "inference_heartbeat": 500
+        },
+        "written_wall_ns": 1793804373301524657
+      },
+      "fixture_delete_lower_ns": 1793804373304635567,
+      "grace_period_seconds": 1,
+      "fixture_delete_upper_ns": 1793804374886392067
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+[INFO] [1793722556.271679396] [robot_1.planner_server]: 
+	planner_server lifecycle node launched. 
+	Waiting on external lifecycle transitions to activate
+	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[INFO] [1793722556.283651577] [robot_1.planner_server]: Creating
+[INFO] [1793722556.353833944] [robot_1.global_costmap.global_costmap]: 
+	global_costmap lifecycle node launched. 
+	Waiting on external lifecycle transitions to activate
+	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[INFO] [1793722556.355134059] [robot_1.global_costmap.global_costmap]: Creating Costmap
+[INFO] [1793722556.956895010] [robot_1.planner_server]: Configuring
+[INFO] [1793722556.956955561] [robot_1.global_costmap.global_costmap]: Configuring
+[INFO] [1793722556.965679540] [robot_1.global_costmap.global_costmap]: Using plugin "static_layer"
+[INFO] [1793722556.975096732] [robot_1.global_costmap.global_costmap]: Subscribing to the map topic (/robot_1/map) with transient local durability
+[INFO] [1793722556.977764814] [robot_1.global_costmap.global_costmap]: Initialized plugin "static_layer"
+[INFO] [1793722556.977846005] [robot_1.global_costmap.global_costmap]: Using plugin "obstacle_layer"
+[INFO] [1793722556.983094687] [robot_1.global_costmap.global_costmap]: Subscribed to Topics: scan
+[INFO] [1793722556.993220632] [robot_1.global_costmap.global_costmap]: Initialized plugin "obstacle_layer"
+[INFO] [1793722556.993284834] [robot_1.global_costmap.global_costmap]: Using plugin "inflation_layer"
+[INFO] [1793722556.996693480] [robot_1.global_costmap.global_costmap]: Initialized plugin "inflation_layer"
+[INFO] [1793722557.022049920] [robot_1.global_costmap.global_costmap]: StaticLayer: Resizing costmap to 693 X 845 at 0.050000 m/pix
+[INFO] [1793722557.022474248] [robot_1.planner_server]: Created global planner plugin GridBased of type nav2_navfn_planner::NavfnPlanner
+[INFO] [1793722557.022510369] [robot_1.planner_server]: Configuring plugin GridBased of type NavfnPlanner
+[INFO] [1793722557.024739782] [robot_1.planner_server]: Planner Server has GridBased  planners available.
+[INFO] [1793722557.083762953] [robot_1.planner_server]: Activating
+[INFO] [1793722557.083838534] [robot_1.global_costmap.global_costmap]: Activating
+[INFO] [1793722557.083857244] [robot_1.global_costmap.global_costmap]: Checking transform
+[INFO] [1793722557.084150590] [robot_1.global_costmap.global_costmap]: Timed out waiting for transform from base_footprint to map to become available, tf error: Lookup would require extrapolation at time 3.330000, but only time 3.500000 is in the buffer, when looking up transform from frame [base_footprint] to frame [map]
+[INFO] [1793722557.584105633] [robot_1.global_costmap.global_costmap]: start
+[INFO] [1793722557.734896068] [robot_1.planner_server]: Activating plugin GridBased of type NavfnPlanner
+[INFO] [1793722557.735733604] [robot_1.planner_server]: Creating bond (planner_server) to lifecycle manager.
+[INFO] [1793722630.967687190] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[INFO] [1793722630.967743501] [robot_1.planner_server]: Running Nav2 LifecycleNode rcl preshutdown (planner_server)
+[INFO] [1793722630.967785342] [robot_1.planner_server]: Deactivating
+[INFO] [1793722630.967815203] [robot_1.global_costmap.global_costmap]: Deactivating
+[INFO] [1793722630.984373094] [robot_1.planner_server]: Deactivating plugin GridBased of type NavfnPlanner
+[INFO] [1793722630.984432195] [robot_1.planner_server]: Destroying bond (planner_server) to lifecycle manager.
+[INFO] [1793722630.996868507] [robot_1.planner_server]: Cleaning up
+[INFO] [1793722631.015420047] [robot_1.global_costmap.global_costmap]: Cleaning up
+[INFO] [1793722631.023233289] [robot_1.planner_server]: Cleaning up plugin GridBased of type NavfnPlanner
+[INFO] [1793722631.023588756] [robot_1.planner_server]: Destroying plugin GridBased of type NavfnPlanner
+[INFO] [1793722631.039348422] [robot_1.planner_server]: Destroying bond (planner_server) to lifecycle manager.
+[INFO] [1793722631.046315387] [robot_1.global_costmap.global_costmap]: Destroying
+[INFO] [1793722631.062271317] [robot_1.planner_server]: Destroying

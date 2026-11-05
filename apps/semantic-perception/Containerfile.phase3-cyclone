@@ -1,0 +1,12 @@
+# Reuse the exact SAM3/Torch layers from the first runtime build.
+FROM image-registry.openshift-image-registry.svc:5000/semantic-navigation/sam3-runtime@sha256:c341e499731f0eb518e8a7a38a44a85e78b3f85a05f3eb1947c192c63690327b
+USER 0
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ros-jazzy-rmw-cyclonedds-cpp \
+    && rm -rf /var/lib/apt/lists/*
+ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+COPY entrypoint-phase3.sh /entrypoint-phase3.sh
+RUN chmod 0555 /entrypoint-phase3.sh \
+    && /bin/bash -c 'source /opt/ros/jazzy/setup.bash; /opt/sam3-venv/bin/python -c "from rclpy.utilities import get_rmw_implementation_identifier; assert get_rmw_implementation_identifier() == \"rmw_cyclonedds_cpp\""'
+USER 1001
+ENTRYPOINT ["/entrypoint-phase3.sh"]

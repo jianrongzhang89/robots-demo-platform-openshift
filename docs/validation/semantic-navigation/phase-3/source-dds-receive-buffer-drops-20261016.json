@@ -1,0 +1,42 @@
+{
+  "snapshot": {
+    "wall_ns": 1792166578810077400,
+    "pid_1_udp_sockets": [
+      {
+        "fd": "6",
+        "inode": "1082254532",
+        "port": 52580,
+        "drops": 0,
+        "receive_queue_bytes": 0
+      },
+      {
+        "fd": "4",
+        "inode": "1082254530",
+        "port": 27174,
+        "drops": 0,
+        "receive_queue_bytes": 0
+      },
+      {
+        "fd": "5",
+        "inode": "1082254531",
+        "port": 27175,
+        "drops": 193463,
+        "receive_queue_bytes": 0
+      }
+    ],
+    "pod_udp_counters": {
+      "InDatagrams": 2518263,
+      "NoPorts": 12716,
+      "InErrors": 193463,
+      "OutDatagrams": 2560575,
+      "RcvbufErrors": 193463,
+      "SndbufErrors": 0,
+      "InCsumErrors": 0,
+      "IgnoredMulti": 0,
+      "MemErrors": 0
+    }
+  },
+  "node_receive_limit_bytes": 212992,
+  "node_source_readout": "net.core.rmem_max = 212992\nnet.core.rmem_default = 212992\nnet.core.wmem_max = 212992\nnet.core.wmem_default = 212992\n\nRemoving debug pod ...\n",
+  "note": "All observed pod UDP receive-buffer errors belong to PID 1 camera-compressor data socket; no host tuning performed."
+}

@@ -1,0 +1,161 @@
+{
+  "apiVersion": "build.openshift.io/v1",
+  "kind": "Build",
+  "metadata": {
+    "annotations": {
+      "openshift.io/build-config.name": "semantic-safety-console-phase6",
+      "openshift.io/build.number": "3",
+      "openshift.io/build.pod-name": "semantic-safety-console-phase6-3-build"
+    },
+    "creationTimestamp": "2026-10-27T04:13:25Z",
+    "generation": 2,
+    "labels": {
+      "buildconfig": "semantic-safety-console-phase6",
+      "openshift.io/build-config.name": "semantic-safety-console-phase6",
+      "openshift.io/build.start-policy": "Serial"
+    },
+    "name": "semantic-safety-console-phase6-3",
+    "namespace": "semantic-navigation",
+    "ownerReferences": [
+      {
+        "apiVersion": "build.openshift.io/v1",
+        "controller": true,
+        "kind": "BuildConfig",
+        "name": "semantic-safety-console-phase6",
+        "uid": "db8b50ae-f77f-45d0-b508-1599869d8227"
+      }
+    ],
+    "resourceVersion": "474270984",
+    "uid": "3bc25f8b-65a9-4ab4-a3b6-0cb67033ab8e"
+  },
+  "spec": {
+    "nodeSelector": null,
+    "output": {
+      "pushSecret": {
+        "name": "builder-dockercfg-htt4p"
+      },
+      "to": {
+        "kind": "ImageStreamTag",
+        "name": "semantic-safety:phase6-console-candidate"
+      }
+    },
+    "postCommit": {},
+    "resources": {
+      "limits": {
+        "cpu": "4",
+        "memory": "8Gi"
+      },
+      "requests": {
+        "cpu": "2",
+        "memory": "4Gi"
+      }
+    },
+    "revision": {
+      "git": {
+        "author": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "commit": "30ac3f267f82b8f1705eb89ac1f290f08839d107",
+        "committer": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "message": "Log semantic label_info arrival and validation detail\n\nDistinguishes never-arrived from arrived-but-invalid label metadata\nfrom the costmap logs alone; the admission policy is unchanged."
+      },
+      "type": "Git"
+    },
+    "serviceAccount": "builder",
+    "source": {
+      "binary": {},
+      "type": "Binary"
+    },
+    "strategy": {
+      "dockerStrategy": {
+        "dockerfilePath": "Containerfile.phase6-console"
+      },
+      "type": "Docker"
+    }
+  },
+  "status": {
+    "completionTimestamp": "2026-10-27T04:16:22Z",
+    "conditions": [
+      {
+        "lastTransitionTime": "2026-10-27T04:13:25Z",
+        "lastUpdateTime": "2026-10-27T04:13:25Z",
+        "status": "False",
+        "type": "New"
+      },
+      {
+        "lastTransitionTime": "2026-10-27T04:13:26Z",
+        "lastUpdateTime": "2026-10-27T04:13:26Z",
+        "status": "False",
+        "type": "Pending"
+      },
+      {
+        "lastTransitionTime": "2026-10-27T04:16:22Z",
+        "lastUpdateTime": "2026-10-27T04:16:22Z",
+        "status": "False",
+        "type": "Running"
+      },
+      {
+        "lastTransitionTime": "2026-10-27T04:16:22Z",
+        "lastUpdateTime": "2026-10-27T04:16:22Z",
+        "status": "True",
+        "type": "Complete"
+      }
+    ],
+    "config": {
+      "kind": "BuildConfig",
+      "name": "semantic-safety-console-phase6",
+      "namespace": "semantic-navigation"
+    },
+    "duration": 177000000000,
+    "output": {
+      "to": {
+        "imageDigest": "sha256:1dd9e055c73f864f22050f2f692aa1b35f59254e554befd0b97caf09aefaf6cd"
+      }
+    },
+    "outputDockerImageReference": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety:phase6-console-candidate",
+    "phase": "Complete",
+    "stages": [
+      {
+        "durationMilliseconds": 114892,
+        "name": "PullImages",
+        "startTime": "2026-10-27T04:13:28Z",
+        "steps": [
+          {
+            "durationMilliseconds": 114892,
+            "name": "PullBaseImage",
+            "startTime": "2026-10-27T04:13:28Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 51735,
+        "name": "Build",
+        "startTime": "2026-10-27T04:15:23Z",
+        "steps": [
+          {
+            "durationMilliseconds": 51735,
+            "name": "DockerBuild",
+            "startTime": "2026-10-27T04:15:23Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 4615,
+        "name": "PushImage",
+        "startTime": "2026-10-27T04:16:15Z",
+        "steps": [
+          {
+            "durationMilliseconds": 4615,
+            "name": "PushDockerImage",
+            "startTime": "2026-10-27T04:16:15Z"
+          }
+        ]
+      }
+    ],
+    "startTimestamp": "2026-10-27T04:13:25Z"
+  }
+}

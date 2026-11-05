@@ -1,0 +1,89 @@
+{
+  "started_at": "2026-11-05T13:19:55.909976+00:00",
+  "passed": true,
+  "scope": "Single semantic-on presentation with accepted serving runtime; explicit operator start; no automatic retry or new gate qualification",
+  "returncode": 0,
+  "physical_endpoint": {
+    "passed": true,
+    "goal_xy": [
+      19.4008,
+      -31.594
+    ],
+    "physical_xy": [
+      19.337158523516223,
+      -31.534839038674612
+    ],
+    "distance_m": 0.08689221411599206,
+    "tolerance_m": 0.2,
+    "stationary": true,
+    "clear_of_far_edge": true
+  },
+  "cleanup": [
+    {
+      "command": [
+        "/Users/zhangj/bin/oc",
+        "-n",
+        "semantic-navigation",
+        "delete",
+        "pod,configmap",
+        "semantic-phase5-native",
+        "--ignore-not-found",
+        "--wait=true",
+        "--timeout=90s"
+      ],
+      "returncode": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/Users/zhangj/bin/oc",
+        "-n",
+        "semantic-navigation",
+        "delete",
+        "service,route",
+        "semantic-g5-demo-novnc",
+        "--ignore-not-found",
+        "--wait=true",
+        "--timeout=60s"
+      ],
+      "returncode": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/Users/zhangj/devt/src/robots-demo-platform-openshift/scripts/semantic-navigation/g4_topology.py",
+        "down"
+      ],
+      "returncode": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/Users/zhangj/bin/oc",
+        "-n",
+        "semantic-navigation",
+        "create",
+        "-f",
+        "/Users/zhangj/devt/src/robots-demo-platform-openshift/docs/validation/semantic-navigation/openshift-ai/S4/g4-qualification-20261031/rendering-reservation-saved.json"
+      ],
+      "returncode": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/Users/zhangj/bin/oc",
+        "-n",
+        "semantic-navigation",
+        "wait",
+        "pod/sam3-g0-rendering-reservation",
+        "--for=condition=Ready",
+        "--timeout=120s"
+      ],
+      "returncode": 0,
+      "stderr": ""
+    }
+  ],
+  "cleanup_ok": true,
+  "finished_at": "2026-11-05T13:24:31.387986+00:00"
+}

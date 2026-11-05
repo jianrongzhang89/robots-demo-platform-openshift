@@ -1,0 +1,193 @@
+{
+  "apiVersion": "v1",
+  "kind": "List",
+  "items": [
+    {
+      "apiVersion": "v1",
+      "kind": "ConfigMap",
+      "metadata": {
+        "name": "semantic-g5-navigation-metrics",
+        "namespace": "semantic-navigation",
+        "labels": {
+          "app": "semantic-g5-navigation-metrics"
+        }
+      },
+      "data": {
+        "exporter.py": "#!/usr/bin/env python3\n\"\"\"Read-only navigation telemetry exporter. Never supplies safety authority.\n\nOnly source-stamped snapshots younger than ten seconds produce status gauges.\nFreshness limits here describe dashboard data, not the robot's 500 ms stop gate.\n\"\"\"\nfrom http.server import BaseHTTPRequestHandler, HTTPServer\nimport json\nimport math\nfrom pathlib import Path\nimport time\n\nREASONS = {'clear','semantic_stale','camera_stale','inference_heartbeat_stale','tf_stale','command_expired',\n           'semantic_invalid_age','camera_invalid_age','inference_heartbeat_invalid_age',\n           'semantic_epoch_changed','camera_epoch_changed','inference_heartbeat_epoch_changed',\n           'native_session_lost','not_armed','cancelled','other','none'}\n\n\ndef fresh(stamp, now):\n    return type(stamp) in (int,float) and math.isfinite(stamp) and 0 <= now-stamp <= 10_000_000_000\n\n\ndef metrics(row, now_ns):\n    lines=[]\n    def emit(name,value):\n        if type(value) in (int,float) and math.isfinite(value):lines.append(f'g5_navigation_{name} {value}')\n    sampled=fresh(row.get('observed_wall_ns'),now_ns)\n    emit('snapshot_available',int(sampled))\n    adapter=row.get('adapter') or {}; fixture=row.get('fixture') or {}\n    adapter_ok=sampled and fresh(adapter.get('status_wall_ns'),now_ns)\n    fixture_ok=sampled and fresh(fixture.get('written_wall_ns'),now_ns)\n    emit('adapter_available',int(adapter_ok));emit('safety_available',int(fixture_ok))\n    if adapter_ok:\n        emit('adapter_ready',int(adapter.get('ready') is True))\n        for key in ['emitted_results','timestamp_discards','input_queue_drops','work_queue_drops','work_wait_drops','trace_errors']:\n            emit(key,adapter.get(key))\n        last=adapter.get('last_result') or {}; capture=last.get('capture_wall_ns'); result=last.get('result_wall_ns')\n        if type(capture) is int and type(result) is int and 0<capture<=result<=now_ns:\n            emit('last_capture_timestamp_seconds',capture/1e9)\n            emit('capture_to_result_seconds',(result-capture)/1e9)\n        emit('capture_age_upper_seconds',last.get('capture_age_upper_ms')/1000 if type(last.get('capture_age_upper_ms')) in (int,float) else None)\n    if fixture_ok:\n        emit('armed',int(fixture.get('armed') is True))\n        reason=fixture.get('gate_reason') or 'none';reason=reason if reason in REASONS else 'other'\n        lines.append('g5_navigation_stop_reason{reason='+json.dumps(reason)+'} 1')\n    # Costmap data must come from its own applied-update observation, never from\n    # model latency or a simulated timestamp. Fault fixtures may have no costmap.\n    costmap=row.get('costmap') or {}\n    costmap_ok=sampled and fresh(costmap.get('observed_wall_ns'),now_ns)\n    emit('costmap_available',int(costmap_ok))\n    if costmap_ok:\n        capture=costmap.get('capture_wall_ns'); applied=costmap.get('costmap_wall_ns')\n        if type(capture) is int and type(applied) is int and 0<capture<=applied<=now_ns:\n            emit('capture_to_costmap_seconds',(applied-capture)/1e9)\n    if adapter_ok and fresh(row.get('rtf_source_wall_ns'),now_ns):emit('capture_stream_rtf',row.get('rtf'))\n    return ('\\n'.join(lines)+'\\n').encode()\n\n\nclass Handler(BaseHTTPRequestHandler):\n    def log_message(self,*args):pass\n    def do_GET(self):\n        if self.path!='/metrics':self.send_error(404);return\n        try:row=json.loads(Path('/tmp/navigation.json').read_text())\n        except (OSError,ValueError):row={}\n        body=metrics(row,time.time_ns());self.send_response(200)\n        self.send_header('Content-Type','text/plain; version=0.0.4');self.send_header('Content-Length',str(len(body)));self.end_headers();self.wfile.write(body)\n\n\nif __name__=='__main__':HTTPServer(('0.0.0.0',8080),Handler).serve_forever()\n"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "name": "semantic-g5-navigation-metrics",
+        "namespace": "semantic-navigation",
+        "labels": {
+          "app": "semantic-g5-navigation-metrics"
+        }
+      },
+      "spec": {
+        "automountServiceAccountToken": false,
+        "containers": [
+          {
+            "name": "metrics",
+            "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-cpu-adapter@sha256:20ea4f5e6bc30646f48b29895eb071d40403f8c20b0c1526aeacf06dce716d4b",
+            "command": [
+              "python3",
+              "/config/exporter.py"
+            ],
+            "resources": {
+              "requests": {
+                "cpu": "10m",
+                "memory": "32Mi"
+              },
+              "limits": {
+                "cpu": "100m",
+                "memory": "64Mi"
+              }
+            },
+            "ports": [
+              {
+                "name": "metrics",
+                "containerPort": 8080
+              }
+            ],
+            "securityContext": {
+              "runAsNonRoot": true,
+              "allowPrivilegeEscalation": false,
+              "readOnlyRootFilesystem": true,
+              "capabilities": {
+                "drop": [
+                  "ALL"
+                ]
+              },
+              "seccompProfile": {
+                "type": "RuntimeDefault"
+              }
+            },
+            "volumeMounts": [
+              {
+                "name": "config",
+                "mountPath": "/config",
+                "readOnly": true
+              },
+              {
+                "name": "tmp",
+                "mountPath": "/tmp"
+              }
+            ]
+          }
+        ],
+        "volumes": [
+          {
+            "name": "config",
+            "configMap": {
+              "name": "semantic-g5-navigation-metrics"
+            }
+          },
+          {
+            "name": "tmp",
+            "emptyDir": {
+              "sizeLimit": "8Mi"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "semantic-g5-navigation-metrics",
+        "namespace": "semantic-navigation",
+        "labels": {
+          "app": "semantic-g5-navigation-metrics"
+        }
+      },
+      "spec": {
+        "selector": {
+          "app": "semantic-g5-navigation-metrics"
+        },
+        "ports": [
+          {
+            "name": "metrics",
+            "port": 8080,
+            "targetPort": "metrics"
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "networking.k8s.io/v1",
+      "kind": "NetworkPolicy",
+      "metadata": {
+        "name": "semantic-g5-navigation-metrics",
+        "namespace": "semantic-navigation",
+        "labels": {
+          "app": "semantic-g5-navigation-metrics"
+        }
+      },
+      "spec": {
+        "podSelector": {
+          "matchLabels": {
+            "app": "semantic-g5-navigation-metrics"
+          }
+        },
+        "policyTypes": [
+          "Ingress",
+          "Egress"
+        ],
+        "egress": [],
+        "ingress": [
+          {
+            "from": [
+              {
+                "namespaceSelector": {
+                  "matchLabels": {
+                    "kubernetes.io/metadata.name": "openshift-user-workload-monitoring"
+                  }
+                },
+                "podSelector": {
+                  "matchLabels": {
+                    "prometheus": "user-workload"
+                  }
+                }
+              }
+            ],
+            "ports": [
+              {
+                "protocol": "TCP",
+                "port": 8080
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "monitoring.coreos.com/v1",
+      "kind": "ServiceMonitor",
+      "metadata": {
+        "name": "semantic-g5-navigation-metrics",
+        "namespace": "semantic-navigation",
+        "labels": {
+          "app": "semantic-g5-navigation-metrics"
+        }
+      },
+      "spec": {
+        "selector": {
+          "matchLabels": {
+            "app": "semantic-g5-navigation-metrics"
+          }
+        },
+        "endpoints": [
+          {
+            "port": "metrics",
+            "interval": "5s",
+            "scrapeTimeout": "2s"
+          }
+        ]
+      }
+    }
+  ]
+}

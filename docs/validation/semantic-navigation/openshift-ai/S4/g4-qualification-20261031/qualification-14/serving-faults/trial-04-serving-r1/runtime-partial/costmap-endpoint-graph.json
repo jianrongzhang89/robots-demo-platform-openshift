@@ -1,0 +1,360 @@
+{
+  "/robot_1/global_costmap/costmap": {
+    "types": [
+      "nav_msgs/msg/OccupancyGrid"
+    ],
+    "publishers": [
+      {
+        "node": "global_costmap",
+        "namespace": "/robot_1/global_costmap"
+      }
+    ],
+    "subscriptions": []
+  },
+  "/robot_1/global_costmap/costmap_raw": {
+    "types": [
+      "nav2_msgs/msg/Costmap"
+    ],
+    "publishers": [
+      {
+        "node": "global_costmap",
+        "namespace": "/robot_1/global_costmap"
+      }
+    ],
+    "subscriptions": [
+      {
+        "node": "smoother_server",
+        "namespace": "/robot_1"
+      }
+    ]
+  },
+  "/robot_1/global_costmap/costmap_raw_updates": {
+    "types": [
+      "nav2_msgs/msg/CostmapUpdate"
+    ],
+    "publishers": [
+      {
+        "node": "global_costmap",
+        "namespace": "/robot_1/global_costmap"
+      }
+    ],
+    "subscriptions": [
+      {
+        "node": "smoother_server",
+        "namespace": "/robot_1"
+      }
+    ]
+  },
+  "/robot_1/global_costmap/costmap_updates": {
+    "types": [
+      "map_msgs/msg/OccupancyGridUpdate"
+    ],
+    "publishers": [
+      {
+        "node": "global_costmap",
+        "namespace": "/robot_1/global_costmap"
+      }
+    ],
+    "subscriptions": []
+  },
+  "/robot_1/global_costmap/footprint": {
+    "types": [
+      "geometry_msgs/msg/Polygon"
+    ],
+    "publishers": [],
+    "subscriptions": [
+      {
+        "node": "global_costmap",
+        "namespace": "/robot_1/global_costmap"
+      }
+    ]
+  },
+  "/robot_1/global_costmap/global_costmap/transition_event": {
+    "types": [
+      "lifecycle_msgs/msg/TransitionEvent"
+    ],
+    "publishers": [
+      {
+        "node": "global_costmap",
+        "namespace": "/robot_1/global_costmap"
+      }
+    ],
+    "subscriptions": []
+  },
+  "/robot_1/global_costmap/obstacle_layer": {
+    "types": [
+      "nav_msgs/msg/OccupancyGrid"
+    ],
+    "publishers": [
+      {
+        "node": "global_costmap",
+        "namespace": "/robot_1/global_costmap"
+      }
+    ],
+    "subscriptions": []
+  },
+  "/robot_1/global_costmap/obstacle_layer_raw": {
+    "types": [
+      "nav2_msgs/msg/Costmap"
+    ],
+    "publishers": [
+      {
+        "node": "global_costmap",
+        "namespace": "/robot_1/global_costmap"
+      }
+    ],
+    "subscriptions": []
+  },
+  "/robot_1/global_costmap/obstacle_layer_raw_updates": {
+    "types": [
+      "nav2_msgs/msg/CostmapUpdate"
+    ],
+    "publishers": [
+      {
+        "node": "global_costmap",
+        "namespace": "/robot_1/global_costmap"
+      }
+    ],
+    "subscriptions": []
+  },
+  "/robot_1/global_costmap/obstacle_layer_updates": {
+    "types": [
+      "map_msgs/msg/OccupancyGridUpdate"
+    ],
+    "publishers": [
+      {
+        "node": "global_costmap",
+        "namespace": "/robot_1/global_costmap"
+      }
+    ],
+    "subscriptions": []
+  },
+  "/robot_1/global_costmap/published_footprint": {
+    "types": [
+      "geometry_msgs/msg/PolygonStamped"
+    ],
+    "publishers": [
+      {
+        "node": "global_costmap",
+        "namespace": "/robot_1/global_costmap"
+      }
+    ],
+    "subscriptions": [
+      {
+        "node": "smoother_server",
+        "namespace": "/robot_1"
+      }
+    ]
+  },
+  "/robot_1/global_costmap/static_layer": {
+    "types": [
+      "nav_msgs/msg/OccupancyGrid"
+    ],
+    "publishers": [
+      {
+        "node": "global_costmap",
+        "namespace": "/robot_1/global_costmap"
+      }
+    ],
+    "subscriptions": []
+  },
+  "/robot_1/global_costmap/static_layer_raw": {
+    "types": [
+      "nav2_msgs/msg/Costmap"
+    ],
+    "publishers": [
+      {
+        "node": "global_costmap",
+        "namespace": "/robot_1/global_costmap"
+      }
+    ],
+    "subscriptions": []
+  },
+  "/robot_1/global_costmap/static_layer_raw_updates": {
+    "types": [
+      "nav2_msgs/msg/CostmapUpdate"
+    ],
+    "publishers": [
+      {
+        "node": "global_costmap",
+        "namespace": "/robot_1/global_costmap"
+      }
+    ],
+    "subscriptions": []
+  },
+  "/robot_1/global_costmap/static_layer_updates": {
+    "types": [
+      "map_msgs/msg/OccupancyGridUpdate"
+    ],
+    "publishers": [
+      {
+        "node": "global_costmap",
+        "namespace": "/robot_1/global_costmap"
+      }
+    ],
+    "subscriptions": []
+  },
+  "/robot_1/local_costmap/clearing_endpoints": {
+    "types": [
+      "sensor_msgs/msg/PointCloud2"
+    ],
+    "publishers": [
+      {
+        "node": "local_costmap",
+        "namespace": "/robot_1/local_costmap"
+      }
+    ],
+    "subscriptions": []
+  },
+  "/robot_1/local_costmap/costmap": {
+    "types": [
+      "nav_msgs/msg/OccupancyGrid"
+    ],
+    "publishers": [
+      {
+        "node": "local_costmap",
+        "namespace": "/robot_1/local_costmap"
+      }
+    ],
+    "subscriptions": []
+  },
+  "/robot_1/local_costmap/costmap_raw": {
+    "types": [
+      "nav2_msgs/msg/Costmap"
+    ],
+    "publishers": [
+      {
+        "node": "local_costmap",
+        "namespace": "/robot_1/local_costmap"
+      }
+    ],
+    "subscriptions": [
+      {
+        "node": "behavior_server",
+        "namespace": "/robot_1"
+      }
+    ]
+  },
+  "/robot_1/local_costmap/costmap_raw_updates": {
+    "types": [
+      "nav2_msgs/msg/CostmapUpdate"
+    ],
+    "publishers": [
+      {
+        "node": "local_costmap",
+        "namespace": "/robot_1/local_costmap"
+      }
+    ],
+    "subscriptions": [
+      {
+        "node": "behavior_server",
+        "namespace": "/robot_1"
+      }
+    ]
+  },
+  "/robot_1/local_costmap/costmap_updates": {
+    "types": [
+      "map_msgs/msg/OccupancyGridUpdate"
+    ],
+    "publishers": [
+      {
+        "node": "local_costmap",
+        "namespace": "/robot_1/local_costmap"
+      }
+    ],
+    "subscriptions": []
+  },
+  "/robot_1/local_costmap/footprint": {
+    "types": [
+      "geometry_msgs/msg/Polygon"
+    ],
+    "publishers": [],
+    "subscriptions": [
+      {
+        "node": "local_costmap",
+        "namespace": "/robot_1/local_costmap"
+      }
+    ]
+  },
+  "/robot_1/local_costmap/local_costmap/transition_event": {
+    "types": [
+      "lifecycle_msgs/msg/TransitionEvent"
+    ],
+    "publishers": [
+      {
+        "node": "local_costmap",
+        "namespace": "/robot_1/local_costmap"
+      }
+    ],
+    "subscriptions": []
+  },
+  "/robot_1/local_costmap/published_footprint": {
+    "types": [
+      "geometry_msgs/msg/PolygonStamped"
+    ],
+    "publishers": [
+      {
+        "node": "local_costmap",
+        "namespace": "/robot_1/local_costmap"
+      }
+    ],
+    "subscriptions": [
+      {
+        "node": "collision_monitor",
+        "namespace": "/robot_1"
+      },
+      {
+        "node": "behavior_server",
+        "namespace": "/robot_1"
+      }
+    ]
+  },
+  "/robot_1/local_costmap/voxel_layer": {
+    "types": [
+      "nav_msgs/msg/OccupancyGrid"
+    ],
+    "publishers": [
+      {
+        "node": "local_costmap",
+        "namespace": "/robot_1/local_costmap"
+      }
+    ],
+    "subscriptions": []
+  },
+  "/robot_1/local_costmap/voxel_layer_raw": {
+    "types": [
+      "nav2_msgs/msg/Costmap"
+    ],
+    "publishers": [
+      {
+        "node": "local_costmap",
+        "namespace": "/robot_1/local_costmap"
+      }
+    ],
+    "subscriptions": []
+  },
+  "/robot_1/local_costmap/voxel_layer_raw_updates": {
+    "types": [
+      "nav2_msgs/msg/CostmapUpdate"
+    ],
+    "publishers": [
+      {
+        "node": "local_costmap",
+        "namespace": "/robot_1/local_costmap"
+      }
+    ],
+    "subscriptions": []
+  },
+  "/robot_1/local_costmap/voxel_layer_updates": {
+    "types": [
+      "map_msgs/msg/OccupancyGridUpdate"
+    ],
+    "publishers": [
+      {
+        "node": "local_costmap",
+        "namespace": "/robot_1/local_costmap"
+      }
+    ],
+    "subscriptions": []
+  }
+}

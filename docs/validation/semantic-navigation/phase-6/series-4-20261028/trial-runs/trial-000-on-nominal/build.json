@@ -1,0 +1,161 @@
+{
+  "apiVersion": "build.openshift.io/v1",
+  "kind": "Build",
+  "metadata": {
+    "annotations": {
+      "openshift.io/build-config.name": "semantic-safety-console-phase6",
+      "openshift.io/build.number": "9",
+      "openshift.io/build.pod-name": "semantic-safety-console-phase6-9-build"
+    },
+    "creationTimestamp": "2026-10-28T02:48:31Z",
+    "generation": 2,
+    "labels": {
+      "buildconfig": "semantic-safety-console-phase6",
+      "openshift.io/build-config.name": "semantic-safety-console-phase6",
+      "openshift.io/build.start-policy": "Serial"
+    },
+    "name": "semantic-safety-console-phase6-9",
+    "namespace": "semantic-navigation",
+    "ownerReferences": [
+      {
+        "apiVersion": "build.openshift.io/v1",
+        "controller": true,
+        "kind": "BuildConfig",
+        "name": "semantic-safety-console-phase6",
+        "uid": "db8b50ae-f77f-45d0-b508-1599869d8227"
+      }
+    ],
+    "resourceVersion": "478134265",
+    "uid": "a485bdde-b572-4661-9b43-44f58a0842e2"
+  },
+  "spec": {
+    "nodeSelector": null,
+    "output": {
+      "pushSecret": {
+        "name": "builder-dockercfg-htt4p"
+      },
+      "to": {
+        "kind": "ImageStreamTag",
+        "name": "semantic-safety:phase6-console-candidate"
+      }
+    },
+    "postCommit": {},
+    "resources": {
+      "limits": {
+        "cpu": "4",
+        "memory": "8Gi"
+      },
+      "requests": {
+        "cpu": "2",
+        "memory": "4Gi"
+      }
+    },
+    "revision": {
+      "git": {
+        "author": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "commit": "476f843fb753962f6ba6e89857b484c7cd87014e",
+        "committer": {
+          "email": "jianrongzhang89@gmail.com",
+          "name": "jianrongzhang89"
+        },
+        "message": "Hand the UDP status slot before drive.Publish too (series-3 trial 001-on)\n\nThe dedicated sender thread was not enough: the slot hand-off was\nsequenced after drive.Publish \u2014 also a gz transport call holding the\nshared mutex \u2014 and a ~97 ms block there still delayed the companion\nstatus past the 100 ms capture bound (capture_age_at_native_publish\n97.1 ms, at callback 100.1, at processing 101.6 \u2014 the receive thread\nhealthy throughout, 3389 status rows after the fault). The slot swap\nand notify now precede every gz publish; they are pure userspace and\nnothing that can block precedes them once the control-state mutex is\nreleased. Series-3's first three trials (including the on-arm at 0.0\nexposure) are retained with the failed trial."
+      },
+      "type": "Git"
+    },
+    "serviceAccount": "builder",
+    "source": {
+      "binary": {},
+      "type": "Binary"
+    },
+    "strategy": {
+      "dockerStrategy": {
+        "dockerfilePath": "Containerfile.phase6-console"
+      },
+      "type": "Docker"
+    }
+  },
+  "status": {
+    "completionTimestamp": "2026-10-28T02:51:54Z",
+    "conditions": [
+      {
+        "lastTransitionTime": "2026-10-28T02:48:32Z",
+        "lastUpdateTime": "2026-10-28T02:48:32Z",
+        "status": "False",
+        "type": "New"
+      },
+      {
+        "lastTransitionTime": "2026-10-28T02:48:33Z",
+        "lastUpdateTime": "2026-10-28T02:48:33Z",
+        "status": "False",
+        "type": "Pending"
+      },
+      {
+        "lastTransitionTime": "2026-10-28T02:51:54Z",
+        "lastUpdateTime": "2026-10-28T02:51:54Z",
+        "status": "False",
+        "type": "Running"
+      },
+      {
+        "lastTransitionTime": "2026-10-28T02:51:54Z",
+        "lastUpdateTime": "2026-10-28T02:51:54Z",
+        "status": "True",
+        "type": "Complete"
+      }
+    ],
+    "config": {
+      "kind": "BuildConfig",
+      "name": "semantic-safety-console-phase6",
+      "namespace": "semantic-navigation"
+    },
+    "duration": 202000000000,
+    "output": {
+      "to": {
+        "imageDigest": "sha256:3ddbfc25e618cd1dd195516a9bd8f0d39b1aa9060f7f7a23526dc32ff110270c"
+      }
+    },
+    "outputDockerImageReference": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety:phase6-console-candidate",
+    "phase": "Complete",
+    "stages": [
+      {
+        "durationMilliseconds": 114895,
+        "name": "PullImages",
+        "startTime": "2026-10-28T02:48:35Z",
+        "steps": [
+          {
+            "durationMilliseconds": 114895,
+            "name": "PullBaseImage",
+            "startTime": "2026-10-28T02:48:35Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 76639,
+        "name": "Build",
+        "startTime": "2026-10-28T02:50:30Z",
+        "steps": [
+          {
+            "durationMilliseconds": 76639,
+            "name": "DockerBuild",
+            "startTime": "2026-10-28T02:50:30Z"
+          }
+        ]
+      },
+      {
+        "durationMilliseconds": 4716,
+        "name": "PushImage",
+        "startTime": "2026-10-28T02:51:47Z",
+        "steps": [
+          {
+            "durationMilliseconds": 4716,
+            "name": "PushDockerImage",
+            "startTime": "2026-10-28T02:51:47Z"
+          }
+        ]
+      }
+    ],
+    "startTimestamp": "2026-10-28T02:48:32Z"
+  }
+}
