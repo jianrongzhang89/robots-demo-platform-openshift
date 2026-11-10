@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "/opt/phase7-runtime/verify_phase7_live_operator_rejection.py", line 33, in require_loopback_only_listener
+    connection = socket.create_connection(("127.0.0.1", port), timeout=1.0)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/socket.py", line 852, in create_connection
+    raise exceptions[0]
+  File "/usr/lib/python3.12/socket.py", line 837, in create_connection
+    sock.connect(sa)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/phase7-runtime/verify_phase7_live_operator_rejection.py", line 202, in <module>
+    main()
+  File "/opt/phase7-runtime/verify_phase7_live_operator_rejection.py", line 98, in main
+    require_loopback_only_listener(pod_ip)
+  File "/opt/phase7-runtime/verify_phase7_live_operator_rejection.py", line 38, in require_loopback_only_listener
+    raise RuntimeError("operator API is not reachable on loopback") from error
+RuntimeError: operator API is not reachable on loopback

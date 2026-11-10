@@ -1,0 +1,79 @@
+[
+  {
+    "name": "semantic-phase6-simulator",
+    "phase": "Running",
+    "node": "ip-10-0-38-113.ec2.internal",
+    "images": [
+      {
+        "name": "camera-compressor",
+        "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:c3ba94bbcbbe2283f1c46ea0f2baba398da313ffe83d2b59a63272ef91d95ebf"
+      },
+      {
+        "name": "demo-ground-truth",
+        "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:d417c9f252d1f89dd859290a4bca1f634bcfd7d3cde6d1702c409d432bd48894"
+      },
+      {
+        "name": "sim-zenoh-bridge",
+        "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18"
+      },
+      {
+        "name": "simulator",
+        "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:d417c9f252d1f89dd859290a4bca1f634bcfd7d3cde6d1702c409d432bd48894"
+      }
+    ]
+  },
+  {
+    "name": "semantic-phase6-nav2",
+    "phase": "Running",
+    "node": "ip-10-0-39-214.ec2.internal",
+    "images": [
+      {
+        "name": "clock-bridge",
+        "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18"
+      },
+      {
+        "name": "cmd-vel-route-keepalive",
+        "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18"
+      },
+      {
+        "name": "motion-output-bridge",
+        "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18"
+      },
+      {
+        "name": "nav2",
+        "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e"
+      },
+      {
+        "name": "odom-tf",
+        "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e"
+      },
+      {
+        "name": "scan-frame-rewriter",
+        "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e"
+      },
+      {
+        "name": "semantic-input-bridge",
+        "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18"
+      },
+      {
+        "name": "sim-input-bridge",
+        "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18"
+      }
+    ]
+  },
+  {
+    "name": "semantic-phase6-sam3",
+    "phase": "Running",
+    "node": "ip-10-0-18-251.ec2.internal",
+    "images": [
+      {
+        "name": "sam3-inference",
+        "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/sam3-runtime@sha256:478ec01a7a47fbb0c862fbbef495c71b4a512ff59ed8d6ed5b7234422cc35686"
+      },
+      {
+        "name": "sam3-zenoh-bridge",
+        "imageID": "docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18"
+      }
+    ]
+  }
+]

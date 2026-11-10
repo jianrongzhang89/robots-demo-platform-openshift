@@ -1,0 +1,3 @@
+# Live semantic adapter attempt — November 10, 2026
+
+This attempt did not reach an inference result and is not a pass. The Phase 7 adapter initialized its HTTP backend using the live SAM3 model identity, but the camera topics had zero ROS publishers: this topology omitted the camera-compression sidecar. The verifier correctly remained waiting for a fresh result; no prompt transition was requested and the native watchdog stayed disarmed. The pod and logs are retained here for diagnosis, then the pod was removed. The next topology revision adds the existing compressor process while preserving the approved `red mat` identity and Phase 6 workloads.

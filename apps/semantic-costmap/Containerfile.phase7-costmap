@@ -1,0 +1,23 @@
+FROM image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:15b900f6335f0974b9cceee5dbd7bf34d24c509395e1901704af4f224a112a37
+
+USER 0
+COPY . /opt/semantic-costmap-ws/src/demo_semantic_costmap
+RUN /bin/bash -ec 'source /opt/ros/jazzy/setup.bash; \
+    apt-get update; \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+      nlohmann-json3-dev libssl-dev ros-jazzy-ament-cmake-gtest; \
+    cd /opt/semantic-costmap-ws; \
+    colcon build --merge-install --packages-select demo_semantic_costmap \
+      --build-base /opt/phase7-costmap-build --install-base /opt/semantic-costmap-overlay \
+      --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON; \
+    colcon test --merge-install --packages-select demo_semantic_costmap --build-base /opt/phase7-costmap-build \
+      --install-base /opt/semantic-costmap-overlay --event-handlers console_direct+ \
+      --ctest-args --output-on-failure; \
+    colcon test-result --test-result-base /opt/phase7-costmap-build --verbose; \
+    source /opt/semantic-costmap-overlay/local_setup.bash; \
+    test "$(ros2 pkg prefix demo_semantic_costmap)" = /opt/semantic-costmap-overlay; \
+    test -f /opt/semantic-costmap-overlay/lib/libdemo_semantic_costmap.so; \
+    rm -rf /opt/phase7-costmap-build /var/lib/apt/lists/*; \
+    chmod -R a+rX /opt/semantic-costmap-overlay'
+
+USER 1001

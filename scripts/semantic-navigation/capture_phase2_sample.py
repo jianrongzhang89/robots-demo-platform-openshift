@@ -32,6 +32,14 @@ def parse_gazebo_pose(payload: str) -> list[float]:
     return values
 
 
+def format_pose_arguments(values: list[float]) -> list[str]:
+    if len(values) != 7:
+        raise ValueError("world-from-base-link pose must have seven values")
+    if not all(math.isfinite(value) for value in values):
+        raise ValueError("world-from-base-link pose must be finite")
+    return [format(value, ".17f") for value in values]
+
+
 def gazebo_pose(attempts: int = 3) -> list[float]:
     command = ["gz", "topic", "-e", "-t", "/world/sim_world/pose/info",
                "-n", "1", "--json-output"]
@@ -68,7 +76,11 @@ def main() -> int:
         sys.executable, str(args.capture_script),
         "--output", str(args.output), "--count", str(args.count),
         "--label", args.label, "--timeout", str(args.timeout),
-        "--world-from-base-link", *(str(value) for value in pose),
+        # argparse treats some negative scientific-notation tokens as options
+        # when they follow a nargs argument (notably tiny quaternion values).
+        # Fixed-point strings remain valid numeric arguments and retain ample
+        # precision for the capture-time transform.
+        "--world-from-base-link", *format_pose_arguments(pose),
     ]
     return subprocess.run(command, check=False).returncode
 

@@ -1,0 +1,7 @@
+# Phase 7 corrected live repeatability run 2 — November 10, 2026
+
+**Result: PASS.** This is a second integrated run with the corrected, digest-pinned adapter and runtime candidates after fixing the sensor metadata QoS mismatch. All 15 containers exited zero.
+
+The live mTLS policy verifier observed an authenticated idempotent `red mat` request return HTTP 200 with `changed:false` at generation 1, then an unapproved `blue crate` request return HTTP 400 without stop, cancel, or prompt update. The adapter paired 48 RGB-D-CameraInfo triplets and emitted 27 fresh red-mat results. Nav2 accepted `/navigate_to_pose` after four submissions; the proxy acknowledged one active goal and Nav2 returned `STATUS_CANCELED`. Across 408 native samples, the watchdog remained disarmed and applied linear/angular commands stayed zero; maximum measured speed was 0.0010036368 m/s.
+
+The pod used the same candidates and pinned `sam3-mat-v1` red-mat serving identity as [the first corrected pass](../live-operator-idempotent-rejection-nav2-cancel-pass-20261110/README.md). The Phase 6 and shared Phase 5 router pod names, readiness, restart counts, IPs, and nodes matched before and after. Raw snapshots differ only in elapsed age. The temporary pod and validation Secret were removed after evidence capture. This repeat confirms startup and input delivery for two corrected isolated runs; it does not close production credential/network, category recognition, or approved live transition/restart/stale-result gates.

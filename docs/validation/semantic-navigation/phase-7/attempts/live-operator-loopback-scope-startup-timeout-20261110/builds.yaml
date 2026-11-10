@@ -1,0 +1,110 @@
+apiVersion: build.openshift.io/v1
+kind: Build
+metadata:
+  annotations:
+    openshift.io/build-config.name: semantic-safety-phase7-runtime
+    openshift.io/build.number: "64"
+    openshift.io/build.pod-name: semantic-safety-phase7-runtime-64-build
+  creationTimestamp: "2026-11-10T11:55:14Z"
+  generation: 2
+  labels:
+    buildconfig: semantic-safety-phase7-runtime
+    openshift.io/build-config.name: semantic-safety-phase7-runtime
+    openshift.io/build.start-policy: Serial
+  name: semantic-safety-phase7-runtime-64
+  namespace: semantic-navigation
+  ownerReferences:
+  - apiVersion: build.openshift.io/v1
+    controller: true
+    kind: BuildConfig
+    name: semantic-safety-phase7-runtime
+    uid: 22611401-c519-476a-9248-9a9ddcb6d339
+  resourceVersion: "533976895"
+  uid: 5a7de37b-24c7-4174-b62a-8824ce7ce11d
+spec:
+  nodeSelector: null
+  output:
+    pushSecret:
+      name: builder-dockercfg-htt4p
+    to:
+      kind: ImageStreamTag
+      name: semantic-safety:phase7-runtime-candidate
+  postCommit: {}
+  resources:
+    limits:
+      cpu: "2"
+      memory: 4Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+  revision:
+    git:
+      author:
+        email: jianrongzhang89@gmail.com
+        name: jianrongzhang89
+      commit: 4d29da44e65cd05e52c395ad0e24197987f8b2f4
+      committer:
+        email: jianrongzhang89@gmail.com
+        name: jianrongzhang89
+      message: 'feat: add OpenShift AI semantic navigation demo'
+    type: Git
+  serviceAccount: builder
+  source:
+    binary: {}
+    type: Binary
+  strategy:
+    dockerStrategy:
+      dockerfilePath: Containerfile.phase7-runtime
+    type: Docker
+status:
+  completionTimestamp: "2026-11-10T11:57:49Z"
+  conditions:
+  - lastTransitionTime: "2026-11-10T11:55:14Z"
+    lastUpdateTime: "2026-11-10T11:55:14Z"
+    status: "False"
+    type: New
+  - lastTransitionTime: "2026-11-10T11:55:16Z"
+    lastUpdateTime: "2026-11-10T11:55:16Z"
+    status: "False"
+    type: Pending
+  - lastTransitionTime: "2026-11-10T11:57:49Z"
+    lastUpdateTime: "2026-11-10T11:57:49Z"
+    status: "False"
+    type: Running
+  - lastTransitionTime: "2026-11-10T11:57:49Z"
+    lastUpdateTime: "2026-11-10T11:57:49Z"
+    status: "True"
+    type: Complete
+  config:
+    kind: BuildConfig
+    name: semantic-safety-phase7-runtime
+    namespace: semantic-navigation
+  duration: 155000000000
+  output:
+    to:
+      imageDigest: sha256:2a586b8c3235a689460981b64702988268b8ed12fd305ad2f27e67f2830d1443
+  outputDockerImageReference: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety:phase7-runtime-candidate
+  phase: Complete
+  stages:
+  - durationMilliseconds: 125908
+    name: PullImages
+    startTime: "2026-11-10T11:55:18Z"
+    steps:
+    - durationMilliseconds: 125908
+      name: PullBaseImage
+      startTime: "2026-11-10T11:55:18Z"
+  - durationMilliseconds: 19657
+    name: Build
+    startTime: "2026-11-10T11:57:24Z"
+    steps:
+    - durationMilliseconds: 19657
+      name: DockerBuild
+      startTime: "2026-11-10T11:57:24Z"
+  - durationMilliseconds: 3282
+    name: PushImage
+    startTime: "2026-11-10T11:57:43Z"
+    steps:
+    - durationMilliseconds: 3282
+      name: PushDockerImage
+      startTime: "2026-11-10T11:57:43Z"
+  startTimestamp: "2026-11-10T11:55:14Z"

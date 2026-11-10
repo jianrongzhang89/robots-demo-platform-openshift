@@ -1,0 +1,66 @@
+# Separate Phase 7 simulator smoke profile. It starts the Phase 5 native
+# watchdog in a private Gazebo partition and never mounts the Phase 6 PVC or
+# joins the Phase 6 router.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: semantic-phase7-watchdog-smoke-config
+  namespace: semantic-navigation
+  labels:
+    semantic-navigation.robots-demo/phase: phase7-topology
+data:
+  cyclonedds.xml: |-
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <CycloneDDS xmlns="https://cdds.io/config">
+      <Domain id="any">
+        <General><Interfaces><NetworkInterface name="lo" /></Interfaces><AllowMulticast>false</AllowMulticast></General>
+        <Discovery><ParticipantIndex>auto</ParticipantIndex></Discovery>
+      </Domain>
+    </CycloneDDS>
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: semantic-phase7-watchdog-simulator-smoke
+  namespace: semantic-navigation
+  labels:
+    app: semantic-phase7-watchdog-simulator-smoke
+    semantic-navigation.robots-demo/phase: phase7-topology
+spec:
+  restartPolicy: Always
+  automountServiceAccountToken: false
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - key: cpu-taint
+    operator: Equal
+    value: "true"
+    effect: NoSchedule
+  securityContext:
+    seccompProfile: {type: RuntimeDefault}
+  containers:
+  - name: simulator
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:23b186a20fb2860ec7332fb3e6b2c7b02efb1fe9c821dab9fa8273e5f7ffa78c
+    imagePullPolicy: IfNotPresent
+    env:
+    - {name: ROS_DISTRO, value: jazzy}
+    - {name: ROS_DOMAIN_ID, value: "181"}
+    - {name: RMW_IMPLEMENTATION, value: rmw_cyclonedds_cpp}
+    - {name: CYCLONEDDS_URI, value: file:///phase7-config/cyclonedds.xml}
+    - {name: GZ_PARTITION, value: phase5-watchdog-phase7-topology-smoke}
+    - {name: GZ_IP, value: 127.0.0.1}
+    - {name: RESOLUTION, value: 1280x720x24}
+    - {name: SEMANTIC_PHASE2_SCENE, value: "1"}
+    - {name: SEMANTIC_CAPTURE_TRACE, value: "1"}
+    volumeMounts:
+    - {name: config, mountPath: /phase7-config, readOnly: true}
+    resources:
+      requests: {cpu: "2", memory: 4Gi}
+      limits: {cpu: "6", memory: 8Gi}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities: {drop: [ALL]}
+      runAsNonRoot: true
+      seccompProfile: {type: RuntimeDefault}
+  volumes:
+  - name: config
+    configMap: {name: semantic-phase7-watchdog-smoke-config}

@@ -1,0 +1,20 @@
+FROM image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:d417c9f252d1f89dd859290a4bca1f634bcfd7d3cde6d1702c409d432bd48894
+
+USER 0
+COPY scripts/semantic-navigation/patch_phase7_blue_crate.py /opt/phase7-capture/
+COPY scripts/semantic-navigation/capture_phase2_sample.py /opt/phase7-capture/
+COPY scripts/semantic-navigation/capture_camera_frames.py /opt/phase7-capture/
+COPY scripts/semantic-navigation/capture_phase7_compressed.py /opt/phase7-capture/
+COPY scripts/semantic-navigation/drive_capture_motion.py /opt/phase7-capture/
+COPY scripts/semantic-navigation/annotate_target_from_geometry.py /opt/phase7-capture/
+COPY scripts/semantic-navigation/entrypoint-phase7-bluecrate.sh /opt/phase7-capture/
+COPY scripts/semantic-navigation/test_phase7_blue_crate.py /opt/phase7-capture/
+COPY scripts/semantic-navigation/test_capture_phase2_sample.py /opt/phase7-capture/
+RUN chmod 0555 /opt/phase7-capture/*.py /opt/phase7-capture/entrypoint-phase7-bluecrate.sh \
+    && cd /opt/phase7-capture \
+    && PYTHONPATH=/opt/phase7-capture python3 -m unittest test_phase7_blue_crate -v \
+    && PYTHONPATH=/opt/phase7-capture python3 -m unittest test_capture_phase2_sample -v \
+    && python3 -m py_compile *.py
+
+USER 1001
+ENTRYPOINT ["/bin/bash", "/opt/phase7-capture/entrypoint-phase7-bluecrate.sh"]

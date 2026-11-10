@@ -1,0 +1,150 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: semantic-phase7-operator-control-test
+  namespace: semantic-navigation
+  labels:
+    semantic-navigation.robots-demo/phase: phase7-validation
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 180
+  template:
+    metadata:
+      labels:
+        semantic-navigation.robots-demo/phase: phase7-validation
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      containers:
+      - name: operator-control-tests
+        image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety:phase7-control-candidate
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-ec"]
+        args:
+        - PYTHONPATH=/opt/phase7-safety python3 -m unittest discover -s /opt/phase7-safety -p 'test_phase7_*.py' -v
+        env:
+        - {name: ROS_DOMAIN_ID, value: "199"}
+        resources:
+          requests: {cpu: 500m, memory: 1Gi}
+          limits: {cpu: '2', memory: 3Gi}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: semantic-phase7-operator-runtime-test
+  namespace: semantic-navigation
+  labels:
+    semantic-navigation.robots-demo/phase: phase7-validation
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 180
+  template:
+    metadata:
+      labels:
+        semantic-navigation.robots-demo/phase: phase7-validation
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      containers:
+      - name: operator-runtime-tests
+        image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety:phase7-runtime-candidate
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-lc"]
+        args:
+        - source /opt/ros/jazzy/setup.bash; PYTHONPATH=/opt/phase7-runtime python3 -m unittest discover -s /opt/phase7-runtime -p 'test_phase7_*.py' -v
+        env:
+        - {name: ROS_DOMAIN_ID, value: "196"}
+        resources:
+          requests: {cpu: 500m, memory: 1Gi}
+          limits: {cpu: '2', memory: 3Gi}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: semantic-phase7-native-watchdog-preflight
+  namespace: semantic-navigation
+  labels:
+    semantic-navigation.robots-demo/phase: phase7-validation
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 300
+  template:
+    metadata:
+      labels:
+        semantic-navigation.robots-demo/phase: phase7-validation
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      containers:
+      - name: native-watchdog-preflight
+        image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety:phase7-runtime-candidate
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-lc"]
+        args:
+        - mkdir -p /tmp/phase7-home /tmp/phase7-ros-logs; export HOME=/tmp/phase7-home ROS_LOG_DIR=/tmp/phase7-ros-logs GZ_PARTITION="phase5-watchdog-phase7-${POD_UID}" GZ_IP=127.0.0.1; source /opt/ros/jazzy/setup.bash; python3 /opt/phase7-runtime/verify_native_watchdog.py --output /tmp/phase7-native-results && python3 /opt/phase7-runtime/verify_phase7_native_operator.py
+        env:
+        - {name: ROS_DOMAIN_ID, value: "195"}
+        - name: POD_UID
+          valueFrom: {fieldRef: {fieldPath: metadata.uid}}
+        - {name: GZ_IP, value: "127.0.0.1"}
+        resources:
+          requests: {cpu: '1', memory: 2Gi}
+          limits: {cpu: '3', memory: 4Gi}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: semantic-phase7-adapter-test
+  namespace: semantic-navigation
+  labels:
+    semantic-navigation.robots-demo/phase: phase7-validation
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 900
+  template:
+    metadata:
+      labels:
+        semantic-navigation.robots-demo/phase: phase7-validation
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      containers:
+      - name: adapter-tests
+        image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-cpu-adapter:phase7-candidate
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-ec"]
+        args:
+        - source /opt/ros/jazzy/setup.bash; export ROS_DOMAIN_ID=197; cd /opt/semantic-perception; python3 -m unittest discover -s tests_ros -v
+        resources:
+          requests: {cpu: 500m, memory: 1Gi}
+          limits: {cpu: '2', memory: 3Gi}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: semantic-phase7-costmap-preflight
+  namespace: semantic-navigation
+  labels:
+    semantic-navigation.robots-demo/phase: phase7-validation
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 120
+  template:
+    metadata:
+      labels:
+        semantic-navigation.robots-demo/phase: phase7-validation
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      containers:
+      - name: plugin-preflight
+        image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety:phase7-costmap-candidate
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-ec"]
+        args:
+        - mkdir -p /tmp/ros-home; export ROS_HOME=/tmp/ros-home; source /opt/ros/jazzy/setup.bash; source /opt/semantic-costmap-overlay/local_setup.bash; ros2 pkg prefix demo_semantic_costmap; test "$(ros2 pkg prefix demo_semantic_costmap)" = /opt/semantic-costmap-overlay; set +e; timeout -k 2s 8s ros2 run demo_semantic_costmap phase4_observer; code=$?; set -e; echo "observer timeout exit=$code"; test "$code" -eq 124
+        env:
+        - {name: ROS_DOMAIN_ID, value: "198"}
+        resources:
+          requests: {cpu: 500m, memory: 1Gi}
+          limits: {cpu: '2', memory: 3Gi}

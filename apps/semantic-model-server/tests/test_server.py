@@ -24,7 +24,8 @@ PRINCIPAL = "spiffe://semantic-navigation/sa/sam3-replay"
 CLIENTS = {PRINCIPAL: [["robot_1", "camera/color"]]}
 IDENTITY = {"schema": "semantic-deployment/v1", "prompt": "red mat", "threshold": 0.5,
             "precision": "bfloat16", "weights_sha256": "test-double", "source_revision": "test-double",
-            "versions": VERSIONS, "policy": POLICY}
+            "versions": VERSIONS, "policy": POLICY,
+            "approved_prompts": ["red mat", "blue crate"]}
 
 
 class Runner:
@@ -93,6 +94,8 @@ class ModelTests(unittest.TestCase):
         self.assertEqual(self.predict(req)[0], 403)
         for key, value in (("prompt", "person"), ("threshold", 0.6)):
             self.assertEqual(self.predict({**request(), key: value})[0], 400)
+        code, _ = self.predict({**request(), "prompt": "blue crate"})
+        self.assertEqual(code, 200)
 
     def test_not_ready_overload_and_expired_input(self):
         self.model.backend = None
@@ -147,13 +150,17 @@ class ModelTests(unittest.TestCase):
                 self.assertFalse(model.ready())
                 runner = Runner()
                 original = runner.infer
+                warmed = []
                 def warmup(*args):
                     self.assertFalse(model.ready())
+                    warmed.append(args[1])
                     return original(*args)
                 runner.infer = warmup
+                self.warmed = warmed
                 return runner
             model.load("a", "b", "c", "d", factory)
             self.assertTrue(model.ready())
+            self.assertEqual(self.warmed, ["red mat", "blue crate"])
             bad = ModelService(CLIENTS)
             runner = Runner()
             runner.dtype = "torch.float16"

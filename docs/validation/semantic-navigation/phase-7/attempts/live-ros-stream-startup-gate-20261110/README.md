@@ -1,0 +1,7 @@
+# Phase 7 ROS endpoint startup gate — live pass
+
+This candidate #66 run (`sha256:bdcc039a9a0279fccecdcfad9231cdeaa3facc0ccf5f36fc06912b949cd91148`) added two startup checks to the isolated Phase 7 pod. The source bridge waited until the expected compressor and camera bridge publishers were visible in ROS domain 181; the destination bridge waited until all five subscriptions from `sam3_semantic_inference` were visible in domain 182. Both bridge clients started only after both checks passed. The destination config also retained `reliable_routes_blocking: true`.
+
+The source and destination probes each received all five camera streams (76–77 messages per topic). The adapter paired 60 triplets and emitted 36 fresh results. The mTLS operator check confirmed loopback-only listener scope, an idempotent `red mat` request returned HTTP 200 with `changed:false`, and `blue crate` returned HTTP 400 without transition effects. Nav2 accepted a real goal and canceled it with `STATUS_CANCELED`; both cancellation services acknowledged. All 402 native samples remained disarmed with zero applied commands; maximum measured speed was 0.0010043501 m/s. All 19 containers exited zero.
+
+Phase 6 and the shared Phase 5 router match before and after for readiness, status, restart counts, IPs, and nodes. The evidence bundle includes the pinned manifest, build #66 test log (25 tests passed), pod state, events, all container logs, and SHA-256 checksums. The temporary validation pod and fixture Secret were deleted after capture.

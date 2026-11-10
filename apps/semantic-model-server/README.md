@@ -13,7 +13,9 @@ InferenceService is deployed and Ready; G1 was signed off by the user on October
 ## Identity and admission
 
 `model-manifest.json` freezes the checkpoint hash/revision, SAM3 source revision,
-red-mat prompt, threshold 0.5 and BF16 precision. The container inherits the pinned
+default red-mat prompt, approved prompt allowlist, threshold 0.5 and BF16 precision.
+The checked-in allowlist currently contains only `red mat`; adding a prompt requires
+Phase 2 qualification and a new pinned deployment identity. The container inherits the pinned
 Phase 6 SAM3 dependency image. It builds a manifest of the shared Python file
 hashes; startup verifies those files and streams the checkpoint through SHA-256
 before loading it. Readiness follows full-size warm-up and a precision check.

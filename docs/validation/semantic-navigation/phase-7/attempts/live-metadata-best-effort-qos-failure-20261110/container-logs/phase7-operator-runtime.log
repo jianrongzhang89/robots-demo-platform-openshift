@@ -1,0 +1,19 @@
+Traceback (most recent call last):
+  File "/opt/phase7-runtime/phase7_operator_runtime.py", line 360, in main
+    raise RuntimeError(
+RuntimeError: adapter, native status, Nav2 cancel, and adapter parameter services must be ready before operator API starts
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/phase7-runtime/phase7_operator_runtime.py", line 391, in <module>
+    main()
+  File "/opt/phase7-runtime/phase7_operator_runtime.py", line 386, in main
+    rclpy.shutdown()
+  File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/__init__.py", line 134, in shutdown
+    _shutdown(context=context)
+  File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/utilities.py", line 82, in shutdown
+    context.shutdown()
+  File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/context.py", line 129, in shutdown
+    self.__context.shutdown()
+rclpy._rclpy_pybind11.RCLError: failed to shutdown: rcl_shutdown already called on the given context, at ./src/rcl/init.c:333

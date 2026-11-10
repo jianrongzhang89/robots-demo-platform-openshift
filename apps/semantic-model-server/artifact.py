@@ -31,6 +31,12 @@ def verify_artifact(manifest_path, model_dir, build_path, image_digest):
     }
     if any(manifest.get(k) != v for k, v in expected.items()):
         raise ValueError("unqualified artifact or prompt policy")
+    approved = manifest.get("approved_prompts", [manifest["prompt"]])
+    if (not isinstance(approved, list) or not 1 <= len(approved) <= 16 or
+            any(not isinstance(prompt, str) or not prompt or len(prompt) > 128
+                for prompt in approved) or len(set(approved)) != len(approved) or
+            manifest["prompt"] not in approved):
+        raise ValueError("invalid approved prompt allowlist")
     if manifest.get("precision") not in ("bfloat16", "float16"):
         raise ValueError("unqualified precision")
     if build["source_revision"] != SOURCE_REVISION:
@@ -50,6 +56,8 @@ def verify_artifact(manifest_path, model_dir, build_path, image_digest):
         "policy": manifest["policy"], "prompt": manifest["prompt"],
         "threshold": manifest["threshold"],
     }
+    if "approved_prompts" in manifest:
+        identity["approved_prompts"] = approved
     return checkpoint, identity
 
 

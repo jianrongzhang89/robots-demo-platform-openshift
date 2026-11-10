@@ -1,0 +1,10 @@
+{"native_status_sample": {"applied_steady_ns": 0, "applied_vx": 0.0, "applied_wz": 0.0, "armed": false, "clock_epoch": "1794287039256825504-2294820030", "last_packet_wall_ns": 0, "pending": false, "physical": null, "reason": "startup_disarmed", "received_packets": 0, "schema": "phase5-drive-status/v1", "sequence": -1, "session": "", "steady_ns": 14311590025106570, "stop_applied_steady_ns": 0, "stop_applied_trigger_ns": 0, "trigger_steady_ns": 0, "vx": 0.0, "wall_ns": 1794287039257644827, "wz": 0.0}}
+{"native_status_sample": {"applied_steady_ns": 14311600496958363, "applied_vx": 0.0, "applied_wz": 0.0, "armed": false, "clock_epoch": "1794287039256825504-2294820030", "last_packet_wall_ns": 0, "pending": false, "physical": {"angular_speed": 0.005583752501323093, "paused": false, "sequence": 524, "sim_ns": 5240000000, "speed": 0.0010024279883880077, "steady_ns": 14311600488286879, "velocity_valid": true, "wall_ns": 1794287049720825126, "x": 15.401870436900076, "y": -31.59400000006906, "yaw": -3.4972421089105096e-09, "z": 0.002198402792890358}, "reason": "startup_disarmed", "received_packets": 0, "schema": "phase5-drive-status/v1", "sequence": -1, "session": "", "steady_ns": 14311600497744633, "stop_applied_steady_ns": 0, "stop_applied_trigger_ns": 0, "trigger_steady_ns": 0, "vx": 0.0, "wall_ns": 1794287049730282900, "wz": 0.0}}
+Traceback (most recent call last):
+  File "/opt/phase7-runtime/verify_phase7_live_nav2_cancel.py", line 152, in <module>
+    main()
+  File "/opt/phase7-runtime/verify_phase7_live_nav2_cancel.py", line 101, in main
+    raise RuntimeError("live Nav2 rejected the cancellation test goal")
+RuntimeError: live Nav2 rejected the cancellation test goal
+terminate called without an active exception
+/bin/bash: line 5:    11 Aborted                 (core dumped) python3 /opt/phase7-runtime/verify_phase7_live_nav2_cancel.py --output /phase7-shared/result.json

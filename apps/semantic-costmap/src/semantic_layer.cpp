@@ -113,16 +113,46 @@ void SemanticLayer::receiveLabels(const std::string & text)
   std::lock_guard<std::recursive_mutex> lock(state_mutex_);
   bool valid = false;
   std::string why;
+  int64_t generation = 0;
+  std::string prompt, stream_epoch;
   try {
     auto j = Json::parse(text);
     if (j.at("policy") != "avoid-target/v1") {why = "policy";}
-    else if (j.at("generation") != 1) {why = "generation";}
+    else if (!j.at("generation").is_number_integer() ||
+      (generation = j.at("generation").get<int64_t>()) < 1) {why = "generation";}
     else if (j.at("labels") != Json({{"0", "unobserved"}, {"1", "traversable"}, {"2", "avoid_target"}})) {why = "labels_map";}
     else if (j.at("active_labels") != Json::array({0, 2})) {why = "active_labels";}
+    else if (!j.at("prompt").is_string() ||
+      (prompt = j.at("prompt").get<std::string>()).empty() || prompt.size() > 256) {why = "prompt";}
+    else if (!j.at("stream_epoch").is_string() ||
+      (stream_epoch = j.at("stream_epoch").get<std::string>()).empty() || stream_epoch.size() > 256) {why = "stream_epoch";}
+    else if (stream_epoch != policy_stream_epoch_ && retired_policy_epochs_.count(stream_epoch)) {why = "stale_stream_epoch";}
+    else if (stream_epoch == policy_stream_epoch_ && generation < policy_generation_) {why = "stale_generation";}
+    else if (stream_epoch == policy_stream_epoch_ && generation == policy_generation_ && !active_prompt_.empty() &&
+      prompt != active_prompt_) {why = "prompt_without_generation";}
     else {valid = true;}
   } catch (const std::exception & e) {why = std::string("exception:") + e.what();}
-  if (!valid) {clearLocked(); reason_ = "invalid_labels";}
-  labels_valid_ = valid;
+  const bool stream_changed = valid && stream_epoch != policy_stream_epoch_;
+  if (valid && (stream_changed || generation > policy_generation_)) {
+    // A generation transition is the authoritative clear barrier. Old mask,
+    // cloud and timing messages can still arrive over DDS, but attempt() will
+    // reject their generation before they can repopulate the layer.
+    if (stream_changed && !policy_stream_epoch_.empty()) {
+      retired_policy_epochs_.insert(policy_stream_epoch_);
+      while (retired_policy_epochs_.size() > 64) {retired_policy_epochs_.erase(retired_policy_epochs_.begin());}
+    }
+    clearLocked();
+    policy_generation_ = generation;
+    policy_stream_epoch_ = stream_epoch;
+    active_prompt_ = prompt;
+    reason_ = stream_changed ? "new_stream_epoch" : "new_policy_generation";
+  } else if (valid) {
+    active_prompt_ = prompt;
+  } else if (why != "stale_generation") {
+    clearLocked(); reason_ = "invalid_labels";
+  }
+  if (valid) {labels_valid_ = true;}
+  else if (why != "stale_generation") {labels_valid_ = false;}
   // Rate-limited arrival/validation diagnostics: distinguishes "never
   // arrived" from "arrived but invalid" from logs alone (Phase 6 smoke
   // attempts 2-4). Admission policy is unchanged.
@@ -198,7 +228,8 @@ void SemanticLayer::attempt(int64_t stamp)
     else if (sim - stamp > max_age_ns_) {detail = "sim_age";}
     else if (id.at("robot") != "robot_1") {detail = "robot_identity";}
     else if (id.at("stream") != "camera/color") {detail = "stream_identity";}
-    else if (id.at("generation") != 1) {detail = "generation_identity";}
+    else if (id.at("epoch") != policy_stream_epoch_) {detail = "stream_epoch_identity";}
+    else if (id.at("generation") != policy_generation_) {detail = "generation_identity";}
     else if (epoch.empty()) {detail = "epoch_empty";}
     else if (request.empty()) {detail = "request_empty";}
     else if (request == last_request_) {detail = "duplicate_request";}

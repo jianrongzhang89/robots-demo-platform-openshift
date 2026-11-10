@@ -85,7 +85,8 @@ class ModelService:
             runner = runner_factory(str(checkpoint), identity["threshold"])
             if str(runner.dtype).split(".")[-1] != identity["precision"]:
                 raise ValueError("runtime precision differs from frozen manifest")
-            runner.infer(Image.new("RGB", (640, 480)), identity["prompt"], identity["threshold"])
+            for prompt in identity.get("approved_prompts", [identity["prompt"]]):
+                runner.infer(Image.new("RGB", (640, 480)), prompt, identity["threshold"])
             self.identity = identity
             self.backend = LocalSam3Backend(runner)
         except Exception:
@@ -129,7 +130,8 @@ class ModelService:
 
         if not self.ready():
             return error("not_ready", 503)
-        if request["prompt"] != self.identity["prompt"] or request["threshold"] != self.identity["threshold"]:
+        approved_prompts = self.identity.get("approved_prompts", [self.identity["prompt"]])
+        if request["prompt"] not in approved_prompts or request["threshold"] != self.identity["threshold"]:
             return error("invalid_input", 400)
         if not self.worker.acquire(blocking=False):
             return error("overload", 429)

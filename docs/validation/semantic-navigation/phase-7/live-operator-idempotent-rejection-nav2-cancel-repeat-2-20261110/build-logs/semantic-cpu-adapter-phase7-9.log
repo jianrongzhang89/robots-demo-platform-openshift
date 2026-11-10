@@ -1,0 +1,347 @@
+time="2026-11-10T10:23:45Z" level=info msg="Not using native diff for overlay, this may cause degraded performance for building images: kernel has CONFIG_OVERLAY_FS_REDIRECT_DIR enabled"
+I1110 10:23:45.610527       1 defaults.go:112] Defaulting to storage driver "overlay" with options [mountopt=metacopy=on].
+Caching blobs under "/var/cache/blobs".
+
+Pulling image docker.io/library/ros@sha256:c26c86a28e1addf9d10a81232869791974a3f7907943d5634742b58b2f26e1a3 ...
+Trying to pull docker.io/library/ros@sha256:c26c86a28e1addf9d10a81232869791974a3f7907943d5634742b58b2f26e1a3...
+Getting image source signatures
+Copying blob sha256:7cd06318cfa34d4e91cbbae490b31fb7b9517721281080dfd543af1ef53d32b2
+Copying blob sha256:7a48b8f0e5c73d0cc2a85b008978396aa19d253dc1b96fdb0b769ee6dcbeca4a
+Copying blob sha256:41da08f865bd6994f53683fec73c2f83622ae930868f433b48c23595ac48435e
+Copying blob sha256:3904cb8c14be5b5faaa29157fb51f8eab2fcbbac541b44f7f9f19b3ae78dd59b
+Copying blob sha256:f5f32aba4b6ff83fae2cd6006208b1a6d6d426a934bb0a14e107399934595e2c
+Copying blob sha256:a563a553564b1510eb1da413f4d5e92e5888c6a87f822ebbe809730cfb5104b6
+Copying blob sha256:1dddf0f1685e37b326205d18350d31a1dbcf826e76ac450b0dc1828df685e597
+Copying blob sha256:fe5ade736b6af1d1d760385e99491e533fae908de1059c7d86a952a665d2a9de
+Copying blob sha256:2714f8b0c76eb24ade83cbc3e262948f211ed31c17d7a92419caaed2ba0a9926
+Copying blob sha256:07b45dc2ee4fbd007fbef4cc8d5ffa2e1bbf411e13c1734616729811d8b4ea36
+Copying config sha256:3e1ba97a2cda53301c6ba7e831e2c8506e54631f911c0bd26cfbc976479810c7
+Writing manifest to image destination
+Adding transient rw bind mount for /run/secrets/rhsm
+STEP 1/14: FROM docker.io/library/ros@sha256:c26c86a28e1addf9d10a81232869791974a3f7907943d5634742b58b2f26e1a3
+STEP 2/14: USER 0
+--> 6e400558085e
+STEP 3/14: RUN apt-get update && apt-get install -y --no-install-recommends       python3-numpy python3-pil openssl ros-jazzy-rmw-cyclonedds-cpp     && rm -rf /var/lib/apt/lists/*
+Get:1 http://archive.ubuntu.com/ubuntu noble InRelease [256 kB]
+Get:2 http://security.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+Get:3 http://packages.ros.org/ros2/ubuntu noble InRelease [4679 B]
+Get:4 http://packages.ros.org/ros2/ubuntu noble/main Sources [2238 kB]
+Get:5 http://packages.ros.org/ros2/ubuntu noble/main amd64 Packages [2112 kB]
+Get:6 http://archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+Get:7 http://security.ubuntu.com/ubuntu noble-security/main amd64 Packages [1427 kB]
+Get:8 http://archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+Get:9 http://archive.ubuntu.com/ubuntu noble/restricted amd64 Packages [117 kB]
+Get:10 http://archive.ubuntu.com/ubuntu noble/universe amd64 Packages [19.3 MB]
+Get:11 http://security.ubuntu.com/ubuntu noble-security/multiverse amd64 Packages [55.6 kB]
+Get:12 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1557 kB]
+Get:13 http://security.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [2137 kB]
+Get:14 http://archive.ubuntu.com/ubuntu noble/multiverse amd64 Packages [331 kB]
+Get:15 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages [1808 kB]
+Get:16 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [2177 kB]
+Get:17 http://archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Packages [61.7 kB]
+Get:18 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1782 kB]
+Get:19 http://archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [2319 kB]
+Get:20 http://archive.ubuntu.com/ubuntu noble-backports/multiverse amd64 Packages [669 B]
+Get:21 http://archive.ubuntu.com/ubuntu noble-backports/main amd64 Packages [49.0 kB]
+Get:22 http://archive.ubuntu.com/ubuntu noble-backports/universe amd64 Packages [36.0 kB]
+Fetched 38.2 MB in 3s (13.9 MB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+python3-numpy is already the newest version (1:1.26.4+ds-6ubuntu1).
+python3-numpy set to manually installed.
+openssl is already the newest version (3.0.13-0ubuntu3.16).
+openssl set to manually installed.
+The following additional packages will be installed:
+  acl libacl1-dev libattr1-dev libimagequant0 liblcms2-2 libopenjp2-7 libraqm0
+  libwebpdemux2 libwebpmux3 ros-jazzy-cyclonedds ros-jazzy-iceoryx-binding-c
+  ros-jazzy-iceoryx-hoofs ros-jazzy-iceoryx-posh
+Suggested packages:
+  liblcms2-utils python-pil-doc
+Recommended packages:
+  python3-olefile
+The following NEW packages will be installed:
+  acl libacl1-dev libattr1-dev libimagequant0 liblcms2-2 libopenjp2-7 libraqm0
+  libwebpdemux2 libwebpmux3 python3-pil ros-jazzy-cyclonedds
+  ros-jazzy-iceoryx-binding-c ros-jazzy-iceoryx-hoofs ros-jazzy-iceoryx-posh
+  ros-jazzy-rmw-cyclonedds-cpp
+0 upgraded, 15 newly installed, 0 to remove and 12 not upgraded.
+Need to get 2907 kB of archives.
+After this operation, 11.6 MB of additional disk space will be used.
+Get:1 http://packages.ros.org/ros2/ubuntu noble/main amd64 ros-jazzy-iceoryx-binding-c amd64 2.0.6-1noble.20260225.140829 [63.7 kB]
+Get:2 http://packages.ros.org/ros2/ubuntu noble/main amd64 ros-jazzy-iceoryx-hoofs amd64 2.0.6-1noble.20260225.055330 [212 kB]
+Get:3 http://packages.ros.org/ros2/ubuntu noble/main amd64 ros-jazzy-iceoryx-posh amd64 2.0.6-1noble.20260225.135341 [400 kB]
+Get:4 http://packages.ros.org/ros2/ubuntu noble/main amd64 ros-jazzy-cyclonedds amd64 0.10.5-1noble.20260225.142613 [1037 kB]
+Get:5 http://packages.ros.org/ros2/ubuntu noble/main amd64 ros-jazzy-rmw-cyclonedds-cpp amd64 2.2.4-1noble.20260911.095700 [177 kB]
+Get:6 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 acl amd64 2.3.2-1build1.1 [39.4 kB]
+Get:7 http://archive.ubuntu.com/ubuntu noble/main amd64 libimagequant0 amd64 2.18.0-1build1 [36.3 kB]
+Get:8 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 liblcms2-2 amd64 2.14-2ubuntu0.1 [161 kB]
+Get:9 http://archive.ubuntu.com/ubuntu noble/main amd64 libraqm0 amd64 0.10.1-1build1 [15.0 kB]
+Get:10 http://archive.ubuntu.com/ubuntu noble/main amd64 libwebpdemux2 amd64 1.3.2-0.4build3 [12.4 kB]
+Get:11 http://archive.ubuntu.com/ubuntu noble/main amd64 libwebpmux3 amd64 1.3.2-0.4build3 [25.7 kB]
+Get:12 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libopenjp2-7 amd64 2.5.0-2ubuntu0.5 [174 kB]
+Get:13 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 python3-pil amd64 10.2.0-1ubuntu1.4 [453 kB]
+Get:14 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libattr1-dev amd64 1:2.5.2-1ubuntu0.1 [23.1 kB]
+Get:15 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libacl1-dev amd64 2.3.2-1build1.1 [78.5 kB]
+debconf: delaying package configuration, since apt-utils is not installed
+Fetched 2907 kB in 1s (3168 kB/s)
+Selecting previously unselected package acl.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 40133 files and directories currently installed.)
+Preparing to unpack .../00-acl_2.3.2-1build1.1_amd64.deb ...
+Unpacking acl (2.3.2-1build1.1) ...
+Selecting previously unselected package libimagequant0:amd64.
+Preparing to unpack .../01-libimagequant0_2.18.0-1build1_amd64.deb ...
+Unpacking libimagequant0:amd64 (2.18.0-1build1) ...
+Selecting previously unselected package liblcms2-2:amd64.
+Preparing to unpack .../02-liblcms2-2_2.14-2ubuntu0.1_amd64.deb ...
+Unpacking liblcms2-2:amd64 (2.14-2ubuntu0.1) ...
+Selecting previously unselected package libraqm0:amd64.
+Preparing to unpack .../03-libraqm0_0.10.1-1build1_amd64.deb ...
+Unpacking libraqm0:amd64 (0.10.1-1build1) ...
+Selecting previously unselected package libwebpdemux2:amd64.
+Preparing to unpack .../04-libwebpdemux2_1.3.2-0.4build3_amd64.deb ...
+Unpacking libwebpdemux2:amd64 (1.3.2-0.4build3) ...
+Selecting previously unselected package libwebpmux3:amd64.
+Preparing to unpack .../05-libwebpmux3_1.3.2-0.4build3_amd64.deb ...
+Unpacking libwebpmux3:amd64 (1.3.2-0.4build3) ...
+Selecting previously unselected package libopenjp2-7:amd64.
+Preparing to unpack .../06-libopenjp2-7_2.5.0-2ubuntu0.5_amd64.deb ...
+Unpacking libopenjp2-7:amd64 (2.5.0-2ubuntu0.5) ...
+Selecting previously unselected package python3-pil:amd64.
+Preparing to unpack .../07-python3-pil_10.2.0-1ubuntu1.4_amd64.deb ...
+Unpacking python3-pil:amd64 (10.2.0-1ubuntu1.4) ...
+Selecting previously unselected package ros-jazzy-iceoryx-binding-c.
+Preparing to unpack .../08-ros-jazzy-iceoryx-binding-c_2.0.6-1noble.20260225.140829_amd64.deb ...
+Unpacking ros-jazzy-iceoryx-binding-c (2.0.6-1noble.20260225.140829) ...
+Selecting previously unselected package libattr1-dev:amd64.
+Preparing to unpack .../09-libattr1-dev_1%3a2.5.2-1ubuntu0.1_amd64.deb ...
+Unpacking libattr1-dev:amd64 (1:2.5.2-1ubuntu0.1) ...
+Selecting previously unselected package libacl1-dev:amd64.
+Preparing to unpack .../10-libacl1-dev_2.3.2-1build1.1_amd64.deb ...
+Unpacking libacl1-dev:amd64 (2.3.2-1build1.1) ...
+Selecting previously unselected package ros-jazzy-iceoryx-hoofs.
+Preparing to unpack .../11-ros-jazzy-iceoryx-hoofs_2.0.6-1noble.20260225.055330_amd64.deb ...
+Unpacking ros-jazzy-iceoryx-hoofs (2.0.6-1noble.20260225.055330) ...
+Selecting previously unselected package ros-jazzy-iceoryx-posh.
+Preparing to unpack .../12-ros-jazzy-iceoryx-posh_2.0.6-1noble.20260225.135341_amd64.deb ...
+Unpacking ros-jazzy-iceoryx-posh (2.0.6-1noble.20260225.135341) ...
+Selecting previously unselected package ros-jazzy-cyclonedds.
+Preparing to unpack .../13-ros-jazzy-cyclonedds_0.10.5-1noble.20260225.142613_amd64.deb ...
+Unpacking ros-jazzy-cyclonedds (0.10.5-1noble.20260225.142613) ...
+Selecting previously unselected package ros-jazzy-rmw-cyclonedds-cpp.
+Preparing to unpack .../14-ros-jazzy-rmw-cyclonedds-cpp_2.2.4-1noble.20260911.095700_amd64.deb ...
+Unpacking ros-jazzy-rmw-cyclonedds-cpp (2.2.4-1noble.20260911.095700) ...
+Setting up liblcms2-2:amd64 (2.14-2ubuntu0.1) ...
+Setting up libattr1-dev:amd64 (1:2.5.2-1ubuntu0.1) ...
+Setting up ros-jazzy-iceoryx-binding-c (2.0.6-1noble.20260225.140829) ...
+Setting up libwebpdemux2:amd64 (1.3.2-0.4build3) ...
+Setting up acl (2.3.2-1build1.1) ...
+Setting up libraqm0:amd64 (0.10.1-1build1) ...
+Setting up libimagequant0:amd64 (2.18.0-1build1) ...
+Setting up libopenjp2-7:amd64 (2.5.0-2ubuntu0.5) ...
+Setting up libwebpmux3:amd64 (1.3.2-0.4build3) ...
+Setting up libacl1-dev:amd64 (2.3.2-1build1.1) ...
+Setting up ros-jazzy-iceoryx-hoofs (2.0.6-1noble.20260225.055330) ...
+Setting up python3-pil:amd64 (10.2.0-1ubuntu1.4) ...
+Setting up ros-jazzy-iceoryx-posh (2.0.6-1noble.20260225.135341) ...
+Setting up ros-jazzy-cyclonedds (0.10.5-1noble.20260225.142613) ...
+Setting up ros-jazzy-rmw-cyclonedds-cpp (2.2.4-1noble.20260911.095700) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.9) ...
+--> 5fc2a05b2285
+STEP 4/14: WORKDIR /opt/semantic-perception
+--> 674f4eb5fe57
+STEP 5/14: COPY apps/semantic-perception/*.py /opt/semantic-perception/
+--> 0e4df24218d9
+STEP 6/14: COPY apps/semantic-safety/phase7_prompt_permit.py /opt/semantic-perception/phase7_prompt_permit.py
+--> 2991df9dac41
+STEP 7/14: COPY apps/semantic-perception/tests /opt/semantic-perception/tests
+--> b0373c8655fd
+STEP 8/14: COPY apps/semantic-perception/tests_ros /opt/semantic-perception/tests_ros
+--> 0982ae4a5a44
+STEP 9/14: RUN python3 -c 'import importlib.util; assert importlib.util.find_spec("torch") is None'     && python3 -m unittest discover -s tests -v     && bash -ec 'source /opt/ros/jazzy/setup.bash; python3 -m unittest discover -s tests_ros -v'     && chmod -R a=rX /opt/semantic-perception
+test_clock_reset_and_forward_jump_rejected_at_publication (test_capture_timing.TimingTests.test_clock_reset_and_forward_jump_rejected_at_publication) ... ok
+test_future_trace_clock_jump_and_malformed_data_fail (test_capture_timing.TimingTests.test_future_trace_clock_jump_and_malformed_data_fail) ... ok
+test_pause_cannot_make_capture_fresh (test_capture_timing.TimingTests.test_pause_cannot_make_capture_fresh) ... ok
+test_transport_delay_does_not_refresh_deadline (test_capture_timing.TimingTests.test_transport_delay_does_not_refresh_deadline) ... ok
+test_valid_trace_and_conservative_age (test_capture_timing.TimingTests.test_valid_trace_and_conservative_age) ... ok
+test_close_interrupts_a_stalled_request (test_http_backend.HttpBackendTests.test_close_interrupts_a_stalled_request) ... ok
+test_dns_resolution_is_bounded_and_not_duplicated (test_http_backend.HttpBackendTests.test_dns_resolution_is_bounded_and_not_duplicated) ... ok
+test_explicit_selection_and_complete_identity (test_http_backend.HttpBackendTests.test_explicit_selection_and_complete_identity) ... ok
+test_health_is_not_a_sensor_result (test_http_backend.HttpBackendTests.test_health_is_not_a_sensor_result) ... ok
+test_http_failures_are_not_empty_successes (test_http_backend.HttpBackendTests.test_http_failures_are_not_empty_successes) ... ok
+test_identity_mismatch_latches_until_restart (test_http_backend.HttpBackendTests.test_identity_mismatch_latches_until_restart) ... ok
+test_network_loss_and_bad_framing (test_http_backend.HttpBackendTests.test_network_loss_and_bad_framing) ... ok
+test_old_duplicate_and_reordered_responses_rejected (test_http_backend.HttpBackendTests.test_old_duplicate_and_reordered_responses_rejected) ... ok
+test_only_deployment_pinned_prompts_are_admitted (test_http_backend.HttpBackendTests.test_only_deployment_pinned_prompts_are_admitted) ... ok
+test_remote_factory_does_not_construct_local_runner (test_http_backend.HttpBackendTests.test_remote_factory_does_not_construct_local_runner) ... ok
+test_reset_or_lost_depth_rejects_inflight_reply (test_http_backend.HttpBackendTests.test_reset_or_lost_depth_rejects_inflight_reply) ... ok
+test_server_hostname_is_verified (test_http_backend.HttpBackendTests.test_server_hostname_is_verified) ... ok
+test_single_flight_no_hidden_retry (test_http_backend.HttpBackendTests.test_single_flight_no_hidden_retry) ... ok
+test_slow_headers_and_hang_obey_total_deadline (test_http_backend.HttpBackendTests.test_slow_headers_and_hang_obey_total_deadline) ... ok
+test_success_empty_and_correlation (test_http_backend.HttpBackendTests.test_success_empty_and_correlation) ... ok
+test_wrong_initial_identity (test_http_backend.HttpBackendTests.test_wrong_initial_identity) ... ok
+test_all_identity_header_and_version_mismatches_rejected (test_inference_contract.ContractTests.test_all_identity_header_and_version_mismatches_rejected) ... ok
+test_deadlines_and_cloud_expiry (test_inference_contract.ContractTests.test_deadlines_and_cloud_expiry) ... ok
+test_duplicate_and_out_of_order (test_inference_contract.ContractTests.test_duplicate_and_out_of_order) ... ok
+test_empty_is_success_not_error (test_inference_contract.ContractTests.test_empty_is_success_not_error) ... ok
+test_inflight_bound (test_inference_contract.ContractTests.test_inflight_bound) ... ok
+test_invalid_request_and_backend_exception_are_errors (test_inference_contract.ContractTests.test_invalid_request_and_backend_exception_are_errors) ... ok
+test_local_and_serialized_test_double_identical_normalization (test_inference_contract.ContractTests.test_local_and_serialized_test_double_identical_normalization) ... ok
+test_malformed_masks_and_scores_rejected (test_inference_contract.ContractTests.test_malformed_masks_and_scores_rejected) ... ok
+test_missing_checkpoint_without_importing_torch (test_inference_contract.ContractTests.test_missing_checkpoint_without_importing_torch) ... ok
+test_reset_and_policy_change_invalidate_retained_requests (test_inference_contract.ContractTests.test_reset_and_policy_change_invalidate_retained_requests) ... ok
+test_accepts_independently_accepted_and_legacy_reviewed_rows (test_manifest_validation.ReviewedManifestTests.test_accepts_independently_accepted_and_legacy_reviewed_rows) ... ok
+test_missing_or_provisional_review_status_is_rejected (test_manifest_validation.ReviewedManifestTests.test_missing_or_provisional_review_status_is_rejected) ... ok
+test_pending_rows_are_rejected_before_scoring (test_manifest_validation.ReviewedManifestTests.test_pending_rows_are_rejected_before_scoring) ... ok
+test_operator_and_native_stationarity_are_required_to_issue (test_phase7_prompt_permit.PromptPermitTests.test_operator_and_native_stationarity_are_required_to_issue) ... ok
+test_permit_binds_prompt_generation_and_is_single_use (test_phase7_prompt_permit.PromptPermitTests.test_permit_binds_prompt_generation_and_is_single_use) ... ok
+test_signature_tampering_expiry_and_prompt_allowlist_fail_closed (test_phase7_prompt_permit.PromptPermitTests.test_signature_tampering_expiry_and_prompt_allowlist_fail_closed) ... ok
+test_bounded_queue_drops_oldest_not_newest (test_sam3_runtime_core.RuntimeCoreTests.test_bounded_queue_drops_oldest_not_newest) ... ok
+test_discards_only_oldest_until_triplet_can_match (test_sam3_runtime_core.RuntimeCoreTests.test_discards_only_oldest_until_triplet_can_match) ... ok
+test_normalizes_empty_result_as_valid_zero_mask (test_sam3_runtime_core.RuntimeCoreTests.test_normalizes_empty_result_as_valid_zero_mask) ... ok
+test_rejects_bad_shape_and_nonfinite_output (test_sam3_runtime_core.RuntimeCoreTests.test_rejects_bad_shape_and_nonfinite_output) ... ok
+test_triplet_match_within_tolerance_and_preserves_headers (test_sam3_runtime_core.RuntimeCoreTests.test_triplet_match_within_tolerance_and_preserves_headers) ... ok
+test_unions_multiple_instance_masks (test_sam3_runtime_core.RuntimeCoreTests.test_unions_multiple_instance_masks) ... ok
+test_admits_new_frame_and_discards_waiting_frame (test_work_wait.WorkWaitTests.test_admits_new_frame_and_discards_waiting_frame) ... ok
+test_disabled_by_default (test_work_wait.WorkWaitTests.test_disabled_by_default) ... ok
+test_invalid_values (test_work_wait.WorkWaitTests.test_invalid_values) ... ok
+
+----------------------------------------------------------------------
+Ran 46 tests in 1.865s
+
+OK
+test_forward_clock_preserves_inflight_identity (test_clock_rollback.ClockRollbackTests.test_forward_clock_preserves_inflight_identity) ... ok
+test_reset_invalidates_before_new_camera_message (test_clock_rollback.ClockRollbackTests.test_reset_invalidates_before_new_camera_message) ... ok
+test_camera_metadata_and_trace_subscriptions_accept_sensor_best_effort (test_remote_adapter.RemoteAdapterTests.test_camera_metadata_and_trace_subscriptions_accept_sensor_best_effort) ... [INFO] [1794306265.403384167] [sam3_semantic_inference]: Backend initialized; awaiting fresh RGB-D result
+ok
+test_configuration_changes_require_restart (test_remote_adapter.RemoteAdapterTests.test_configuration_changes_require_restart) ... [INFO] [1794306265.521136036] [sam3_semantic_inference]: Backend initialized; awaiting fresh RGB-D result
+ok
+test_errors_hangs_and_network_loss_publish_nothing (test_remote_adapter.RemoteAdapterTests.test_errors_hangs_and_network_loss_publish_nothing) ... [INFO] [1794306265.658731679] [sam3_semantic_inference]: Backend initialized; awaiting fresh RGB-D result
+[ERROR] [1794306265.785768276] [sam3_semantic_inference]: inference: BackendFailure: inference HTTP 401
+[ERROR] [1794306266.490725507] [sam3_semantic_inference]: inference: BackendFailure: inference HTTP 403
+[ERROR] [1794306267.194706977] [sam3_semantic_inference]: inference: BackendFailure: inference HTTP 429
+[ERROR] [1794306267.899433145] [sam3_semantic_inference]: inference: BackendFailure: inference HTTP 503
+[ERROR] [1794306268.604447210] [sam3_semantic_inference]: inference: RemoteDisconnected: Remote end closed connection without response
+[ERROR] [1794306269.794676423] [sam3_semantic_inference]: inference: RemoteDisconnected: Remote end closed connection without response
+[ERROR] [1794306270.003719533] [sam3_semantic_inference]: inference: ValueError: response mismatch: identity
+[ERROR] [1794306270.716778597] [sam3_semantic_inference]: inference: ValueError: response mismatch: identity
+ok
+test_identity_mismatch_latches_not_ready (test_remote_adapter.RemoteAdapterTests.test_identity_mismatch_latches_not_ready) ... [INFO] [1794306271.437549395] [sam3_semantic_inference]: Backend initialized; awaiting fresh RGB-D result
+[ERROR] [1794306271.554367238] [sam3_semantic_inference]: inference: IdentityMismatch: served deployment differs from pinned identity; restart required
+[ERROR] [1794306271.758001480] [sam3_semantic_inference]: inference: BackendFailure: backend identity unavailable or faulted
+ok
+test_input_and_inflight_buffers_bounded (test_remote_adapter.RemoteAdapterTests.test_input_and_inflight_buffers_bounded) ... [INFO] [1794306271.978627811] [sam3_semantic_inference]: Backend initialized; awaiting fresh RGB-D result
+[ERROR] [1794306272.272817306] [sam3_semantic_inference]: inference: RemoteDisconnected: Remote end closed connection without response
+ok
+test_late_reply_is_not_a_fresh_heartbeat (test_remote_adapter.RemoteAdapterTests.test_late_reply_is_not_a_fresh_heartbeat) ... [INFO] [1794306272.299102573] [sam3_semantic_inference]: Backend initialized; awaiting fresh RGB-D result
+[ERROR] [1794306272.902645573] [sam3_semantic_inference]: inference: RemoteDisconnected: Remote end closed connection without response
+ok
+test_metadata_never_grants_readiness_and_real_pair_keeps_header (test_remote_adapter.RemoteAdapterTests.test_metadata_never_grants_readiness_and_real_pair_keeps_header) ... [INFO] [1794306273.235157052] [sam3_semantic_inference]: Backend initialized; awaiting fresh RGB-D result
+[INFO] [1794306273.353591104] [sam3_semantic_inference]: {"capture_stamp_ns": 100000000, "emitted": 1, "event": "valid_result", "inference_ms": 5.11, "mask_pixels": 192, "paired": 1, "receiver_processing_age_ms": 10.82, "scores": [0.8999999761581421], "work_drops": 0}
+ok
+test_missing_retained_depth_never_publishes (test_remote_adapter.RemoteAdapterTests.test_missing_retained_depth_never_publishes) ... [INFO] [1794306273.936999475] [sam3_semantic_inference]: Backend initialized; awaiting fresh RGB-D result
+[ERROR] [1794306274.205243999] [sam3_semantic_inference]: inference: ValueError: unknown, duplicate, or expired retained request
+ok
+test_permit_from_prior_stream_epoch_is_rejected (test_remote_adapter.RemoteAdapterTests.test_permit_from_prior_stream_epoch_is_rejected) ... [INFO] [1794306274.386814828] [sam3_semantic_inference]: Backend initialized; awaiting fresh RGB-D result
+ok
+test_prompt_change_flushes_generation_and_rejects_late_reply (test_remote_adapter.RemoteAdapterTests.test_prompt_change_flushes_generation_and_rejects_late_reply) ... [INFO] [1794306274.516692191] [sam3_semantic_inference]: Backend initialized; awaiting fresh RGB-D result
+[WARN] [1794306274.633585041] [sam3_semantic_inference]: {"event": "prompt_generation_started", "policy_generation": 2, "prompt": "blue crate"}
+[ERROR] [1794306274.834180527] [sam3_semantic_inference]: inference: ValueError: unknown, duplicate, or expired retained request
+[INFO] [1794306274.952278157] [sam3_semantic_inference]: {"capture_stamp_ns": 200000000, "emitted": 1, "event": "valid_result", "inference_ms": 4.97, "mask_pixels": 192, "paired": 2, "receiver_processing_age_ms": 12.57, "scores": [0.8999999761581421], "work_drops": 0}
+ok
+test_prompt_change_rejects_missing_and_invalid_permits (test_remote_adapter.RemoteAdapterTests.test_prompt_change_rejects_missing_and_invalid_permits) ... [INFO] [1794306274.978824757] [sam3_semantic_inference]: Backend initialized; awaiting fresh RGB-D result
+ok
+test_remote_mode_has_no_cuda_initialization (test_remote_adapter.RemoteAdapterTests.test_remote_mode_has_no_cuda_initialization) ... [INFO] [1794306275.113585337] [sam3_semantic_inference]: Backend initialized; awaiting fresh RGB-D result
+ok
+test_replayed_reply_and_duplicate_input_do_not_republish (test_remote_adapter.RemoteAdapterTests.test_replayed_reply_and_duplicate_input_do_not_republish) ... [INFO] [1794306275.243861354] [sam3_semantic_inference]: Backend initialized; awaiting fresh RGB-D result
+[INFO] [1794306275.363698051] [sam3_semantic_inference]: {"capture_stamp_ns": 100000000, "emitted": 1, "event": "valid_result", "inference_ms": 5.04, "mask_pixels": 192, "paired": 1, "receiver_processing_age_ms": 10.71, "scores": [0.8999999761581421], "work_drops": 0}
+[ERROR] [1794306275.521790013] [sam3_semantic_inference]: inference: ValueError: unknown, duplicate, or expired retained request
+ok
+test_reset_during_delayed_reply_never_publishes (test_remote_adapter.RemoteAdapterTests.test_reset_during_delayed_reply_never_publishes) ... [INFO] [1794306275.796264627] [sam3_semantic_inference]: Backend initialized; awaiting fresh RGB-D result
+[ERROR] [1794306276.113480627] [sam3_semantic_inference]: inference: ValueError: unknown, duplicate, or expired retained request
+ok
+test_twenty_alternating_prompt_changes_are_generation_barriered (test_remote_adapter.RemoteAdapterTests.test_twenty_alternating_prompt_changes_are_generation_barriered) ... [INFO] [1794306276.292675415] [sam3_semantic_inference]: Backend initialized; awaiting fresh RGB-D result
+[WARN] [1794306276.402200833] [sam3_semantic_inference]: {"event": "prompt_generation_started", "policy_generation": 2, "prompt": "blue crate"}
+[INFO] [1794306276.433954185] [sam3_semantic_inference]: {"capture_stamp_ns": 100000000, "emitted": 1, "event": "valid_result", "inference_ms": 7.38, "mask_pixels": 192, "paired": 1, "receiver_processing_age_ms": 17.18, "scores": [0.8999999761581421], "work_drops": 0}
+[WARN] [1794306276.438685575] [sam3_semantic_inference]: {"event": "prompt_generation_started", "policy_generation": 3, "prompt": "red mat"}
+[INFO] [1794306276.461294731] [sam3_semantic_inference]: {"capture_stamp_ns": 200000000, "emitted": 2, "event": "valid_result", "inference_ms": 4.92, "mask_pixels": 192, "paired": 2, "receiver_processing_age_ms": 8.15, "scores": [0.8999999761581421], "work_drops": 0}
+[WARN] [1794306276.465842315] [sam3_semantic_inference]: {"event": "prompt_generation_started", "policy_generation": 4, "prompt": "blue crate"}
+[INFO] [1794306276.489156644] [sam3_semantic_inference]: {"capture_stamp_ns": 300000000, "emitted": 3, "event": "valid_result", "inference_ms": 5.34, "mask_pixels": 192, "paired": 3, "receiver_processing_age_ms": 8.65, "scores": [0.8999999761581421], "work_drops": 0}
+[WARN] [1794306276.493681133] [sam3_semantic_inference]: {"event": "prompt_generation_started", "policy_generation": 5, "prompt": "red mat"}
+[INFO] [1794306276.517112062] [sam3_semantic_inference]: {"capture_stamp_ns": 400000000, "emitted": 4, "event": "valid_result", "inference_ms": 4.88, "mask_pixels": 192, "paired": 4, "receiver_processing_age_ms": 8.42, "scores": [0.8999999761581421], "work_drops": 0}
+[WARN] [1794306276.521164824] [sam3_semantic_inference]: {"event": "prompt_generation_started", "policy_generation": 6, "prompt": "blue crate"}
+[INFO] [1794306276.545229829] [sam3_semantic_inference]: {"capture_stamp_ns": 500000000, "emitted": 5, "event": "valid_result", "inference_ms": 5.66, "mask_pixels": 192, "paired": 5, "receiver_processing_age_ms": 6.14, "scores": [0.8999999761581421], "work_drops": 0}
+[WARN] [1794306276.549800949] [sam3_semantic_inference]: {"event": "prompt_generation_started", "policy_generation": 7, "prompt": "red mat"}
+[INFO] [1794306276.572265517] [sam3_semantic_inference]: {"capture_stamp_ns": 600000000, "emitted": 6, "event": "valid_result", "inference_ms": 4.63, "mask_pixels": 192, "paired": 6, "receiver_processing_age_ms": 8.22, "scores": [0.8999999761581421], "work_drops": 0}
+[WARN] [1794306276.576920477] [sam3_semantic_inference]: {"event": "prompt_generation_started", "policy_generation": 8, "prompt": "blue crate"}
+[INFO] [1794306276.599694815] [sam3_semantic_inference]: {"capture_stamp_ns": 700000000, "emitted": 7, "event": "valid_result", "inference_ms": 4.81, "mask_pixels": 192, "paired": 7, "receiver_processing_age_ms": 5.56, "scores": [0.8999999761581421], "work_drops": 0}
+[WARN] [1794306276.604288937] [sam3_semantic_inference]: {"event": "prompt_generation_started", "policy_generation": 9, "prompt": "red mat"}
+[INFO] [1794306276.626869215] [sam3_semantic_inference]: {"capture_stamp_ns": 800000000, "emitted": 8, "event": "valid_result", "inference_ms": 4.69, "mask_pixels": 192, "paired": 8, "receiver_processing_age_ms": 8.35, "scores": [0.8999999761581421], "work_drops": 0}
+[WARN] [1794306276.630510413] [sam3_semantic_inference]: {"event": "prompt_generation_started", "policy_generation": 10, "prompt": "blue crate"}
+[INFO] [1794306276.654175291] [sam3_semantic_inference]: {"capture_stamp_ns": 900000000, "emitted": 9, "event": "valid_result", "inference_ms": 4.84, "mask_pixels": 192, "paired": 9, "receiver_processing_age_ms": 9.29, "scores": [0.8999999761581421], "work_drops": 0}
+[WARN] [1794306276.658785573] [sam3_semantic_inference]: {"event": "prompt_generation_started", "policy_generation": 11, "prompt": "red mat"}
+[INFO] [1794306276.681860637] [sam3_semantic_inference]: {"capture_stamp_ns": 1000000000, "emitted": 10, "event": "valid_result", "inference_ms": 4.92, "mask_pixels": 192, "paired": 10, "receiver_processing_age_ms": 8.31, "scores": [0.8999999761581421], "work_drops": 0}
+[WARN] [1794306276.682063435] [sam3_semantic_inference]: {"event": "prompt_generation_started", "policy_generation": 12, "prompt": "blue crate"}
+[INFO] [1794306276.709390612] [sam3_semantic_inference]: {"capture_stamp_ns": 1100000000, "emitted": 11, "event": "valid_result", "inference_ms": 4.87, "mask_pixels": 192, "paired": 11, "receiver_processing_age_ms": 12.67, "scores": [0.8999999761581421], "work_drops": 0}
+[WARN] [1794306276.713980196] [sam3_semantic_inference]: {"event": "prompt_generation_started", "policy_generation": 13, "prompt": "red mat"}
+[INFO] [1794306276.737812133] [sam3_semantic_inference]: {"capture_stamp_ns": 1200000000, "emitted": 12, "event": "valid_result", "inference_ms": 5.97, "mask_pixels": 192, "paired": 12, "receiver_processing_age_ms": 9.54, "scores": [0.8999999761581421], "work_drops": 0}
+[WARN] [1794306276.742389988] [sam3_semantic_inference]: {"event": "prompt_generation_started", "policy_generation": 14, "prompt": "blue crate"}
+[INFO] [1794306276.765133909] [sam3_semantic_inference]: {"capture_stamp_ns": 1300000000, "emitted": 13, "event": "valid_result", "inference_ms": 4.95, "mask_pixels": 192, "paired": 13, "receiver_processing_age_ms": 8.53, "scores": [0.8999999761581421], "work_drops": 0}
+[WARN] [1794306276.769730519] [sam3_semantic_inference]: {"event": "prompt_generation_started", "policy_generation": 15, "prompt": "red mat"}
+[INFO] [1794306276.792399987] [sam3_semantic_inference]: {"capture_stamp_ns": 1400000000, "emitted": 14, "event": "valid_result", "inference_ms": 4.85, "mask_pixels": 192, "paired": 14, "receiver_processing_age_ms": 8.95, "scores": [0.8999999761581421], "work_drops": 0}
+[WARN] [1794306276.796956461] [sam3_semantic_inference]: {"event": "prompt_generation_started", "policy_generation": 16, "prompt": "blue crate"}
+[INFO] [1794306276.819456938] [sam3_semantic_inference]: {"capture_stamp_ns": 1500000000, "emitted": 15, "event": "valid_result", "inference_ms": 4.59, "mask_pixels": 192, "paired": 15, "receiver_processing_age_ms": 8.17, "scores": [0.8999999761581421], "work_drops": 0}
+[WARN] [1794306276.823978077] [sam3_semantic_inference]: {"event": "prompt_generation_started", "policy_generation": 17, "prompt": "red mat"}
+[INFO] [1794306276.847311730] [sam3_semantic_inference]: {"capture_stamp_ns": 1600000000, "emitted": 16, "event": "valid_result", "inference_ms": 5.44, "mask_pixels": 192, "paired": 16, "receiver_processing_age_ms": 8.62, "scores": [0.8999999761581421], "work_drops": 0}
+[WARN] [1794306276.851893370] [sam3_semantic_inference]: {"event": "prompt_generation_started", "policy_generation": 18, "prompt": "blue crate"}
+[INFO] [1794306276.874049827] [sam3_semantic_inference]: {"capture_stamp_ns": 1700000000, "emitted": 17, "event": "valid_result", "inference_ms": 4.4, "mask_pixels": 192, "paired": 17, "receiver_processing_age_ms": 7.91, "scores": [0.8999999761581421], "work_drops": 0}
+[WARN] [1794306276.878617205] [sam3_semantic_inference]: {"event": "prompt_generation_started", "policy_generation": 19, "prompt": "red mat"}
+[INFO] [1794306276.901022670] [sam3_semantic_inference]: {"capture_stamp_ns": 1800000000, "emitted": 18, "event": "valid_result", "inference_ms": 4.48, "mask_pixels": 192, "paired": 18, "receiver_processing_age_ms": 6.96, "scores": [0.8999999761581421], "work_drops": 0}
+[WARN] [1794306276.905438235] [sam3_semantic_inference]: {"event": "prompt_generation_started", "policy_generation": 20, "prompt": "blue crate"}
+[INFO] [1794306276.928294494] [sam3_semantic_inference]: {"capture_stamp_ns": 1900000000, "emitted": 19, "event": "valid_result", "inference_ms": 4.44, "mask_pixels": 192, "paired": 19, "receiver_processing_age_ms": 8.65, "scores": [0.8999999761581421], "work_drops": 0}
+[WARN] [1794306276.930451998] [sam3_semantic_inference]: {"event": "prompt_generation_started", "policy_generation": 21, "prompt": "red mat"}
+[INFO] [1794306276.955601685] [sam3_semantic_inference]: {"capture_stamp_ns": 2000000000, "emitted": 20, "event": "valid_result", "inference_ms": 4.93, "mask_pixels": 192, "paired": 20, "receiver_processing_age_ms": 10.65, "scores": [0.8999999761581421], "work_drops": 0}
+ok
+
+----------------------------------------------------------------------
+Ran 17 tests in 12.698s
+
+OK
+--> 1c13338aa164
+STEP 10/14: ENV PYTHONPATH=/opt/semantic-perception PYTHONDONTWRITEBYTECODE=1 RMW_IMPLEMENTATION=rmw_cyclonedds_cpp SEMANTIC_BACKEND=http HOME=/tmp ROS_LOG_DIR=/tmp/ros-logs
+--> acfd7ef9336b
+STEP 11/14: USER 1001
+--> 01ff80079cc4
+STEP 12/14: ENTRYPOINT ["/bin/bash","-c","source /opt/ros/jazzy/setup.bash; exec python3 /opt/semantic-perception/sam3_ros_node.py"]
+--> d0d2256a6702
+STEP 13/14: ENV "OPENSHIFT_BUILD_NAME"="semantic-cpu-adapter-phase7-9" "OPENSHIFT_BUILD_NAMESPACE"="semantic-navigation"
+--> 3f3e2fede3a7
+STEP 14/14: LABEL "io.openshift.build.name"="semantic-cpu-adapter-phase7-9" "io.openshift.build.namespace"="semantic-navigation"
+COMMIT temp.builder.openshift.io/semantic-navigation/semantic-cpu-adapter-phase7-9:9f72a172
+--> 7b3d11951716
+Successfully tagged temp.builder.openshift.io/semantic-navigation/semantic-cpu-adapter-phase7-9:9f72a172
+7b3d119517162fdf84babc49b964c5eef0a52e4be125eb2171c4e3611cacc08c
+
+Pushing image image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-cpu-adapter:phase7-candidate ...
+Getting image source signatures
+Copying blob sha256:7cd06318cfa34d4e91cbbae490b31fb7b9517721281080dfd543af1ef53d32b2
+Copying blob sha256:3904cb8c14be5b5faaa29157fb51f8eab2fcbbac541b44f7f9f19b3ae78dd59b
+Copying blob sha256:a563a553564b1510eb1da413f4d5e92e5888c6a87f822ebbe809730cfb5104b6
+Copying blob sha256:7a48b8f0e5c73d0cc2a85b008978396aa19d253dc1b96fdb0b769ee6dcbeca4a
+Copying blob sha256:41da08f865bd6994f53683fec73c2f83622ae930868f433b48c23595ac48435e
+Copying blob sha256:f5f32aba4b6ff83fae2cd6006208b1a6d6d426a934bb0a14e107399934595e2c
+Copying blob sha256:1dddf0f1685e37b326205d18350d31a1dbcf826e76ac450b0dc1828df685e597
+Copying blob sha256:fe5ade736b6af1d1d760385e99491e533fae908de1059c7d86a952a665d2a9de
+Copying blob sha256:2714f8b0c76eb24ade83cbc3e262948f211ed31c17d7a92419caaed2ba0a9926
+Copying blob sha256:07b45dc2ee4fbd007fbef4cc8d5ffa2e1bbf411e13c1734616729811d8b4ea36
+Copying blob sha256:ea5360e35d93a002f055a1e681bfa2b58c6962e667eb96fb93f03925f2698768
+Copying blob sha256:8ec83a1d7ccf201284900763bbd769ffeb16f933940a9dec7da381bc761ab307
+Copying blob sha256:8db6885a4a3fb27e20b29b0260295ba9fed7753a1e6be5fa873e4b87f097fbe8
+Copying blob sha256:9a566c32871849eccbebf3eba6a3e93e24bbacf7b53b597dbaf8426e5150c4b8
+Copying blob sha256:1509b0d5aea989e25887b7563be9aeabede2c77560ad4bebb2cfbcc7d08f3e91
+Copying blob sha256:779c1e9e284666502f7ddf3c51737846223edd39a0900d98ddc458c3e527b673
+Copying config sha256:7b3d119517162fdf84babc49b964c5eef0a52e4be125eb2171c4e3611cacc08c
+Writing manifest to image destination
+Successfully pushed image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-cpu-adapter@sha256:d5b22eae66497af2bd3230d43767f862d6b0923d73ffb8f54a865e21c9258c28
+Push successful

@@ -1,0 +1,52 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"networking.k8s.io/v1","kind":"NetworkPolicy","metadata":{"annotations":{},"labels":{"semantic-navigation.robots-demo/phase":"phase7-topology"},"name":"semantic-phase7-live-isolation","namespace":"semantic-navigation"},"spec":{"egress":[{"ports":[{"port":53,"protocol":"UDP"},{"port":53,"protocol":"TCP"},{"port":5353,"protocol":"UDP"},{"port":5353,"protocol":"TCP"}],"to":[{"ipBlock":{"cidr":"172.30.0.10/32"}},{"namespaceSelector":{"matchLabels":{"kubernetes.io/metadata.name":"openshift-dns"}},"podSelector":{"matchLabels":{"dns.operator.openshift.io/daemonset-dns":"default"}}}]},{"ports":[{"port":8443,"protocol":"TCP"}],"to":[{"namespaceSelector":{"matchLabels":{"kubernetes.io/metadata.name":"semantic-model-serving"}},"podSelector":{"matchLabels":{"component":"predictor","serving.kserve.io/inferenceservice":"sam3-mat-v1"}}}]}],"ingress":[],"podSelector":{"matchLabels":{"semantic-navigation.robots-demo/phase":"phase7-topology","semantic-serving-client":"sam3-mat-v1"}},"policyTypes":["Ingress","Egress"]}}
+  creationTimestamp: "2026-11-10T12:49:48Z"
+  generation: 3
+  labels:
+    semantic-navigation.robots-demo/phase: phase7-topology
+  name: semantic-phase7-live-isolation
+  namespace: semantic-navigation
+  resourceVersion: "534178423"
+  uid: 3ad1382a-c085-41f8-8bc6-4db60d52c14c
+spec:
+  egress:
+  - ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP
+    - port: 5353
+      protocol: UDP
+    - port: 5353
+      protocol: TCP
+    to:
+    - ipBlock:
+        cidr: 172.30.0.10/32
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: openshift-dns
+      podSelector:
+        matchLabels:
+          dns.operator.openshift.io/daemonset-dns: default
+  - ports:
+    - port: 8443
+      protocol: TCP
+    to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: semantic-model-serving
+      podSelector:
+        matchLabels:
+          component: predictor
+          serving.kserve.io/inferenceservice: sam3-mat-v1
+  podSelector:
+    matchLabels:
+      semantic-navigation.robots-demo/phase: phase7-topology
+      semantic-serving-client: sam3-mat-v1
+  policyTypes:
+  - Ingress
+  - Egress

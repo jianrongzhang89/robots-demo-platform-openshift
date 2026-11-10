@@ -36,9 +36,17 @@ class HttpSam3Backend:
             raise ValueError('metadata deadline must be in (0, 5] seconds')
         self.host, self.port = uri.hostname, uri.port or 443
         self.expected = copy.deepcopy(expected_identity)
+        self.approved_prompts = tuple(self.expected.get(
+            'approved_prompts', [self.expected.get('prompt', '')]))
         required = {'schema', 'model_name', 'weights_sha256', 'source_revision', 'container_digest',
                     'shared_sha256', 'versions', 'precision', 'policy', 'prompt', 'threshold'}
-        if (set(self.expected) != required or self.expected['schema'] != 'semantic-deployment/v1' or
+        approved = self.expected.get('approved_prompts', [self.expected.get('prompt', '')])
+        if (set(self.expected) not in (required, required | {'approved_prompts'}) or
+                not isinstance(approved, list) or not 1 <= len(approved) <= 16 or
+                any(not isinstance(prompt, str) or not prompt or len(prompt) > 128
+                    for prompt in approved) or len(set(approved)) != len(approved) or
+                self.expected.get('prompt') not in approved or
+                self.expected['schema'] != 'semantic-deployment/v1' or
                 self.expected['model_name'] != 'sam3-mat-v1' or self.expected['versions'] != VERSIONS or
                 self.expected['policy'] != POLICY or self.expected['precision'] not in ('bfloat16', 'float16') or
                 not re.fullmatch('[a-f0-9]{64}', self.expected['weights_sha256']) or
@@ -196,7 +204,7 @@ class HttpSam3Backend:
                 raise ValueError('invalid request deadline')
             deadline += budget / 1000
             validate_request(request)
-            if request['prompt'] != self.expected['prompt'] or request['threshold'] != self.expected['threshold']:
+            if request['prompt'] not in self.approved_prompts or request['threshold'] != self.expected['threshold']:
                 raise ValueError('request differs from pinned prompt policy')
             wire_request = dict(request, budget_ms=self._remaining(deadline) * 1000)
             body = dumps(wire_request)

@@ -1,0 +1,1813 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    k8s.ovn.org/pod-networks: '{"default":{"ip_addresses":["10.131.4.187/23"],"mac_address":"0a:58:0a:83:04:bb","gateway_ips":["10.131.4.1"],"routes":[{"dest":"10.128.0.0/14","nextHop":"10.131.4.1"},{"dest":"172.30.0.0/16","nextHop":"10.131.4.1"},{"dest":"169.254.0.5/32","nextHop":"10.131.4.1"},{"dest":"100.64.0.0/16","nextHop":"10.131.4.1"}],"ip_address":"10.131.4.187/23","gateway_ip":"10.131.4.1","role":"primary"}}'
+    k8s.v1.cni.cncf.io/network-status: |-
+      [{
+          "name": "ovn-kubernetes",
+          "interface": "eth0",
+          "ips": [
+              "10.131.4.187"
+          ],
+          "mac": "0a:58:0a:83:04:bb",
+          "default": true,
+          "dns": {}
+      }]
+    openshift.io/scc: run-as-ray-user
+    seccomp.security.alpha.kubernetes.io/pod: runtime/default
+    security.openshift.io/validated-scc-subject-type: user
+  creationTimestamp: "2026-11-10T10:25:36Z"
+  generation: 1
+  labels:
+    app: semantic-phase7-live-nav2-cancel
+    semantic-navigation.robots-demo/phase: phase7-topology
+    semantic-serving-client: sam3-mat-v1
+  name: semantic-phase7-live-nav2-cancel
+  namespace: semantic-navigation
+  resourceVersion: "533723456"
+  uid: 6b177829-d489-4fc5-bcc0-293873d5f29c
+spec:
+  activeDeadlineSeconds: 600
+  automountServiceAccountToken: false
+  containers:
+  - args:
+    - |-
+      exec /opt/phase7-native/entrypoint-phase7-watchdog.sh &
+      pid=$!
+      trap 'kill -TERM "$pid" 2>/dev/null || true; wait "$pid" || true' TERM INT
+      while [ ! -e /phase7-shared/finished ]; do
+        kill -0 "$pid" 2>/dev/null || { wait "$pid"; exit 1; }
+        sleep 0.2
+      done
+      kill -TERM "$pid" 2>/dev/null || true
+      wait "$pid" || true
+    command:
+    - /bin/bash
+    - -lc
+    env:
+    - name: ROS_DISTRO
+      value: jazzy
+    - name: ROS_DOMAIN_ID
+      value: "181"
+    - name: RMW_IMPLEMENTATION
+      value: rmw_cyclonedds_cpp
+    - name: CYCLONEDDS_URI
+      value: file:///phase7-config/cyclonedds.xml
+    - name: GZ_PARTITION
+      value: phase5-watchdog-phase7-live-nav2
+    - name: GZ_IP
+      value: 127.0.0.1
+    - name: SEMANTIC_PHASE2_SCENE
+      value: "1"
+    - name: SEMANTIC_CAPTURE_TRACE
+      value: "1"
+    - name: RESOLUTION
+      value: 640x480x24
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:23b186a20fb2860ec7332fb3e6b2c7b02efb1fe9c821dab9fa8273e5f7ffa78c
+    imagePullPolicy: IfNotPresent
+    name: simulator
+    resources:
+      limits:
+        cpu: "6"
+        memory: 8Gi
+      requests:
+        cpu: "2"
+        memory: 4Gi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 1000
+      seccompProfile:
+        type: RuntimeDefault
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /phase7-config
+      name: ros-config
+      readOnly: true
+    - mountPath: /phase7-shared
+      name: shared
+    - mountPath: /tmp
+      name: tmp
+  - args:
+    - |-
+      /zenohd -c /phase7-bridge/router.json5 &
+      pid=$!
+      trap 'kill -TERM "$pid" 2>/dev/null || true; wait "$pid" || true' TERM INT
+      while [ ! -e /phase7-shared/finished ]; do
+        kill -0 "$pid" 2>/dev/null || { wait "$pid"; exit 1; }
+        sleep 0.2
+      done
+      kill -TERM "$pid" 2>/dev/null || true
+      wait "$pid" || true
+    command:
+    - /bin/sh
+    - -ec
+    env:
+    - name: ROS_DISTRO
+      value: jazzy
+    - name: ROS_DOMAIN_ID
+      value: "182"
+    - name: RMW_IMPLEMENTATION
+      value: rmw_cyclonedds_cpp
+    - name: CYCLONEDDS_URI
+      value: file:///phase7-bridge/cyclonedds.xml
+    image: docker.io/eclipse/zenoh@sha256:137310456cc7a75d955063513207c737f25071fbb74fd7641835c50ab8e3369f
+    imagePullPolicy: IfNotPresent
+    name: zenoh-router
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 1000
+      seccompProfile:
+        type: RuntimeDefault
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /phase7-bridge
+      name: bridge-config
+      readOnly: true
+    - mountPath: /phase7-shared
+      name: shared
+  - args:
+    - |-
+      /zenoh-bridge-ros2dds -c /phase7-bridge/sim-bridge.json5 &
+      pid=$!
+      trap 'kill -TERM "$pid" 2>/dev/null || true; wait "$pid" || true' TERM INT
+      while [ ! -e /phase7-shared/finished ]; do
+        kill -0 "$pid" 2>/dev/null || { wait "$pid"; exit 1; }
+        sleep 0.2
+      done
+      kill -TERM "$pid" 2>/dev/null || true
+      wait "$pid" || true
+    command:
+    - /bin/sh
+    - -ec
+    env:
+    - name: ROS_DISTRO
+      value: jazzy
+    - name: ROS_DOMAIN_ID
+      value: "181"
+    - name: RMW_IMPLEMENTATION
+      value: rmw_cyclonedds_cpp
+    - name: CYCLONEDDS_URI
+      value: file:///phase7-bridge/cyclonedds.xml
+    image: eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18
+    imagePullPolicy: IfNotPresent
+    name: sim-ros-bridge
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 1000
+      seccompProfile:
+        type: RuntimeDefault
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /phase7-bridge
+      name: bridge-config
+      readOnly: true
+    - mountPath: /phase7-shared
+      name: shared
+  - args:
+    - |-
+      /zenoh-bridge-ros2dds -c /phase7-bridge/nav2-sim-input-bridge.json5 &
+      pid=$!
+      trap 'kill -TERM "$pid" 2>/dev/null || true; wait "$pid" || true' TERM INT
+      while [ ! -e /phase7-shared/finished ]; do
+        kill -0 "$pid" 2>/dev/null || { wait "$pid"; exit 1; }
+        sleep 0.2
+      done
+      kill -TERM "$pid" 2>/dev/null || true
+      wait "$pid" || true
+    command:
+    - /bin/sh
+    - -ec
+    env:
+    - name: ROS_DISTRO
+      value: jazzy
+    - name: ROS_DOMAIN_ID
+      value: "182"
+    - name: RMW_IMPLEMENTATION
+      value: rmw_cyclonedds_cpp
+    - name: CYCLONEDDS_URI
+      value: file:///phase7-bridge/cyclonedds.xml
+    image: eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18
+    imagePullPolicy: IfNotPresent
+    name: nav2-sim-input-bridge
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 150m
+        memory: 128Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 1000
+      seccompProfile:
+        type: RuntimeDefault
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /phase7-bridge
+      name: bridge-config
+      readOnly: true
+    - mountPath: /phase7-shared
+      name: shared
+  - args:
+    - |
+      source /opt/ros/jazzy/setup.bash
+      source /opt/rmf_demos_ws/install/setup.bash
+      export HOME=/tmp/phase7-clock-home ROS_LOG_DIR=/tmp/phase7-clock-logs
+      mkdir -p "$HOME" "$ROS_LOG_DIR"
+      ros2 run ros_gz_bridge parameter_bridge '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock' &
+      pid=$!
+      trap 'kill -TERM "$pid" 2>/dev/null || true; wait "$pid" || true' TERM INT
+      while [ ! -e /phase7-shared/finished ]; do
+        kill -0 "$pid" 2>/dev/null || { wait "$pid"; exit 1; }
+        sleep 0.2
+      done
+      kill -TERM "$pid" 2>/dev/null || true
+      wait "$pid" || true
+    command:
+    - /bin/bash
+    - -lc
+    env:
+    - name: ROS_DISTRO
+      value: jazzy
+    - name: ROS_DOMAIN_ID
+      value: "182"
+    - name: HOME
+      value: /tmp/phase7-clock-home
+    - name: ROS_LOG_DIR
+      value: /tmp/phase7-clock-logs
+    - name: RMW_IMPLEMENTATION
+      value: rmw_cyclonedds_cpp
+    - name: CYCLONEDDS_URI
+      value: file:///phase7-config/cyclonedds.xml
+    - name: GZ_PARTITION
+      value: phase5-watchdog-phase7-live-nav2
+    - name: GZ_IP
+      value: 127.0.0.1
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:23b186a20fb2860ec7332fb3e6b2c7b02efb1fe9c821dab9fa8273e5f7ffa78c
+    imagePullPolicy: IfNotPresent
+    name: nav2-clock-bridge
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 1000
+      seccompProfile:
+        type: RuntimeDefault
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /phase7-config
+      name: ros-config
+      readOnly: true
+    - mountPath: /phase7-shared
+      name: shared
+    - mountPath: /tmp
+      name: tmp
+  - args:
+    - |-
+      /zenoh-bridge-ros2dds -c /phase7-bridge/nav2-motion-output-gated.json5 &
+      pid=$!
+      trap 'kill -TERM "$pid" 2>/dev/null || true; wait "$pid" || true' TERM INT
+      while [ ! -e /phase7-shared/finished ]; do
+        kill -0 "$pid" 2>/dev/null || { wait "$pid"; exit 1; }
+        sleep 0.2
+      done
+      kill -TERM "$pid" 2>/dev/null || true
+      wait "$pid" || true
+    command:
+    - /bin/sh
+    - -ec
+    env:
+    - name: ROS_DISTRO
+      value: jazzy
+    - name: ROS_DOMAIN_ID
+      value: "182"
+    - name: RMW_IMPLEMENTATION
+      value: rmw_cyclonedds_cpp
+    - name: CYCLONEDDS_URI
+      value: file:///phase7-bridge/cyclonedds.xml
+    image: eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18
+    imagePullPolicy: IfNotPresent
+    name: nav2-motion-output-bridge
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 1000
+      seccompProfile:
+        type: RuntimeDefault
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /phase7-bridge
+      name: bridge-config
+      readOnly: true
+    - mountPath: /phase7-shared
+      name: shared
+  - args:
+    - |-
+      source /opt/ros/jazzy/setup.bash; source /opt/semantic-costmap-ws/install/setup.bash; exec /bin/bash /phase7-nav2/entrypoint_phase6_nav2.sh &
+      pid=$!
+      trap 'kill -TERM "$pid" 2>/dev/null || true; wait "$pid" || true' TERM INT
+      while [ ! -e /phase7-shared/finished ]; do
+        kill -0 "$pid" 2>/dev/null || { wait "$pid"; exit 1; }
+        sleep 0.2
+      done
+      kill -TERM "$pid" 2>/dev/null || true
+      wait "$pid" || true
+    command:
+    - /bin/bash
+    - -lc
+    env:
+    - name: ROS_DISTRO
+      value: jazzy
+    - name: ROS_DOMAIN_ID
+      value: "182"
+    - name: RMW_IMPLEMENTATION
+      value: rmw_cyclonedds_cpp
+    - name: CYCLONEDDS_URI
+      value: file:///phase7-nav2/cyclonedds.xml
+    - name: HOME
+      value: /tmp/phase7-nav2-home
+    - name: ROS_LOG_DIR
+      value: /tmp/phase7-nav2-logs
+    - name: PHASE6_PARAMS
+      value: /phase7-nav2/phase6-demo-nav2-on.yaml
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e
+    imagePullPolicy: IfNotPresent
+    name: nav2
+    resources:
+      limits:
+        cpu: 1500m
+        memory: 2Gi
+      requests:
+        cpu: "1"
+        memory: 1536Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 1000
+      seccompProfile:
+        type: RuntimeDefault
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /phase7-nav2
+      name: nav2-config
+      readOnly: true
+    - mountPath: /phase7-shared
+      name: shared
+    - mountPath: /tmp
+      name: tmp
+  - args:
+    - |-
+      export HOME=/tmp/phase7-odom-home ROS_LOG_DIR=/tmp/phase7-odom-logs; mkdir -p "$ROS_LOG_DIR"; source /opt/ros/jazzy/setup.bash; exec python3 -u /opt/ros2-demo/scripts/federated_odom_tf.py &
+      pid=$!
+      trap 'kill -TERM "$pid" 2>/dev/null || true; wait "$pid" || true' TERM INT
+      while [ ! -e /phase7-shared/finished ]; do
+        kill -0 "$pid" 2>/dev/null || { wait "$pid"; exit 1; }
+        sleep 0.2
+      done
+      kill -TERM "$pid" 2>/dev/null || true
+      wait "$pid" || true
+    command:
+    - /bin/bash
+    - -lc
+    env:
+    - name: ROS_DISTRO
+      value: jazzy
+    - name: ROS_DOMAIN_ID
+      value: "182"
+    - name: RMW_IMPLEMENTATION
+      value: rmw_cyclonedds_cpp
+    - name: CYCLONEDDS_URI
+      value: file:///phase7-nav2/cyclonedds.xml
+    - name: HOME
+      value: /tmp/odom-tf-home
+    - name: ROS_LOG_DIR
+      value: /tmp/odom-tf-logs
+    - name: INITIAL_X
+      value: "15.402"
+    - name: INITIAL_Y
+      value: "-31.594"
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e
+    imagePullPolicy: IfNotPresent
+    name: odom-tf
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 150m
+        memory: 128Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 1000
+      seccompProfile:
+        type: RuntimeDefault
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /phase7-nav2
+      name: nav2-config
+      readOnly: true
+    - mountPath: /phase7-shared
+      name: shared
+    - mountPath: /tmp
+      name: tmp
+  - args:
+    - |-
+      export HOME=/tmp/phase7-scan-home ROS_LOG_DIR=/tmp/phase7-scan-logs; mkdir -p "$ROS_LOG_DIR"; source /opt/ros/jazzy/setup.bash; exec python3 -u /opt/ros2-demo/scripts/scan_frame_rewriter.py &
+      pid=$!
+      trap 'kill -TERM "$pid" 2>/dev/null || true; wait "$pid" || true' TERM INT
+      while [ ! -e /phase7-shared/finished ]; do
+        kill -0 "$pid" 2>/dev/null || { wait "$pid"; exit 1; }
+        sleep 0.2
+      done
+      kill -TERM "$pid" 2>/dev/null || true
+      wait "$pid" || true
+    command:
+    - /bin/bash
+    - -lc
+    env:
+    - name: ROS_DISTRO
+      value: jazzy
+    - name: ROS_DOMAIN_ID
+      value: "182"
+    - name: RMW_IMPLEMENTATION
+      value: rmw_cyclonedds_cpp
+    - name: CYCLONEDDS_URI
+      value: file:///phase7-nav2/cyclonedds.xml
+    - name: HOME
+      value: /tmp/scan-frame-rewriter-home
+    - name: ROS_LOG_DIR
+      value: /tmp/scan-frame-rewriter-logs
+    - name: SCAN_INPUT_TOPIC
+      value: /scan
+    - name: SCAN_OUTPUT_TOPIC
+      value: /scan_fixed
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e
+    imagePullPolicy: IfNotPresent
+    name: scan-frame-rewriter
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 150m
+        memory: 128Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 1000
+      seccompProfile:
+        type: RuntimeDefault
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /phase7-nav2
+      name: nav2-config
+      readOnly: true
+    - mountPath: /phase7-shared
+      name: shared
+    - mountPath: /tmp
+      name: tmp
+  - args:
+    - |-
+      export PHASE7_NAV_ACTIONS=/navigate_to_pose,/navigate_through_poses PHASE7_NAV_CANCEL_PROXY=/phase7/cancel_navigation; source /opt/ros/jazzy/setup.bash; exec python3 /opt/phase7-runtime/run_phase7_nav2_cancel_proxy.py &
+      pid=$!
+      trap 'kill -TERM "$pid" 2>/dev/null || true; wait "$pid" || true' TERM INT
+      while [ ! -e /phase7-shared/finished ]; do
+        kill -0 "$pid" 2>/dev/null || { wait "$pid"; exit 1; }
+        sleep 0.2
+      done
+      kill -TERM "$pid" 2>/dev/null || true
+      wait "$pid" || true
+    command:
+    - /bin/bash
+    - -lc
+    env:
+    - name: ROS_DISTRO
+      value: jazzy
+    - name: ROS_DOMAIN_ID
+      value: "182"
+    - name: RMW_IMPLEMENTATION
+      value: rmw_cyclonedds_cpp
+    - name: CYCLONEDDS_URI
+      value: file:///phase7-nav2/cyclonedds.xml
+    - name: ROS_LOG_DIR
+      value: /tmp/phase7-proxy-logs
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:81df532f19a65e8de4b8c895918d8bc64702e7ace1d0667f47197efe6fbcbdb5
+    imagePullPolicy: IfNotPresent
+    name: nav2-cancel-proxy
+    resources:
+      limits:
+        cpu: "1"
+        memory: 1Gi
+      requests:
+        cpu: 250m
+        memory: 256Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 1000
+      seccompProfile:
+        type: RuntimeDefault
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /phase7-nav2
+      name: nav2-config
+      readOnly: true
+    - mountPath: /phase7-shared
+      name: shared
+    - mountPath: /tmp
+      name: tmp
+  - args:
+    - |
+      source /opt/ros/jazzy/setup.bash
+      export HOME=/tmp/phase7-adapter-home ROS_LOG_DIR=/tmp/phase7-adapter-logs
+      mkdir -p "$HOME" "$ROS_LOG_DIR"
+      python3 /opt/semantic-perception/sam3_ros_node.py --ros-args -p input_prefix:=/camera &
+      pid=$!
+      trap 'kill -TERM "$pid" 2>/dev/null || true; wait "$pid" || true' TERM INT
+      while [ ! -e /phase7-shared/finished ]; do
+        kill -0 "$pid" 2>/dev/null || { wait "$pid"; exit 1; }
+        sleep 0.2
+      done
+      kill -TERM "$pid" 2>/dev/null || true
+      wait "$pid" || true
+    command:
+    - /bin/bash
+    - -lc
+    env:
+    - name: ROS_DISTRO
+      value: jazzy
+    - name: ROS_DOMAIN_ID
+      value: "182"
+    - name: RMW_IMPLEMENTATION
+      value: rmw_cyclonedds_cpp
+    - name: CYCLONEDDS_URI
+      value: file:///phase7-config/cyclonedds.xml
+    - name: SAM3_PROMPT
+      value: red mat
+    - name: SEMANTIC_ENDPOINT
+      value: https://sam3-mat-v1-tls.semantic-model-serving.svc:8443
+    - name: SEMANTIC_TLS_CA
+      value: /phase7-serving-tls/ca.crt
+    - name: SEMANTIC_TLS_CERT
+      value: /phase7-serving-tls/tls.crt
+    - name: SEMANTIC_TLS_KEY
+      value: /phase7-serving-tls/tls.key
+    - name: SEMANTIC_DEPLOYMENT_IDENTITY
+      value: /phase7-model/identity.json
+    - name: SEMANTIC_PHASE7_PERMIT_KEY_FILE
+      value: /phase7-credentials/signing.key
+    - name: SEMANTIC_REQUIRE_CAPTURE_TRACE
+      value: "1"
+    - name: SEMANTIC_MAX_WORK_WAIT_MS
+      value: "40"
+    - name: SEMANTIC_CLOCK_UNCERTAINTY_MS
+      value: "2"
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-cpu-adapter@sha256:d5b22eae66497af2bd3230d43767f862d6b0923d73ffb8f54a865e21c9258c28
+    imagePullPolicy: IfNotPresent
+    name: phase7-semantic-adapter
+    resources:
+      limits:
+        cpu: "2"
+        memory: 3Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 1000
+      seccompProfile:
+        type: RuntimeDefault
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /phase7-config
+      name: ros-config
+      readOnly: true
+    - mountPath: /phase7-model
+      name: phase7-model
+      readOnly: true
+    - mountPath: /phase7-serving-tls
+      name: phase7-serving-tls
+      readOnly: true
+    - mountPath: /phase7-credentials
+      name: phase7-fixture-credentials
+      readOnly: true
+    - mountPath: /tmp
+      name: phase7-adapter-tmp
+    - mountPath: /phase7-shared
+      name: shared
+  - args:
+    - |
+      source /opt/ros/jazzy/setup.bash
+      source /opt/rmf_demos_ws/install/setup.bash
+      export HOME=/tmp/phase7-camera-home ROS_LOG_DIR=/tmp/phase7-camera-logs
+      mkdir -p "$HOME" "$ROS_LOG_DIR"
+      python3 /opt/semantic-navigation/camera_compressor.py &
+      pid=$!
+      trap 'kill -TERM "$pid" 2>/dev/null || true; wait "$pid" || true' TERM INT
+      while [ ! -e /phase7-shared/finished ]; do
+        kill -0 "$pid" 2>/dev/null || { wait "$pid"; exit 1; }
+        sleep 0.2
+      done
+      kill -TERM "$pid" 2>/dev/null || true
+      wait "$pid" || true
+    command:
+    - /bin/bash
+    - -lc
+    env:
+    - name: ROS_DISTRO
+      value: jazzy
+    - name: ROS_DOMAIN_ID
+      value: "181"
+    - name: RMW_IMPLEMENTATION
+      value: rmw_cyclonedds_cpp
+    - name: CYCLONEDDS_URI
+      value: file:///phase7-config/cyclonedds.xml
+    - name: SEMANTIC_CAMERA_SUBSCRIPTION_DEPTH
+      value: "20"
+    - name: SEMANTIC_COMPRESSION_TRACE
+      value: "1"
+    - name: SEMANTIC_RAW_INPUT
+      value: gz
+    - name: GZ_PARTITION
+      value: phase5-watchdog-phase7-live-nav2
+    - name: GZ_IP
+      value: 127.0.0.1
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:c3ba94bbcbbe2283f1c46ea0f2baba398da313ffe83d2b59a63272ef91d95ebf
+    imagePullPolicy: IfNotPresent
+    name: camera-compressor
+    resources:
+      limits:
+        cpu: "2"
+        memory: 2Gi
+      requests:
+        cpu: 250m
+        memory: 512Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 1000
+      seccompProfile:
+        type: RuntimeDefault
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /phase7-config
+      name: ros-config
+      readOnly: true
+    - mountPath: /tmp
+      name: phase7-camera-tmp
+    - mountPath: /phase7-shared
+      name: shared
+  - args:
+    - |
+      while [ ! -e /phase7-shared/operator-policy-passed ] &&
+            [ ! -e /phase7-shared/operator-policy-failed ]; do
+        sleep 0.2
+      done
+      if [ -e /phase7-shared/operator-policy-passed ]; then
+        set +e
+        source /opt/ros/jazzy/setup.bash
+        export ROS_LOG_DIR=/tmp/phase7-verifier-logs
+        mkdir -p "$ROS_LOG_DIR"
+        python3 /opt/phase7-runtime/verify_phase7_live_nav2_cancel.py \
+          --require-live-sam3-adapter \
+          --require-enabled-prompt-transitions \
+          --output /phase7-shared/result.json
+        code=$?
+        touch /phase7-shared/finished
+        exit "$code"
+      fi
+      touch /phase7-shared/finished
+      exit 1
+    command:
+    - /bin/bash
+    - -lc
+    env:
+    - name: ROS_DISTRO
+      value: jazzy
+    - name: ROS_DOMAIN_ID
+      value: "182"
+    - name: RMW_IMPLEMENTATION
+      value: rmw_cyclonedds_cpp
+    - name: CYCLONEDDS_URI
+      value: file:///phase7-config/cyclonedds.xml
+    - name: GZ_PARTITION
+      value: phase5-watchdog-phase7-live-nav2
+    - name: GZ_IP
+      value: 127.0.0.1
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:81df532f19a65e8de4b8c895918d8bc64702e7ace1d0667f47197efe6fbcbdb5
+    imagePullPolicy: IfNotPresent
+    name: verify-live-nav2-cancel
+    resources:
+      limits:
+        cpu: "2"
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 1000
+      seccompProfile:
+        type: RuntimeDefault
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /phase7-config
+      name: ros-config
+      readOnly: true
+    - mountPath: /phase7-shared
+      name: shared
+    - mountPath: /tmp
+      name: tmp
+  - args:
+    - |
+      source /opt/ros/jazzy/setup.bash
+      (trap - TERM INT; exec python3 /opt/phase7-runtime/phase7_operator_runtime.py) &
+      pid=$!
+      trap 'kill -TERM "$pid" 2>/dev/null || true; wait "$pid" || true' TERM INT
+      while [ ! -e /phase7-shared/finished ]; do
+        kill -0 "$pid" 2>/dev/null || { wait "$pid"; exit 1; }
+        sleep 0.2
+      done
+      kill -TERM "$pid" 2>/dev/null || true
+      wait "$pid" || true
+    command:
+    - /bin/bash
+    - -lc
+    env:
+    - name: ROS_DISTRO
+      value: jazzy
+    - name: ROS_DOMAIN_ID
+      value: "182"
+    - name: HOME
+      value: /tmp/phase7-operator-home
+    - name: ROS_LOG_DIR
+      value: /tmp/phase7-operator-logs
+    - name: RMW_IMPLEMENTATION
+      value: rmw_cyclonedds_cpp
+    - name: CYCLONEDDS_URI
+      value: file:///phase7-config/cyclonedds.xml
+    - name: GZ_PARTITION
+      value: phase5-watchdog-phase7-live-nav2
+    - name: GZ_IP
+      value: 127.0.0.1
+    - name: PHASE7_RUNTIME_ENABLE
+      value: "1"
+    - name: PHASE7_STARTUP_TIMEOUT_S
+      value: "180"
+    - name: PHASE7_SIGNING_KEY_FILE
+      value: /phase7-credentials/signing.key
+    - name: PHASE7_OPERATOR_MAP_FILE
+      value: /phase7-credentials/operators.json
+    - name: PHASE7_SERVER_CERT_FILE
+      value: /phase7-credentials/server.crt
+    - name: PHASE7_SERVER_KEY_FILE
+      value: /phase7-credentials/server.key
+    - name: PHASE7_CLIENT_CA_FILE
+      value: /phase7-credentials/client-ca.crt
+    - name: PHASE7_ADAPTER_NODE
+      value: /sam3_semantic_inference
+    - name: PHASE7_ADAPTER_STATUS_TOPIC
+      value: /robot_1/semantic/status
+    - name: PHASE7_NAV_ACTIONS
+      value: /navigate_to_pose,/navigate_through_poses
+    - name: PHASE7_NAV_CANCEL_PROXY
+      value: /phase7/cancel_navigation
+    - name: PHASE7_OPERATOR_ID
+      value: operator-17
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:81df532f19a65e8de4b8c895918d8bc64702e7ace1d0667f47197efe6fbcbdb5
+    imagePullPolicy: IfNotPresent
+    name: phase7-operator-runtime
+    resources:
+      limits:
+        cpu: "1"
+        memory: 1Gi
+      requests:
+        cpu: 250m
+        memory: 512Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 1000
+      seccompProfile:
+        type: RuntimeDefault
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /phase7-config
+      name: ros-config
+      readOnly: true
+    - mountPath: /phase7-credentials
+      name: phase7-fixture-credentials
+      readOnly: true
+    - mountPath: /phase7-shared
+      name: shared
+    - mountPath: /tmp
+      name: tmp
+  - args:
+    - |
+      source /opt/ros/jazzy/setup.bash
+      export ROS_LOG_DIR=/tmp/phase7-operator-policy-logs
+      mkdir -p "$ROS_LOG_DIR"
+      if python3 /opt/phase7-runtime/verify_phase7_live_operator_rejection.py; then
+        touch /phase7-shared/operator-policy-passed
+      else
+        touch /phase7-shared/operator-policy-failed
+        exit 1
+      fi
+    command:
+    - /bin/bash
+    - -lc
+    env:
+    - name: ROS_DISTRO
+      value: jazzy
+    - name: ROS_DOMAIN_ID
+      value: "182"
+    - name: HOME
+      value: /tmp/phase7-operator-policy-home
+    - name: RMW_IMPLEMENTATION
+      value: rmw_cyclonedds_cpp
+    - name: CYCLONEDDS_URI
+      value: file:///phase7-config/cyclonedds.xml
+    - name: GZ_PARTITION
+      value: phase5-watchdog-phase7-live-nav2
+    - name: GZ_IP
+      value: 127.0.0.1
+    - name: PHASE7_LIVE_CREDENTIALS_DIR
+      value: /phase7-credentials
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:81df532f19a65e8de4b8c895918d8bc64702e7ace1d0667f47197efe6fbcbdb5
+    imagePullPolicy: IfNotPresent
+    name: verify-operator-policy
+    resources:
+      limits:
+        cpu: "1"
+        memory: 1Gi
+      requests:
+        cpu: 250m
+        memory: 512Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 1000
+      seccompProfile:
+        type: RuntimeDefault
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /phase7-config
+      name: ros-config
+      readOnly: true
+    - mountPath: /phase7-credentials
+      name: phase7-fixture-credentials
+      readOnly: true
+    - mountPath: /phase7-shared
+      name: shared
+    - mountPath: /tmp
+      name: tmp
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  imagePullSecrets:
+  - name: default-dockercfg-6jjg8
+  nodeName: ip-10-0-6-4.ec2.internal
+  nodeSelector:
+    kubernetes.io/hostname: ip-10-0-6-4.ec2.internal
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Never
+  schedulerName: default-scheduler
+  securityContext:
+    fsGroup: 1001340000
+    seLinuxOptions:
+      level: s0:c37,c4
+    seccompProfile:
+      type: RuntimeDefault
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoSchedule
+    key: g5-gpu
+    operator: Equal
+    value: "true"
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoSchedule
+    key: node.kubernetes.io/memory-pressure
+    operator: Exists
+  volumes:
+  - configMap:
+      defaultMode: 420
+      name: semantic-phase7-live-ros-config
+    name: ros-config
+  - configMap:
+      defaultMode: 420
+      name: semantic-phase7-live-nav2-config
+    name: nav2-config
+  - configMap:
+      defaultMode: 420
+      name: semantic-phase7-live-bridge-config
+    name: bridge-config
+  - configMap:
+      defaultMode: 420
+      name: semantic-phase7-live-model-identity
+    name: phase7-model
+  - name: phase7-serving-tls
+    secret:
+      defaultMode: 292
+      secretName: sam3-replay-tls
+  - name: phase7-fixture-credentials
+    secret:
+      defaultMode: 288
+      secretName: semantic-phase7-fixture-credentials
+  - emptyDir:
+      sizeLimit: 256Mi
+    name: phase7-adapter-tmp
+  - emptyDir:
+      sizeLimit: 256Mi
+    name: phase7-camera-tmp
+  - emptyDir:
+      sizeLimit: 32Mi
+    name: shared
+  - emptyDir:
+      sizeLimit: 512Mi
+    name: tmp
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2026-11-10T10:26:02Z"
+    observedGeneration: 1
+    status: "False"
+    type: PodReadyToStartContainers
+  - lastProbeTime: null
+    lastTransitionTime: "2026-11-10T10:25:36Z"
+    observedGeneration: 1
+    reason: PodCompleted
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2026-11-10T10:25:50Z"
+    observedGeneration: 1
+    reason: PodCompleted
+    status: "False"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2026-11-10T10:25:50Z"
+    observedGeneration: 1
+    reason: PodCompleted
+    status: "False"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2026-11-10T10:25:36Z"
+    observedGeneration: 1
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - allocatedResources:
+      cpu: 250m
+      memory: 512Mi
+    containerID: cri-o://0b2a9cfd0066c5cfec11029b3c11ee6b2302e6bba730e9469131ecb258266920
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:c3ba94bbcbbe2283f1c46ea0f2baba398da313ffe83d2b59a63272ef91d95ebf
+    imageID: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:c3ba94bbcbbe2283f1c46ea0f2baba398da313ffe83d2b59a63272ef91d95ebf
+    lastState: {}
+    name: camera-compressor
+    ready: false
+    resources:
+      limits:
+        cpu: "2"
+        memory: 2Gi
+      requests:
+        cpu: 250m
+        memory: 512Mi
+    restartCount: 0
+    started: false
+    state:
+      terminated:
+        containerID: cri-o://0b2a9cfd0066c5cfec11029b3c11ee6b2302e6bba730e9469131ecb258266920
+        exitCode: 0
+        finishedAt: "2026-11-10T10:25:59Z"
+        reason: Completed
+        startedAt: "2026-11-10T10:25:39Z"
+    user:
+      linux:
+        gid: 1000
+        supplementalGroups:
+        - 1000
+        - 4
+        - 20
+        - 24
+        - 25
+        - 27
+        - 29
+        - 30
+        - 44
+        - 46
+        - 1001340000
+        uid: 1000
+    volumeMounts:
+    - mountPath: /phase7-config
+      name: ros-config
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /tmp
+      name: phase7-camera-tmp
+    - mountPath: /phase7-shared
+      name: shared
+  - allocatedResources:
+      cpu: "1"
+      memory: 1536Mi
+    containerID: cri-o://b19a4679580915451c56a18d67323fa6b4cf0e36033b6b612334eccd47540cfe
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e
+    imageID: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e
+    lastState: {}
+    name: nav2
+    ready: false
+    resources:
+      limits:
+        cpu: 1500m
+        memory: 2Gi
+      requests:
+        cpu: "1"
+        memory: 1536Mi
+    restartCount: 0
+    started: false
+    state:
+      terminated:
+        containerID: cri-o://b19a4679580915451c56a18d67323fa6b4cf0e36033b6b612334eccd47540cfe
+        exitCode: 0
+        finishedAt: "2026-11-10T10:25:58Z"
+        reason: Completed
+        startedAt: "2026-11-10T10:25:37Z"
+    user:
+      linux:
+        gid: 1000
+        supplementalGroups:
+        - 1000
+        - 4
+        - 20
+        - 24
+        - 25
+        - 27
+        - 29
+        - 30
+        - 44
+        - 46
+        - 1001340000
+        uid: 1000
+    volumeMounts:
+    - mountPath: /phase7-nav2
+      name: nav2-config
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /phase7-shared
+      name: shared
+    - mountPath: /tmp
+      name: tmp
+  - allocatedResources:
+      cpu: 250m
+      memory: 256Mi
+    containerID: cri-o://6f8af2d7bfbf6ffb16aa8a442be4a82f7782266b0a6e688a6f1305fccc63c81f
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:81df532f19a65e8de4b8c895918d8bc64702e7ace1d0667f47197efe6fbcbdb5
+    imageID: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:81df532f19a65e8de4b8c895918d8bc64702e7ace1d0667f47197efe6fbcbdb5
+    lastState: {}
+    name: nav2-cancel-proxy
+    ready: false
+    resources:
+      limits:
+        cpu: "1"
+        memory: 1Gi
+      requests:
+        cpu: 250m
+        memory: 256Mi
+    restartCount: 0
+    started: false
+    state:
+      terminated:
+        containerID: cri-o://6f8af2d7bfbf6ffb16aa8a442be4a82f7782266b0a6e688a6f1305fccc63c81f
+        exitCode: 0
+        finishedAt: "2026-11-10T10:25:59Z"
+        reason: Completed
+        startedAt: "2026-11-10T10:25:38Z"
+    user:
+      linux:
+        gid: 1000
+        supplementalGroups:
+        - 1000
+        - 4
+        - 20
+        - 24
+        - 25
+        - 27
+        - 29
+        - 30
+        - 44
+        - 46
+        - 1001340000
+        uid: 1000
+    volumeMounts:
+    - mountPath: /phase7-nav2
+      name: nav2-config
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /phase7-shared
+      name: shared
+    - mountPath: /tmp
+      name: tmp
+  - allocatedResources:
+      cpu: 100m
+      memory: 128Mi
+    containerID: cri-o://9e2b932675f492ae1be0fb48213882fcf8965386c18e92160c9a9ede6963da20
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:23b186a20fb2860ec7332fb3e6b2c7b02efb1fe9c821dab9fa8273e5f7ffa78c
+    imageID: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:23b186a20fb2860ec7332fb3e6b2c7b02efb1fe9c821dab9fa8273e5f7ffa78c
+    lastState: {}
+    name: nav2-clock-bridge
+    ready: false
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    restartCount: 0
+    started: false
+    state:
+      terminated:
+        containerID: cri-o://9e2b932675f492ae1be0fb48213882fcf8965386c18e92160c9a9ede6963da20
+        exitCode: 0
+        finishedAt: "2026-11-10T10:25:58Z"
+        reason: Completed
+        startedAt: "2026-11-10T10:25:37Z"
+    user:
+      linux:
+        gid: 1000
+        supplementalGroups:
+        - 1000
+        - 4
+        - 20
+        - 24
+        - 25
+        - 27
+        - 29
+        - 30
+        - 44
+        - 46
+        - 1001340000
+        uid: 1000
+    volumeMounts:
+    - mountPath: /phase7-config
+      name: ros-config
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /phase7-shared
+      name: shared
+    - mountPath: /tmp
+      name: tmp
+  - allocatedResources:
+      cpu: 100m
+      memory: 128Mi
+    containerID: cri-o://ed6b86bb754d6eebbe0d8e771b5f3bbe79a6beab83ba315b4e499cdcf7c03222
+    image: docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18
+    imageID: docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18
+    lastState: {}
+    name: nav2-motion-output-bridge
+    ready: false
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    restartCount: 0
+    started: false
+    state:
+      terminated:
+        containerID: cri-o://ed6b86bb754d6eebbe0d8e771b5f3bbe79a6beab83ba315b4e499cdcf7c03222
+        exitCode: 0
+        finishedAt: "2026-11-10T10:25:58Z"
+        reason: Completed
+        startedAt: "2026-11-10T10:25:37Z"
+    user:
+      linux:
+        gid: 0
+        supplementalGroups:
+        - 0
+        - 1001340000
+        uid: 1000
+    volumeMounts:
+    - mountPath: /phase7-bridge
+      name: bridge-config
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /phase7-shared
+      name: shared
+  - allocatedResources:
+      cpu: 150m
+      memory: 128Mi
+    containerID: cri-o://b86161bac84f18500d922b7c9289a6c900a1ac230edce7bacda484f0eddab908
+    image: docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18
+    imageID: docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18
+    lastState: {}
+    name: nav2-sim-input-bridge
+    ready: false
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 150m
+        memory: 128Mi
+    restartCount: 0
+    started: false
+    state:
+      terminated:
+        containerID: cri-o://b86161bac84f18500d922b7c9289a6c900a1ac230edce7bacda484f0eddab908
+        exitCode: 0
+        finishedAt: "2026-11-10T10:25:58Z"
+        reason: Completed
+        startedAt: "2026-11-10T10:25:37Z"
+    user:
+      linux:
+        gid: 0
+        supplementalGroups:
+        - 0
+        - 1001340000
+        uid: 1000
+    volumeMounts:
+    - mountPath: /phase7-bridge
+      name: bridge-config
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /phase7-shared
+      name: shared
+  - allocatedResources:
+      cpu: 150m
+      memory: 128Mi
+    containerID: cri-o://5e791966163bf3487d626df0933f6ea4d595c07f3ad0d872974c3d1456989c03
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e
+    imageID: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e
+    lastState: {}
+    name: odom-tf
+    ready: false
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 150m
+        memory: 128Mi
+    restartCount: 0
+    started: false
+    state:
+      terminated:
+        containerID: cri-o://5e791966163bf3487d626df0933f6ea4d595c07f3ad0d872974c3d1456989c03
+        exitCode: 0
+        finishedAt: "2026-11-10T10:26:00Z"
+        reason: Completed
+        startedAt: "2026-11-10T10:25:37Z"
+    user:
+      linux:
+        gid: 1000
+        supplementalGroups:
+        - 1000
+        - 4
+        - 20
+        - 24
+        - 25
+        - 27
+        - 29
+        - 30
+        - 44
+        - 46
+        - 1001340000
+        uid: 1000
+    volumeMounts:
+    - mountPath: /phase7-nav2
+      name: nav2-config
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /phase7-shared
+      name: shared
+    - mountPath: /tmp
+      name: tmp
+  - allocatedResources:
+      cpu: 250m
+      memory: 512Mi
+    containerID: cri-o://4e4c71431dd2237a093d045b2f0764a3d65705a4526b69605e845c5330ec9e53
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:81df532f19a65e8de4b8c895918d8bc64702e7ace1d0667f47197efe6fbcbdb5
+    imageID: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:81df532f19a65e8de4b8c895918d8bc64702e7ace1d0667f47197efe6fbcbdb5
+    lastState: {}
+    name: phase7-operator-runtime
+    ready: false
+    resources:
+      limits:
+        cpu: "1"
+        memory: 1Gi
+      requests:
+        cpu: 250m
+        memory: 512Mi
+    restartCount: 0
+    started: false
+    state:
+      terminated:
+        containerID: cri-o://4e4c71431dd2237a093d045b2f0764a3d65705a4526b69605e845c5330ec9e53
+        exitCode: 0
+        finishedAt: "2026-11-10T10:25:58Z"
+        reason: Completed
+        startedAt: "2026-11-10T10:25:40Z"
+    user:
+      linux:
+        gid: 1000
+        supplementalGroups:
+        - 1000
+        - 4
+        - 20
+        - 24
+        - 25
+        - 27
+        - 29
+        - 30
+        - 44
+        - 46
+        - 1001340000
+        uid: 1000
+    volumeMounts:
+    - mountPath: /phase7-config
+      name: ros-config
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /phase7-credentials
+      name: phase7-fixture-credentials
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /phase7-shared
+      name: shared
+    - mountPath: /tmp
+      name: tmp
+  - allocatedResources:
+      cpu: 500m
+      memory: 1Gi
+    containerID: cri-o://172c803ab194f7307541e6f05337375a4f3a0b6e6a222e50279245e0f8805fd0
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-cpu-adapter@sha256:d5b22eae66497af2bd3230d43767f862d6b0923d73ffb8f54a865e21c9258c28
+    imageID: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-cpu-adapter@sha256:d5b22eae66497af2bd3230d43767f862d6b0923d73ffb8f54a865e21c9258c28
+    lastState: {}
+    name: phase7-semantic-adapter
+    ready: false
+    resources:
+      limits:
+        cpu: "2"
+        memory: 3Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
+    restartCount: 0
+    started: false
+    state:
+      terminated:
+        containerID: cri-o://172c803ab194f7307541e6f05337375a4f3a0b6e6a222e50279245e0f8805fd0
+        exitCode: 0
+        finishedAt: "2026-11-10T10:26:00Z"
+        reason: Completed
+        startedAt: "2026-11-10T10:25:39Z"
+    user:
+      linux:
+        gid: 1000
+        supplementalGroups:
+        - 1000
+        - 4
+        - 20
+        - 24
+        - 25
+        - 27
+        - 29
+        - 30
+        - 44
+        - 46
+        - 1001340000
+        uid: 1000
+    volumeMounts:
+    - mountPath: /phase7-config
+      name: ros-config
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /phase7-model
+      name: phase7-model
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /phase7-serving-tls
+      name: phase7-serving-tls
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /phase7-credentials
+      name: phase7-fixture-credentials
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /tmp
+      name: phase7-adapter-tmp
+    - mountPath: /phase7-shared
+      name: shared
+  - allocatedResources:
+      cpu: 150m
+      memory: 128Mi
+    containerID: cri-o://37b48893c027af386446d50e488dcb545c723d2873df1b6ef66cfd2c4788f5d2
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e
+    imageID: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e
+    lastState: {}
+    name: scan-frame-rewriter
+    ready: false
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 150m
+        memory: 128Mi
+    restartCount: 0
+    started: false
+    state:
+      terminated:
+        containerID: cri-o://37b48893c027af386446d50e488dcb545c723d2873df1b6ef66cfd2c4788f5d2
+        exitCode: 0
+        finishedAt: "2026-11-10T10:25:59Z"
+        reason: Completed
+        startedAt: "2026-11-10T10:25:37Z"
+    user:
+      linux:
+        gid: 1000
+        supplementalGroups:
+        - 1000
+        - 4
+        - 20
+        - 24
+        - 25
+        - 27
+        - 29
+        - 30
+        - 44
+        - 46
+        - 1001340000
+        uid: 1000
+    volumeMounts:
+    - mountPath: /phase7-nav2
+      name: nav2-config
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /phase7-shared
+      name: shared
+    - mountPath: /tmp
+      name: tmp
+  - allocatedResources:
+      cpu: 100m
+      memory: 128Mi
+    containerID: cri-o://8f1557ad4ee06970344cabcbadabbaadec339a3a5f4fb0c975747dac3185f928
+    image: docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18
+    imageID: docker.io/eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18
+    lastState: {}
+    name: sim-ros-bridge
+    ready: false
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    restartCount: 0
+    started: false
+    state:
+      terminated:
+        containerID: cri-o://8f1557ad4ee06970344cabcbadabbaadec339a3a5f4fb0c975747dac3185f928
+        exitCode: 0
+        finishedAt: "2026-11-10T10:25:57Z"
+        reason: Completed
+        startedAt: "2026-11-10T10:25:37Z"
+    user:
+      linux:
+        gid: 0
+        supplementalGroups:
+        - 0
+        - 1001340000
+        uid: 1000
+    volumeMounts:
+    - mountPath: /phase7-bridge
+      name: bridge-config
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /phase7-shared
+      name: shared
+  - allocatedResources:
+      cpu: "2"
+      memory: 4Gi
+    containerID: cri-o://74309d4dacf31cb662f1904b7351ceb1bc2ea7ba93f2fd959e73d698a27c282d
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:23b186a20fb2860ec7332fb3e6b2c7b02efb1fe9c821dab9fa8273e5f7ffa78c
+    imageID: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:23b186a20fb2860ec7332fb3e6b2c7b02efb1fe9c821dab9fa8273e5f7ffa78c
+    lastState: {}
+    name: simulator
+    ready: false
+    resources:
+      limits:
+        cpu: "6"
+        memory: 8Gi
+      requests:
+        cpu: "2"
+        memory: 4Gi
+    restartCount: 0
+    started: false
+    state:
+      terminated:
+        containerID: cri-o://74309d4dacf31cb662f1904b7351ceb1bc2ea7ba93f2fd959e73d698a27c282d
+        exitCode: 0
+        finishedAt: "2026-11-10T10:25:59Z"
+        reason: Completed
+        startedAt: "2026-11-10T10:25:37Z"
+    user:
+      linux:
+        gid: 1000
+        supplementalGroups:
+        - 1000
+        - 4
+        - 20
+        - 24
+        - 25
+        - 27
+        - 29
+        - 30
+        - 44
+        - 46
+        - 1001340000
+        uid: 1000
+    volumeMounts:
+    - mountPath: /phase7-config
+      name: ros-config
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /phase7-shared
+      name: shared
+    - mountPath: /tmp
+      name: tmp
+  - allocatedResources:
+      cpu: 500m
+      memory: 1Gi
+    containerID: cri-o://4d8f9b3ce22bed2608e567920c554d5f9866aa3d2615ab50f40db4f469fc7281
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:81df532f19a65e8de4b8c895918d8bc64702e7ace1d0667f47197efe6fbcbdb5
+    imageID: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:81df532f19a65e8de4b8c895918d8bc64702e7ace1d0667f47197efe6fbcbdb5
+    lastState: {}
+    name: verify-live-nav2-cancel
+    ready: false
+    resources:
+      limits:
+        cpu: "2"
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
+    restartCount: 0
+    started: false
+    state:
+      terminated:
+        containerID: cri-o://4d8f9b3ce22bed2608e567920c554d5f9866aa3d2615ab50f40db4f469fc7281
+        exitCode: 0
+        finishedAt: "2026-11-10T10:25:57Z"
+        reason: Completed
+        startedAt: "2026-11-10T10:25:40Z"
+    user:
+      linux:
+        gid: 1000
+        supplementalGroups:
+        - 1000
+        - 4
+        - 20
+        - 24
+        - 25
+        - 27
+        - 29
+        - 30
+        - 44
+        - 46
+        - 1001340000
+        uid: 1000
+    volumeMounts:
+    - mountPath: /phase7-config
+      name: ros-config
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /phase7-shared
+      name: shared
+    - mountPath: /tmp
+      name: tmp
+  - allocatedResources:
+      cpu: 250m
+      memory: 512Mi
+    containerID: cri-o://96c77d4f42e393f2b3ade565f1222627fc20b50d79fd6a078c19a2d2b434434e
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:81df532f19a65e8de4b8c895918d8bc64702e7ace1d0667f47197efe6fbcbdb5
+    imageID: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:81df532f19a65e8de4b8c895918d8bc64702e7ace1d0667f47197efe6fbcbdb5
+    lastState: {}
+    name: verify-operator-policy
+    ready: false
+    resources:
+      limits:
+        cpu: "1"
+        memory: 1Gi
+      requests:
+        cpu: 250m
+        memory: 512Mi
+    restartCount: 0
+    started: false
+    state:
+      terminated:
+        containerID: cri-o://96c77d4f42e393f2b3ade565f1222627fc20b50d79fd6a078c19a2d2b434434e
+        exitCode: 0
+        finishedAt: "2026-11-10T10:25:49Z"
+        reason: Completed
+        startedAt: "2026-11-10T10:25:40Z"
+    user:
+      linux:
+        gid: 1000
+        supplementalGroups:
+        - 1000
+        - 4
+        - 20
+        - 24
+        - 25
+        - 27
+        - 29
+        - 30
+        - 44
+        - 46
+        - 1001340000
+        uid: 1000
+    volumeMounts:
+    - mountPath: /phase7-config
+      name: ros-config
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /phase7-credentials
+      name: phase7-fixture-credentials
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /phase7-shared
+      name: shared
+    - mountPath: /tmp
+      name: tmp
+  - allocatedResources:
+      cpu: 100m
+      memory: 128Mi
+    containerID: cri-o://f3712bd3ce6566fd3bbfd45b51554e539fc7ebf488246d983bbf54bb47beea3e
+    image: docker.io/eclipse/zenoh@sha256:137310456cc7a75d955063513207c737f25071fbb74fd7641835c50ab8e3369f
+    imageID: docker.io/eclipse/zenoh@sha256:137310456cc7a75d955063513207c737f25071fbb74fd7641835c50ab8e3369f
+    lastState: {}
+    name: zenoh-router
+    ready: false
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    restartCount: 0
+    started: false
+    state:
+      terminated:
+        containerID: cri-o://f3712bd3ce6566fd3bbfd45b51554e539fc7ebf488246d983bbf54bb47beea3e
+        exitCode: 0
+        finishedAt: "2026-11-10T10:25:58Z"
+        reason: Completed
+        startedAt: "2026-11-10T10:25:37Z"
+    user:
+      linux:
+        gid: 0
+        supplementalGroups:
+        - 0
+        - 1001340000
+        uid: 1000
+    volumeMounts:
+    - mountPath: /phase7-bridge
+      name: bridge-config
+      readOnly: true
+      recursiveReadOnly: Disabled
+    - mountPath: /phase7-shared
+      name: shared
+  hostIP: 10.0.6.4
+  hostIPs:
+  - ip: 10.0.6.4
+  observedGeneration: 1
+  phase: Succeeded
+  podIP: 10.131.4.187
+  podIPs:
+  - ip: 10.131.4.187
+  qosClass: Burstable
+  startTime: "2026-11-10T10:25:36Z"

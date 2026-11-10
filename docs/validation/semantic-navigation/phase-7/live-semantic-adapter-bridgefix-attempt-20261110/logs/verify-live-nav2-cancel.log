@@ -1,0 +1,9 @@
+{"native_status_sample": {"applied_steady_ns": 0, "applied_vx": 0.0, "applied_wz": 0.0, "armed": false, "clock_epoch": "1794289550190770321-1148928857", "last_packet_wall_ns": 0, "pending": false, "physical": null, "reason": "startup_disarmed", "received_packets": 0, "schema": "phase5-drive-status/v1", "sequence": -1, "session": "", "steady_ns": 14314100959100930, "stop_applied_steady_ns": 0, "stop_applied_trigger_ns": 0, "trigger_steady_ns": 0, "vx": 0.0, "wall_ns": 1794289550191639167, "wz": 0.0}}
+Traceback (most recent call last):
+  File "/opt/phase7-runtime/verify_phase7_live_nav2_cancel.py", line 251, in <module>
+    main()
+  File "/opt/phase7-runtime/verify_phase7_live_nav2_cancel.py", line 83, in main
+    wait_for(lambda: action.server_is_ready(), "live Nav2 navigate_to_pose action")
+  File "/opt/phase7-runtime/verify_phase7_live_nav2_cancel.py", line 17, in wait_for
+    raise TimeoutError(f"timed out waiting for {description}")
+TimeoutError: timed out waiting for live Nav2 navigate_to_pose action

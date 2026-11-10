@@ -1,0 +1,3 @@
+# Live semantic adapter bridge attempt — November 10, 2026
+
+This run did not reach model inference and is not a pass. The camera-compression sidecar started and paired 14 RGB-D frames with zero measured skew. Domain 181 reported publishers for compressed RGB/depth, CameraInfo, capture trace, and compression trace. Domain 182 had no publishers for those topics: the existing `nav2-sim-input-bridge` subscriber allowlist routed odometry/TF/scan only. The verifier therefore kept waiting for an inference result; no prompt transition was requested and native drive remained disarmed. Pod records, logs, and both domain topic inventories are retained here. The pod was removed before the next manifest update, which adds the required explicit camera-topic routes.

@@ -13,7 +13,8 @@ def create_backend(kind, *, checkpoint, prompt, threshold, endpoint='', ca='', c
     if kind == 'http':
         from http_backend import HttpSam3Backend
         expected = json.loads(Path(identity).read_text())
-        if expected['prompt'] != prompt or expected['threshold'] != threshold:
+        approved = expected.get('approved_prompts', [expected['prompt']])
+        if prompt not in approved or expected['threshold'] != threshold:
             raise ValueError('node prompt policy differs from pinned deployment')
         return HttpSam3Backend(endpoint, ca, cert, key, expected)
     raise ValueError('backend must be explicitly local or http')

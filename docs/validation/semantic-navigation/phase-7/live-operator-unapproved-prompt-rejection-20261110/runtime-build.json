@@ -1,0 +1,161 @@
+{
+    "apiVersion": "build.openshift.io/v1",
+    "kind": "Build",
+    "metadata": {
+        "annotations": {
+            "openshift.io/build-config.name": "semantic-safety-phase7-runtime",
+            "openshift.io/build.number": "56",
+            "openshift.io/build.pod-name": "semantic-safety-phase7-runtime-56-build"
+        },
+        "creationTimestamp": "2026-11-10T09:38:57Z",
+        "generation": 2,
+        "labels": {
+            "buildconfig": "semantic-safety-phase7-runtime",
+            "openshift.io/build-config.name": "semantic-safety-phase7-runtime",
+            "openshift.io/build.start-policy": "Serial"
+        },
+        "name": "semantic-safety-phase7-runtime-56",
+        "namespace": "semantic-navigation",
+        "ownerReferences": [
+            {
+                "apiVersion": "build.openshift.io/v1",
+                "controller": true,
+                "kind": "BuildConfig",
+                "name": "semantic-safety-phase7-runtime",
+                "uid": "22611401-c519-476a-9248-9a9ddcb6d339"
+            }
+        ],
+        "resourceVersion": "533599130",
+        "uid": "7bdc058c-42b4-434a-a56f-b7538dedc9f7"
+    },
+    "spec": {
+        "nodeSelector": null,
+        "output": {
+            "pushSecret": {
+                "name": "builder-dockercfg-htt4p"
+            },
+            "to": {
+                "kind": "ImageStreamTag",
+                "name": "semantic-safety:phase7-runtime-candidate"
+            }
+        },
+        "postCommit": {},
+        "resources": {
+            "limits": {
+                "cpu": "2",
+                "memory": "4Gi"
+            },
+            "requests": {
+                "cpu": "500m",
+                "memory": "1Gi"
+            }
+        },
+        "revision": {
+            "git": {
+                "author": {
+                    "email": "jianrongzhang89@gmail.com",
+                    "name": "jianrongzhang89"
+                },
+                "commit": "4d29da44e65cd05e52c395ad0e24197987f8b2f4",
+                "committer": {
+                    "email": "jianrongzhang89@gmail.com",
+                    "name": "jianrongzhang89"
+                },
+                "message": "feat: add OpenShift AI semantic navigation demo"
+            },
+            "type": "Git"
+        },
+        "serviceAccount": "builder",
+        "source": {
+            "binary": {},
+            "type": "Binary"
+        },
+        "strategy": {
+            "dockerStrategy": {
+                "dockerfilePath": "Containerfile.phase7-runtime"
+            },
+            "type": "Docker"
+        }
+    },
+    "status": {
+        "completionTimestamp": "2026-11-10T09:41:28Z",
+        "conditions": [
+            {
+                "lastTransitionTime": "2026-11-10T09:38:57Z",
+                "lastUpdateTime": "2026-11-10T09:38:57Z",
+                "status": "False",
+                "type": "New"
+            },
+            {
+                "lastTransitionTime": "2026-11-10T09:38:58Z",
+                "lastUpdateTime": "2026-11-10T09:38:58Z",
+                "status": "False",
+                "type": "Pending"
+            },
+            {
+                "lastTransitionTime": "2026-11-10T09:41:28Z",
+                "lastUpdateTime": "2026-11-10T09:41:28Z",
+                "status": "False",
+                "type": "Running"
+            },
+            {
+                "lastTransitionTime": "2026-11-10T09:41:28Z",
+                "lastUpdateTime": "2026-11-10T09:41:28Z",
+                "status": "True",
+                "type": "Complete"
+            }
+        ],
+        "config": {
+            "kind": "BuildConfig",
+            "name": "semantic-safety-phase7-runtime",
+            "namespace": "semantic-navigation"
+        },
+        "duration": 151000000000,
+        "output": {
+            "to": {
+                "imageDigest": "sha256:e0927db8bcc4c9c11d6feeeca1a3ba867ed71c4674a5cef958b1b6f17cee1db8"
+            }
+        },
+        "outputDockerImageReference": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety:phase7-runtime-candidate",
+        "phase": "Complete",
+        "stages": [
+            {
+                "durationMilliseconds": 125573,
+                "name": "PullImages",
+                "startTime": "2026-11-10T09:39:00Z",
+                "steps": [
+                    {
+                        "durationMilliseconds": 125573,
+                        "name": "PullBaseImage",
+                        "startTime": "2026-11-10T09:39:00Z"
+                    }
+                ]
+            },
+            {
+                "durationMilliseconds": 17145,
+                "name": "Build",
+                "startTime": "2026-11-10T09:41:06Z",
+                "steps": [
+                    {
+                        "durationMilliseconds": 17145,
+                        "name": "DockerBuild",
+                        "startTime": "2026-11-10T09:41:06Z"
+                    }
+                ]
+            },
+            {
+                "durationMilliseconds": 2619,
+                "name": "PushImage",
+                "startTime": "2026-11-10T09:41:23Z",
+                "steps": [
+                    {
+                        "durationMilliseconds": 2619,
+                        "name": "PushDockerImage",
+                        "startTime": "2026-11-10T09:41:23Z"
+                    }
+                ]
+            }
+        ],
+        "startTimestamp": "2026-11-10T09:38:57Z"
+    }
+}

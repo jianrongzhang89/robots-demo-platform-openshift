@@ -1,0 +1,9 @@
+FROM image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:15b900f6335f0974b9cceee5dbd7bf34d24c509395e1901704af4f224a112a37
+
+USER 0
+COPY . /opt/phase7-safety
+RUN PYTHONPATH=/opt/phase7-safety python3 -m unittest discover \
+      -s /opt/phase7-safety -p 'test_phase7_*.py' -v \
+    && chmod -R a=rX /opt/phase7-safety
+
+USER 1001

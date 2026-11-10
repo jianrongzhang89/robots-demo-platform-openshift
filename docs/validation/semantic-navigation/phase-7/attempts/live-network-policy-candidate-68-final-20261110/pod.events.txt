@@ -1,0 +1,300 @@
+LAST SEEN   TYPE      REASON             OBJECT                                 MESSAGE
+3h          Normal    Scheduled          pod/semantic-phase7-live-nav2-cancel   Successfully assigned semantic-navigation/semantic-phase7-live-nav2-cancel to ip-10-0-6-4.ec2.internal
+175m        Normal    Scheduled          pod/semantic-phase7-live-nav2-cancel   Successfully assigned semantic-navigation/semantic-phase7-live-nav2-cancel to ip-10-0-6-4.ec2.internal
+87m         Normal    Scheduled          pod/semantic-phase7-live-nav2-cancel   Successfully assigned semantic-navigation/semantic-phase7-live-nav2-cancel to ip-10-0-6-4.ec2.internal
+62m         Normal    Scheduled          pod/semantic-phase7-live-nav2-cancel   Successfully assigned semantic-navigation/semantic-phase7-live-nav2-cancel to ip-10-0-6-4.ec2.internal
+72m         Normal    Scheduled          pod/semantic-phase7-live-nav2-cancel   Successfully assigned semantic-navigation/semantic-phase7-live-nav2-cancel to ip-10-0-6-4.ec2.internal
+23m         Normal    Scheduled          pod/semantic-phase7-live-nav2-cancel   Successfully assigned semantic-navigation/semantic-phase7-live-nav2-cancel to ip-10-0-6-4.ec2.internal
+49m         Normal    Scheduled          pod/semantic-phase7-live-nav2-cancel   Successfully assigned semantic-navigation/semantic-phase7-live-nav2-cancel to ip-10-0-6-4.ec2.internal
+5m33s       Normal    Scheduled          pod/semantic-phase7-live-nav2-cancel   Successfully assigned semantic-navigation/semantic-phase7-live-nav2-cancel to ip-10-0-46-92.ec2.internal
+65m         Normal    Scheduled          pod/semantic-phase7-live-nav2-cancel   Successfully assigned semantic-navigation/semantic-phase7-live-nav2-cancel to ip-10-0-6-4.ec2.internal
+8m43s       Warning   FailedScheduling   pod/semantic-phase7-live-nav2-cancel   0/25 nodes are available: 1 Insufficient cpu, 1 Insufficient memory, 1 node(s) were unschedulable, 16 node(s) didn't match Pod's node affinity/selector, 7 node(s) had untolerated taint(s). no new claims to deallocate, preemption: 0/25 nodes are available: 1 No preemption victims found for incoming pod, 24 Preemption is not helpful for scheduling.
+14m         Normal    Scheduled          pod/semantic-phase7-live-nav2-cancel   Successfully assigned semantic-navigation/semantic-phase7-live-nav2-cancel to ip-10-0-6-4.ec2.internal
+50m         Normal    Scheduled          pod/semantic-phase7-live-nav2-cancel   Successfully assigned semantic-navigation/semantic-phase7-live-nav2-cancel to ip-10-0-6-4.ec2.internal
+35m         Normal    Scheduled          pod/semantic-phase7-live-nav2-cancel   Successfully assigned semantic-navigation/semantic-phase7-live-nav2-cancel to ip-10-0-6-4.ec2.internal
+175m        Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:23b186a20fb2860ec7332fb3e6b2c7b02efb1fe9c821dab9fa8273e5f7ffa78c" already present on machine
+175m        Normal    AddedInterface     pod/semantic-phase7-live-nav2-cancel   Add eth0 [10.131.4.188/23] from ovn-kubernetes
+175m        Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: nav2-motion-output-bridge
+175m        Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: nav2-clock-bridge
+175m        Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container nav2-clock-bridge
+175m        Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18" already present on machine
+175m        Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:23b186a20fb2860ec7332fb3e6b2c7b02efb1fe9c821dab9fa8273e5f7ffa78c" already present on machine
+175m        Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container nav2-motion-output-bridge
+175m        Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container nav2-sim-input-bridge
+175m        Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: nav2
+175m        Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container nav2
+175m        Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e" already present on machine
+175m        Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: odom-tf
+175m        Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container odom-tf
+175m        Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e" already present on machine
+175m        Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: nav2-sim-input-bridge
+175m        Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container sim-ros-bridge
+175m        Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: sim-ros-bridge
+175m        Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18" already present on machine
+175m        Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container zenoh-router
+175m        Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: zenoh-router
+175m        Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "docker.io/eclipse/zenoh@sha256:137310456cc7a75d955063513207c737f25071fbb74fd7641835c50ab8e3369f" already present on machine
+175m        Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container simulator
+175m        Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: simulator
+175m        Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18" already present on machine
+175m        Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e" already present on machine
+87m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18" already present on machine
+87m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: nav2-sim-input-bridge
+87m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container nav2-sim-input-bridge
+87m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:23b186a20fb2860ec7332fb3e6b2c7b02efb1fe9c821dab9fa8273e5f7ffa78c" already present on machine
+87m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: nav2-clock-bridge
+87m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container nav2-clock-bridge
+87m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18" already present on machine
+87m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: nav2-motion-output-bridge
+87m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container nav2-motion-output-bridge
+87m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e" already present on machine
+87m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: nav2
+87m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container sim-ros-bridge
+87m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e" already present on machine
+87m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: odom-tf
+87m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container odom-tf
+87m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e" already present on machine
+87m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18" already present on machine
+87m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container zenoh-router
+87m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: sim-ros-bridge
+87m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: zenoh-router
+87m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "docker.io/eclipse/zenoh@sha256:137310456cc7a75d955063513207c737f25071fbb74fd7641835c50ab8e3369f" already present on machine
+87m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: simulator
+87m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:23b186a20fb2860ec7332fb3e6b2c7b02efb1fe9c821dab9fa8273e5f7ffa78c" already present on machine
+87m         Normal    AddedInterface     pod/semantic-phase7-live-nav2-cancel   Add eth0 [10.131.4.189/23] from ovn-kubernetes
+87m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container simulator
+87m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container nav2
+72m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: sim-ros-bridge
+72m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18" already present on machine
+72m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: nav2-sim-input-bridge
+72m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container nav2-sim-input-bridge
+72m         Normal    Pulling            pod/semantic-phase7-live-nav2-cancel   Pulling image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:4483f10b8554e827c0220cd92ac4d988d488aae6b18cb3fbe728c8f60bac915c"
+72m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container zenoh-router
+72m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container simulator
+72m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: simulator
+72m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:23b186a20fb2860ec7332fb3e6b2c7b02efb1fe9c821dab9fa8273e5f7ffa78c" already present on machine
+72m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18" already present on machine
+72m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container sim-ros-bridge
+72m         Normal    AddedInterface     pod/semantic-phase7-live-nav2-cancel   Add eth0 [10.131.4.190/23] from ovn-kubernetes
+72m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: zenoh-router
+72m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "docker.io/eclipse/zenoh@sha256:137310456cc7a75d955063513207c737f25071fbb74fd7641835c50ab8e3369f" already present on machine
+72m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18" already present on machine
+72m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: nav2-motion-output-bridge
+72m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container nav2-motion-output-bridge
+72m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container nav2-clock-bridge
+72m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container stream-probe-destination
+72m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: stream-probe-destination
+72m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:4483f10b8554e827c0220cd92ac4d988d488aae6b18cb3fbe728c8f60bac915c" already present on machine
+72m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container stream-probe-source
+72m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: stream-probe-source
+72m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Successfully pulled image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:4483f10b8554e827c0220cd92ac4d988d488aae6b18cb3fbe728c8f60bac915c" in 540ms (540ms including waiting). Image size: 5128684377 bytes.
+72m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: nav2-clock-bridge
+72m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:23b186a20fb2860ec7332fb3e6b2c7b02efb1fe9c821dab9fa8273e5f7ffa78c" already present on machine
+65m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: sim-ros-bridge
+65m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container sim-ros-bridge
+65m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18" already present on machine
+65m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18" already present on machine
+65m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container zenoh-router
+65m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "docker.io/eclipse/zenoh@sha256:137310456cc7a75d955063513207c737f25071fbb74fd7641835c50ab8e3369f" already present on machine
+65m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container simulator
+65m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: simulator
+65m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: zenoh-router
+65m         Normal    AddedInterface     pod/semantic-phase7-live-nav2-cancel   Add eth0 [10.131.4.191/23] from ovn-kubernetes
+65m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:23b186a20fb2860ec7332fb3e6b2c7b02efb1fe9c821dab9fa8273e5f7ffa78c" already present on machine
+65m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:4483f10b8554e827c0220cd92ac4d988d488aae6b18cb3fbe728c8f60bac915c" already present on machine
+65m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: nav2-clock-bridge
+65m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container nav2-clock-bridge
+65m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18" already present on machine
+65m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: nav2-motion-output-bridge
+65m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container nav2-motion-output-bridge
+65m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e" already present on machine
+65m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container stream-probe-destination
+65m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:23b186a20fb2860ec7332fb3e6b2c7b02efb1fe9c821dab9fa8273e5f7ffa78c" already present on machine
+65m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: stream-probe-source
+65m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:4483f10b8554e827c0220cd92ac4d988d488aae6b18cb3fbe728c8f60bac915c" already present on machine
+65m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container nav2-sim-input-bridge
+65m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: stream-probe-destination
+65m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: nav2-sim-input-bridge
+65m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container stream-probe-source
+62m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18" already present on machine
+62m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: sim-ros-bridge
+62m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container sim-ros-bridge
+62m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18" already present on machine
+62m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:23b186a20fb2860ec7332fb3e6b2c7b02efb1fe9c821dab9fa8273e5f7ffa78c" already present on machine
+62m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container zenoh-router
+62m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: simulator
+62m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container simulator
+62m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: zenoh-router
+62m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "docker.io/eclipse/zenoh@sha256:137310456cc7a75d955063513207c737f25071fbb74fd7641835c50ab8e3369f" already present on machine
+62m         Normal    AddedInterface     pod/semantic-phase7-live-nav2-cancel   Add eth0 [10.131.4.192/23] from ovn-kubernetes
+62m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:23b186a20fb2860ec7332fb3e6b2c7b02efb1fe9c821dab9fa8273e5f7ffa78c" already present on machine
+62m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container stream-probe-destination
+62m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: nav2-clock-bridge
+62m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container nav2-clock-bridge
+62m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18" already present on machine
+62m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: nav2-motion-output-bridge
+62m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container nav2-motion-output-bridge
+62m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: stream-probe-destination
+62m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:4483f10b8554e827c0220cd92ac4d988d488aae6b18cb3fbe728c8f60bac915c" already present on machine
+62m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: stream-probe-source
+62m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:4483f10b8554e827c0220cd92ac4d988d488aae6b18cb3fbe728c8f60bac915c" already present on machine
+62m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: nav2-sim-input-bridge
+62m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container stream-probe-source
+62m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container nav2-sim-input-bridge
+62m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2@sha256:d23d20a8decdd9a6cc0f9419874c1b610333e033867e579aeb022a5bb1b97b0e" already present on machine
+50m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container zenoh-router
+50m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18" already present on machine
+50m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: sim-ros-bridge
+50m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: zenoh-router
+50m         Normal    Pulling            pod/semantic-phase7-live-nav2-cancel   Pulling image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:bdcc039a9a0279fccecdcfad9231cdeaa3facc0ccf5f36fc06912b949cd91148"
+50m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container sim-ros-bridge
+50m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "docker.io/eclipse/zenoh@sha256:137310456cc7a75d955063513207c737f25071fbb74fd7641835c50ab8e3369f" already present on machine
+50m         Normal    AddedInterface     pod/semantic-phase7-live-nav2-cancel   Add eth0 [10.131.4.193/23] from ovn-kubernetes
+50m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:23b186a20fb2860ec7332fb3e6b2c7b02efb1fe9c821dab9fa8273e5f7ffa78c" already present on machine
+50m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: simulator
+50m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container simulator
+50m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: nav2-sim-input-bridge
+50m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18" already present on machine
+50m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container nav2-sim-input-bridge
+50m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:bdcc039a9a0279fccecdcfad9231cdeaa3facc0ccf5f36fc06912b949cd91148" already present on machine
+50m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: stream-probe-source
+50m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container wait-adapter-subscribers
+50m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:bdcc039a9a0279fccecdcfad9231cdeaa3facc0ccf5f36fc06912b949cd91148" already present on machine
+50m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: stream-probe-destination
+50m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container stream-probe-destination
+50m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: wait-adapter-subscribers
+50m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:bdcc039a9a0279fccecdcfad9231cdeaa3facc0ccf5f36fc06912b949cd91148" already present on machine
+50m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container wait-camera-publishers
+50m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Successfully pulled image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:bdcc039a9a0279fccecdcfad9231cdeaa3facc0ccf5f36fc06912b949cd91148" in 620ms (620ms including waiting). Image size: 5128704463 bytes.
+50m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container stream-probe-source
+50m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: wait-camera-publishers
+49m         Normal    AddedInterface     pod/semantic-phase7-live-nav2-cancel   Add eth0 [10.131.4.194/23] from ovn-kubernetes
+49m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container nav2-sim-input-bridge
+49m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18" already present on machine
+49m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: sim-ros-bridge
+49m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container sim-ros-bridge
+49m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:bdcc039a9a0279fccecdcfad9231cdeaa3facc0ccf5f36fc06912b949cd91148" already present on machine
+49m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: wait-camera-publishers
+49m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container wait-camera-publishers
+49m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:bdcc039a9a0279fccecdcfad9231cdeaa3facc0ccf5f36fc06912b949cd91148" already present on machine
+49m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: wait-adapter-subscribers
+49m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container wait-adapter-subscribers
+49m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18" already present on machine
+49m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: nav2-sim-input-bridge
+49m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container zenoh-router
+49m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:bdcc039a9a0279fccecdcfad9231cdeaa3facc0ccf5f36fc06912b949cd91148" already present on machine
+49m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: stream-probe-source
+49m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container stream-probe-source
+49m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:bdcc039a9a0279fccecdcfad9231cdeaa3facc0ccf5f36fc06912b949cd91148" already present on machine
+49m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: simulator
+49m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container stream-probe-destination
+49m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:23b186a20fb2860ec7332fb3e6b2c7b02efb1fe9c821dab9fa8273e5f7ffa78c" already present on machine
+49m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "docker.io/eclipse/zenoh@sha256:137310456cc7a75d955063513207c737f25071fbb74fd7641835c50ab8e3369f" already present on machine
+49m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: zenoh-router
+49m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:23b186a20fb2860ec7332fb3e6b2c7b02efb1fe9c821dab9fa8273e5f7ffa78c" already present on machine
+49m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container simulator
+49m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: stream-probe-destination
+35m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: simulator
+35m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: zenoh-router
+35m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container zenoh-router
+35m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18" already present on machine
+35m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: sim-ros-bridge
+35m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container sim-ros-bridge
+35m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:bdcc039a9a0279fccecdcfad9231cdeaa3facc0ccf5f36fc06912b949cd91148" already present on machine
+35m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: wait-camera-publishers
+35m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container wait-camera-publishers
+35m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:bdcc039a9a0279fccecdcfad9231cdeaa3facc0ccf5f36fc06912b949cd91148" already present on machine
+35m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: wait-adapter-subscribers
+35m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container wait-adapter-subscribers
+35m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "docker.io/eclipse/zenoh@sha256:137310456cc7a75d955063513207c737f25071fbb74fd7641835c50ab8e3369f" already present on machine
+35m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: nav2-sim-input-bridge
+35m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container nav2-sim-input-bridge
+35m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container simulator
+35m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: stream-probe-source
+35m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container stream-probe-source
+35m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:bdcc039a9a0279fccecdcfad9231cdeaa3facc0ccf5f36fc06912b949cd91148" already present on machine
+35m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:23b186a20fb2860ec7332fb3e6b2c7b02efb1fe9c821dab9fa8273e5f7ffa78c" already present on machine
+35m         Normal    AddedInterface     pod/semantic-phase7-live-nav2-cancel   Add eth0 [10.131.4.195/23] from ovn-kubernetes
+35m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:bdcc039a9a0279fccecdcfad9231cdeaa3facc0ccf5f36fc06912b949cd91148" already present on machine
+35m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18" already present on machine
+35m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:23b186a20fb2860ec7332fb3e6b2c7b02efb1fe9c821dab9fa8273e5f7ffa78c" already present on machine
+35m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: stream-probe-destination
+35m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container stream-probe-destination
+23m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container simulator
+23m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "docker.io/eclipse/zenoh@sha256:137310456cc7a75d955063513207c737f25071fbb74fd7641835c50ab8e3369f" already present on machine
+23m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: zenoh-router
+23m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: simulator
+23m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18" already present on machine
+23m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: sim-ros-bridge
+23m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container zenoh-router
+23m         Normal    Pulling            pod/semantic-phase7-live-nav2-cancel   Pulling image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:b344a05fe7f3b8d31246c9af50d3436a03389704640e474fcfda2e091ed06f1b"
+23m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:23b186a20fb2860ec7332fb3e6b2c7b02efb1fe9c821dab9fa8273e5f7ffa78c" already present on machine
+23m         Normal    AddedInterface     pod/semantic-phase7-live-nav2-cancel   Add eth0 [10.131.4.196/23] from ovn-kubernetes
+23m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container sim-ros-bridge
+23m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container wait-camera-publishers
+23m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: wait-adapter-subscribers
+23m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: wait-camera-publishers
+23m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18" already present on machine
+23m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Successfully pulled image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:b344a05fe7f3b8d31246c9af50d3436a03389704640e474fcfda2e091ed06f1b" in 730ms (730ms including waiting). Image size: 5128718289 bytes.
+23m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container nav2-sim-input-bridge
+23m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:b344a05fe7f3b8d31246c9af50d3436a03389704640e474fcfda2e091ed06f1b" already present on machine
+23m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: stream-probe-source
+23m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container stream-probe-source
+23m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:b344a05fe7f3b8d31246c9af50d3436a03389704640e474fcfda2e091ed06f1b" already present on machine
+23m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: stream-probe-destination
+23m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container stream-probe-destination
+23m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: nav2-sim-input-bridge
+23m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:b344a05fe7f3b8d31246c9af50d3436a03389704640e474fcfda2e091ed06f1b" already present on machine
+23m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container wait-adapter-subscribers
+14m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:23b186a20fb2860ec7332fb3e6b2c7b02efb1fe9c821dab9fa8273e5f7ffa78c" already present on machine
+14m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container simulator
+14m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "docker.io/eclipse/zenoh@sha256:137310456cc7a75d955063513207c737f25071fbb74fd7641835c50ab8e3369f" already present on machine
+14m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: zenoh-router
+14m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container zenoh-router
+14m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18" already present on machine
+14m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: simulator
+14m         Normal    AddedInterface     pod/semantic-phase7-live-nav2-cancel   Add eth0 [10.131.4.197/23] from ovn-kubernetes
+14m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: sim-ros-bridge
+14m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: wait-camera-publishers
+14m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container wait-camera-publishers
+14m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:b344a05fe7f3b8d31246c9af50d3436a03389704640e474fcfda2e091ed06f1b" already present on machine
+14m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: wait-adapter-subscribers
+14m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container wait-adapter-subscribers
+14m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:b344a05fe7f3b8d31246c9af50d3436a03389704640e474fcfda2e091ed06f1b" already present on machine
+14m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: nav2-sim-input-bridge
+14m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container nav2-sim-input-bridge
+14m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:b344a05fe7f3b8d31246c9af50d3436a03389704640e474fcfda2e091ed06f1b" already present on machine
+14m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: stream-probe-source
+14m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container stream-probe-source
+14m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:b344a05fe7f3b8d31246c9af50d3436a03389704640e474fcfda2e091ed06f1b" already present on machine
+14m         Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: stream-probe-destination
+14m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container stream-probe-destination
+14m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:23b186a20fb2860ec7332fb3e6b2c7b02efb1fe9c821dab9fa8273e5f7ffa78c" already present on machine
+14m         Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container sim-ros-bridge
+14m         Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18" already present on machine
+5m33s       Normal    Pulling            pod/semantic-phase7-live-nav2-cancel   Pulling image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:23b186a20fb2860ec7332fb3e6b2c7b02efb1fe9c821dab9fa8273e5f7ffa78c"
+5m33s       Normal    AddedInterface     pod/semantic-phase7-live-nav2-cancel   Add eth0 [10.128.6.160/23] from ovn-kubernetes
+4m45s       Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Successfully pulled image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:23b186a20fb2860ec7332fb3e6b2c7b02efb1fe9c821dab9fa8273e5f7ffa78c" in 47.903s (47.903s including waiting). Image size: 5083238520 bytes.
+4m45s       Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: simulator
+4m45s       Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container simulator
+4m45s       Normal    Pulling            pod/semantic-phase7-live-nav2-cancel   Pulling image "docker.io/eclipse/zenoh@sha256:137310456cc7a75d955063513207c737f25071fbb74fd7641835c50ab8e3369f"
+4m42s       Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Successfully pulled image "docker.io/eclipse/zenoh@sha256:137310456cc7a75d955063513207c737f25071fbb74fd7641835c50ab8e3369f" in 2.539s (2.539s including waiting). Image size: 35799408 bytes.
+4m42s       Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: zenoh-router
+4m42s       Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container zenoh-router
+4m42s       Normal    Pulling            pod/semantic-phase7-live-nav2-cancel   Pulling image "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18"
+4m40s       Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Successfully pulled image "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18" in 2.456s (2.456s including waiting). Image size: 35962877 bytes.
+4m40s       Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: sim-ros-bridge
+4m40s       Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container sim-ros-bridge
+4m40s       Normal    Pulling            pod/semantic-phase7-live-nav2-cancel   Pulling image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:b344a05fe7f3b8d31246c9af50d3436a03389704640e474fcfda2e091ed06f1b"
+4m35s       Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container wait-adapter-subscribers
+4m35s       Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: wait-camera-publishers
+4m35s       Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container wait-camera-publishers
+4m35s       Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:b344a05fe7f3b8d31246c9af50d3436a03389704640e474fcfda2e091ed06f1b" already present on machine
+4m35s       Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: wait-adapter-subscribers
+4m35s       Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Successfully pulled image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:b344a05fe7f3b8d31246c9af50d3436a03389704640e474fcfda2e091ed06f1b" in 4.477s (4.477s including waiting). Image size: 5128718289 bytes.
+4m35s       Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18" already present on machine
+4m35s       Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: nav2-sim-input-bridge
+4m35s       Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container nav2-sim-input-bridge
+4m35s       Normal    Pulled             pod/semantic-phase7-live-nav2-cancel   Container image "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:b344a05fe7f3b8d31246c9af50d3436a03389704640e474fcfda2e091ed06f1b" already present on machine
+4m34s       Normal    Created            pod/semantic-phase7-live-nav2-cancel   Created container: stream-probe-source
+4m34s       Normal    Started            pod/semantic-phase7-live-nav2-cancel   Started container stream-probe-source

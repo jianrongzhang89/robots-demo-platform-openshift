@@ -1,0 +1,164 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: semantic-cpu-adapter
+  namespace: semantic-navigation
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: semantic-cpu-adapter-phase7
+  namespace: semantic-navigation
+spec:
+  runPolicy: Serial
+  source:
+    binary: {}
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: apps/semantic-perception/Containerfile.cpu
+  output:
+    to:
+      kind: ImageStreamTag
+      name: semantic-cpu-adapter:phase7-candidate
+  resources:
+    requests: {cpu: '1', memory: 2Gi}
+    limits: {cpu: '4', memory: 8Gi}
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: semantic-model-server
+  namespace: semantic-navigation
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: semantic-model-server-phase7
+  namespace: semantic-navigation
+spec:
+  runPolicy: Serial
+  source:
+    binary: {}
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: apps/semantic-model-server/Containerfile
+  output:
+    to:
+      kind: ImageStreamTag
+      name: semantic-model-server:phase7-candidate
+  resources:
+    requests: {cpu: '1', memory: 2Gi}
+    limits: {cpu: '4', memory: 8Gi}
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: semantic-safety
+  namespace: semantic-navigation
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: semantic-safety-phase7-control
+  namespace: semantic-navigation
+spec:
+  runPolicy: Serial
+  source:
+    binary: {}
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Containerfile.phase7-control
+  output:
+    to:
+      kind: ImageStreamTag
+      name: semantic-safety:phase7-control-candidate
+  resources:
+    requests: {cpu: 500m, memory: 1Gi}
+    limits: {cpu: '2', memory: 4Gi}
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: semantic-safety-phase7-runtime
+  namespace: semantic-navigation
+spec:
+  runPolicy: Serial
+  source:
+    binary: {}
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Containerfile.phase7-runtime
+  output:
+    to:
+      kind: ImageStreamTag
+      name: semantic-safety:phase7-runtime-candidate
+  resources:
+    requests: {cpu: 500m, memory: 1Gi}
+    limits: {cpu: '2', memory: 4Gi}
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: semantic-costmap-phase7
+  namespace: semantic-navigation
+spec:
+  runPolicy: Serial
+  source:
+    binary: {}
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Containerfile.phase7-costmap
+  output:
+    to:
+      kind: ImageStreamTag
+      name: semantic-safety:phase7-costmap-candidate
+  resources:
+    requests: {cpu: 500m, memory: 2Gi}
+    limits: {cpu: '4', memory: 8Gi}
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: semantic-hotel-sim-phase7-bluecrate-capture
+  namespace: semantic-navigation
+spec:
+  runPolicy: Serial
+  source:
+    binary: {}
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: apps/semantic-safety/Containerfile.phase7-bluecrate-capture
+  output:
+    to:
+      kind: ImageStreamTag
+      name: semantic-hotel-sim:phase7-bluecrate-capture
+  resources:
+    requests: {cpu: '1', memory: 2Gi}
+    limits: {cpu: '2', memory: 4Gi}
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: semantic-hotel-sim-phase7-watchdog
+  namespace: semantic-navigation
+spec:
+  runPolicy: Serial
+  source:
+    binary: {}
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: apps/semantic-safety/Containerfile.phase7-simulator
+  output:
+    to:
+      kind: ImageStreamTag
+      name: semantic-hotel-sim:phase7-watchdog-candidate
+  resources:
+    requests: {cpu: '1', memory: 2Gi}
+    limits: {cpu: '2', memory: 4Gi}

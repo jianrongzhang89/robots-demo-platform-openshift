@@ -2,6 +2,7 @@
 
 #include <map>
 #include <mutex>
+#include <set>
 #include <string>
 #include <vector>
 #include <nlohmann/json.hpp>
@@ -59,6 +60,9 @@ private:
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr cloud_sub_;
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr timing_sub_, labels_sub_;
   bool active_{false}, labels_valid_{false};
+  int64_t policy_generation_{0};
+  std::string policy_stream_epoch_;
+  std::set<std::string> retired_policy_epochs_;
   int64_t barrier_wall_{0}, last_sim_{-1}, last_stamp_{-1}, last_wall_{-1};
   int64_t ttl_ns_{1000000000}, max_age_ns_{500000000}, uncertainty_ns_{2000000};
   int64_t last_runtime_log_wall_ns_{0};
@@ -66,6 +70,7 @@ private:
   int64_t last_label_log_wall_ns_{0};
   uint64_t epoch_{0}, accepted_{0}, rejected_{0}, evicted_{0};
   std::string stream_epoch_, last_request_, reason_{"not_ready"};
+  std::string active_prompt_;
   std::string raster_request_;
   std::string frame_{"camera_color_optical_frame"};
   double min_height_{-0.15}, max_height_{0.15}, max_range_{5.0};

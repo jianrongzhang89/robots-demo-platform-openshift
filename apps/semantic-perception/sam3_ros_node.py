@@ -30,6 +30,7 @@ from http_backend import IdentityMismatch
 from rcl_interfaces.msg import SetParametersResult
 from inference_contract import POLICY, VERSIONS, ResultGuard, make_request, dimensions
 from capture_timing import validate_capture_trace, capture_deadline, capture_age_upper_ms, simulation_capture_age_ms
+from phase7_prompt_permit import PromptPermitVerifier
 
 from sam3_runtime_core import (
     pop_synchronized_triplet,
@@ -73,6 +74,9 @@ class Sam3Runtime(Node):
         if any(not v.startswith("/") or len(v) > 256 for v in (self.input_prefix, self.output_prefix)):
             raise ValueError("absolute bounded input/output topic prefixes required")
         self.declare_parameter("prompt", os.getenv("SAM3_PROMPT", "red mat"))
+        self.declare_parameter("approved_prompts", json.loads(
+            os.getenv("SAM3_APPROVED_PROMPTS", "[]")))
+        self.declare_parameter("phase7_transition_permit", "")
         self.declare_parameter("confidence_threshold", 0.5)
         self.declare_parameter("sync_tolerance_ms", 30.0)
         self.declare_parameter("input_queue_size", 20)
@@ -82,6 +86,23 @@ class Sam3Runtime(Node):
         self.declare_parameter("model_revision", "3c879f39826c281e95690f02c7821c4de09afae7")
         self.checkpoint = str(self.get_parameter("checkpoint").value)
         self.prompt = str(self.get_parameter("prompt").value)
+        configured_prompts = list(self.get_parameter("approved_prompts").value)
+        if self.backend_kind == "http":
+            identity_path = Path(str(self.get_parameter("deployment_identity").value))
+            deployment_identity = json.loads(identity_path.read_text())
+            configured_prompts = deployment_identity.get(
+                "approved_prompts", [deployment_identity.get("prompt", "")])
+        self.approved_prompts = tuple(dict.fromkeys(configured_prompts or [self.prompt]))
+        if (not self.approved_prompts or len(self.approved_prompts) > 16 or
+                any(not isinstance(value, str) or not value or len(value) > 128
+                    for value in self.approved_prompts) or self.prompt not in self.approved_prompts):
+            raise ValueError("prompt must be in the bounded approved_prompts allowlist")
+        self.prompt_permit_verifier = None
+        permit_key_file = os.getenv("SEMANTIC_PHASE7_PERMIT_KEY_FILE")
+        if permit_key_file:
+            self.prompt_permit_verifier = PromptPermitVerifier(Path(permit_key_file).read_bytes())
+        self.policy_generation = 1
+        self.awaiting_fresh_generation = None
         self.threshold = float(self.get_parameter("confidence_threshold").value)
         self.tolerance_ns = int(float(self.get_parameter("sync_tolerance_ms").value) * 1e6)
         self.input_depth = int(self.get_parameter("input_queue_size").value)
@@ -119,6 +140,16 @@ class Sam3Runtime(Node):
             depth=self.input_depth,
             reliability=ReliabilityPolicy.RELIABLE,
         )
+        sensor_metadata_qos = QoSProfile(
+            history=HistoryPolicy.KEEP_LAST,
+            depth=self.input_depth,
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+        )
+        trace_qos = QoSProfile(
+            history=HistoryPolicy.KEEP_LAST,
+            depth=20,
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+        )
         self.rgb_queue = deque(maxlen=self.input_depth)
         self.depth_queue = deque(maxlen=self.input_depth)
         self.info_queue = deque(maxlen=self.input_depth)
@@ -153,11 +184,7 @@ class Sam3Runtime(Node):
         self.label_pub = self.create_publisher(String, self.output_prefix + "/label_info",
             QoSProfile(depth=1, reliability=ReliabilityPolicy.RELIABLE,
                        durability=DurabilityPolicy.TRANSIENT_LOCAL))
-        self.label_pub.publish(String(data=json.dumps({
-            "policy": POLICY, "generation": 1,
-            "labels": {"0": "unobserved", "1": "traversable", "2": "avoid_target"},
-            "active_labels": [0, 2], "prompt": self.prompt,
-        }, sort_keys=True)))
+        self.publish_label_info()
         self.create_subscription(
             CompressedImage, self.input_prefix + "/color/image_compressed",
             self.on_rgb, qos,
@@ -167,18 +194,81 @@ class Sam3Runtime(Node):
             self.on_depth, qos,
         )
         self.create_subscription(
-            CameraInfo, self.input_prefix + "/color/camera_info", self.on_info, qos
+            CameraInfo, self.input_prefix + "/color/camera_info", self.on_info,
+            sensor_metadata_qos
         )
-        self.create_subscription(String, self.input_prefix + "/capture_trace", self.on_capture_trace, 20)
-        self.create_subscription(String, self.input_prefix + "/compression_trace", self.on_compression_trace, 20)
+        self.create_subscription(String, self.input_prefix + "/capture_trace",
+                                 self.on_capture_trace, trace_qos)
+        self.create_subscription(String, self.input_prefix + "/compression_trace",
+                                 self.on_compression_trace, trace_qos)
         self.create_subscription(ClockMessage, "/clock", self.on_clock,
                                  QoSProfile(depth=1, reliability=ReliabilityPolicy.BEST_EFFORT))
         self.create_timer(0.05, self.publish_status, clock=Clock(clock_type=ClockType.STEADY_TIME))
-        self.add_on_set_parameters_callback(lambda params: SetParametersResult(
-            successful=not any(p.name != "use_sim_time" for p in params),
-            reason="adapter configuration is pinned; explicit restart required"))
+        self.add_on_set_parameters_callback(self.on_set_parameters)
         self.worker = threading.Thread(target=self.inference_loop, daemon=True)
         self.worker.start()
+
+    def on_set_parameters(self, params):
+        names = {parameter.name for parameter in params}
+        if not names or names == {"use_sim_time"}:
+            return SetParametersResult(successful=True)
+        if "prompt" not in names:
+            return SetParametersResult(successful=False,
+                reason="adapter configuration is pinned; explicit restart required")
+        required = {"prompt", "phase7_transition_permit"}
+        if names != required:
+            return SetParametersResult(successful=False,
+                reason="prompt change requires an atomic signed transition permit")
+        values = {parameter.name: parameter.value for parameter in params}
+        prompt = values["prompt"]
+        if not isinstance(prompt, str) or prompt not in self.approved_prompts:
+            return SetParametersResult(successful=False, reason="prompt is not approved")
+        with self.lock:
+            if prompt == self.prompt:
+                return SetParametersResult(successful=True, reason="prompt already active")
+            if self.prompt_permit_verifier is None:
+                return SetParametersResult(successful=False,
+                    reason="trusted Phase 7 permit verifier is not configured")
+            try:
+                self.prompt_permit_verifier.verify_and_consume(
+                    values["phase7_transition_permit"], prompt=prompt,
+                    generation=self.policy_generation + 1, stream_epoch=self.epoch)
+            except (PermissionError, TypeError) as error:
+                return SetParametersResult(successful=False, reason=str(error))
+            # New epoch and generation form a barrier across queued inputs,
+            # retained requests, and late responses from the old prompt.
+            self.epoch = str(uuid.uuid4())
+            self.policy_generation += 1
+            self.guard.reset(self.epoch, self.policy_generation)
+            self.capture_after_wall_ns = time.time_ns() + int(self.clock_uncertainty_ms * 1e6)
+            for queue in (self.rgb_queue, self.depth_queue, self.info_queue, self.work_queue):
+                queue.clear()
+            self.last_input_stamp.clear()
+            for receipts in self.input_receipts.values():
+                receipts.clear()
+            self.capture_traces.clear()
+            self.compression_traces.clear()
+            self.prompt = prompt
+            self.ready = False
+            self.valid_result_wall = None
+            self.valid_result_deadline = None
+            self.last_result = None
+            self.last_error = "prompt_changed_waiting_for_fresh_result"
+            self.awaiting_fresh_generation = self.policy_generation
+            self.publish_label_info()
+        self.get_logger().warning(json.dumps({
+            "event": "prompt_generation_started", "prompt": self.prompt,
+            "policy_generation": self.policy_generation,
+        }, sort_keys=True))
+        return SetParametersResult(successful=True)
+
+    def publish_label_info(self):
+        self.label_pub.publish(String(data=json.dumps({
+            "policy": POLICY, "generation": self.policy_generation,
+            "stream_epoch": self.epoch,
+            "labels": {"0": "unobserved", "1": "traversable", "2": "avoid_target"},
+            "active_labels": [0, 2], "prompt": self.prompt,
+        }, sort_keys=True)))
 
     @staticmethod
     def decode_rgb(message: CompressedImage) -> PILImage.Image:
@@ -219,7 +309,7 @@ class Sam3Runtime(Node):
                 # Clock may reset BEFORE a new camera trace/header arrives.
                 # Invalidate in-flight inference at this earliest observable event.
                 self.epoch = str(uuid.uuid4())
-                self.guard.reset(self.epoch, 1)
+                self.guard.reset(self.epoch, self.policy_generation)
                 for queue in (self.rgb_queue, self.depth_queue, self.info_queue, self.work_queue):
                     queue.clear()
                 self.last_input_stamp.clear()
@@ -230,6 +320,7 @@ class Sam3Runtime(Node):
                 # Also reject newly delivered pre-reset captures, even if their
                 # simulation stamp happens to overlap the restarted timeline.
                 self.capture_after_wall_ns = time.time_ns() + int(self.clock_uncertainty_ms * 1e6)
+                self.publish_label_info()
             self.sim_clock_ns = current
             self.sim_clock_received = time.monotonic()
 
@@ -244,7 +335,7 @@ class Sam3Runtime(Node):
                         raise ValueError("delayed old source epoch")
                     if self.source_epoch is not None:
                         self.epoch = str(uuid.uuid4())
-                        self.guard.reset(self.epoch, 1)
+                        self.guard.reset(self.epoch, self.policy_generation)
                         for queue in (self.rgb_queue, self.depth_queue, self.info_queue, self.work_queue):
                             queue.clear()
                         self.capture_traces.clear()
@@ -252,6 +343,7 @@ class Sam3Runtime(Node):
                         self.last_input_stamp.clear()
                         self.ready = False
                         self.last_error = "source_epoch_changed"
+                        self.publish_label_info()
                     self.source_epoch = trace["source_epoch"]
                 self.latest_source_wall_ns = max(self.latest_source_wall_ns, trace["capture_wall_ns"])
                 self.cache(self.capture_traces, trace["stamp_ns"], trace)
@@ -314,12 +406,13 @@ class Sam3Runtime(Node):
                 # A rollback invalidates retained work. Ordinary delayed packets may
                 # cause a conservative reset; they can never resurrect old results.
                 self.epoch = str(uuid.uuid4())
-                self.guard.reset(self.epoch, 1)
+                self.guard.reset(self.epoch, self.policy_generation)
                 for queue in (self.rgb_queue, self.depth_queue, self.info_queue, self.work_queue):
                     queue.clear()
                 self.last_input_stamp.clear()
                 self.ready = False
                 self.last_error = "capture_clock_rollback"
+                self.publish_label_info()
             if previous == capture_stamp:
                 self.input_drops += 1
                 return
@@ -397,9 +490,11 @@ class Sam3Runtime(Node):
                     raise ValueError("CameraInfo dimensions differ from image")
                 if any(msg.header.frame_id != bundle.rgb.header.frame_id for msg in (bundle.depth, bundle.info)):
                     raise ValueError("RGB/depth/calibration optical frames differ")
+                with self.lock:
+                    generation, prompt = self.policy_generation, self.prompt
                 request = make_request(rgb, sequence=bundle.sequence, epoch=bundle.epoch,
-                    generation=1, stamp=stamp_ns(bundle.rgb), frame=bundle.rgb.header.frame_id,
-                    prompt=self.prompt, threshold=self.threshold,
+                    generation=generation, stamp=stamp_ns(bundle.rgb), frame=bundle.rgb.header.frame_id,
+                    prompt=prompt, threshold=self.threshold,
                     budget_ms=(deadline - time.monotonic()) * 1000,
                     robot=self.robot_id, stream=self.stream_id)
                 submitted_bundle = bundle
@@ -446,6 +541,8 @@ class Sam3Runtime(Node):
                     self.valid_result_deadline = deadline
                     self.last_error = None
                     self.ready = True
+                    if self.awaiting_fresh_generation == generation:
+                        self.awaiting_fresh_generation = None
                     self.last_result = {"identity": request["identity"], "capture": request["capture"],
                         "result_wall_ns": time.time_ns(), "receiver_processing_age_ms": processing_age_ms}
                     if trace:
@@ -543,7 +640,11 @@ class Sam3Runtime(Node):
             "model_revision": self.model_revision,
             "versions": VERSIONS,
             "policy": POLICY,
-            "policy_generation": 1,
+            "policy_generation": self.policy_generation,
+            "approved_prompts": list(self.approved_prompts),
+            "prompt_transition_enabled": self.prompt_permit_verifier is not None,
+            "prompt_transition_ready": self.awaiting_fresh_generation is None,
+            "prompt_transition_generation": self.awaiting_fresh_generation,
             "stream_epoch": self.epoch,
             "source_epoch": self.source_epoch,
             "capture_trace_required": self.require_trace,

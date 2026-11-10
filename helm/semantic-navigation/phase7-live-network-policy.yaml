@@ -1,0 +1,54 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: semantic-phase7-live-isolation
+  namespace: semantic-navigation
+  labels:
+    semantic-navigation.robots-demo/phase: phase7-topology
+spec:
+  # The live qualification topology runs its ROS, Zenoh, Nav2, operator, and
+  # simulator processes as containers in one pod. Their local traffic does not
+  # cross this policy. Keep the selector narrow so Phase 6 pods are unaffected.
+  podSelector:
+    matchLabels:
+      semantic-navigation.robots-demo/phase: phase7-topology
+      semantic-serving-client: sam3-mat-v1
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress: []
+  egress:
+    # Allow the cluster DNS Service VIP on its client port and DNS pods on the
+    # translated target port used by this OpenShift resolver path.
+    - to:
+        - ipBlock:
+            cidr: 172.30.0.10/32
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: openshift-dns
+          podSelector:
+            matchLabels:
+              dns.operator.openshift.io/daemonset-dns: default
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+        - protocol: UDP
+          port: 5353
+        - protocol: TCP
+          port: 5353
+    # The operator runtime and adapter may call only the pinned SAM3 predictor
+    # over the model service's TLS port. The predictor's existing ingress
+    # policy also requires this pod's semantic-serving-client label.
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: semantic-model-serving
+          podSelector:
+            matchLabels:
+              serving.kserve.io/inferenceservice: sam3-mat-v1
+              component: predictor
+      ports:
+        - protocol: TCP
+          port: 8443

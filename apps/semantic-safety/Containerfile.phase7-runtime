@@ -1,0 +1,27 @@
+FROM image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:125cbd5aa1a1e65c6324c520e15c3560cf2a102ceabfdd915641688ec16db6c9
+
+USER 0
+COPY . /opt/phase7-runtime
+RUN PYTHONPATH=/opt/phase7-runtime python3 -m py_compile \
+      /opt/phase7-runtime/phase7_operator_runtime.py \
+      /opt/phase7-runtime/phase7_operator_api.py \
+      /opt/phase7-runtime/phase7_operator_control.py \
+      /opt/phase7-runtime/phase7_prompt_permit.py \
+      /opt/phase7-runtime/phase7_nav2_cancel_proxy.py \
+      /opt/phase7-runtime/run_phase7_nav2_cancel_proxy.py \
+      /opt/phase7-runtime/verify_phase7_native_operator.py \
+      /opt/phase7-runtime/verify_phase7_ros_service_bridges.py \
+      /opt/phase7-runtime/verify_phase7_live_nav2_cancel.py \
+      /opt/phase7-runtime/verify_phase7_live_operator_rejection.py \
+      /opt/phase7-runtime/verify_phase7_ros_stream_probe.py \
+      /opt/phase7-runtime/wait_phase7_camera_publishers.py \
+      /opt/phase7-runtime/wait_phase7_adapter_subscribers.py \
+    && PYTHONPATH=/opt/phase7-runtime python3 -m unittest discover \
+      -s /opt/phase7-runtime -p 'test_phase7_*.py' -v \
+    && chmod -R a=rX /opt/phase7-runtime
+
+ENV PYTHONPATH=/opt/phase7-runtime PYTHONDONTWRITEBYTECODE=1 \
+    RMW_IMPLEMENTATION=rmw_cyclonedds_cpp \
+    GZ_SIM_SYSTEM_PLUGIN_PATH=/opt/semantic-safety/lib
+USER 1001
+ENTRYPOINT ["/bin/bash", "-lc", "source /opt/ros/jazzy/setup.bash; exec python3 /opt/phase7-runtime/phase7_operator_runtime.py"]

@@ -1,0 +1,167 @@
+apiVersion: v1
+data:
+  cyclonedds.xml: |-
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <CycloneDDS xmlns="https://cdds.io/config">
+      <Domain id="any">
+        <General><Interfaces><NetworkInterface name="lo" /></Interfaces><AllowMulticast>false</AllowMulticast></General>
+        <Discovery><ParticipantIndex>auto</ParticipantIndex></Discovery>
+      </Domain>
+    </CycloneDDS>
+  nav2-clock-bridge.json5: |-
+    {
+      "plugins": { "ros2dds": { "allow": {
+        "publishers": [],
+        "subscribers": ["^/clock$"]
+      } } },
+      "mode": "client",
+      "connect": { "endpoints": ["tcp/127.0.0.1:17448"], "exit_on_failure": false },
+      "scouting": { "multicast": { "enabled": false } }
+    }
+  nav2-cmd-vel-keepalive.json5: |-
+    {
+      "plugins": { "ros2dds": { "allow": {
+        "publishers": [],
+        "subscribers": ["robot_1/cmd_vel"]
+      } } },
+      "mode": "client",
+      "connect": { "endpoints": ["tcp/127.0.0.1:17448"], "exit_on_failure": false },
+      "scouting": { "multicast": { "enabled": false } }
+    }
+  nav2-motion-output-gated.json5: |-
+    {
+      "plugins": { "ros2dds": { "namespace": "/robot_1", "allow": {
+        "publishers": ["^/cmd_vel$"],
+        "subscribers": []
+      } } },
+      "mode": "client",
+      "connect": { "endpoints": ["tcp/127.0.0.1:17448"], "exit_on_failure": false },
+      "scouting": { "multicast": { "enabled": false } }
+    }
+  nav2-semantic-input-bridge.json5: |-
+    {
+      "plugins": { "ros2dds": { "allow": {
+        "publishers": [],
+        "subscribers": [
+          "^/robot_1/semantic/mask$",
+          "^/robot_1/semantic/points$",
+          "^/robot_1/semantic/timing$",
+          "^/robot_1/semantic/label_info$"
+        ]
+      } } },
+      "mode": "client",
+      "connect": { "endpoints": ["tcp/127.0.0.1:17448"], "exit_on_failure": false },
+      "scouting": { "multicast": { "enabled": false } }
+    }
+  nav2-sim-input-bridge.json5: |-
+    {
+      "plugins": { "ros2dds": {
+        "namespace": "/robot_1",
+        "reliable_routes_blocking": false,
+        "allow": {
+          "publishers": [],
+          "subscribers": [
+            ".*/tf$",
+            ".*/tf_static$",
+            ".*/scan$",
+            ".*/odom$",
+            ".*/demo/ground_truth$",
+            ".*/camera/color/image_compressed$",
+            ".*/camera/depth/image_compressed$",
+            ".*/camera/color/camera_info$",
+            ".*/camera/capture_trace$",
+            ".*/camera/compression_trace$"
+          ]
+        }
+      } },
+      "mode": "client",
+      "connect": { "endpoints": ["tcp/127.0.0.1:17448"], "exit_on_failure": false },
+      "scouting": { "multicast": { "enabled": false } }
+    }
+  router.json5: |-
+    {
+      "mode": "router",
+      "listen": { "endpoints": ["tcp/0.0.0.0:17448"] },
+      "scouting": { "multicast": { "enabled": false } }
+    }
+  sam3-bridge.json5: |-
+    {
+      "plugins": { "ros2dds": { "allow": {
+        "publishers": [
+          "^/robot_1/semantic/mask$",
+          "^/robot_1/semantic/points$",
+          "^/robot_1/semantic/timing$",
+          "^/robot_1/semantic/label_info$",
+          "^/robot_1/semantic/status$",
+          "^/robot_1/semantic/ready$"
+        ],
+        "subscribers": [
+          "^/clock$",
+          "^/robot_1/tf$",
+          "^/robot_1/tf_static$",
+          "^/robot_1/camera/color/image_compressed$",
+          "^/robot_1/camera/depth/image_compressed$",
+          "^/robot_1/camera/color/camera_info$",
+          "^/robot_1/camera/capture_trace$",
+          "^/robot_1/camera/compression_trace$"
+        ]
+      } } },
+      "mode": "client",
+      "connect": { "endpoints": ["tcp/127.0.0.1:17448"], "exit_on_failure": false },
+      "scouting": { "multicast": { "enabled": false } }
+    }
+  sim-bridge-d1.json5: |-
+    {
+      "plugins": { "ros2dds": { "allow": {
+        "publishers": [
+          "^/clock$",
+          "^/robot_1/odom$",
+          "^/robot_1/scan$",
+          "^/robot_1/tf$",
+          "^/robot_1/tf_static$",
+          "^/robot_1/camera/color/image_compressed$",
+          "^/robot_1/camera/depth/image_compressed$",
+          "^/robot_1/camera/color/camera_info$",
+          "^/robot_1/camera/capture_trace$",
+          "^/robot_1/camera/compression_trace$"
+        ],
+        "subscribers": []
+      } } },
+      "mode": "client",
+      "connect": { "endpoints": ["tcp/127.0.0.1:17448"], "exit_on_failure": false },
+      "scouting": { "multicast": { "enabled": false } }
+    }
+  sim-bridge.json5: |-
+    {
+      "plugins": { "ros2dds": { "allow": {
+        "publishers": [
+          "^/clock$",
+          "^/robot_1/odom$",
+          "^/robot_1/demo/ground_truth$",
+          "^/robot_1/scan$",
+          "^/robot_1/tf$",
+          "^/robot_1/tf_static$",
+          "^/robot_1/camera/color/image_compressed$",
+          "^/robot_1/camera/depth/image_compressed$",
+          "^/robot_1/camera/color/camera_info$",
+          "^/robot_1/camera/capture_trace$",
+          "^/robot_1/camera/compression_trace$"
+        ],
+        "subscribers": ["^/robot_1/cmd_vel$"]
+      } } },
+      "mode": "client",
+      "connect": { "endpoints": ["tcp/127.0.0.1:17448"], "exit_on_failure": false },
+      "scouting": { "multicast": { "enabled": false } }
+    }
+kind: ConfigMap
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","data":{"cyclonedds.xml":"\u003c?xml version=\"1.0\" encoding=\"UTF-8\" ?\u003e\n\u003cCycloneDDS xmlns=\"https://cdds.io/config\"\u003e\n  \u003cDomain id=\"any\"\u003e\n    \u003cGeneral\u003e\u003cInterfaces\u003e\u003cNetworkInterface name=\"lo\" /\u003e\u003c/Interfaces\u003e\u003cAllowMulticast\u003efalse\u003c/AllowMulticast\u003e\u003c/General\u003e\n    \u003cDiscovery\u003e\u003cParticipantIndex\u003eauto\u003c/ParticipantIndex\u003e\u003c/Discovery\u003e\n  \u003c/Domain\u003e\n\u003c/CycloneDDS\u003e","nav2-clock-bridge.json5":"{\n  \"plugins\": { \"ros2dds\": { \"allow\": {\n    \"publishers\": [],\n    \"subscribers\": [\"^/clock$\"]\n  } } },\n  \"mode\": \"client\",\n  \"connect\": { \"endpoints\": [\"tcp/127.0.0.1:17448\"], \"exit_on_failure\": false },\n  \"scouting\": { \"multicast\": { \"enabled\": false } }\n}","nav2-cmd-vel-keepalive.json5":"{\n  \"plugins\": { \"ros2dds\": { \"allow\": {\n    \"publishers\": [],\n    \"subscribers\": [\"robot_1/cmd_vel\"]\n  } } },\n  \"mode\": \"client\",\n  \"connect\": { \"endpoints\": [\"tcp/127.0.0.1:17448\"], \"exit_on_failure\": false },\n  \"scouting\": { \"multicast\": { \"enabled\": false } }\n}","nav2-motion-output-gated.json5":"{\n  \"plugins\": { \"ros2dds\": { \"namespace\": \"/robot_1\", \"allow\": {\n    \"publishers\": [\"^/cmd_vel$\"],\n    \"subscribers\": []\n  } } },\n  \"mode\": \"client\",\n  \"connect\": { \"endpoints\": [\"tcp/127.0.0.1:17448\"], \"exit_on_failure\": false },\n  \"scouting\": { \"multicast\": { \"enabled\": false } }\n}","nav2-semantic-input-bridge.json5":"{\n  \"plugins\": { \"ros2dds\": { \"allow\": {\n    \"publishers\": [],\n    \"subscribers\": [\n      \"^/robot_1/semantic/mask$\",\n      \"^/robot_1/semantic/points$\",\n      \"^/robot_1/semantic/timing$\",\n      \"^/robot_1/semantic/label_info$\"\n    ]\n  } } },\n  \"mode\": \"client\",\n  \"connect\": { \"endpoints\": [\"tcp/127.0.0.1:17448\"], \"exit_on_failure\": false },\n  \"scouting\": { \"multicast\": { \"enabled\": false } }\n}","nav2-sim-input-bridge.json5":"{\n  \"plugins\": { \"ros2dds\": {\n    \"namespace\": \"/robot_1\",\n    \"reliable_routes_blocking\": false,\n    \"allow\": {\n      \"publishers\": [],\n      \"subscribers\": [\n        \".*/tf$\",\n        \".*/tf_static$\",\n        \".*/scan$\",\n        \".*/odom$\",\n        \".*/demo/ground_truth$\",\n        \".*/camera/color/image_compressed$\",\n        \".*/camera/depth/image_compressed$\",\n        \".*/camera/color/camera_info$\",\n        \".*/camera/capture_trace$\",\n        \".*/camera/compression_trace$\"\n      ]\n    }\n  } },\n  \"mode\": \"client\",\n  \"connect\": { \"endpoints\": [\"tcp/127.0.0.1:17448\"], \"exit_on_failure\": false },\n  \"scouting\": { \"multicast\": { \"enabled\": false } }\n}","router.json5":"{\n  \"mode\": \"router\",\n  \"listen\": { \"endpoints\": [\"tcp/0.0.0.0:17448\"] },\n  \"scouting\": { \"multicast\": { \"enabled\": false } }\n}","sam3-bridge.json5":"{\n  \"plugins\": { \"ros2dds\": { \"allow\": {\n    \"publishers\": [\n      \"^/robot_1/semantic/mask$\",\n      \"^/robot_1/semantic/points$\",\n      \"^/robot_1/semantic/timing$\",\n      \"^/robot_1/semantic/label_info$\",\n      \"^/robot_1/semantic/status$\",\n      \"^/robot_1/semantic/ready$\"\n    ],\n    \"subscribers\": [\n      \"^/clock$\",\n      \"^/robot_1/tf$\",\n      \"^/robot_1/tf_static$\",\n      \"^/robot_1/camera/color/image_compressed$\",\n      \"^/robot_1/camera/depth/image_compressed$\",\n      \"^/robot_1/camera/color/camera_info$\",\n      \"^/robot_1/camera/capture_trace$\",\n      \"^/robot_1/camera/compression_trace$\"\n    ]\n  } } },\n  \"mode\": \"client\",\n  \"connect\": { \"endpoints\": [\"tcp/127.0.0.1:17448\"], \"exit_on_failure\": false },\n  \"scouting\": { \"multicast\": { \"enabled\": false } }\n}","sim-bridge-d1.json5":"{\n  \"plugins\": { \"ros2dds\": { \"allow\": {\n    \"publishers\": [\n      \"^/clock$\",\n      \"^/robot_1/odom$\",\n      \"^/robot_1/scan$\",\n      \"^/robot_1/tf$\",\n      \"^/robot_1/tf_static$\",\n      \"^/robot_1/camera/color/image_compressed$\",\n      \"^/robot_1/camera/depth/image_compressed$\",\n      \"^/robot_1/camera/color/camera_info$\",\n      \"^/robot_1/camera/capture_trace$\",\n      \"^/robot_1/camera/compression_trace$\"\n    ],\n    \"subscribers\": []\n  } } },\n  \"mode\": \"client\",\n  \"connect\": { \"endpoints\": [\"tcp/127.0.0.1:17448\"], \"exit_on_failure\": false },\n  \"scouting\": { \"multicast\": { \"enabled\": false } }\n}","sim-bridge.json5":"{\n  \"plugins\": { \"ros2dds\": { \"allow\": {\n    \"publishers\": [\n      \"^/clock$\",\n      \"^/robot_1/odom$\",\n      \"^/robot_1/demo/ground_truth$\",\n      \"^/robot_1/scan$\",\n      \"^/robot_1/tf$\",\n      \"^/robot_1/tf_static$\",\n      \"^/robot_1/camera/color/image_compressed$\",\n      \"^/robot_1/camera/depth/image_compressed$\",\n      \"^/robot_1/camera/color/camera_info$\",\n      \"^/robot_1/camera/capture_trace$\",\n      \"^/robot_1/camera/compression_trace$\"\n    ],\n    \"subscribers\": [\"^/robot_1/cmd_vel$\"]\n  } } },\n  \"mode\": \"client\",\n  \"connect\": { \"endpoints\": [\"tcp/127.0.0.1:17448\"], \"exit_on_failure\": false },\n  \"scouting\": { \"multicast\": { \"enabled\": false } }\n}"},"kind":"ConfigMap","metadata":{"annotations":{},"labels":{"semantic-navigation.robots-demo/phase":"phase7-topology"},"name":"semantic-phase7-live-bridge-config","namespace":"semantic-navigation"}}
+  creationTimestamp: "2026-11-10T04:46:56Z"
+  labels:
+    semantic-navigation.robots-demo/phase: phase7-topology
+  name: semantic-phase7-live-bridge-config
+  namespace: semantic-navigation
+  resourceVersion: "533524638"
+  uid: 3d53078b-e9a8-435b-8498-a210cbe43c9a

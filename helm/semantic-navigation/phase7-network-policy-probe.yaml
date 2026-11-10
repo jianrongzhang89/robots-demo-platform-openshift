@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: semantic-phase7-network-policy-probe
+  namespace: semantic-navigation
+  labels:
+    semantic-navigation.robots-demo/phase: phase7-topology
+    semantic-serving-client: sam3-mat-v1
+spec:
+  restartPolicy: Never
+  automountServiceAccountToken: false
+  containers:
+    - name: probe
+      image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-cpu-adapter@sha256:d5b22eae66497af2bd3230d43767f862d6b0923d73ffb8f54a865e21c9258c28
+      imagePullPolicy: IfNotPresent
+      command: ["/bin/bash", "-lc"]
+      args:
+        - |
+          python3 - <<'PY'
+          import socket
+          import ssl
+
+          host = "sam3-mat-v1-tls.semantic-model-serving.svc"
+          addresses = sorted({item[4][0] for item in socket.getaddrinfo(host, 8443)})
+          print({"event": "model_dns_resolved", "addresses": addresses}, flush=True)
+          context = ssl.create_default_context(cafile="/phase7-serving-tls/ca.crt")
+          context.load_cert_chain(
+              "/phase7-serving-tls/tls.crt", "/phase7-serving-tls/tls.key")
+          with socket.create_connection((host, 8443), timeout=5) as raw:
+              with context.wrap_socket(raw, server_hostname=host) as tls:
+                  print({"event": "model_tls_connected", "version": tls.version()},
+                        flush=True)
+          PY
+      volumeMounts:
+        - name: serving-tls
+          mountPath: /phase7-serving-tls
+          readOnly: true
+      resources:
+        requests: {cpu: 100m, memory: 256Mi}
+        limits: {cpu: 500m, memory: 512Mi}
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: ["ALL"]
+        seccompProfile:
+          type: RuntimeDefault
+  volumes:
+    - name: serving-tls
+      secret:
+        secretName: sam3-replay-tls
+        defaultMode: 288

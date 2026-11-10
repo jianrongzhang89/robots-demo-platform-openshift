@@ -1,0 +1,320 @@
+[INFO] [launch]: All log files can be found below /tmp/phase7-nav2-logs/2026-11-10-13-03-05-767745-semantic-phase7-live-nav2-cancel-18
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [map_server-1]: process started with pid [205]
+[INFO] [amcl-2]: process started with pid [206]
+[INFO] [lifecycle_manager-3]: process started with pid [207]
+[INFO] [controller_server-4]: process started with pid [208]
+[INFO] [smoother_server-5]: process started with pid [209]
+[INFO] [planner_server-6]: process started with pid [210]
+[INFO] [route_server-7]: process started with pid [211]
+[INFO] [behavior_server-8]: process started with pid [212]
+[INFO] [bt_navigator-9]: process started with pid [213]
+[INFO] [waypoint_follower-10]: process started with pid [216]
+[INFO] [velocity_smoother-11]: process started with pid [228]
+[INFO] [collision_monitor-12]: process started with pid [237]
+[INFO] [lifecycle_manager-13]: process started with pid [250]
+[map_server-1] [INFO] [1794315786.459234835] [map_server]: 
+[map_server-1] 	map_server lifecycle node launched. 
+[map_server-1] 	Waiting on external lifecycle transitions to activate
+[map_server-1] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[map_server-1] [INFO] [1794315786.459309721] [map_server]: Creating
+[lifecycle_manager-3] [INFO] [1794315786.440413472] [lifecycle_manager_localization]: Creating
+[lifecycle_manager-3] [INFO] [1794315786.537739676] [lifecycle_manager_localization]: [34m[1mCreating and initializing lifecycle service clients[0m[0m
+[amcl-2] [INFO] [1794315786.642310396] [amcl]: 
+[amcl-2] 	amcl lifecycle node launched. 
+[amcl-2] 	Waiting on external lifecycle transitions to activate
+[amcl-2] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[planner_server-6] [INFO] [1794315786.657606010] [planner_server]: 
+[planner_server-6] 	planner_server lifecycle node launched. 
+[planner_server-6] 	Waiting on external lifecycle transitions to activate
+[planner_server-6] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[amcl-2] [INFO] [1794315786.659891905] [amcl]: Creating
+[planner_server-6] [INFO] [1794315786.663231101] [planner_server]: Creating
+[planner_server-6] [INFO] [1794315786.667618838] [global_costmap.global_costmap]: 
+[planner_server-6] 	global_costmap lifecycle node launched. 
+[planner_server-6] 	Waiting on external lifecycle transitions to activate
+[planner_server-6] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[planner_server-6] [INFO] [1794315786.674913657] [global_costmap.global_costmap]: Creating Costmap
+[bt_navigator-9] [INFO] [1794315786.740671140] [bt_navigator]: 
+[bt_navigator-9] 	bt_navigator lifecycle node launched. 
+[bt_navigator-9] 	Waiting on external lifecycle transitions to activate
+[bt_navigator-9] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[controller_server-4] [INFO] [1794315786.744689589] [controller_server]: 
+[controller_server-4] 	controller_server lifecycle node launched. 
+[controller_server-4] 	Waiting on external lifecycle transitions to activate
+[controller_server-4] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[bt_navigator-9] [INFO] [1794315786.745886640] [bt_navigator]: Creating
+[controller_server-4] [INFO] [1794315786.757082489] [controller_server]: Creating controller server
+[smoother_server-5] [INFO] [1794315786.834881026] [smoother_server]: 
+[smoother_server-5] 	smoother_server lifecycle node launched. 
+[smoother_server-5] 	Waiting on external lifecycle transitions to activate
+[smoother_server-5] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[smoother_server-5] [INFO] [1794315786.859409567] [smoother_server]: Creating smoother server
+[lifecycle_manager-3] [INFO] [1794315786.859455141] [lifecycle_manager_localization]: [34m[1mStarting managed nodes bringup...[0m[0m
+[lifecycle_manager-3] [INFO] [1794315786.859503984] [lifecycle_manager_localization]: [34m[1mConfiguring map_server[0m[0m
+[map_server-1] [INFO] [1794315786.860731689] [map_server]: Configuring
+[map_server-1] [INFO] [1794315786.860803104] [map_io]: Loading yaml file: /opt/ros2-demo/maps/hotel_L1.yaml
+[map_server-1] [INFO] [1794315786.861158021] [map_io]: resolution: 0.05
+[map_server-1] [INFO] [1794315786.861187313] [map_io]: origin[0]: 0
+[map_server-1] [INFO] [1794315786.861195934] [map_io]: origin[1]: -42.25
+[map_server-1] [INFO] [1794315786.861201454] [map_io]: origin[2]: 0
+[map_server-1] [INFO] [1794315786.861207485] [map_io]: free_thresh: 0.196
+[map_server-1] [INFO] [1794315786.861213395] [map_io]: occupied_thresh: 0.65
+[map_server-1] [INFO] [1794315786.861220666] [map_io]: mode: trinary
+[map_server-1] [INFO] [1794315786.861226496] [map_io]: negate: 0
+[map_server-1] [INFO] [1794315786.861525699] [map_io]: Loading image_file: /opt/ros2-demo/maps/hotel_L1.pgm
+[waypoint_follower-10] [INFO] [1794315786.864105897] [waypoint_follower]: 
+[waypoint_follower-10] 	waypoint_follower lifecycle node launched. 
+[waypoint_follower-10] 	Waiting on external lifecycle transitions to activate
+[waypoint_follower-10] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[controller_server-4] [INFO] [1794315786.864927780] [local_costmap.local_costmap]: 
+[controller_server-4] 	local_costmap lifecycle node launched. 
+[controller_server-4] 	Waiting on external lifecycle transitions to activate
+[controller_server-4] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[controller_server-4] [INFO] [1794315786.874260846] [local_costmap.local_costmap]: Creating Costmap
+[waypoint_follower-10] [INFO] [1794315786.876273331] [waypoint_follower]: Creating
+[route_server-7] [INFO] [1794315786.877822069] [route_server]: 
+[route_server-7] 	route_server lifecycle node launched. 
+[route_server-7] 	Waiting on external lifecycle transitions to activate
+[route_server-7] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[behavior_server-8] [INFO] [1794315786.881218520] [behavior_server]: 
+[behavior_server-8] 	behavior_server lifecycle node launched. 
+[map_server-1] [INFO] [1794315786.884477240] [map_io]: Read map /opt/ros2-demo/maps/hotel_L1.pgm: 693 X 845 map @ 0.05 m/cell
+[behavior_server-8] 	Waiting on external lifecycle transitions to activate
+[behavior_server-8] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[collision_monitor-12] [INFO] [1794315786.953533776] [collision_monitor]: 
+[collision_monitor-12] 	collision_monitor lifecycle node launched. 
+[collision_monitor-12] 	Waiting on external lifecycle transitions to activate
+[collision_monitor-12] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[lifecycle_manager-13] [INFO] [1794315787.039079447] [lifecycle_manager_navigation]: Creating
+[lifecycle_manager-3] [INFO] [1794315787.043608434] [lifecycle_manager_localization]: [34m[1mConfiguring amcl[0m[0m
+[amcl-2] [INFO] [1794315787.044441048] [amcl]: Configuring
+[amcl-2] [INFO] [1794315787.044538436] [amcl]: initTransforms
+[amcl-2] [INFO] [1794315787.055865625] [amcl]: initPubSub
+[lifecycle_manager-13] [INFO] [1794315787.063990778] [lifecycle_manager_navigation]: [34m[1mCreating and initializing lifecycle service clients[0m[0m
+[amcl-2] [INFO] [1794315787.144934586] [amcl]: Subscribed to map topic.
+[velocity_smoother-11] [INFO] [1794315787.165033997] [velocity_smoother]: 
+[velocity_smoother-11] 	velocity_smoother lifecycle node launched. 
+[velocity_smoother-11] 	Waiting on external lifecycle transitions to activate
+[velocity_smoother-11] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[lifecycle_manager-3] [INFO] [1794315787.178787062] [lifecycle_manager_localization]: [34m[1mActivating map_server[0m[0m
+[map_server-1] [INFO] [1794315787.181056116] [map_server]: Activating
+[map_server-1] [INFO] [1794315787.185300622] [map_server]: Creating bond (map_server) to lifecycle manager.
+[amcl-2] [INFO] [1794315787.240086163] [amcl]: Received a 693 X 845 map @ 0.050 m/pix
+[lifecycle_manager-3] [INFO] [1794315787.342966194] [lifecycle_manager_localization]: Server map_server connected with bond.
+[lifecycle_manager-3] [INFO] [1794315787.343022498] [lifecycle_manager_localization]: [34m[1mActivating amcl[0m[0m
+[amcl-2] [INFO] [1794315787.346958240] [amcl]: Activating
+[amcl-2] [INFO] [1794315787.347300256] [amcl]: Creating bond (amcl) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794315787.383449889] [lifecycle_manager_navigation]: [34m[1mStarting managed nodes bringup...[0m[0m
+[lifecycle_manager-13] [INFO] [1794315787.384220628] [lifecycle_manager_navigation]: [34m[1mConfiguring controller_server[0m[0m
+[controller_server-4] [INFO] [1794315787.386661515] [controller_server]: Configuring controller interface
+[controller_server-4] [INFO] [1794315787.386692968] [controller_server]: getting progress checker plugins..
+[controller_server-4] [INFO] [1794315787.386936206] [controller_server]: getting goal checker plugins..
+[controller_server-4] [INFO] [1794315787.387069086] [controller_server]: Controller frequency set to 20.0000Hz
+[controller_server-4] [INFO] [1794315787.387105309] [local_costmap.local_costmap]: Configuring
+[controller_server-4] [INFO] [1794315787.401935947] [local_costmap.local_costmap]: Using plugin "voxel_layer"
+[controller_server-4] [INFO] [1794315787.410271566] [local_costmap.local_costmap]: Subscribed to Topics: scan
+[controller_server-4] [INFO] [1794315787.427032441] [local_costmap.local_costmap]: Initialized plugin "voxel_layer"
+[controller_server-4] [INFO] [1794315787.427082915] [local_costmap.local_costmap]: Using plugin "semantic_layer"
+[controller_server-4] [INFO] [1794315787.441037176] [local_costmap.local_costmap]: Initialized plugin "semantic_layer"
+[controller_server-4] [INFO] [1794315787.441074338] [local_costmap.local_costmap]: Using plugin "inflation_layer"
+[controller_server-4] [INFO] [1794315787.445467575] [local_costmap.local_costmap]: Initialized plugin "inflation_layer"
+[amcl-2] [INFO] [1794315787.449769315] [amcl]: createLaserObject
+[lifecycle_manager-3] [INFO] [1794315787.454822883] [lifecycle_manager_localization]: Server amcl connected with bond.
+[lifecycle_manager-3] [INFO] [1794315787.454863706] [lifecycle_manager_localization]: [34m[1mManaged nodes are active[0m[0m
+[lifecycle_manager-3] [INFO] [1794315787.454875437] [lifecycle_manager_localization]: [34m[1mCreating bond timer...[0m[0m
+[controller_server-4] [INFO] [1794315787.490230559] [controller_server]: Created progress_checker : progress_checker of type nav2_controller::SimpleProgressChecker
+[controller_server-4] [INFO] [1794315787.491068103] [controller_server]: Controller Server has progress_checker  progress checkers available.
+[controller_server-4] [INFO] [1794315787.492079261] [controller_server]: Created goal checker : general_goal_checker of type nav2_controller::SimpleGoalChecker
+[controller_server-4] [INFO] [1794315787.492902554] [controller_server]: Controller Server has general_goal_checker  goal checkers available.
+[controller_server-4] [INFO] [1794315787.494205514] [controller_server]: Created controller : FollowPath of type nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController
+[controller_server-4] [INFO] [1794315787.506694912] [controller_server]: Controller Server has FollowPath  controllers available.
+[lifecycle_manager-13] [INFO] [1794315787.521784210] [lifecycle_manager_navigation]: [34m[1mConfiguring smoother_server[0m[0m
+[smoother_server-5] [INFO] [1794315787.522113496] [smoother_server]: Configuring smoother server
+[smoother_server-5] [INFO] [1794315787.552992945] [smoother_server]: Created smoother : simple_smoother of type nav2_smoother::SimpleSmoother
+[smoother_server-5] [INFO] [1794315787.558428802] [smoother_server]: Smoother Server has simple_smoother  smoothers available.
+[lifecycle_manager-13] [INFO] [1794315787.569654523] [lifecycle_manager_navigation]: [34m[1mConfiguring planner_server[0m[0m
+[planner_server-6] [INFO] [1794315787.570015441] [planner_server]: Configuring
+[planner_server-6] [INFO] [1794315787.570049894] [global_costmap.global_costmap]: Configuring
+[planner_server-6] [INFO] [1794315787.577246816] [global_costmap.global_costmap]: Using plugin "static_layer"
+[planner_server-6] [INFO] [1794315787.584257724] [global_costmap.global_costmap]: Subscribing to the map topic (/map) with transient local durability
+[planner_server-6] [INFO] [1794315787.587191389] [global_costmap.global_costmap]: Initialized plugin "static_layer"
+[planner_server-6] [INFO] [1794315787.587608281] [global_costmap.global_costmap]: Using plugin "obstacle_layer"
+[planner_server-6] [INFO] [1794315787.591326416] [global_costmap.global_costmap]: Subscribed to Topics: scan
+[planner_server-6] [INFO] [1794315787.606197307] [global_costmap.global_costmap]: Initialized plugin "obstacle_layer"
+[planner_server-6] [INFO] [1794315787.608387825] [global_costmap.global_costmap]: Using plugin "semantic_layer"
+[planner_server-6] [INFO] [1794315787.624204249] [global_costmap.global_costmap]: Initialized plugin "semantic_layer"
+[planner_server-6] [INFO] [1794315787.624911923] [global_costmap.global_costmap]: Using plugin "inflation_layer"
+[planner_server-6] [INFO] [1794315787.633231142] [global_costmap.global_costmap]: Initialized plugin "inflation_layer"
+[planner_server-6] [INFO] [1794315787.687038020] [planner_server]: Created global planner plugin GridBased of type nav2_navfn_planner::NavfnPlanner
+[planner_server-6] [INFO] [1794315787.687080304] [planner_server]: Configuring plugin GridBased of type NavfnPlanner
+[planner_server-6] [INFO] [1794315787.687437831] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 693 X 845 at 0.050000 m/pix
+[planner_server-6] [INFO] [1794315787.689817314] [planner_server]: Planner Server has GridBased  planners available.
+[lifecycle_manager-13] [INFO] [1794315787.709855791] [lifecycle_manager_navigation]: [34m[1mConfiguring route_server[0m[0m
+[route_server-7] [INFO] [1794315787.710314216] [route_server]: Configuring
+[route_server-7] [INFO] [1794315787.759616759] [route_server]: Created GraphFileLoader GeoJsonGraphFileLoader of type nav2_route::GeoJsonGraphFileLoader
+[route_server-7] [INFO] [1794315787.759663283] [route_server]: Configuring geojson graph file loader
+[route_server-7] [INFO] [1794315787.761256685] [route_server]: No graph file provided to load yet.
+[route_server-7] [INFO] [1794315787.770181620] [route_server]: Created edge cost function plugin DistanceScorer of type nav2_route::DistanceScorer
+[route_server-7] [INFO] [1794315787.770224093] [route_server]: Configuring distance scorer.
+[route_server-7] [INFO] [1794315787.775108838] [route_server]: Created edge cost function plugin DynamicEdgesScorer of type nav2_route::DynamicEdgesScorer
+[route_server-7] [INFO] [1794315787.775146531] [route_server]: Configuring adjust edges scorer.
+[route_server-7] [INFO] [1794315787.786456639] [route_server]: Created route operation AdjustSpeedLimit of type nav2_route::AdjustSpeedLimit
+[route_server-7] [INFO] [1794315787.786496192] [route_server]: Configuring Adjust speed limit operation.
+[route_server-7] [INFO] [1794315787.789671995] [route_server]: Created route operation ReroutingService of type nav2_route::ReroutingService
+[route_server-7] [INFO] [1794315787.789702308] [route_server]: Configuring Rerouting service operation.
+[lifecycle_manager-13] [INFO] [1794315787.795068270] [lifecycle_manager_navigation]: [34m[1mConfiguring behavior_server[0m[0m
+[behavior_server-8] [INFO] [1794315787.795374323] [behavior_server]: Configuring
+[behavior_server-8] [INFO] [1794315787.799212087] [behavior_server]: Creating behavior plugin spin of type nav2_behaviors::Spin
+[behavior_server-8] [INFO] [1794315787.801490582] [behavior_server]: Creating behavior plugin backup of type nav2_behaviors::BackUp
+[behavior_server-8] [INFO] [1794315787.802786142] [behavior_server]: Creating behavior plugin drive_on_heading of type nav2_behaviors::DriveOnHeading
+[behavior_server-8] [INFO] [1794315787.803994134] [behavior_server]: Creating behavior plugin wait of type nav2_behaviors::Wait
+[behavior_server-8] [INFO] [1794315787.817590808] [behavior_server]: Configuring spin
+[behavior_server-8] [INFO] [1794315787.833804882] [behavior_server]: Configuring backup
+[behavior_server-8] [INFO] [1794315787.839614618] [behavior_server]: Configuring drive_on_heading
+[behavior_server-8] [INFO] [1794315787.846683940] [behavior_server]: Configuring wait
+[lifecycle_manager-13] [INFO] [1794315787.856150836] [lifecycle_manager_navigation]: [34m[1mConfiguring velocity_smoother[0m[0m
+[velocity_smoother-11] [INFO] [1794315787.856444609] [velocity_smoother]: Configuring velocity smoother
+[lifecycle_manager-13] [INFO] [1794315787.863616969] [lifecycle_manager_navigation]: [34m[1mConfiguring collision_monitor[0m[0m
+[collision_monitor-12] [INFO] [1794315787.864257998] [collision_monitor]: Configuring
+[collision_monitor-12] [INFO] [1794315787.870900918] [collision_monitor]: [scan]: Creating Scan
+[collision_monitor-12] [INFO] [1794315787.878647983] [collision_monitor]: [FootprintApproach]: Creating Polygon
+[collision_monitor-12] [INFO] [1794315787.879880777] [collision_monitor]: [FootprintApproach]: Polygon points are not defined. Using dynamic subscription instead.
+[collision_monitor-12] [INFO] [1794315787.886392627] [collision_monitor]: [FootprintApproach]: Making footprint subscriber on local_costmap/published_footprint topic
+[lifecycle_manager-13] [INFO] [1794315787.905134045] [lifecycle_manager_navigation]: [34m[1mConfiguring bt_navigator[0m[0m
+[bt_navigator-9] [INFO] [1794315787.905517304] [bt_navigator]: Configuring
+[bt_navigator-9] [INFO] [1794315787.915105930] [bt_navigator]: Creating navigator id navigate_to_pose of type nav2_bt_navigator::NavigateToPoseNavigator
+[amcl-2] [INFO] [1794315787.933786093] [amcl]: Message Filter dropping message: frame 'lidar_frame' at time 5.800 for reason 'the timestamp on the message is earlier than all the data in the transform cache'
+[bt_navigator-9] [WARN] [1794315787.934035012] [bt_navigator]: Error_code parameters were not set. Using default values of: follow_path_error_code compute_path_error_code
+[bt_navigator-9] Make sure these match your BT and there are not other sources of error codes youreported to your application
+[bt_navigator-9] [INFO] [1794315788.060472584] [bt_navigator]: Creating navigator id navigate_through_poses of type nav2_bt_navigator::NavigateThroughPosesNavigator
+[lifecycle_manager-13] [INFO] [1794315788.094183411] [lifecycle_manager_navigation]: [34m[1mConfiguring waypoint_follower[0m[0m
+[waypoint_follower-10] [INFO] [1794315788.095500352] [waypoint_follower]: Configuring
+[waypoint_follower-10] [INFO] [1794315788.126330447] [waypoint_follower]: Created waypoint_task_executor : wait_at_waypoint of type nav2_waypoint_follower::WaitAtWaypoint
+[waypoint_follower-10] [INFO] [1794315788.134258316] [waypoint_follower]: Waypoint pause duration is set to zero, disabling task executor plugin.
+[lifecycle_manager-13] [INFO] [1794315788.136057854] [lifecycle_manager_navigation]: [34m[1mActivating controller_server[0m[0m
+[controller_server-4] [INFO] [1794315788.136253809] [controller_server]: Activating
+[controller_server-4] [INFO] [1794315788.136289872] [local_costmap.local_costmap]: Activating
+[controller_server-4] [INFO] [1794315788.136301863] [local_costmap.local_costmap]: Checking transform
+[controller_server-4] [INFO] [1794315788.136441333] [local_costmap.local_costmap]: start
+[controller_server-4] [INFO] [1794315788.387484326] [controller_server]: Activating controller: FollowPath of type regulated_pure_pursuit_controller::RegulatedPurePursuitController
+[controller_server-4] [INFO] [1794315788.387577703] [controller_server]: Creating bond (controller_server) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794315788.491413290] [lifecycle_manager_navigation]: Server controller_server connected with bond.
+[lifecycle_manager-13] [INFO] [1794315788.491466415] [lifecycle_manager_navigation]: [34m[1mActivating smoother_server[0m[0m
+[smoother_server-5] [INFO] [1794315788.492318330] [smoother_server]: Activating
+[smoother_server-5] [INFO] [1794315788.492362123] [smoother_server]: Creating bond (smoother_server) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794315788.600119482] [lifecycle_manager_navigation]: Server smoother_server connected with bond.
+[lifecycle_manager-13] [INFO] [1794315788.600168105] [lifecycle_manager_navigation]: [34m[1mActivating planner_server[0m[0m
+[planner_server-6] [INFO] [1794315788.600419525] [planner_server]: Activating
+[planner_server-6] [INFO] [1794315788.600455807] [global_costmap.global_costmap]: Activating
+[planner_server-6] [INFO] [1794315788.600467318] [global_costmap.global_costmap]: Checking transform
+[planner_server-6] [INFO] [1794315788.600638491] [global_costmap.global_costmap]: start
+[planner_server-6] [INFO] [1794315788.805310976] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[planner_server-6] [INFO] [1794315788.852704823] [planner_server]: Activating plugin GridBased of type NavfnPlanner
+[planner_server-6] [INFO] [1794315788.853508324] [planner_server]: Creating bond (planner_server) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794315788.957772794] [lifecycle_manager_navigation]: Server planner_server connected with bond.
+[lifecycle_manager-13] [INFO] [1794315788.957818138] [lifecycle_manager_navigation]: [34m[1mActivating route_server[0m[0m
+[route_server-7] [INFO] [1794315788.958134082] [route_server]: Activating
+[route_server-7] [INFO] [1794315788.958205688] [route_server]: Creating bond (route_server) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794315789.063979574] [lifecycle_manager_navigation]: Server route_server connected with bond.
+[lifecycle_manager-13] [INFO] [1794315789.064058410] [lifecycle_manager_navigation]: [34m[1mActivating behavior_server[0m[0m
+[behavior_server-8] [INFO] [1794315789.065371101] [behavior_server]: Activating
+[behavior_server-8] [INFO] [1794315789.065404103] [behavior_server]: Activating spin
+[behavior_server-8] [INFO] [1794315789.065418114] [behavior_server]: Activating backup
+[behavior_server-8] [INFO] [1794315789.065439256] [behavior_server]: Activating drive_on_heading
+[behavior_server-8] [INFO] [1794315789.065450487] [behavior_server]: Activating wait
+[behavior_server-8] [INFO] [1794315789.065473819] [behavior_server]: Creating bond (behavior_server) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794315789.172289614] [lifecycle_manager_navigation]: Server behavior_server connected with bond.
+[lifecycle_manager-13] [INFO] [1794315789.172332668] [lifecycle_manager_navigation]: [34m[1mActivating velocity_smoother[0m[0m
+[velocity_smoother-11] [INFO] [1794315789.173602865] [velocity_smoother]: Activating
+[velocity_smoother-11] [INFO] [1794315789.173679981] [velocity_smoother]: Creating bond (velocity_smoother) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794315789.280436883] [lifecycle_manager_navigation]: Server velocity_smoother connected with bond.
+[lifecycle_manager-13] [INFO] [1794315789.280483376] [lifecycle_manager_navigation]: [34m[1mActivating collision_monitor[0m[0m
+[collision_monitor-12] [INFO] [1794315789.280803281] [collision_monitor]: Activating
+[collision_monitor-12] [INFO] [1794315789.280842194] [collision_monitor]: Creating bond (collision_monitor) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794315789.387771559] [lifecycle_manager_navigation]: Server collision_monitor connected with bond.
+[lifecycle_manager-13] [INFO] [1794315789.387848595] [lifecycle_manager_navigation]: [34m[1mActivating bt_navigator[0m[0m
+[bt_navigator-9] [INFO] [1794315789.388174649] [bt_navigator]: Activating
+[bt_navigator-9] [INFO] [1794315789.500320624] [bt_navigator]: Creating bond (bt_navigator) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794315789.612985509] [lifecycle_manager_navigation]: Server bt_navigator connected with bond.
+[lifecycle_manager-13] [INFO] [1794315789.613030793] [lifecycle_manager_navigation]: [34m[1mActivating waypoint_follower[0m[0m
+[waypoint_follower-10] [INFO] [1794315789.613377419] [waypoint_follower]: Activating
+[waypoint_follower-10] [INFO] [1794315789.613418863] [waypoint_follower]: Creating bond (waypoint_follower) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794315789.723741098] [lifecycle_manager_navigation]: Server waypoint_follower connected with bond.
+[lifecycle_manager-13] [INFO] [1794315789.723785281] [lifecycle_manager_navigation]: [34m[1mManaged nodes are active[0m[0m
+[lifecycle_manager-13] [INFO] [1794315789.723798012] [lifecycle_manager_navigation]: [34m[1mCreating bond timer...[0m[0m
+[amcl-2] [WARN] [1794315790.276595999] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315794.006252697] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315794.146667651] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[amcl-2] [WARN] [1794315797.975599358] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315799.205021542] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315801.905454138] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315804.205727534] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315805.446433703] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315809.206791054] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315809.297350704] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[amcl-2] [WARN] [1794315813.111787935] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315814.405127193] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315816.982069992] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315819.405531733] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315820.860130767] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315824.408061115] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315824.742470532] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[amcl-2] [WARN] [1794315828.590706199] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315829.604861688] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315832.435821857] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315834.605859598] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315836.265355958] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315839.606769286] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315840.073146196] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[amcl-2] [WARN] [1794315843.600296092] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315844.607597436] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315847.453634727] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315849.805162387] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315851.283185995] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315854.807493919] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315855.136801892] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[amcl-2] [WARN] [1794315859.018264585] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315860.006275114] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315862.893793772] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315865.007776057] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315866.730615200] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315870.206233506] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315870.596560398] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[amcl-2] [WARN] [1794315874.422064373] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315875.405799580] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315878.241605675] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315880.407795621] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315882.103426313] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315885.408627685] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315885.979616106] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[amcl-2] [WARN] [1794315889.866070515] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315890.608819745] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315893.744862420] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315895.804934969] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315897.598941481] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315900.805399594] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315901.386198665] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[amcl-2] [WARN] [1794315905.277294743] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315905.805447858] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315909.196718052] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315910.805840288] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315913.069163920] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315916.005645413] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315916.891198864] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[amcl-2] [WARN] [1794315920.709652348] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315921.205232357] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315924.218067121] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315926.206610291] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315928.105920654] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315931.406832519] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315931.956416385] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[amcl-2] [WARN] [1794315935.755751577] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315936.407969067] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315939.648889694] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315941.606798820] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315943.540671576] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315946.805101593] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794315947.404068177] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[amcl-2] [WARN] [1794315951.215912941] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794315951.812079561] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]

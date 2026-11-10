@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "/opt/phase7-runtime/verify_phase7_live_operator_rejection.py", line 174, in <module>
+    main()
+  File "/opt/phase7-runtime/verify_phase7_live_operator_rejection.py", line 72, in main
+    unchanged, rejected = request_unapproved_prompt(credentials, timeout_s=180.0)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/phase7-runtime/verify_phase7_live_operator_rejection.py", line 58, in request_unapproved_prompt
+    raise TimeoutError("live Phase 7 operator endpoint did not start")
+TimeoutError: live Phase 7 operator endpoint did not start

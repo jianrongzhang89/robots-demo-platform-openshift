@@ -1,0 +1,10 @@
+{"nav2_fixture_services": [["/phase7_bridge_nav2_fixture/describe_parameters", ["rcl_interfaces/srv/DescribeParameters"]], ["/phase7_bridge_nav2_fixture/get_parameter_types", ["rcl_interfaces/srv/GetParameterTypes"]], ["/phase7_bridge_nav2_fixture/get_parameters", ["rcl_interfaces/srv/GetParameters"]], ["/phase7_bridge_nav2_fixture/get_type_description", ["type_description_interfaces/srv/GetTypeDescription"]], ["/phase7_bridge_nav2_fixture/list_parameters", ["rcl_interfaces/srv/ListParameters"]], ["/phase7_bridge_nav2_fixture/set_parameters", ["rcl_interfaces/srv/SetParameters"]], ["/phase7_bridge_nav2_fixture/set_parameters_atomically", ["rcl_interfaces/srv/SetParametersAtomically"]], ["/robot_1/navigate_through_poses/_action/cancel_goal", ["action_msgs/srv/CancelGoal"]], ["/robot_1/navigate_through_poses/_action/get_result", ["nav2_msgs/action/NavigateThroughPoses_GetResult"]], ["/robot_1/navigate_through_poses/_action/send_goal", ["nav2_msgs/action/NavigateThroughPoses_SendGoal"]], ["/robot_1/navigate_to_pose/_action/cancel_goal", ["action_msgs/srv/CancelGoal"]], ["/robot_1/navigate_to_pose/_action/get_result", ["nav2_msgs/action/NavigateToPose_GetResult"]], ["/robot_1/navigate_to_pose/_action/send_goal", ["nav2_msgs/action/NavigateToPose_SendGoal"]]]}
+adapter atomic-parameter service route ready
+Traceback (most recent call last):
+  File "/opt/phase7-runtime/verify_phase7_ros_service_bridges.py", line 189, in <module>
+    main()
+  File "/opt/phase7-runtime/verify_phase7_ros_service_bridges.py", line 115, in main
+    until(client.service_is_ready,
+  File "/opt/phase7-runtime/verify_phase7_ros_service_bridges.py", line 24, in until
+    raise TimeoutError(f"timed out waiting for {description}")
+TimeoutError: timed out waiting for Nav2 cancel service route /robot_1/navigate_to_pose/_action/cancel_goal

@@ -5,6 +5,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /opt/semantic-perception
 COPY apps/semantic-perception/*.py /opt/semantic-perception/
+COPY apps/semantic-safety/phase7_prompt_permit.py /opt/semantic-perception/phase7_prompt_permit.py
 COPY apps/semantic-perception/tests /opt/semantic-perception/tests
 COPY apps/semantic-perception/tests_ros /opt/semantic-perception/tests_ros
 RUN python3 -c 'import importlib.util; assert importlib.util.find_spec("torch") is None' \

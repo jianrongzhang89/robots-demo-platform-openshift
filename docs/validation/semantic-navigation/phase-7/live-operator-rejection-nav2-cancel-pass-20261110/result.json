@@ -1,0 +1,96 @@
+{
+  "nav2_cancel": {
+    "action": "/navigate_to_pose",
+    "cancel_acknowledgements": {
+      "acks": {
+        "/navigate_through_poses": {
+          "goals_canceling": 0,
+          "return_code": 0
+        },
+        "/navigate_to_pose": {
+          "goals_canceling": 1,
+          "return_code": 0
+        }
+      }
+    },
+    "cancel_proxy": "/phase7/cancel_navigation",
+    "event": "phase7_live_nav2_cancel",
+    "goal_accepted": true,
+    "goal_status": 5,
+    "goal_status_name": "STATUS_CANCELED",
+    "live_sam3_adapter": {
+      "approved_prompts": [
+        "red mat"
+      ],
+      "backend": "http",
+      "deployment_identity": {
+        "container_digest": "sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+        "model_name": "sam3-mat-v1",
+        "policy": "avoid-target/v1",
+        "precision": "bfloat16",
+        "prompt": "red mat",
+        "schema": "semantic-deployment/v1",
+        "shared_sha256": {
+          "inference_contract.py": "d238d2490f826b6fbb70f07aa5579492dc425e8c858b780c8216679f121ffdef",
+          "sam3_backend.py": "3d83819971704e8ce642db98972194996307b314bb73cbb44257384e45714761",
+          "sam3_runtime_core.py": "683cf53a5b6378fa72d0cefe404bd899039b1420b4d5a2e7cfe3faecaf57085f"
+        },
+        "source_revision": "0570b3a5be9c4e694f23d85232fb55f4a6f1f7fc",
+        "threshold": 0.5,
+        "versions": {
+          "decoder": "sam3-binary-instances/v1",
+          "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+          "preprocess": "sam3-pil-rgb/v1"
+        },
+        "weights_sha256": "9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e"
+      },
+      "emitted_results": 29,
+      "last_result": {
+        "capture": {
+          "frame_id": "camera_color_optical_frame",
+          "stamp_ns": 4500000000
+        },
+        "capture_age_upper_ms": 345.934066,
+        "capture_wall_ns": 1794305342986651178,
+        "identity": {
+          "epoch": "1518c2bc-a464-45be-871e-a1838ff4b778",
+          "generation": 1,
+          "request_id": "15c90ee4-798e-4359-8b20-cc184e6cefc5",
+          "robot": "robot_1",
+          "sequence": 46,
+          "stream": "camera/color"
+        },
+        "receiver_processing_age_ms": 193.80579516291618,
+        "result_wall_ns": 1794305343330585244,
+        "simulation_age_ms": 230.0,
+        "source_epoch": "15dfc9e0-4e76-4584-ac72-1730c5f7a8aa",
+        "source_sequence": 46
+      },
+      "paired_triplets": 47,
+      "passed": true,
+      "policy_generation": 1,
+      "prompt": "red mat",
+      "prompt_transition_enabled": true
+    },
+    "max_applied_vx": 0.0,
+    "max_applied_wz": 0.0,
+    "max_native_speed_mps": 0.0010036284503364826,
+    "native_armed": false,
+    "native_status_samples": 416,
+    "passed": true
+  },
+  "operator_policy": {
+    "applied_vx": 0.0,
+    "applied_wz": 0.0,
+    "event": "phase7_live_unapproved_prompt_rejection",
+    "http_status": 400,
+    "native_armed": false,
+    "passed": true,
+    "policy_generation": 1,
+    "prompt": "red mat",
+    "prompt_transition_enabled": true,
+    "ready": true,
+    "rejection": "prompt is not approved",
+    "stop_applied_steady_ns": 0
+  }
+}

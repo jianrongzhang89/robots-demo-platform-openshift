@@ -1,0 +1,9 @@
+# Phase 7 per-domain camera stream probe — failed before operator readiness
+
+This isolated run used runtime candidate #65 (`sha256:4483f10b8554e827c0220cd92ac4d988d488aae6b18cb3fbe728c8f60bac915c`) and adapter candidate #9 (`sha256:d5b22eae66497af2bd3230d43767f862d6b0923d73ffb8f54a865e21c9258c28`). The runtime image passed all 25 Phase 7 tests. Two read-only ROS probes counted the five camera inputs for 20 seconds on either side of the Zenoh bridge.
+
+The source-side probe in domain 181 received 85 RGB, 85 depth, 86 CameraInfo, 85 capture traces, and 85 compression traces. The destination probe in domain 182 received 86 RGB, **zero depth**, 87 CameraInfo, zero capture traces, and 86 compression traces. The operator API remained closed; the live verifier submitted no Nav2 goal, and no operator request or cancellation ran. The ephemeral pod and validation Secret were removed after evidence capture.
+
+While the pod was running, `ros2 topic info --verbose` in domain 182 showed a remote bridge publisher and the adapter subscription for the depth topic, both reliable, with one matched subscription. A five-second `ros2 topic hz` observation saw RGB at about 5.8 Hz and no depth. The adapter status showed `paired_triplets=0`, `emitted_results=0`, `input_queue_depths` of RGB 20, CameraInfo 20, and depth 0, with 1,561 input queue drops. The compressor itself continued pairing RGB/depth and producing PNG depth payloads. This localizes the failure to delivery of the depth stream across the ROS/Zenoh boundary; it is not the earlier CameraInfo QoS mismatch or an adapter RGB-D pairing failure.
+
+The bundle contains the applied manifest, build #65 record and test log, full pod/container logs, and before/after Phase 6 snapshots. The Phase 6 pod readiness, status, restart counts, IPs, and nodes match. The pod/Secret were temporary; no Phase 6 workloads were changed.

@@ -1,6 +1,6 @@
 # Semantic navigation implementation plan
 
-Date: October 22, 2026. Status: **Phases 0 and 1 complete; Phase 2 passed with a user-approved demo waiver for deferred recognition review/held-out scoring; Phases 3 and 4 complete and review approved by the user on October 16, 2026; Phase 5 complete — all four moving gates passed and the evidence review was approved by the user on October 26, 2026 with recorded caveats (footprint-geometry correction, private-profile deviations including the watchdog UDP companion path, single-floor scope, the standing Phase 2 recognition waiver, and twelve retained failed matrix series); Phase 6 is unlocked and its qualification gates are HOLD until run; a separate, narrowly scoped Phase 6D demo track is user-approved. D0 static profile preflight, D1 stationary perception-to-costmap smoke, and D2 fixed-scene paired navigation are DEMO PASS. D2 completed three off/on pairs after resolving the isolated command route, stale camera/clock routes, CPU contention, and Nav2 startup-order failures. The October 22 Phase 5 non-actuating preflight passed 169 unit tests and its native/plugin fixtures but did not qualify motion or close any Phase 5 acceptance gate; on October 23 the recovery-repeatability subgate passed 10/10, the moving fault-stop subgate passed its 10/10 fault matrix, and on October 26 the moving SAM3 observation subgate passed its 10/10 series (100% capture-time registration, ~7 results/s) and the armed semantic fault matrix passed its 10/10 series (five fault classes, mode-qualified first reasons, zero within 0.3–2.6 ms of the 500 ms freshness trigger, observed late successes with no motion resume) on the guarded GPU fixture.** The pinned SAM3 checkpoint/runtime and hotel-scene recognition remain unqualified for general use. D2 demonstrates a staged semantic-cost route choice only; it does not qualify safety or robot-footprint clearance beyond the Phase 5 evidence, change the canonical hotel deployment, or authorize physical-robot use.
+Status updated November 10, 2026: **Phases 0–5 complete with their recorded waivers and caveats; Phase 6 PASS and signed off October 30, 2026** (20/20 nominal pairs per arm, 100% aggregate hull-exposure reduction, zero collisions, and all required negative cases passed). Phase 7 demo evidence is **DEMO PASS, reviewed and signed off by the user on November 10, 2026** under the adjusted demo-only scope in the [Phase 7 demo sign-off record](validation/semantic-navigation/phase-7/phase7-demo-signoff-20261110.md). Production deployment and additional-category recognition are outside this scope. The Phase 6 acceptance record is [`phase6-acceptance.json`](validation/semantic-navigation/phase-6/phase6-acceptance.json), with the evidence review at [`sign-off-review-20261030.md`](validation/semantic-navigation/phase-6/sign-off-review-20261030.md). Phase 6D remains a separate demo track. D0 static profile preflight, D1 stationary perception-to-costmap smoke, and D2 fixed-scene paired navigation are DEMO PASS. The pinned SAM3 checkpoint/runtime and hotel-scene recognition remain unqualified for general use. Phase 6 acceptance does not qualify the canonical hotel deployment or physical-robot use.
 
 ## Decision and scope
 
@@ -292,10 +292,11 @@ cancellation, and ledger checks. With 10 Hz private lidar and 100 Hz smoother,
 two 20-second 40 Hz controller observations had zero optimistic authority gaps
 (1,797 and 1,997 eligible outputs), while a 30 Hz run had one 2.77 ms gap. The
 next disarmed repetition passed all 14 live checks, with 1,996 eligible checked
-outputs and zero optimistic gaps. It also recorded the ten actual Nav2 action
-servers in the candidate graph (navigation, follow-path, recovery, planning and
-smoothing actions), closing discovery but not runtime all-client ownership or
-fault-time cancellation. See the retained [action inventory](validation/semantic-navigation/phase-5/hotel-28-20261017/runtime/action-endpoint-inventory.json).
+outputs and zero optimistic gaps. A later October 26 endpoint inventory records
+the ten actual Nav2 action servers in the candidate graph (navigation,
+follow-path, recovery, planning and smoothing actions), closing discovery but
+not runtime all-client ownership or fault-time cancellation. See the retained
+[action inventory](validation/semantic-navigation/phase-6/pilot-1-20261026/pair-1-on-lethal254-grace4/runtime-partial/action-endpoint-inventory.json).
 At that disarmed checkpoint the
 40 Hz profile remained an isolated diagnostic, not a motion-qualified setting:
 coverage analysis omits supervisor/lease timing and window edges, and the run
@@ -829,17 +830,17 @@ baseline smoke test after the demo. Keep the canonical deployment unchanged.
 
 ### Phase 6 Full qualification: demonstrate navigation with and without semantic costs
 
-**Status: HOLD.** This remains the formal Phase 6 gate; the Phase 6D demo-only
-result above does not satisfy or replace it. Phase 5 qualification is complete
-and its acceptance is recorded (October 26, 2026), so the entry requirement is
-satisfied; the Phase 6 gates themselves are HOLD until run under the execution
-start note below.
+**Status: PASS — signed off October 30, 2026.** The formal Phase 6 gate is
+complete. The Phase 6D demo-only result did not satisfy or replace this gate;
+the qualification evidence and accepted limitations are recorded in the
+[acceptance record](validation/semantic-navigation/phase-6/phase6-acceptance.json)
+and [sign-off review](validation/semantic-navigation/phase-6/sign-off-review-20261030.md).
 
-**Work:** enable the verified layer in both maps. Start at ≤0.15 m/s and increase toward the existing 0.35 m/s only after braking, latency, and viewing-distance tests pass at each speed. Keep the same speed in both arms. See the target before dispatch and keep an alternative route available. Do not change RPP, planner, replanning cadence, or map between arms.
+**Qualification protocol (completed):** enable the verified layer in both maps. Start at ≤0.15 m/s and increase toward the existing 0.35 m/s only after braking, latency, and viewing-distance tests pass at each speed. Keep the same speed in both arms. See the target before dispatch and keep an alternative route available. Do not change RPP, planner, replanning cadence, or map between arms.
 
-**Verification:** run at least 20 paired trials in alternating order for the target scene, plus target-absent, target-removal, and perception-failure cases. Keep camera/inference running in both arms so compute load is comparable. Reset all semantic state between runs using the phase 4 procedure. Measure actual robot-hull exposure to the ground-truth region, not just path-center overlap.
+**Verification criteria (met):** run at least 20 paired trials in alternating order for the target scene, plus target-absent, target-removal, and perception-failure cases. Keep camera/inference running in both arms so compute load is comparable. Reset all semantic state between runs using the phase 4 procedure. Measure actual robot-hull exposure to the ground-truth region, not just path-center overlap.
 
-**Pass gate:** 20/20 completions per arm in the controlled nominal scene, no physical collisions, and ≥90% reduction in aggregate target-exposure distance for semantic-on versus semantic-off trials. Baseline exposure must be nonzero; otherwise the scene is inconclusive. Negative-scene completion must not regress. Faults must meet phase 5 stopping criteria. Report path length, completion time, minimum clearance, interventions, and runtime alongside the semantic benefit.
+**Acceptance gate (passed):** 20/20 completions per arm in the controlled nominal scene, no physical collisions, and ≥90% reduction in aggregate target-exposure distance for semantic-on versus semantic-off trials. Baseline exposure must be nonzero; otherwise the scene is inconclusive. Negative-scene completion must not regress. Faults must meet phase 5 stopping criteria. Report path length, completion time, minimum clearance, interventions, and runtime alongside the semantic benefit.
 
 **Evidence and rollback:** paired manifests, metrics, bags, and synchronized camera/mask/costmap/path video. Stop, disable semantic influence, flush state, and repeat the baseline smoke test. Any geometry-only fallback completion is labeled degraded operation, not successful semantic navigation.
 
@@ -857,7 +858,8 @@ registration/load, and the armed fault matrix is supplied, every trial is
 pinned to one Ready GPU-free worker, and the operator confirms the reserved
 moving window in the evidence header. Planning (`--plan-only`) is available
 for review at any time. This tooling records and evaluates evidence only; it
-does not itself qualify navigation or change the Phase 6 HOLD status.
+did not itself qualify navigation or change the then-current Phase 6 HOLD
+status.
 
 **Execution start (October 26, 2026, user-approved):** Phase 5 acceptance is
 recorded at
@@ -873,7 +875,7 @@ qualified for motion per the October 23 thread-probe diagnosis and sign-off
 caveat 2; `run_phase6_series.py` now refuses execution without
 `--gpu-rendering` on the pinned node; (3) the first frozen series runs at
 **0.15 m/s only**, with the speed ladder defined and advanced only after that
-series passes. Phase 6 gates remain HOLD until run.
+series passes. At that point, the Phase 6 gates remained HOLD pending execution.
 
 **Pilot pair 1 outcome (October 28, 2026, user-accepted):** the pilot pair is
 closed with its findings accepted; see
@@ -900,7 +902,8 @@ before the router listens) was also root-caused and fixed. The
 registration degradation on detour views proved lane-specific (99.99% on
 the passing detour vs 0.688 on an earlier lane) — sub-cell edge bleed
 under the standing Phase 2 recognition waiver, a variance watch item
-rather than a blocker. Phase 6 gates remain HOLD pending the series.
+rather than a blocker. At that point, the Phase 6 gates remained HOLD pending
+the full series, which subsequently passed and was signed off October 30, 2026.
 
 This phase is the **first complete SAM3 semantic-navigation demonstration**. Later features are not required to accept it.
 
@@ -908,9 +911,226 @@ This phase is the **first complete SAM3 semantic-navigation demonstration**. Lat
 
 **Entry:** phase 6 passes. Add an operator control limited to approved categories and fixed navigation policy. The Open Navigation node already exposes a prompt-change service, but service acceptance does not prove new results are available. [Prompt-change source](https://github.com/open-navigation/opennav_amd_semantic_navigation/blob/5e82f4a458f9e97ddd92e2cf10feb2c3552295d3/opennav_sam3_inference/opennav_sam3_inference/sam3_node.py).
 
-**Work and verification:** qualify each new prompt through phase 2. Stop motion, begin a new policy generation, reset tracking and semantic buffers, and wait for matching fresh labels/masks before operator-authorized resume. Test 20 alternating changes, rejected prompts, restart during a change, and delayed old-generation results.
+**Implementation update (November 9, 2026):** Generation-barrier support is
+implemented in the inference adapter, serving contract, and semantic costmap.
+The model manifest pins an `approved_prompts` allowlist; the current list
+contains only `red mat`. A prompt transition uses the ROS atomic parameter
+service with `prompt` and a signed Phase 7 permit. The adapter advances the
+policy generation, changes its stream epoch, flushes queued inputs and retained
+requests, publishes new label metadata, and reports transition readiness only
+after a fresh result for that generation. The costmap clears on a newer
+generation and rejects observations from older generations. The serving
+endpoint and remote adapter reject prompts outside the identity-pinned allowlist
+and warm every listed prompt before readiness.
 
-**Pass gate:** no old-generation output affects costs, no stale target costs remain, and no motion occurs during the transition. Every category meets phases 2–6 requirements. Log the selected category and policy generation. On failure, restore the last passing fixed prompt, clear state, and rerun its smoke test.
+This is implementation groundwork, **not a Phase 7 qualification pass**. No
+additional category has passed Phase 2 and none is enabled. Prompt changes now
+require a five-second HMAC-signed, single-use permit bound to the prompt, next
+generation, and current stream epoch; the former caller-supplied stopped and
+authorized booleans are no longer accepted. The permit issuer checks an
+authorized operator credential and the native safety clock's 250 ms stationary
+window, with fresh physical velocity, disarmed state, and zero applied command.
+The safety-side `PromptTransitionControl` core sequences stop, permit issuance,
+prompt application, and waiting for a fresh matching generation; it never
+resumes motion itself. A runtime bridge now binds the mTLS API to native
+Gazebo status/stop, Nav2 cancel acknowledgements, and the adapter's atomic ROS
+parameter service. It requires a private `phase5-watchdog-phase7-*` Gazebo partition and
+loopback Gazebo transport, and fails closed unless native status and the
+adapter are both ready. The runtime image was built and its isolated OpenShift
+validation Job passed all 14 tests. An isolated Gazebo/mTLS fixture also passed
+the native watchdog stop and stop-before-prompt-update path using the runtime's
+ROS service/topic bindings. A rejected Nav2 cancel ACK left the adapter at
+generation 1; a retry with both ACKs completed. In that fixture, adapter
+parameter/status and Nav2 cancel endpoints were fixture nodes. A later separate
+simulator run verified actual Nav2 cancellation and native no-motion, but the
+production adapter/model service and complete transition workflow are not yet
+qualified. The adapter still fails closed when
+`SEMANTIC_PHASE7_PERMIT_KEY_FILE` is not set for production operation, and
+the complete Phase 7 runtime topology remains unqualified. A temporary
+Secret-mounted credential fixture has now passed the same native-watchdog/mTLS
+integration exercise; the fixture Secret was deleted after validation. This
+proves the runtime can read managed credentials, but does not provision production
+operator identities or the production permit-signing key.
+
+**November 10 review-readiness update:** the isolated adapter fixture now passes
+20 sequential alternating prompt changes (generations 2–21), requiring a fresh
+matching-generation result after each transition and rejecting an unapproved
+`yellow cone` prompt. It also rejected a permit from an earlier stream epoch.
+The fixture identity alone includes `blue crate`; this does not add it to the
+serving manifest or qualify its recognition. The adapter candidate passed 46
+Python and 16 ROS tests; two safety-clock authority tests passed, and the
+costmap candidate passed 26 C++ tests. The safety-side suite now includes permit
+authority, transition control, an mTLS operator API, and runtime ROS/Gazebo
+bindings. The latest runtime candidate passed 17 in-image tests. Its native watchdog and
+ROS-backed mTLS transition fixture,
+including rejected-cancel fail-closed behavior and process restart during a
+pending generation, also passed in a private Gazebo partition. It verified both
+Nav2 cancel acknowledgements, atomic signed-permit application, fresh
+generation-2 readiness, and idempotent recovery (`changed: false`) after the
+operator process restarted. The restarted process then completed 20 alternating
+mTLS changes through generations 3–22, each with a fresh matching-generation
+status and a native stationary proof. The runtime now performs blocking Gazebo
+stop RPCs in a subscription-free worker process and waits for the configured ROS
+cancel/parameter services before advertising the API. The adapter, costmap, operator-control, and operator-runtime validation Jobs
+completed successfully on their candidates. A separate Secret-mounted
+integration Job also completed successfully with the candidate image; its
+result and digest are recorded in
+[`phase7-managed-credentials-20261110`](validation/semantic-navigation/security/phase7-managed-credentials-20261110/README.md).
+The blue-crate simulator pilot contains four positive and two negative
+development samples across three episodes; labels are pending human review,
+there is no episode-separated held-out set, and SAM3 scoring has not run. These
+checks cover permit mechanics and an mTLS-to-native-stop flow with fixture ROS
+endpoints; the actual Nav2 cancellation/native no-motion subgate subsequently
+passed in a separate simulator topology. Neither fixture nor simulator run
+qualifies the production adapter/model service, complete deployed transition
+workflow, category recognition, or operator-authorized resumption. The evidence and
+candidate digests are recorded in
+[`runtime-prompt-protocol-20261109.md`](validation/semantic-navigation/phase-7/runtime-prompt-protocol-20261109.md).
+The six blue-crate candidate labels now have a blind human-review packet. A
+34-frame development expansion and a separate five-episode/100-frame held-out
+coverage matrix are preregistered. Neither the label review nor the
+development-based prompt/configuration freeze is complete;
+the held-out plan explicitly remains uncaptured until those steps pass. See
+[`phase7-bluecrate-development-plan-20261109.md`](validation/semantic-navigation/phase-2/phase7-bluecrate-development-plan-20261109.md)
+and
+[`phase7-bluecrate-heldout-plan-20261109.md`](validation/semantic-navigation/phase-2/phase7-bluecrate-heldout-plan-20261109.md).
+
+**Current review disposition, November 10 scope adjustment:** the Phase 7 demo
+evidence is **DEMO PASS, reviewed and signed off by the user**. The accepted
+demo covers live red-mat inference, fail-closed operator policy, actual Nav2
+cancellation, native no-motion, and signed prompt-transition/restart/freshness
+mechanics in the isolated credential fixture. It does not claim production
+deployment or recognition of additional object categories. See the
+[`Phase 7 demo sign-off record`](validation/semantic-navigation/phase-7/phase7-demo-signoff-20261110.md).
+Keep accepted Phase 6 workloads unchanged during every demo run.
+
+**Live topology preflight:** a read-only probe of the running Phase 6 simulator
+found `/robot_1/cmd_vel` and `/robot_1/odom`, but no native
+`/phase5/drive/status` topic or `/phase5/drive/stop` service. Its adapter,
+Nav2, and simulator are split across ROS domains 82, 87, and Gazebo partition
+`semantic_navigation_phase6_demo`. The current runtime therefore has no
+independent native stop/status source for permit issuance. A separate Phase 7
+watchdog simulator topology has since passed the actual Nav2 cancellation and
+native no-motion subgate (see the November 10 evidence below). The active Phase
+6 stack remains unchanged and is not a candidate for runtime prompt changes.
+
+**ROS bridge integration preflight, November 10:** direct runtime clients for
+Nav2 `/_action/cancel_goal` endpoints did not route across ROS domains. The
+runtime now calls an allowlisted ordinary-service cancellation proxy that
+fans out locally to both Nav2 actions. Its three-domain bridge fixture passed with the packaged sidecar, including
+both cancel acknowledgements, adapter atomic apply, status delivery, and clean
+exit of all six containers. Runtime candidate #44 passed all 17 unit tests.
+Details and fixture evidence are in
+[`ros-service-bridge-investigation-20261110.md`](validation/semantic-navigation/phase-7/ros-service-bridge-investigation-20261110.md).
+
+**Live Nav2 + SAM3 inference qualification, November 10:** the packaged proxy,
+actual Nav2, RGB-D camera compressor, candidate HTTP adapter, and pinned SAM3
+service now pass together in an isolated simulation pod. The adapter reported
+50 paired triplets and 26 fresh results for the only approved prompt, `red mat`,
+with the expected model container and weights identities. The verifier accepted
+the real `/navigate_to_pose` action goal after four attempts; the packaged
+proxy acknowledged cancellation of one active goal and Nav2 returned
+`STATUS_CANCELED`. Across 415 post-settling native samples, motion remained
+disarmed, applied commands stayed zero, and maximum measured speed was
+0.0010038603 m/s (below 0.002 m/s). All 13 containers exited zero using runtime
+candidate #54 (`sha256:537af8dd3473b9df857d303bf7240f82484d7a54c312452d30807bfb6d398179`),
+which passed all 20 in-image Phase 7 unit tests. The runtime bridges Gazebo
+clock directly to the Nav2 ROS domain. Evidence and full logs are archived in
+[`live-semantic-adapter-nav2-cancel-pass-20261110`](validation/semantic-navigation/phase-7/live-semantic-adapter-nav2-cancel-pass-20261110/).
+
+**Live operator rejection + Nav2 cancellation qualification, November 10:**
+runtime candidate #60 (`sha256:61bdebda24415fd734311d118f6c02a6aef3c7971399fd57209984ebcd536a4a`)
+passed all 22 in-image Phase 7 tests. In one isolated simulator pod, an
+mTLS-authenticated operator request for unapproved `blue crate` received HTTP
+400 before any native stop, Nav2 cancellation, or prompt update. The pinned
+adapter stayed ready on `red mat` at generation 1. The same pod then accepted
+and canceled an actual `/navigate_to_pose` goal with `STATUS_CANCELED`. Across
+416 native samples, motion remained disarmed, applied commands stayed zero,
+and maximum measured speed was 0.0010036285 m/s. All 15 containers exited zero,
+including graceful operator API shutdown. The validation-only Secret and pod
+were deleted after capture. Evidence is archived in
+[`live-operator-rejection-nav2-cancel-pass-20261110`](validation/semantic-navigation/phase-7/live-operator-rejection-nav2-cancel-pass-20261110/).
+An intervening retry intermittently failed before the API started: the camera
+compressor paired RGB-D frames, but the adapter received zero triplets and
+remained not ready. A later integrated retry passed. The failed attempt remains
+archived under
+[`attempts`](validation/semantic-navigation/phase-7/attempts/live-operator-rejection-inference-timeout-20261110/);
+at that point, repeatable live inference and the successful approved
+transition/restart/stale-result workflow remained unqualified. Candidate #66
+later closed the repeatable live inference and actual-cancellation subgate.
+The separate fixture then passed transition/restart/freshness mechanics for
+the demo scope; it does not claim a prompt change against the pinned live
+red-mat model service.
+The independent actual Nav2 cancellation pass remains at
+[`live-nav2-cancel-pass-20261110`](validation/semantic-navigation/phase-7/live-nav2-cancel-pass-20261110/).
+Earlier failures diagnosing camera routes, adapter input namespace, topic suffix
+filters, clock routing, and verifier schema are retained in neighboring
+`*-attempt-20261110` evidence directories.
+
+At this point in the earlier production/generalization scope, the run passed
+live red-mat inference plus actual Nav2 cancellation/native no-motion, while
+the broader gate remained **HOLD**. The November 10 demo-scope adjustment below
+uses this live run together with the transition fixture as the evidence for
+**DEMO PASS**. The accepted Phase 6 workloads remain unchanged.
+
+**November 10 QoS correction and integrated retest:** a follow-up live retry showed that CameraInfo and capture/compression traces were offered with BEST_EFFORT QoS while the semantic adapter requested RELIABLE QoS. That prevented the ROS 2 endpoints from matching even though the Zenoh routes and publishers were present. The adapter now requests BEST_EFFORT for CameraInfo and both trace topics; compressed RGB/depth remain RELIABLE. The adapter candidate passed 46 unit tests and 17 ROS integration tests, including a QoS regression assertion. Runtime candidate #62 (`sha256:81df532f19a65e8de4b8c895918d8bc64702e7ace1d0667f47197efe6fbcbdb5`) passed all 24 in-image tests. The corrected isolated live pod produced 49 complete RGB-D-CameraInfo triplets and 31 fresh results, returned HTTP 200/`changed:false` for an authenticated idempotent `red mat` request, rejected unapproved `blue crate` with HTTP 400, then canceled a real Nav2 goal with `STATUS_CANCELED`. All 411 native samples remained disarmed with zero applied commands; max speed was 0.0010036451 m/s. All 15 containers exited zero, temporary resources were removed, and Phase 6 pod names/readiness/IPs/nodes matched before and after. Evidence, logs, image digests, and checksums are in [`live-operator-idempotent-rejection-nav2-cancel-pass-20261110`](validation/semantic-navigation/phase-7/live-operator-idempotent-rejection-nav2-cancel-pass-20261110/README.md) and [`repeatability run 2`](validation/semantic-navigation/phase-7/live-operator-idempotent-rejection-nav2-cancel-repeat-2-20261110/README.md). The corrected candidates passed two consecutive integrated startup runs with the metadata/trace QoS regression fixed. At that time the then-current production/generalization scope remained **HOLD**; this status is superseded by the demo-scope decision below.
+
+**November 10 ROS/Zenoh startup-order qualification:** later runs exposed a second intermittent stream failure despite the metadata QoS correction. Per-domain probes showed that source ROS domain 181 could receive RGB-D and trace topics while destination domain 182 sometimes received no depth or no camera streams. Reliable blocking on the destination bridge alone passed once but failed on its exact repeat. Candidate #66 (`sha256:bdcc039a9a0279fccecdcfad9231cdeaa3facc0ccf5f36fc06912b949cd91148`; 25 in-image tests passed) adds a two-sided endpoint barrier: the source bridge waits for the expected camera-compressor/camera-bridge publishers, and both camera bridges wait for the adapter's five subscriptions to be visible before starting. With destination `reliable_routes_blocking: true`, two consecutive live runs received every required topic in both domains and completed the operator policy and real Nav2 cancellation checks. The first run paired 60 triplets and emitted 36 fresh results; the repeat paired 48 and emitted 29. Each run confirmed loopback-only API binding, `red mat` idempotency (`HTTP 200`, `changed:false`), fail-closed rejection of `blue crate` (`HTTP 400`), active-goal `STATUS_CANCELED`, zero applied native commands, and all 19 containers exiting zero. Peak measured speeds were 0.0010043501 m/s and 0.0010035701 m/s. Phase 6 and shared Phase 5 router pod snapshots matched before and after both runs. The earlier failed attempts remain in [`attempts`](validation/semantic-navigation/phase-7/attempts/); the two successful run bundles are [`startup-gate pass`](validation/semantic-navigation/phase-7/attempts/live-ros-stream-startup-gate-20261110/README.md) and [`repeat`](validation/semantic-navigation/phase-7/attempts/live-ros-stream-startup-gate-repeat-20261110/README.md). This closes the intermittent live inference/cancellation topology subgate, but it does not exercise a successful approved prompt transition.
+
+**November 10 scoped NetworkPolicy qualification:** a pod-scoped deny-ingress
+policy now limits the isolated topology's egress to cluster DNS and the pinned
+SAM3 predictor on TLS port 8443. The first run exposed OpenShift DNS's Service
+port 53 to CoreDNS pod target-port 5353 translation; the runtime's new startup
+diagnostics identified the adapter, native-clock, and Nav2-cancel readiness
+gates that remained false. After allowing 5353 only to the labeled
+`openshift-dns` pods, a policy-selected probe resolved the model Service and
+completed mTLS TLS 1.3, and candidate #68
+(`sha256:b344a05fe7f3b8d31246c9af50d3436a03389704640e474fcfda2e091ed06f1b`;
+26 in-image tests passed) completed the full live workflow under policy. It
+received every camera stream in both domains, paired 97 RGB-D-CameraInfo
+triplets, emitted 67 fresh results, passed the authenticated `red mat` no-op
+and `blue crate` rejection, canceled a real Nav2 goal with both acknowledgments,
+and kept all 410 native samples disarmed with zero applied commands. All 19
+containers exited zero, and Phase 6/shared Phase 5 router snapshots were
+identical before and after. The failed first-policy attempt and successful
+repeat bundles are [`initial attempt`](validation/semantic-navigation/phase-7/attempts/live-network-policy-candidate-68-20261110/README.md)
+and [`corrected repeat`](validation/semantic-navigation/phase-7/attempts/live-network-policy-candidate-68-repeat-20261110/README.md).
+The later variant that permitted DNS only to CoreDNS pods (omitting the
+cluster DNS Service VIP) failed closed and is retained in the
+[`minimal-DNS attempt`](validation/semantic-navigation/phase-7/attempts/live-network-policy-candidate-68-final-20261110/README.md);
+the deployed manifest has been restored to the passing rule set above.
+This qualifies policy behavior for the single-pod simulator topology only;
+production credential lifecycle, multi-pod policy review, and a successful
+approved prompt transition remain open.
+
+**November 10 separate simulator smoke:** a pinned Phase 7 simulator candidate
+now includes the native watchdog plugin and guarded world patch. In its own
+ROS domain and Gazebo partition, the actual hotel world reported valid native
+physical status, disarmed zero command, and the stop service. Eighty direct
+nonzero raw-drive injections produced less than 0.000001 m/s measured speed
+and zero x-pose change. Evidence is in
+[`live-simulator-watchdog-smoke-20261110`](validation/semantic-navigation/phase-7/live-simulator-watchdog-smoke-20261110/).
+The smoke pod was removed after measurement because it shared a node with the
+accepted Phase 6 simulator and consumed 5.6 CPU during the run. Its candidate
+image and manifest remain pinned, but this smoke does not qualify the complete
+Nav2/adapter/operator topology or supervised motion path.
+
+**Future category-enablement work:** qualify each new prompt through phase 2. Stop motion, begin a new policy generation, reset tracking and semantic buffers, and wait for matching fresh labels/masks before operator-authorized resume. Test 20 alternating changes, rejected prompts, restart during a change, and delayed old-generation results.
+
+**Future category-enablement gate:** no old-generation output affects costs, no stale target costs remain, and no motion occurs during the transition. Every category meets phases 2–6 requirements. Log the selected category and policy generation. On failure, restore the last passing fixed prompt, clear state, and rerun its smoke test. This gate is separate from the current demo-scoped sign-off.
+
+**November 10 scope adjustment — demo qualification:** production hosting and
+general recognition are not Phase 7 deliverables for this effort. The reviewer
+may sign off the demo use cases based on the live candidate #68 red-mat
+inference/operator-rejection/Nav2-cancellation/no-motion run under the isolated
+NetworkPolicy and the separate signed-transition/restart/freshness fixture.
+The fixture proves control mechanics and makes no SAM3 recognition claim. The
+serving identity remains pinned to `red mat`; `blue crate` remains an
+authorization-rejection case, not an enabled category. Production identities,
+production key lifecycle, multi-pod deployment, and blue-crate Phase 2–6
+qualification are future work if those capabilities are later requested. The
+Phase 7 demo acceptance and run procedure are in
+[`phase7-demo-signoff-20261110.md`](validation/semantic-navigation/phase-7/phase7-demo-signoff-20261110.md).
 
 ### Phase 8 Optional RMF integration
 

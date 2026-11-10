@@ -12,7 +12,8 @@ class ClockRollbackTests(unittest.TestCase):
     def state(self):
         return SimpleNamespace(lock=threading.Lock(), sim_clock_ns=20_000_000_000,
             sim_clock_received=0, epoch="old", guard=Mock(), ready=True, last_error=None,
-            capture_after_wall_ns=0, clock_uncertainty_ms=2,
+            capture_after_wall_ns=0, clock_uncertainty_ms=2, policy_generation=3,
+            publish_label_info=Mock(),
             rgb_queue=deque([1]), depth_queue=deque([2]), info_queue=deque([3]), work_queue=deque([4]),
             capture_traces={1: "old"}, compression_traces={1: "old"}, last_input_stamp={"rgb": 1})
 
@@ -20,7 +21,8 @@ class ClockRollbackTests(unittest.TestCase):
         state = self.state()
         Sam3Runtime.on_clock(state, SimpleNamespace(clock=SimpleNamespace(sec=0, nanosec=0)))
         self.assertNotEqual(state.epoch, "old")
-        state.guard.reset.assert_called_once_with(state.epoch, 1)
+        state.guard.reset.assert_called_once_with(state.epoch, 3)
+        state.publish_label_info.assert_called_once_with()
         self.assertFalse(state.ready)
         self.assertEqual(state.last_error, "simulation_clock_rollback")
         self.assertGreater(state.capture_after_wall_ns, 0)

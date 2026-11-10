@@ -49,6 +49,13 @@ class HttpBackendTests(unittest.TestCase):
     def test_success_empty_and_correlation(self):
         g=self.guard();mask,_,_=g.accept(self.backend.predict(self.req));self.assertTrue(mask.any())
         self.fixture.mode='empty';mask,_,_=self.guard().accept(self.backend.predict(self.req));self.assertFalse(mask.any())
+    def test_only_deployment_pinned_prompts_are_admitted(self):
+        request=copy.deepcopy(self.req);request['prompt']='blue crate'
+        self.assertEqual(self.backend.predict(request)['status'],'ok')
+        count=len(self.fixture.requests);request['prompt']='person'
+        with self.assertRaisesRegex(ValueError,'pinned prompt policy'):
+            self.backend.predict(request)
+        self.assertEqual(len(self.fixture.requests),count)
     def test_identity_mismatch_latches_until_restart(self):
         self.fixture.mode='wrong_deployment'
         with self.assertRaises(IdentityMismatch):self.backend.predict(self.req)

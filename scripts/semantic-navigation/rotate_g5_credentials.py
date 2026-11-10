@@ -78,7 +78,9 @@ def main():
         raise TimeoutError('replacement server not Ready')
 
     def client(code, data=None):
-        return oc('exec', '-i', '-n', NAV, CLIENT, '--', '/opt/sam3-venv/bin/python', '-c', code, data=data)
+        # The replay-rotation helper is a minimal, secret-mounted client pod;
+        # it needs only Python's standard TLS/HTTP libraries, not the SAM3 venv.
+        return oc('exec', '-i', '-n', NAV, CLIENT, '--', 'python3', '-c', code, data=data)
 
     def check_current():
         code = ('import ssl,json,urllib.request; c=ssl.create_default_context(cafile="/cert/ca.crt"); '

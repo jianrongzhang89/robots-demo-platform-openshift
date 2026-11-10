@@ -1,0 +1,101 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: semantic-phase7-bluecrate-capture-config
+  namespace: semantic-navigation
+  labels:
+    semantic-navigation.robots-demo/phase: phase7-category-capture
+data:
+  cyclonedds.xml: |-
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <CycloneDDS xmlns="https://cdds.io/config">
+      <Domain id="any">
+        <General><Interfaces><NetworkInterface name="lo" /></Interfaces><AllowMulticast>false</AllowMulticast></General>
+        <Discovery><ParticipantIndex>auto</ParticipantIndex></Discovery>
+      </Domain>
+    </CycloneDDS>
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: semantic-phase7-bluecrate-capture
+  namespace: semantic-navigation
+  labels:
+    app: semantic-phase7-bluecrate-capture
+    semantic-navigation.robots-demo/phase: phase7-category-capture
+spec:
+  restartPolicy: Never
+  terminationGracePeriodSeconds: 15
+  automountServiceAccountToken: false
+  securityContext:
+    seccompProfile: {type: RuntimeDefault}
+  nodeSelector:
+    kubernetes.io/hostname: ip-10-0-44-171.ec2.internal
+  containers:
+  - name: simulator
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:27c5d36420cdb4b89a229e15787796013ad53343898be13828f8b668bebf0e1e
+    imagePullPolicy: Always
+    env:
+    - {name: ROS_DISTRO, value: jazzy}
+    - {name: ROS_DOMAIN_ID, value: "191"}
+    - {name: RMW_IMPLEMENTATION, value: rmw_cyclonedds_cpp}
+    - {name: CYCLONEDDS_URI, value: file:///phase7-capture-config/cyclonedds.xml}
+    - {name: GZ_PARTITION, value: phase5-watchdog-phase7-bluecrate-capture}
+    - {name: GZ_IP, value: 127.0.0.1}
+    - {name: RESOLUTION, value: 1600x900x24}
+    - {name: SEMANTIC_PHASE2_SCENE, value: "1"}
+    - {name: SEMANTIC_CAPTURE_TRACE, value: "1"}
+    - {name: SEMANTIC_PHASE7_BLUE_CRATE, value: absent}
+    volumeMounts:
+    - {name: config, mountPath: /phase7-capture-config, readOnly: true}
+    - {name: data, mountPath: /phase7-data}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities: {drop: [ALL]}
+      runAsNonRoot: true
+      seccompProfile: {type: RuntimeDefault}
+    resources:
+      requests: {cpu: "1", memory: 3Gi}
+      limits: {cpu: "8", memory: 8Gi}
+  - name: camera-compressor
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:c3ba94bbcbbe2283f1c46ea0f2baba398da313ffe83d2b59a63272ef91d95ebf
+    imagePullPolicy: IfNotPresent
+    command: ["/bin/bash", "-lc"]
+    args:
+    - >-
+      export HOME=/tmp/phase7-capture-home ROS_LOG_DIR=/tmp/phase7-capture-logs;
+      mkdir -p "$ROS_LOG_DIR";
+      source /opt/ros/jazzy/setup.bash;
+      source /opt/rmf_demos_ws/install/setup.bash;
+      for attempt in {1..90}; do
+        color_info=$(ros2 topic info /robot_1/camera/color/image_raw 2>/dev/null || true);
+        depth_info=$(ros2 topic info /robot_1/camera/depth/image_raw 2>/dev/null || true);
+        if printf '%s' "$color_info" | grep -q 'Publisher count: 1' && printf '%s' "$depth_info" | grep -q 'Publisher count: 1'; then break; fi;
+        sleep 1;
+      done;
+      exec python3 /opt/semantic-navigation/camera_compressor.py
+    env:
+    - {name: ROS_DISTRO, value: jazzy}
+    - {name: ROS_DOMAIN_ID, value: "191"}
+    - {name: RMW_IMPLEMENTATION, value: rmw_cyclonedds_cpp}
+    - {name: CYCLONEDDS_URI, value: file:///phase7-capture-config/cyclonedds.xml}
+    - {name: SEMANTIC_CAMERA_SUBSCRIPTION_DEPTH, value: "20"}
+    - {name: SEMANTIC_COMPRESSION_TRACE, value: "1"}
+    - {name: SEMANTIC_RAW_INPUT, value: gz}
+    - {name: GZ_PARTITION, value: phase5-watchdog-phase7-bluecrate-capture}
+    - {name: GZ_IP, value: 127.0.0.1}
+    volumeMounts:
+    - {name: config, mountPath: /phase7-capture-config, readOnly: true}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities: {drop: [ALL]}
+      runAsNonRoot: true
+      seccompProfile: {type: RuntimeDefault}
+    resources:
+      requests: {cpu: 250m, memory: 512Mi}
+      limits: {cpu: "2", memory: 2Gi}
+  volumes:
+  - name: config
+    configMap: {name: semantic-phase7-bluecrate-capture-config}
+  - name: data
+    emptyDir: {sizeLimit: 8Gi}

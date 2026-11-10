@@ -1,0 +1,23 @@
+{
+  "event": "phase7_live_semantic_adapter_inference_nav2_bridge_attempt",
+  "passed": false,
+  "runtime_candidate": "sha256:5c33a0b672ecc61d5eeb5afc65a77e8fa32c9e3dc4a0b9d9a4507587b7aaf707",
+  "adapter": {
+    "backend": "http",
+    "model_digest": "sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+    "prompt": "red mat",
+    "observed_valid_results": 174,
+    "score_range_observed": [0.8984375, 0.94140625],
+    "paired_inputs_observed": 209
+  },
+  "nav2": {
+    "required_domain": 182,
+    "source_topics_verified_in_domain_181": ["/robot_1/odom", "/robot_1/scan"],
+    "target_domain_topics": {"/odom": "publisher_count=0", "/scan": "publisher_count=0"},
+    "action_client_ready": false,
+    "goal_sent": false,
+    "cancellation_attempted": false
+  },
+  "native_watchdog": "disarmed with zero applied command",
+  "phase6_workloads_changed": false
+}

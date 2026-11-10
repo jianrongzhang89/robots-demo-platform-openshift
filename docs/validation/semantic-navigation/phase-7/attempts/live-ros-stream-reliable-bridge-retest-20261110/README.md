@@ -1,0 +1,7 @@
+# Phase 7 reliable ROS/Zenoh stream retest — PASS
+
+This isolated simulator run used runtime candidate #65 (`sha256:4483f10b8554e827c0220cd92ac4d988d488aae6b18cb3fbe728c8f60bac915c`) and adapter candidate #9 (`sha256:d5b22eae66497af2bd3230d43767f862d6b0923d73ffb8f54a865e21c9258c28`). The single topology change from the preceding per-domain probe run was enabling `reliable_routes_blocking` for the destination `nav2-sim-input-bridge`; the source publisher, namespace, image types, and downstream subscriptions remained the same.
+
+Both 20-second probes received every required stream. Source domain 181 counted 78–79 messages per stream; adapter domain 182 counted 78–80 per stream, including depth. The live adapter paired 98 RGB-D-CameraInfo triplets and emitted 68 fresh results. The operator API was reachable only through loopback: an authenticated idempotent `red mat` request returned HTTP 200 with `changed:false`, while `blue crate` was rejected with HTTP 400 before transition effects. Nav2 accepted a real goal; both cancel services acknowledged, and the active goal completed as `STATUS_CANCELED`. All 400 native samples remained disarmed with zero applied commands; maximum measured speed was 0.0010072295 m/s. All 17 containers exited zero.
+
+The Phase 6 and shared Phase 5 router snapshots match before and after for readiness, status, restarts, IPs, and nodes. The temporary validation pod and fixture Secret were deleted. The bundle includes the exact manifest, candidate #65 build/test log, pod record, events, all container logs, and SHA-256 checksums.

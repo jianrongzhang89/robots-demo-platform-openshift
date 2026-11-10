@@ -1,0 +1,259 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: semantic-phase7-ros-service-bridge-config
+  namespace: semantic-navigation
+  labels:
+    semantic-navigation.robots-demo/phase: phase7-validation
+data:
+  cyclonedds.xml: |-
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <CycloneDDS xmlns="https://cdds.io/config">
+      <Domain id="any">
+        <General><Interfaces><NetworkInterface name="lo" /></Interfaces><AllowMulticast>false</AllowMulticast></General>
+        <Discovery><ParticipantIndex>auto</ParticipantIndex></Discovery>
+      </Domain>
+    </CycloneDDS>
+  router.json5: |-
+    {
+      "mode": "router",
+      "listen": {"endpoints": ["tcp/0.0.0.0:7447"]},
+      "scouting": {"multicast": {"enabled": false}}
+    }
+  nav2-server.json5: |-
+    {
+      "plugins": {"ros2dds": {"allow": {
+        "publishers": [], "subscribers": [],
+        "service_servers": [
+          "^/robot_1/phase7/cancel_navigation$"
+        ],
+        "action_servers": [
+          "^/robot_1/navigate_to_pose$",
+          "^/robot_1/navigate_through_poses$"
+        ],
+        "service_clients": []
+      } } },
+      "mode": "client",
+      "connect": {"endpoints": ["tcp/127.0.0.1:7447"], "exit_on_failure": false},
+      "scouting": {"multicast": {"enabled": false}}
+    }
+  adapter-server.json5: |-
+    {
+      "plugins": {"ros2dds": {"allow": {
+        "publishers": ["^/robot_1/semantic/status$"],
+        "subscribers": [],
+        "service_servers": ["^/robot_1/sam3_inference/set_parameters_atomically$"],
+        "service_clients": []
+      } } },
+      "mode": "client",
+      "connect": {"endpoints": ["tcp/127.0.0.1:7447"], "exit_on_failure": false},
+      "scouting": {"multicast": {"enabled": false}}
+    }
+  operator-client.json5: |-
+    {
+      "plugins": {"ros2dds": {"allow": {
+        "publishers": [],
+        "subscribers": ["^/robot_1/semantic/status$"],
+        "service_servers": [],
+        "service_clients": [
+          "^/robot_1/phase7/cancel_navigation$",
+          "^/robot_1/sam3_inference/set_parameters_atomically$"
+        ]
+      } } },
+      "mode": "client",
+      "connect": {"endpoints": ["tcp/127.0.0.1:7447"], "exit_on_failure": false},
+      "scouting": {"multicast": {"enabled": false}}
+    }
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: semantic-phase7-ros-service-bridge-test
+  namespace: semantic-navigation
+  labels:
+    semantic-navigation.robots-demo/phase: phase7-validation
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 180
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        semantic-navigation.robots-demo/phase: phase7-validation
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      securityContext:
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+      - name: zenoh-router
+        image: docker.io/eclipse/zenoh@sha256:137310456cc7a75d955063513207c737f25071fbb74fd7641835c50ab8e3369f
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/sh", "-ec"]
+        args:
+        - |
+          /zenohd -c /phase7-bridge/router.json5 &
+          pid=$!
+          trap 'kill -TERM "$pid" 2>/dev/null || true; wait "$pid" || true' TERM INT
+          while [ ! -s /phase7-shared/phase7-ros-service-bridge-result.json ]; do
+            kill -0 "$pid" 2>/dev/null || { wait "$pid"; exit 1; }
+            sleep 0.1
+          done
+          kill -TERM "$pid" 2>/dev/null || true
+          wait "$pid" || true
+        volumeMounts:
+        - {name: config, mountPath: /phase7-bridge, readOnly: true}
+        - {name: shared, mountPath: /phase7-shared}
+        resources:
+          requests: {cpu: 100m, memory: 128Mi}
+          limits: {cpu: 500m, memory: 512Mi}
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: {drop: [ALL]}
+          seccompProfile: {type: RuntimeDefault}
+      - name: nav2-service-bridge
+        image: eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/sh", "-ec"]
+        args:
+        - |
+          export ROS_DOMAIN_ID=187 RMW_IMPLEMENTATION=rmw_cyclonedds_cpp CYCLONEDDS_URI=file:///phase7-bridge/cyclonedds.xml
+          /zenoh-bridge-ros2dds -c /phase7-bridge/nav2-server.json5 &
+          pid=$!
+          trap 'kill -TERM "$pid" 2>/dev/null || true; wait "$pid" || true' TERM INT
+          while [ ! -s /phase7-shared/phase7-ros-service-bridge-result.json ]; do
+            kill -0 "$pid" 2>/dev/null || { wait "$pid"; exit 1; }
+            sleep 0.1
+          done
+          kill -TERM "$pid" 2>/dev/null || true
+          wait "$pid" || true
+        volumeMounts:
+        - {name: config, mountPath: /phase7-bridge, readOnly: true}
+        - {name: shared, mountPath: /phase7-shared}
+        resources:
+          requests: {cpu: 100m, memory: 128Mi}
+          limits: {cpu: 500m, memory: 512Mi}
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: {drop: [ALL]}
+          seccompProfile: {type: RuntimeDefault}
+      - name: nav2-cancel-proxy
+        image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:d153b717d2d6656d0b656c1c0080012213e8d85e3aca463c1f44df56b2683a77
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/bash", "-lc"]
+        args:
+        - >-
+          export ROS_DOMAIN_ID=187 RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+          CYCLONEDDS_URI=file:///phase7-bridge/cyclonedds.xml
+          PHASE7_NAV_ACTIONS=/robot_1/navigate_to_pose,/robot_1/navigate_through_poses
+          PHASE7_NAV_CANCEL_PROXY=/robot_1/phase7/cancel_navigation;
+          source /opt/ros/jazzy/setup.bash;
+          python3 /opt/phase7-runtime/run_phase7_nav2_cancel_proxy.py &
+          pid=$!;
+          trap 'kill -TERM "$pid" 2>/dev/null || true; wait "$pid" || true' TERM INT;
+          while [ ! -s /phase7-shared/phase7-ros-service-bridge-result.json ]; do
+            kill -0 "$pid" 2>/dev/null || { wait "$pid"; exit 1; };
+            sleep 0.1;
+          done;
+          kill -TERM "$pid" 2>/dev/null || true;
+          wait "$pid" || true
+        volumeMounts:
+        - {name: config, mountPath: /phase7-bridge, readOnly: true}
+        - {name: shared, mountPath: /phase7-shared}
+        - {name: tmp, mountPath: /tmp}
+        resources:
+          requests: {cpu: 250m, memory: 256Mi}
+          limits: {cpu: 1, memory: 1Gi}
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: {drop: [ALL]}
+          seccompProfile: {type: RuntimeDefault}
+      - name: adapter-service-bridge
+        image: eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/sh", "-ec"]
+        args:
+        - |
+          export ROS_DOMAIN_ID=188 RMW_IMPLEMENTATION=rmw_cyclonedds_cpp CYCLONEDDS_URI=file:///phase7-bridge/cyclonedds.xml
+          /zenoh-bridge-ros2dds -c /phase7-bridge/adapter-server.json5 &
+          pid=$!
+          trap 'kill -TERM "$pid" 2>/dev/null || true; wait "$pid" || true' TERM INT
+          while [ ! -s /phase7-shared/phase7-ros-service-bridge-result.json ]; do
+            kill -0 "$pid" 2>/dev/null || { wait "$pid"; exit 1; }
+            sleep 0.1
+          done
+          kill -TERM "$pid" 2>/dev/null || true
+          wait "$pid" || true
+        volumeMounts:
+        - {name: config, mountPath: /phase7-bridge, readOnly: true}
+        - {name: shared, mountPath: /phase7-shared}
+        resources:
+          requests: {cpu: 100m, memory: 128Mi}
+          limits: {cpu: 500m, memory: 512Mi}
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: {drop: [ALL]}
+          seccompProfile: {type: RuntimeDefault}
+      - name: operator-service-bridge
+        image: eclipse/zenoh-bridge-ros2dds@sha256:38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/sh", "-ec"]
+        args:
+        - |
+          export ROS_DOMAIN_ID=189 RMW_IMPLEMENTATION=rmw_cyclonedds_cpp CYCLONEDDS_URI=file:///phase7-bridge/cyclonedds.xml
+          /zenoh-bridge-ros2dds -c /phase7-bridge/operator-client.json5 &
+          pid=$!
+          trap 'kill -TERM "$pid" 2>/dev/null || true; wait "$pid" || true' TERM INT
+          while [ ! -s /phase7-shared/phase7-ros-service-bridge-result.json ]; do
+            kill -0 "$pid" 2>/dev/null || { wait "$pid"; exit 1; }
+            sleep 0.1
+          done
+          kill -TERM "$pid" 2>/dev/null || true
+          wait "$pid" || true
+        volumeMounts:
+        - {name: config, mountPath: /phase7-bridge, readOnly: true}
+        - {name: shared, mountPath: /phase7-shared}
+        resources:
+          requests: {cpu: 100m, memory: 128Mi}
+          limits: {cpu: 500m, memory: 512Mi}
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: {drop: [ALL]}
+          seccompProfile: {type: RuntimeDefault}
+      - name: verify-operator-service-bridges
+        image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:d153b717d2d6656d0b656c1c0080012213e8d85e3aca463c1f44df56b2683a77
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/bash", "-lc"]
+        args:
+        - >-
+          export HOME=/tmp/phase7-bridge-home ROS_LOG_DIR=/tmp/phase7-bridge-logs
+          RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+          CYCLONEDDS_URI=file:///phase7-bridge/cyclonedds.xml;
+          mkdir -p "$HOME" "$ROS_LOG_DIR";
+          source /opt/ros/jazzy/setup.bash;
+          exec python3 /opt/phase7-runtime/verify_phase7_ros_service_bridges.py
+          --shared-dir /phase7-shared
+        volumeMounts:
+        - {name: config, mountPath: /phase7-bridge, readOnly: true}
+        - {name: shared, mountPath: /phase7-shared}
+        - {name: tmp, mountPath: /tmp}
+        resources:
+          requests: {cpu: 500m, memory: 1Gi}
+          limits: {cpu: 2, memory: 3Gi}
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: {drop: [ALL]}
+          seccompProfile: {type: RuntimeDefault}
+      volumes:
+      - name: config
+        configMap: {name: semantic-phase7-ros-service-bridge-config}
+      - name: shared
+        emptyDir: {sizeLimit: 32Mi}
+      - name: tmp
+        emptyDir: {sizeLimit: 256Mi}

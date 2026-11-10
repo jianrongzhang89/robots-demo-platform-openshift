@@ -1,0 +1,7 @@
+# Live SAM3 inference with Nav2 bridge attempt — November 10, 2026
+
+**Result: real model inference passed; combined Nav2 topology did not.** Runtime candidate #53 (`sha256:5c33a0b672ecc61d5eeb5afc65a77e8fa32c9e3dc4a0b9d9a4507587b7aaf707`) mapped the adapter's `input_prefix` to `/camera`. The adapter then received fresh RGB-D and camera-info inputs and made repeated authenticated requests to the pinned red-mat SAM3 service. Logs show 174 valid results, 209 paired triplets, and observed scores from 0.8984375 to 0.94140625.
+
+The verifier did not proceed to goal submission. It waited for Nav2's action client readiness and timed out. Live graph inspection found `/odom` and `/scan` each had zero publishers in ROS domain 182, even though matching `/robot_1/odom` and `/robot_1/scan` messages were present in domain 181. The isolated bridge did not route those topics into the Nav2 domain. No goal was sent and no cancellation was attempted. Native watchdog samples remained disarmed with zero applied commands.
+
+This qualifies actual red-mat inference through the candidate adapter and live serving identity in the combined pod. It does not qualify Nav2 action cancellation in this combined topology or the full prompt transition workflow. The independent actual Nav2 cancellation pass remains valid. Phase 6 workloads were Running on their original nodes and unchanged; see `phase6-unchanged.txt`. Pod state, per-container logs, and hashes are retained for review.

@@ -1,0 +1,9 @@
+# Live Phase 7 operator rejection qualification — November 10, 2026
+
+**Result: PASS for live rejection of an unapproved prompt before any stop, cancellation, or prompt update.** The fixture used the candidate operator runtime image `sha256:e0927db8bcc4c9c11d6feeeca1a3ba867ed71c4674a5cef958b1b6f17cee1db8` (build #56), the pinned red-mat HTTP adapter and SAM3 service, the simulator/native watchdog, Nav2 and the cancellation proxy. The candidate image passed all 20 in-image Phase 7 unit tests.
+
+The validation-only mTLS client authenticated as `operator-17` and POSTed `blue crate` to the live operator API. The endpoint returned HTTP 400 with `prompt is not approved`. The adapter remained ready on `red mat` at policy generation 1, and its transition permit verifier was enabled by the temporary fixture key. Native status remained disarmed with applied linear and angular commands at zero and `stop_applied_steady_ns` at zero. The policy verifier emitted the machine-readable result in `result.json`.
+
+The ephemeral pod used the updated live topology manifest; all 15 recorded container statuses exited with code 0. The pod was deleted after evidence capture. The temporary Secret `semantic-phase7-fixture-credentials` was deleted. Phase 6 simulator, Nav2, and SAM3 pods remained Running on their original nodes, recorded in `phase6-unchanged.txt`.
+
+This qualifies the live fail-closed rejection path. It does not qualify a successful prompt transition/restart/stale-result sequence, managed production identity and signing-key lifecycle, production network policy, or another object category. The separate live inference + real Nav2 cancellation + native no-motion PASS remains documented in `live-semantic-adapter-nav2-cancel-pass-20261110/README.md`; overall Phase 7 remains **HOLD** pending those gates and human sign-off.

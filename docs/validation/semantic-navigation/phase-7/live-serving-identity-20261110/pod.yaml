@@ -1,0 +1,195 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    k8s.ovn.org/pod-networks: '{"default":{"ip_addresses":["10.130.10.251/23"],"mac_address":"0a:58:0a:82:0a:fb","gateway_ips":["10.130.10.1"],"routes":[{"dest":"10.128.0.0/14","nextHop":"10.130.10.1"},{"dest":"172.30.0.0/16","nextHop":"10.130.10.1"},{"dest":"169.254.0.5/32","nextHop":"10.130.10.1"},{"dest":"100.64.0.0/16","nextHop":"10.130.10.1"}],"ip_address":"10.130.10.251/23","gateway_ip":"10.130.10.1","role":"primary"}}'
+    k8s.v1.cni.cncf.io/network-status: |-
+      [{
+          "name": "ovn-kubernetes",
+          "interface": "eth0",
+          "ips": [
+              "10.130.10.251"
+          ],
+          "mac": "0a:58:0a:82:0a:fb",
+          "default": true,
+          "dns": {}
+      }]
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Pod","metadata":{"annotations":{},"labels":{"semantic-navigation.robots-demo/phase":"phase7-serving-metadata-probe","semantic-serving-client":"sam3-mat-v1"},"name":"semantic-phase7-serving-metadata-probe","namespace":"semantic-navigation"},"spec":{"automountServiceAccountToken":false,"containers":[{"args":["import http.client, json, ssl\ncontext=ssl.create_default_context(cafile='/tls/ca.crt')\ncontext.load_cert_chain('/tls/tls.crt','/tls/tls.key')\nconnection=http.client.HTTPSConnection('sam3-mat-v1-tls.semantic-model-serving.svc',8443,context=context,timeout=5)\nconnection.request('GET','/v1/models/sam3-mat-v1')\nresponse=connection.getresponse()\nbody=response.read()\nprint(json.dumps({'status':response.status,'metadata':json.loads(body)},sort_keys=True),flush=True)\nraise SystemExit(0 if response.status==200 else 1)\n"],"command":["python3","-c"],"image":"image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-cpu-adapter@sha256:3088ac06ceaef5b49b12b9c2b64f33b7bc1c080d4f7a5d6a48436abc8b8c7640","imagePullPolicy":"IfNotPresent","name":"probe","resources":{"limits":{"cpu":"250m","memory":"256Mi"},"requests":{"cpu":"50m","memory":"128Mi"}},"securityContext":{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"readOnlyRootFilesystem":true,"runAsNonRoot":true,"seccompProfile":{"type":"RuntimeDefault"}},"volumeMounts":[{"mountPath":"/tls","name":"tls","readOnly":true}]}],"restartPolicy":"Never","securityContext":{"seccompProfile":{"type":"RuntimeDefault"}},"volumes":[{"name":"tls","secret":{"defaultMode":292,"secretName":"sam3-replay-tls"}}]}}
+    openshift.io/scc: run-as-ray-user
+    seccomp.security.alpha.kubernetes.io/pod: runtime/default
+    security.openshift.io/validated-scc-subject-type: user
+  creationTimestamp: "2026-11-10T05:27:17Z"
+  generation: 1
+  labels:
+    semantic-navigation.robots-demo/phase: phase7-serving-metadata-probe
+    semantic-serving-client: sam3-mat-v1
+  name: semantic-phase7-serving-metadata-probe
+  namespace: semantic-navigation
+  resourceVersion: "532896610"
+  uid: f4671e84-6168-4c91-b0dc-1764df9f9df9
+spec:
+  automountServiceAccountToken: false
+  containers:
+  - args:
+    - |
+      import http.client, json, ssl
+      context=ssl.create_default_context(cafile='/tls/ca.crt')
+      context.load_cert_chain('/tls/tls.crt','/tls/tls.key')
+      connection=http.client.HTTPSConnection('sam3-mat-v1-tls.semantic-model-serving.svc',8443,context=context,timeout=5)
+      connection.request('GET','/v1/models/sam3-mat-v1')
+      response=connection.getresponse()
+      body=response.read()
+      print(json.dumps({'status':response.status,'metadata':json.loads(body)},sort_keys=True),flush=True)
+      raise SystemExit(0 if response.status==200 else 1)
+    command:
+    - python3
+    - -c
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-cpu-adapter@sha256:3088ac06ceaef5b49b12b9c2b64f33b7bc1c080d4f7a5d6a48436abc8b8c7640
+    imagePullPolicy: IfNotPresent
+    name: probe
+    resources:
+      limits:
+        cpu: 250m
+        memory: 256Mi
+      requests:
+        cpu: 50m
+        memory: 128Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 1000
+      seccompProfile:
+        type: RuntimeDefault
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /tls
+      name: tls
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  imagePullSecrets:
+  - name: default-dockercfg-6jjg8
+  nodeName: ip-10-0-44-171.ec2.internal
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Never
+  schedulerName: default-scheduler
+  securityContext:
+    fsGroup: 1001340000
+    seLinuxOptions:
+      level: s0:c37,c4
+    seccompProfile:
+      type: RuntimeDefault
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoSchedule
+    key: node.kubernetes.io/memory-pressure
+    operator: Exists
+  volumes:
+  - name: tls
+    secret:
+      defaultMode: 292
+      secretName: sam3-replay-tls
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2026-11-10T05:27:28Z"
+    observedGeneration: 1
+    status: "False"
+    type: PodReadyToStartContainers
+  - lastProbeTime: null
+    lastTransitionTime: "2026-11-10T05:27:17Z"
+    observedGeneration: 1
+    reason: PodCompleted
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2026-11-10T05:27:17Z"
+    observedGeneration: 1
+    reason: PodCompleted
+    status: "False"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2026-11-10T05:27:17Z"
+    observedGeneration: 1
+    reason: PodCompleted
+    status: "False"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2026-11-10T05:27:17Z"
+    observedGeneration: 1
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - allocatedResources:
+      cpu: 50m
+      memory: 128Mi
+    containerID: cri-o://1b680b34b93df7036ef9a6715f4ab748140115a939a0dcd2f0ee6b82cfdf56aa
+    image: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-cpu-adapter@sha256:3088ac06ceaef5b49b12b9c2b64f33b7bc1c080d4f7a5d6a48436abc8b8c7640
+    imageID: image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-cpu-adapter@sha256:3088ac06ceaef5b49b12b9c2b64f33b7bc1c080d4f7a5d6a48436abc8b8c7640
+    lastState: {}
+    name: probe
+    ready: false
+    resources:
+      limits:
+        cpu: 250m
+        memory: 256Mi
+      requests:
+        cpu: 50m
+        memory: 128Mi
+    restartCount: 0
+    started: false
+    state:
+      terminated:
+        containerID: cri-o://1b680b34b93df7036ef9a6715f4ab748140115a939a0dcd2f0ee6b82cfdf56aa
+        exitCode: 0
+        finishedAt: "2026-11-10T05:27:27Z"
+        reason: Completed
+        startedAt: "2026-11-10T05:27:26Z"
+    user:
+      linux:
+        gid: 1000
+        supplementalGroups:
+        - 1000
+        - 4
+        - 20
+        - 24
+        - 25
+        - 27
+        - 29
+        - 30
+        - 44
+        - 46
+        - 1001340000
+        uid: 1000
+    volumeMounts:
+    - mountPath: /tls
+      name: tls
+      readOnly: true
+      recursiveReadOnly: Disabled
+  hostIP: 10.0.44.171
+  hostIPs:
+  - ip: 10.0.44.171
+  observedGeneration: 1
+  phase: Succeeded
+  podIP: 10.130.10.251
+  podIPs:
+  - ip: 10.130.10.251
+  qosClass: Burstable
+  startTime: "2026-11-10T05:27:17Z"

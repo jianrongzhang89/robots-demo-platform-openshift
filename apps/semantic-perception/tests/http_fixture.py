@@ -20,7 +20,8 @@ def identity():
         'weights_sha256':'9'*64,'source_revision':'a'*40,'container_digest':'sha256:'+'b'*64,
         'shared_sha256':{f:hashlib.sha256((root/f).read_bytes()).hexdigest() for f in
                         ('sam3_backend.py','inference_contract.py','sam3_runtime_core.py')},
-        'versions':VERSIONS,'precision':'bfloat16','policy':POLICY,'prompt':'red mat','threshold':.5}
+        'versions':VERSIONS,'precision':'bfloat16','policy':POLICY,'prompt':'red mat',
+        'approved_prompts':['red mat','blue crate'],'threshold':.5}
 
 
 class Fixture:
@@ -38,6 +39,7 @@ class Fixture:
                     '-days','1','-extfile','ext','-out',name+'.crt')
         self.expected = identity(); (self.root/'identity.json').write_text(json.dumps(self.expected))
         self.mode = 'ok'; self.delay = .3; self.last = None; self.entered = threading.Event()
+        self.prompts = []
         self.requests = []; self.active = 0; self.max_active = 0; self.lock = threading.Lock()
         fixture = self
         class Handler(BaseHTTPRequestHandler):
@@ -54,6 +56,7 @@ class Fixture:
                 with fixture.lock:
                     fixture.active+=1;fixture.max_active=max(fixture.active,fixture.max_active)
                     fixture.requests.append(copy.deepcopy(req['identity']))
+                    fixture.prompts.append(req['prompt'])
                 fixture.entered.set();mode=fixture.mode
                 try:
                     if mode in ('delay','hang'):time.sleep(fixture.delay if mode=='delay' else 1.5)

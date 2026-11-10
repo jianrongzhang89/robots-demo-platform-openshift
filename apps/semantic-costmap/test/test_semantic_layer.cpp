@@ -63,9 +63,11 @@ protected:
     map->addPlugin(layer); layer->initialize(map.get(), "semantic", tf.get(), node, group);
     labels(); advance(0.01); update();
   }
-  void labels() {layer->receiveLabels(Json({{"policy", "avoid-target/v1"}, {"generation", 1},
+  void labels(int generation = 1, const std::string & prompt = "red mat",
+      const std::string & stream_epoch = "producer-1") {
+    layer->receiveLabels(Json({{"policy", "avoid-target/v1"}, {"generation", generation},
       {"labels", {{"0", "unobserved"}, {"1", "traversable"}, {"2", "avoid_target"}}},
-      {"active_labels", {0, 2}}}).dump());}
+      {"active_labels", {0, 2}}, {"prompt", prompt}, {"stream_epoch", stream_epoch}}).dump());}
   void advance(double seconds) {layer->sim += int64_t(seconds*1e9); layer->wall += int64_t(seconds*1e9);}
   void freshTf() {tf = std::make_unique<tf2_ros::Buffer>(node->get_clock()); layer->replaceTfBuffer(tf.get());}
   void update(double x = 3, double y = 3) {map->updateMap(x, y, 0);}
@@ -151,7 +153,8 @@ TEST_F(LayerTest, DuplicateAndOutOfOrderCapturesCannotRefreshLifetime) {
 }
 TEST_F(LayerTest, SimulationClockResetRejectsDelayedOldEpochThenAcceptsFresh) {
   auto old=bundle(); send(old); update(); layer->sim=1000000000; layer->wall+=100000000;
-  update(); send(old); expectClear(); advance(0.01); auto fresh=bundle();
+  update(); send(old); expectClear(); advance(0.01);
+  labels(1,"red mat","producer-2"); advance(0.1); auto fresh=bundle();
   fresh.timing["identity"]["epoch"]="producer-2"; send(fresh); update(); EXPECT_EQ(cost(0,0),200);
 }
 TEST_F(LayerTest, RepeatedSimulationStampCannotMixDifferentEpochPayloads) {
@@ -159,7 +162,7 @@ TEST_F(LayerTest, RepeatedSimulationStampCannotMixDifferentEpochPayloads) {
   layer->sim=old.timing["capture"]["stamp_ns"].get<int64_t>();
   auto fresh=bundle({0}); fresh.timing["identity"]["epoch"]="producer-2";
   layer->receiveTiming(fresh.timing.dump()); layer->receiveMask(old.mask); layer->receiveCloud(fresh.cloud);
-  expectClear(); EXPECT_EQ(layer->diagnostics()["reason"],"payload_digest_mismatch");
+  expectClear(); EXPECT_EQ(layer->diagnostics()["reason"],"stream_epoch_identity");
 }
 TEST_F(LayerTest, InvalidLayoutsUnknownLabelsAndHashesFailClosed) {
   auto b=bundle(); b.mask->step=2; send(b); expectClear();
@@ -177,6 +180,30 @@ TEST_F(LayerTest, WrongGenerationRobotAndExpiredCaptureRejected) {
   advance(0.01); b=bundle(); b.timing["identity"]["robot"]="robot_2"; send(b);
   advance(0.01); b=bundle(); advance(0.6); send(b); expectClear();
   EXPECT_EQ(layer->diagnostics()["rejected"],3);
+}
+TEST_F(LayerTest, NewPolicyGenerationClearsCostsAndRejectsDelayedOldResults) {
+  send(bundle()); update(); EXPECT_EQ(cost(0,0),200);
+  advance(0.01); labels(2, "blue crate"); expectClear();
+  advance(0.01); auto delayed = bundle(); send(delayed); expectClear();
+  EXPECT_EQ(layer->diagnostics()["rejected"],1);
+  advance(0.01); auto current = bundle(); current.timing["identity"]["generation"] = 2;
+  send(current); update(); EXPECT_EQ(cost(0,0),200);
+  EXPECT_EQ(layer->diagnostics()["accepted"],2);
+}
+TEST_F(LayerTest, DelayedOldLabelMetadataCannotRollBackActiveGeneration) {
+  labels(2, "blue crate"); advance(0.01); labels(1, "red mat");
+  auto current = bundle(); current.timing["identity"]["generation"] = 2;
+  send(current); update(); EXPECT_EQ(cost(0,0),200);
+}
+TEST_F(LayerTest, ProcessRestartCanResetGenerationButRetiresOldStreamEpoch) {
+  send(bundle()); update(); labels(2, "blue crate"); expectClear();
+  labels(1, "red mat", "producer-2");
+  advance(0.1);
+  auto fresh = bundle(); fresh.timing["identity"]["epoch"] = "producer-2";
+  send(fresh); update(); EXPECT_EQ(cost(0,0),200);
+  labels(2, "blue crate", "producer-1");
+  auto delayed = bundle(); delayed.timing["identity"]["generation"] = 2;
+  send(delayed); expectClear();
 }
 TEST_F(LayerTest, PendingBufferBoundAndArbitraryMessageArrivalOrder) {
   for(int i=0;i<30;++i) {advance(0.001); layer->receiveMask(bundle().mask);}

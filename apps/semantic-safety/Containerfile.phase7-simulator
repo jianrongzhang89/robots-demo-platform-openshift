@@ -1,0 +1,13 @@
+FROM image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-safety@sha256:125cbd5aa1a1e65c6324c520e15c3560cf2a102ceabfdd915641688ec16db6c9 AS phase7-safety
+FROM image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-hotel-sim@sha256:d417c9f252d1f89dd859290a4bca1f634bcfd7d3cde6d1702c409d432bd48894
+
+USER 0
+COPY --from=phase7-safety /opt/semantic-safety/lib/ /opt/phase7-native/lib/
+COPY apps/semantic-safety/prepare_assets.py /opt/phase7-native/prepare_assets.py
+COPY scripts/semantic-navigation/entrypoint-phase7-watchdog.sh /opt/phase7-native/entrypoint-phase7-watchdog.sh
+RUN chmod 0555 /opt/phase7-native/entrypoint-phase7-watchdog.sh \
+    && python3 -m py_compile /opt/phase7-native/prepare_assets.py
+
+ENV PYTHONPATH=/opt/phase7-native
+USER 1001
+ENTRYPOINT ["/bin/bash", "/opt/phase7-native/entrypoint-phase7-watchdog.sh"]
