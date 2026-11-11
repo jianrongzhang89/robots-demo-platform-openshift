@@ -10,7 +10,9 @@ RUN chmod 0755 /usr/local/bin/phase6-nav2-plugin-preflight \
     && /bin/bash -ec 'source /opt/ros/jazzy/setup.bash; \
        cd /opt/semantic-costmap-ws; \
        colcon build --merge-install --packages-select demo_semantic_costmap \
-         --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF' \
+         --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON; \
+       colcon test --merge-install --packages-select demo_semantic_costmap --return-code-on-test-failure; \
+       colcon test-result --verbose' \
     && grep -Fqx 'source /opt/ros/jazzy/setup.bash' /entrypoint-nav2-federated.sh \
     && sed -i '/^source \/opt\/ros\/jazzy\/setup.bash$/a source /opt/semantic-costmap-ws/install/setup.bash' \
          /entrypoint-nav2-federated.sh \

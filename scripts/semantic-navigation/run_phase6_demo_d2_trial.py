@@ -7,13 +7,14 @@ import time
 
 import rclpy
 from action_msgs.msg import GoalStatus
-from geometry_msgs.msg import PoseStamped, Twist
+from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped, Twist
 from nav2_msgs.action import (
     ComputePathThroughPoses, ComputePathToPose, NavigateThroughPoses, NavigateToPose,
 )
 from nav2_msgs.msg import CollisionMonitorState, CostmapUpdate, SpeedLimit
 from nav_msgs.msg import Odometry, Path
 from rclpy.action import ActionClient
+from rclpy.parameter import Parameter
 from rclpy.parameter_client import AsyncParameterClient
 from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPolicy
 from rosgraph_msgs.msg import Clock
@@ -28,16 +29,21 @@ from demo_target_geometry import (
 
 
 SEMANTIC_TARGET_COST = 254
+EXPECTED_GLOBAL_INFLATION_RADIUS_ON = 1.0
 EXPECTED_INFLATION_RADIUS = 0.60
+EXPECTED_SEMANTIC_OBSERVATION_LIFETIME = 5.0
 EXPECTED_ROBOT_RADIUS = 0.246
 EXPECTED_LOOKAHEAD = 0.5
 EXPECTED_MIN_LOOKAHEAD = 0.25
+SEMANTIC_ON_PLANNING_CLEARANCE = 0.20
 
 
 class Trial:
     def __init__(self, args):
         self.args = args
-        self.node = rclpy.create_node("phase6_d2_trial_runner")
+        self.node = rclpy.create_node(
+            "phase6_d2_trial_runner",
+            parameter_overrides=[Parameter("use_sim_time", value=True)])
         self.via = args.via
         self.navigate_type = NavigateThroughPoses if self.via else NavigateToPose
         self.compute_type = ComputePathThroughPoses if self.via else ComputePathToPose
@@ -49,13 +55,19 @@ class Trial:
         self.compute_action = ActionClient(self.node, self.compute_type,
                                            self.compute_endpoint)
         self.speed_pub = self.node.create_publisher(SpeedLimit, "/speed_limit", 10)
-        self.node.create_subscription(Odometry, "/odom", self.odom_cb, 20)
-        self.node.create_subscription(Odometry, "/demo/ground_truth", self.truth_cb, 20)
+        self.node.create_subscription(Odometry, "/odom", self.odom_cb, 1)
+        self.node.create_subscription(Odometry, "/demo/ground_truth", self.truth_cb, 1)
+        self.node.create_subscription(PoseWithCovarianceStamped, "/amcl_pose",
+                                      self.amcl_cb, 10)
+        self.initial_pose_pub = self.node.create_publisher(
+            PoseWithCovarianceStamped, "/initialpose", 10)
         self.node.create_subscription(Path, "/received_global_plan", self.path_cb, 5)
+        self.node.create_subscription(Path, "/plan", self.global_plan_cb, 5)
         self.node.create_subscription(Twist, "/cmd_vel", self.cmd_cb, 20)
         self.node.create_subscription(CollisionMonitorState, "/collision_monitor_state",
                                       self.collision_cb, 20)
         self.semantic_counts = {"global": None, "local": None}
+        self.semantic_global_count_history = []
         self.semantic_enabled_confirmed = False
         self.node.create_subscription(CostmapUpdate,
             "/global_costmap/semantic_layer_raw_updates",
@@ -81,14 +93,22 @@ class Trial:
         self.odom_received = None
         self.latest_truth = None
         self.truth_received = None
+        self.latest_amcl = None
+        self.amcl_received = None
+        self.amcl_initial_pose = None
         self.truth_liveness_breach = False
         self.odom_liveness_breach = False
         self.pose_alignment_breach = False
+        self.pose_time_alignment_breach = False
         self.max_truth_speed = 0.0
         self.max_truth_angular = 0.0
         self.max_odom_truth_position_error = 0.0
         self.max_odom_truth_yaw_error = 0.0
         self.latest_plan = None
+        self.latest_global_plan = None
+        self.global_plan_clearance_m = math.inf
+        self.global_plan_clearance_breach = False
+        self.global_plan_frame_error = None
         self.trajectory = []
         self.collision_events = []
         self.max_odom_speed = 0.0
@@ -152,6 +172,100 @@ class Trial:
             math.hypot(msg.twist.twist.linear.x, msg.twist.twist.linear.y))
         self.max_truth_angular = max(self.max_truth_angular, abs(msg.twist.twist.angular.z))
 
+    def amcl_cb(self, msg):
+        if msg.header.frame_id != "map":
+            return
+        p, q = msg.pose.pose.position, msg.pose.pose.orientation
+        if not all(math.isfinite(value) for value in
+                   (p.x, p.y, q.x, q.y, q.z, q.w)):
+            return
+        if not 0.99 <= q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w <= 1.01:
+            return
+        self.latest_amcl = msg
+        self.amcl_received = time.monotonic()
+
+    @staticmethod
+    def yaw_from_quaternion(q):
+        return math.atan2(2 * (q.w * q.z + q.x * q.y),
+                          1 - 2 * (q.y * q.y + q.z * q.z))
+
+    def verify_amcl_alignment(self):
+        if (self.latest_amcl is None or self.amcl_received is None or
+                time.monotonic() - self.amcl_received > 2.0):
+            raise RuntimeError("fresh AMCL map pose required before Nav2 motion")
+        amcl = self.latest_amcl.pose.pose
+        truth = self.latest_truth.pose.pose
+        position_error = math.hypot(amcl.position.x - truth.position.x,
+                                    amcl.position.y - truth.position.y)
+        amcl_yaw = self.yaw_from_quaternion(amcl.orientation)
+        truth_yaw = self.yaw_from_quaternion(truth.orientation)
+        yaw_error = abs(math.atan2(math.sin(amcl_yaw - truth_yaw),
+                                   math.cos(amcl_yaw - truth_yaw)))
+        if position_error > 0.25 or yaw_error > 0.20:
+            raise RuntimeError(
+                "AMCL pose disagrees with independent Gazebo pose at start: "
+                f"position {position_error:.3f} m, yaw {yaw_error:.3f} rad")
+        return position_error, yaw_error
+
+    def seed_and_verify_amcl_pose(self):
+        """Seed AMCL after the simulator reset and require a matching map pose."""
+        self.wait_until(lambda: self.node.count_subscribers("/initialpose") > 0,
+                        10.0, "AMCL is not subscribed to /initialpose")
+        truth = self.latest_truth.pose.pose
+        initial = PoseWithCovarianceStamped()
+        initial.header.frame_id = "map"
+        # Zero requests the latest transform and is safe before the runner's
+        # simulated clock has delivered its first /clock sample.
+        initial.pose.pose.position = truth.position
+        initial.pose.pose.orientation = truth.orientation
+        initial.pose.covariance[0] = 0.04
+        initial.pose.covariance[7] = 0.04
+        initial.pose.covariance[35] = 0.02
+
+        seed_sent_at = time.monotonic()
+        # Repeat the seed briefly so startup/DDS discovery cannot drop the one
+        # initialization message. This only initializes localization; it does
+        # not command robot motion.
+        for _ in range(3):
+            self.initial_pose_pub.publish(initial)
+            rclpy.spin_once(self.node, timeout_sec=0.15)
+        self.wait_until(
+            lambda: self.latest_amcl is not None and self.amcl_received is not None
+            and self.amcl_received >= seed_sent_at,
+            20.0, "AMCL did not publish a pose after the initial-pose seed")
+        self.wait_until(
+            lambda: self._amcl_matches_truth(), 20.0,
+            "AMCL did not converge to the independent Gazebo start pose")
+        position_error, yaw_error = self.verify_amcl_alignment()
+        pose = self.latest_amcl.pose.pose
+        self.amcl_initial_pose = {
+            "source": "initialpose_from_independent_gazebo_pose",
+            "frame_id": self.latest_amcl.header.frame_id,
+            "map_xy_yaw": [
+                round(pose.position.x, 4), round(pose.position.y, 4),
+                round(self.yaw_from_quaternion(pose.orientation), 4)],
+            "gazebo_position_error_m": round(position_error, 4),
+            "gazebo_yaw_error_rad": round(yaw_error, 4),
+        }
+        return self.amcl_initial_pose
+
+    def _amcl_matches_truth(self):
+        if (self.latest_amcl is None or self.amcl_received is None or
+                time.monotonic() - self.amcl_received > 2.0 or
+                self.truth_received is None or
+                time.monotonic() - self.truth_received > 0.5):
+            return False
+        amcl = self.latest_amcl.pose.pose
+        truth = self.latest_truth.pose.pose
+        position_error = math.hypot(amcl.position.x - truth.position.x,
+                                    amcl.position.y - truth.position.y)
+        yaw_error = abs(math.atan2(math.sin(
+            self.yaw_from_quaternion(amcl.orientation) -
+            self.yaw_from_quaternion(truth.orientation)), math.cos(
+            self.yaw_from_quaternion(amcl.orientation) -
+            self.yaw_from_quaternion(truth.orientation))))
+        return position_error <= 0.25 and yaw_error <= 0.20
+
     def pose_alignment(self):
         p = self.latest_odom.pose.pose.position
         truth = self.latest_truth.pose.pose.position
@@ -169,6 +283,19 @@ class Trial:
         self.max_odom_truth_position_error = max(self.max_odom_truth_position_error, distance)
         self.max_odom_truth_yaw_error = max(self.max_odom_truth_yaw_error, angle)
         return distance, angle
+
+    def pose_stamp_skew(self):
+        a = self.latest_odom.header.stamp
+        b = self.latest_truth.header.stamp
+        return abs((a.sec - b.sec) + (a.nanosec - b.nanosec) / 1e9)
+
+    def verify_motion_bridge(self):
+        # The runner's own subscriber must not satisfy this check. A declared
+        # Zenoh route can survive without the DDS reader that carries samples.
+        if not any(endpoint.node_name == "zenoh_bridge_ros2dds"
+                   for endpoint in self.node.get_subscriptions_info_by_topic("/cmd_vel")):
+            raise RuntimeError("motion bridge DDS reader missing on /cmd_vel; "
+                               "repair the bridge before dispatch")
 
     def verify_start_pose(self):
         """Recheck after planning/settling too, not just on first receipt."""
@@ -194,8 +321,17 @@ class Trial:
         if msg.poses:
             self.latest_plan = msg
 
+    def global_plan_cb(self, msg):
+        if msg.poses:
+            self.latest_global_plan = msg
+
     def costmap_cb(self, name, msg):
         self.semantic_counts[name] = sum(value == SEMANTIC_TARGET_COST for value in msg.data)
+        if name == "global":
+            self.semantic_global_count_history.append({
+                "t_wall": round(time.time(), 3),
+                "cost254_cells": self.semantic_counts[name],
+            })
 
     def cmd_cb(self, msg):
         self.max_cmd_speed = max(self.max_cmd_speed,
@@ -252,8 +388,16 @@ class Trial:
             "global": {
                 "semantic_layer.enabled": self.args.semantic_arm == "on",
                 "semantic_layer.target_cost": SEMANTIC_TARGET_COST,
+                "semantic_layer.static_obstacle_memory": (
+                    300.0 if self.args.semantic_arm == "on" else 0.0),
+                "semantic_layer.observation_lifetime": (
+                    EXPECTED_SEMANTIC_OBSERVATION_LIFETIME
+                    if self.args.semantic_arm == "on" else 1.0),
                 "inflation_layer.enabled": True,
-                "inflation_layer.inflation_radius": EXPECTED_INFLATION_RADIUS,
+                "inflation_layer.inflation_radius": (
+                    EXPECTED_GLOBAL_INFLATION_RADIUS_ON
+                    if self.args.semantic_arm == "on"
+                    else EXPECTED_INFLATION_RADIUS),
                 "robot_radius": EXPECTED_ROBOT_RADIUS,
             },
             "local": {
@@ -294,8 +438,8 @@ class Trial:
             "FollowPath.desired_linear_vel": 0.12,
             "FollowPath.regulated_linear_scaling_min_speed": 0.06,
             "FollowPath.min_approach_linear_velocity": 0.04,
-            "FollowPath.use_rotate_to_heading": False,
-            "FollowPath.stateful": False,
+            "FollowPath.use_rotate_to_heading": True,
+            "FollowPath.stateful": True,
         }
         names = list(controller_expected)
         future = self.controller_params.get_parameters(names)
@@ -389,11 +533,15 @@ class Trial:
         intersects_mat = polyline_intersects_mat(points)
         minimum_clearance = polyline_min_hull_clearance(points)
         enters_clearance_envelope = polyline_enters_clearance_envelope(points)
+        insufficient_planning_margin = (
+            self.args.semantic_arm == "on" and
+            polyline_enters_clearance_envelope(
+                points, clearance=SEMANTIC_ON_PLANNING_CLEARANCE))
         if self.args.semantic_arm == "off" and not intersects_mat:
             raise RuntimeError("semantic-off preflight does not cross the staged mat")
-        if self.args.semantic_arm == "on" and enters_clearance_envelope:
+        if insufficient_planning_margin:
             raise RuntimeError(
-                "semantic-on preflight violates the 0.10 m circumscribed-hull "
+                "semantic-on preflight violates the 0.20 m planned hull-clearance "
                 "clearance envelope; no goal was dispatched")
         return {"planner_error_code": result.error_code,
                 "planning_time_s": result.planning_time.sec +
@@ -401,7 +549,11 @@ class Trial:
                 "mat_centerline_samples": mat_samples,
                 "mat_centerline_intersection": intersects_mat,
                 "minimum_hull_clearance_m": round(minimum_clearance, 4),
+                "path_frame_id": result.path.header.frame_id,
                 "required_hull_clearance_m": REQUIRED_HULL_CLEARANCE,
+                "planning_clearance_m": (
+                    SEMANTIC_ON_PLANNING_CLEARANCE
+                    if self.args.semantic_arm == "on" else None),
                 "clearance_envelope_intersection": enters_clearance_envelope,
                 "path_map_xy": [[round(x, 4), round(y, 4)] for x, y in points]}
 
@@ -413,6 +565,8 @@ class Trial:
                         time.monotonic() - self.truth_received < 0.5, 20,
                         "fresh independent Gazebo body pose not received")
         self.verify_start_pose()
+        amcl_initial_pose = self.seed_and_verify_amcl_pose()
+        self.verify_motion_bridge()
         if not self.action.wait_for_server(timeout_sec=15):
             raise TimeoutError(f"{self.navigate_endpoint} action unavailable")
 
@@ -432,6 +586,7 @@ class Trial:
                 "goal_yaw_rad": self.args.goal_yaw,
                 "navigation_action": self.navigate_endpoint,
                 "clearance_pose_source": "gazebo_model_pose",
+                "amcl_initial_pose": amcl_initial_pose,
                 "odom_truth_position_error_m": round(distance, 4),
                 "odom_truth_yaw_error_rad": round(angle, 4),
             }
@@ -444,7 +599,15 @@ class Trial:
         for _ in range(10):
             rclpy.spin_once(self.node, timeout_sec=0.1)
         map_x, map_y, distance, angle = self.verify_start_pose()
+        amcl_error = self.verify_amcl_alignment()
+        dispatch_preflight = None
+        if self.args.semantic_arm == "on":
+            # Semantic observations can change while the camera and costmap
+            # settle. Plan once more immediately before dispatch and enforce
+            # the same widened clearance gate against the live costmap.
+            dispatch_preflight = self.compute_preflight_path()
         goal = self.navigate_type.Goal()
+        self.verify_motion_bridge()
         if self.via:
             goal.poses = self.goal_poses()
         else:
@@ -460,6 +623,8 @@ class Trial:
         deadline = time.monotonic() + self.args.timeout
         last_sample = 0.0
         cap_breach = False
+        checked_plan = None
+        last_aligned_pose = time.monotonic()
         while not result_future.done() and time.monotonic() < deadline:
             rclpy.spin_once(self.node, timeout_sec=0.05)
             now = time.monotonic()
@@ -471,11 +636,36 @@ class Trial:
                 self.odom_liveness_breach = True
                 handle.cancel_goal_async()
                 break
-            distance, angle = self.pose_alignment()
-            if distance > 0.15 or angle > 0.15:
-                self.pose_alignment_breach = True
+            if self.pose_stamp_skew() <= 0.05:
+                last_aligned_pose = now
+                distance, angle = self.pose_alignment()
+                if distance > 0.15 or angle > 0.15:
+                    self.pose_alignment_breach = True
+                    handle.cancel_goal_async()
+                    break
+            elif now - last_aligned_pose > 0.5:
+                self.pose_time_alignment_breach = True
                 handle.cancel_goal_async()
                 break
+            if (self.args.semantic_arm == "on" and
+                    self.latest_global_plan is not None and
+                    self.latest_global_plan is not checked_plan):
+                plan = self.latest_global_plan
+                checked_plan = plan
+                if plan.header.frame_id != "map":
+                    self.global_plan_frame_error = plan.header.frame_id
+                    handle.cancel_goal_async()
+                    break
+                plan_points_map = [
+                    (pose.pose.position.x, pose.pose.position.y)
+                    for pose in plan.poses]
+                self.global_plan_clearance_m = min(
+                    self.global_plan_clearance_m,
+                    polyline_min_hull_clearance(plan_points_map))
+                if polyline_enters_clearance_envelope(plan_points_map):
+                    self.global_plan_clearance_breach = True
+                    handle.cancel_goal_async()
+                    break
             if self.latest_truth and now - last_sample >= 0.05:
                 pos = self.latest_truth.pose.pose.position
                 point = (pos.x, pos.y)
@@ -549,16 +739,32 @@ class Trial:
             fp = final.pose.pose.position
             final_pose = [round(fp.x, 4), round(fp.y, 4)]
         plan_points = []
+        controller_plan_frame = None
         if self.latest_plan:
+            controller_plan_frame = self.latest_plan.header.frame_id
             plan_points = [[round(q.pose.position.x, 4), round(q.pose.position.y, 4)]
                            for q in self.latest_plan.poses]
+        global_plan_frame = (
+            self.latest_global_plan.header.frame_id
+            if self.latest_global_plan is not None else None)
         result = {
             "trial": self.args.trial,
             "semantic_arm": self.args.semantic_arm,
             "semantic_cells_cost254": self.semantic_counts,
+            "semantic_global_cost254_updates": len(self.semantic_global_count_history),
+            "semantic_global_cost254_min": (
+                min(row["cost254_cells"] for row in self.semantic_global_count_history)
+                if self.semantic_global_count_history else None),
+            "semantic_global_cost254_max": (
+                max(row["cost254_cells"] for row in self.semantic_global_count_history)
+                if self.semantic_global_count_history else None),
             "semantic_arm_state_confirmed": self.semantic_enabled_confirmed,
             "semantic_layer_enabled": self.args.semantic_arm == "on",
+            "amcl_initial_pose": amcl_initial_pose,
+            "amcl_dispatch_error_m_rad": [
+                round(amcl_error[0], 4), round(amcl_error[1], 4)],
             "path_preflight": path_preflight,
+            "dispatch_preflight": dispatch_preflight,
             "goal_map": [self.args.goal_x, self.args.goal_y],
             "goal_yaw_rad": self.args.goal_yaw,
             "via_map": self.via,
@@ -573,6 +779,7 @@ class Trial:
             "truth_liveness_breach": self.truth_liveness_breach,
             "odom_liveness_breach": self.odom_liveness_breach,
             "pose_alignment_breach": self.pose_alignment_breach,
+            "pose_time_alignment_breach": self.pose_time_alignment_breach,
             "max_odom_truth_position_error_m": round(self.max_odom_truth_position_error, 4),
             "max_odom_truth_yaw_error_rad": round(self.max_odom_truth_yaw_error, 4),
             "max_cmd_speed_mps": round(self.max_cmd_speed, 4),
@@ -583,6 +790,13 @@ class Trial:
                 round(self.minimum_hull_clearance_m, 4)
                 if math.isfinite(self.minimum_hull_clearance_m) else None),
             "clearance_monitor_triggered": self.clearance_monitor_triggered,
+            "global_plan_minimum_hull_clearance_m": (
+                round(self.global_plan_clearance_m, 4)
+                if math.isfinite(self.global_plan_clearance_m) else None),
+            "global_plan_clearance_monitor_triggered":
+                self.global_plan_clearance_breach,
+            "global_plan_frame_id": global_plan_frame,
+            "global_plan_frame_error": self.global_plan_frame_error,
             "required_hull_clearance_m": REQUIRED_HULL_CLEARANCE,
             "mat_hull_overlap_detected": self.minimum_hull_clearance_m < 0.0,
             "sim_duration_s": (round((self.last_sim_ns - self.first_sim_ns) / 1e9, 3)
@@ -592,21 +806,31 @@ class Trial:
             "final_map_pose": final_pose,
             "speed_cap_messages": self.cap_messages,
             "steering_metrics": self.steering_summary(),
-            "path_map_xy": plan_points,
+            "controller_plan_frame_id": controller_plan_frame,
+            "controller_path_xy": plan_points,
             "trajectory_map_xyv": self.trajectory,
         }
         if self.args.summary_only:
             result["path_preflight"].pop("path_map_xy", None)
-            result.pop("path_map_xy", None)
+            result.pop("controller_path_xy", None)
             result.pop("trajectory_map_xyv", None)
         print(json.dumps(result, separators=(",", ":")), flush=True)
-        if self.truth_liveness_breach or self.odom_liveness_breach or self.pose_alignment_breach:
+        if (self.truth_liveness_breach or self.odom_liveness_breach or
+                self.pose_alignment_breach or self.pose_time_alignment_breach):
             raise RuntimeError("independent body pose became stale or disagreed with wheel odometry")
         if cap_breach:
             raise RuntimeError("measured odometry exceeded the D2 speed cap")
         if self.clearance_monitor_triggered:
             raise RuntimeError(
                 "semantic-on trajectory entered the 0.10 m hull-clearance envelope; "
+                "the goal was canceled")
+        if self.global_plan_clearance_breach:
+            raise RuntimeError(
+                "semantic-on global plan entered the 0.10 m hull-clearance envelope; "
+                "the goal was canceled")
+        if self.global_plan_frame_error is not None:
+            raise RuntimeError(
+                "semantic-on global plan was not in the map frame; "
                 "the goal was canceled")
         if status != GoalStatus.STATUS_SUCCEEDED:
             raise RuntimeError(f"Nav2 goal did not succeed (status={status})")

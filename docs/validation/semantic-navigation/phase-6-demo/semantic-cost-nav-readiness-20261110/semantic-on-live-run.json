@@ -1,0 +1,67 @@
+{
+  "trial": "semantic-cost-nav-live-20261110",
+  "semantic_arm": "on",
+  "semantic_cells_cost254": {
+    "global": 533,
+    "local": null
+  },
+  "semantic_layer_enabled": true,
+  "semantic_arm_state_confirmed": true,
+  "path_preflight": {
+    "planner_error_code": 0,
+    "mat_centerline_samples": 0,
+    "mat_centerline_intersection": false,
+    "minimum_hull_clearance_m": 0.2062,
+    "required_hull_clearance_m": 0.1,
+    "clearance_envelope_intersection": false
+  },
+  "goal_map": [
+    19.5,
+    -31.594
+  ],
+  "via_map": [],
+  "navigation_action": "/navigate_to_pose",
+  "action_status": 5,
+  "succeeded": false,
+  "cancellation_reason": "live hull-clearance monitor",
+  "cap_breach": false,
+  "speed_limit_mps": 0.1,
+  "speed_tolerance_mps": 0.005,
+  "max_odom_speed_mps": 0.06,
+  "max_truth_speed_mps": 0.0621,
+  "max_cmd_speed_mps": 0.06,
+  "max_angular_speed_radps": 0.2392,
+  "max_wheel_angular_speed_radps": 0.24,
+  "collision_monitor_events": [],
+  "minimum_hull_clearance_m": 0.0946,
+  "clearance_monitor_triggered": true,
+  "mat_hull_overlap_detected": false,
+  "truth_liveness_breach": false,
+  "odom_liveness_breach": false,
+  "pose_alignment_breach": false,
+  "max_odom_truth_position_error_m": 0.008,
+  "max_odom_truth_yaw_error_rad": 0.0162,
+  "sim_duration_s": 19.06,
+  "wall_duration_s": 18.213,
+  "final_map_pose": [
+    16.4608,
+    -31.4835
+  ],
+  "speed_cap_messages": 191,
+  "steering_metrics": {
+    "turn_direction_changes": 5,
+    "absolute_yaw_travel_rad": 3.3072,
+    "net_yaw_change_rad": -0.2916,
+    "extra_yaw_travel_rad": 3.0156
+  },
+  "summary_only": true,
+  "post_cancel_state": {
+    "odom_pose": [
+      16.4665,
+      -31.4853
+    ],
+    "linear_speed_mps": 1e-06,
+    "angular_speed_radps": 2.3e-09
+  },
+  "assessment": "Semantic costmap use was confirmed, but the motion demo did not pass: the measured trajectory entered the required hull-clearance margin and the runner canceled the goal. No hull overlap, speed-cap breach, or Collision Monitor event was observed. No follow-up navigation goal has been sent."
+}

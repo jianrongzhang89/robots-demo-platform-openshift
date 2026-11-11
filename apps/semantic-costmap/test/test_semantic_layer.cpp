@@ -46,9 +46,10 @@ protected:
   int sequence{0};
   static void SetUpTestSuite() {if (!rclcpp::ok()) {rclcpp::init(0, nullptr);}}
   void SetUp() override {setup(false);}
-  void setup(bool rolling) {
+  void setup(bool rolling, double memory = 0.0) {
     layer.reset(); map.reset(); tf.reset(); node.reset();
     node = std::make_shared<nav2_util::LifecycleNode>("phase4_test", "");
+    node->declare_parameter("semantic.static_obstacle_memory", memory);
     group = node->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
     tf = std::make_unique<tf2_ros::Buffer>(node->get_clock());
     geometry_msgs::msg::TransformStamped transform;
@@ -131,6 +132,34 @@ TEST_F(LayerTest, ExpiryUsesWallTimeEvenWhenSimulationPaused) {
 }
 TEST_F(LayerTest, ExpiryUsesSimulationTimeAlso) {
   send(bundle()); update(); layer->sim += 1000000000; expectClear();
+}
+TEST_F(LayerTest, StaticMemoryRetainsObservedCellsWhenCameraTurnsAway) {
+  setup(false, 300.0); send(bundle()); advance(6);
+  send(bundle({0})); update(); EXPECT_EQ(cost(0,0),200);
+  EXPECT_TRUE(layer->isCurrent());
+  advance(1); update(); EXPECT_EQ(cost(0,0),200);
+  EXPECT_FALSE(layer->isCurrent());  // Memory is not proof of fresh input.
+  auto stale = bundle(); advance(1); send(stale); update();
+  EXPECT_EQ(layer->diagnostics()["accepted"],2);
+  EXPECT_EQ(layer->diagnostics()["rejected"],1);
+  layer->wall += 300000000000LL; expectClear();
+}
+TEST_F(LayerTest, StaticMemoryExpiresInSimulationTimeAndClearsOnReset) {
+  setup(false, 300.0); send(bundle()); update();
+  layer->sim += 300000000000LL; expectClear();
+  advance(0.01); send(bundle()); update(); EXPECT_EQ(cost(0,0),200);
+  layer->reset(); expectClear();
+}
+TEST_F(LayerTest, StaticMemoryClearsOnPolicyChangeAndClockRollback) {
+  setup(false, 300.0); send(bundle()); advance(6); update(); EXPECT_EQ(cost(0,0),200);
+  labels(2,"blue crate"); expectClear();
+  setup(false, 300.0); send(bundle()); advance(6); update();
+  layer->sim = 1000000000; expectClear();
+}
+TEST_F(LayerTest, StaticMemoryRejectsRollingMapsAndUnboundedDurations) {
+  EXPECT_THROW(setup(true, 300.0), std::invalid_argument);
+  EXPECT_THROW(setup(false, 301.0), std::invalid_argument);
+  EXPECT_THROW(setup(false, -1.0), std::invalid_argument);
 }
 TEST_F(LayerTest, ResetClearsRasterTemporalAndPartialPairState) {
   send(bundle()); update(); advance(0.1); auto late=bundle(); layer->receiveMask(late.mask);

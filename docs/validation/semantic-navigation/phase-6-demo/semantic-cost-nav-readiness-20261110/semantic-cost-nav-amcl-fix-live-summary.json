@@ -1,0 +1,77 @@
+{
+  "trial": "semantic-cost-nav-amcl-fix-live-20261110",
+  "semantic_arm": "on",
+  "semantic_cells_cost254": {
+    "global": 917,
+    "local": null
+  },
+  "semantic_global_cost254_updates": 152,
+  "semantic_global_cost254_min": 917,
+  "semantic_global_cost254_max": 917,
+  "amcl_initial_pose": {
+    "source": "initialpose_from_independent_gazebo_pose",
+    "frame_id": "map",
+    "map_xy_yaw": [
+      15.4041,
+      -31.5915,
+      -0.0039
+    ],
+    "gazebo_position_error_m": 0.0036,
+    "gazebo_yaw_error_rad": 0.0039
+  },
+  "amcl_dispatch_error_m_rad": [
+    0.0036,
+    0.0039
+  ],
+  "goal_map": [
+    19.5,
+    -31.594
+  ],
+  "navigation_action": "/navigate_to_pose",
+  "action_status": 5,
+  "succeeded": false,
+  "speed_limit_mps": 0.1,
+  "max_odom_speed_mps": 0.0,
+  "max_truth_speed_mps": 0.0,
+  "max_cmd_speed_mps": 0.06,
+  "collision_monitor_events": [],
+  "minimum_hull_clearance_m": 1.154,
+  "clearance_monitor_triggered": false,
+  "global_plan_minimum_hull_clearance_m": 0.6764,
+  "global_plan_clearance_monitor_triggered": false,
+  "global_plan_frame_id": "map",
+  "mat_hull_overlap_detected": false,
+  "sim_duration_s": 180.68,
+  "wall_duration_s": 180.015,
+  "final_map_pose": [
+    15.4014,
+    -31.594
+  ],
+  "controller_plan_frame_id": "base_footprint",
+  "path_preflight": {
+    "planner_error_code": 0,
+    "planning_time_s": 0.0,
+    "mat_centerline_samples": 0,
+    "mat_centerline_intersection": false,
+    "minimum_hull_clearance_m": 0.6764,
+    "path_frame_id": "map",
+    "required_hull_clearance_m": 0.1,
+    "planning_clearance_m": 0.2,
+    "clearance_envelope_intersection": false
+  },
+  "dispatch_preflight": {
+    "planner_error_code": 0,
+    "planning_time_s": 0.0,
+    "mat_centerline_samples": 0,
+    "mat_centerline_intersection": false,
+    "minimum_hull_clearance_m": 0.6764,
+    "path_frame_id": "map",
+    "required_hull_clearance_m": 0.1,
+    "planning_clearance_m": 0.2,
+    "clearance_envelope_intersection": false
+  },
+  "trajectory_sample_count": 3134,
+  "unique_truth_xy_count": 1,
+  "final_truth_velocity_mps": 0.0,
+  "final_truth_yaw_rate_radps": 0.0
+}

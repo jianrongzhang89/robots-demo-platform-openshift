@@ -13,16 +13,21 @@ PARAMS = ROOT / "helm/semantic-navigation/phase6-demo-nav2-candidate.yaml"
 SCENE_SCRIPT = ROOT / "scripts/semantic-navigation/install_phase1_camera.py"
 SUPPORT_SCRIPT = ROOT / "apps/semantic-safety/support_geometry.py"
 TRUTH_SCRIPT = ROOT / "scripts/semantic-navigation/demo_ground_truth.py"
+POLICY_SCRIPT = ROOT / "scripts/semantic-navigation/phase6_sam3_policy.py"
 SIM_ENTRYPOINT = ROOT / "scripts/semantic-navigation/entrypoint-phase1.sh"
 BRIDGE_IMAGE = (
     "eclipse/zenoh-bridge-ros2dds@sha256:"
     "38f162ae5236412f4f02e77927e22585356f7e706db39ec1c6194b9bd0d05b18"
 )
 DEFAULT_NAV2_NODE = "ip-10-0-39-214.ec2.internal"
+DEFAULT_NAV2_IMAGE = (
+    "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-nav2"
+    "@sha256:5a951c79f08804ec7c19512feb0de77e9b9a015463da09d2c4f05bf97e983935"
+)
 
 
 def render_documents(preflight=False, candidate_pods=False, semantic_arm="on",
-                     nav2_node=DEFAULT_NAV2_NODE):
+                     nav2_node=DEFAULT_NAV2_NODE, nav2_image=DEFAULT_NAV2_IMAGE):
     if semantic_arm not in ("on", "off"):
         raise ValueError("semantic_arm must be 'on' or 'off'")
     # Import the D1 renderer so the D2 profile always starts from its exact,
@@ -48,14 +53,11 @@ def render_documents(preflight=False, candidate_pods=False, semantic_arm="on",
     follow_path["min_lookahead_dist"] = 0.25
     follow_path["regulated_linear_scaling_min_speed"] = 0.06
     follow_path["min_approach_linear_velocity"] = 0.04
-    follow_path["stateful"] = False
-    # Match the qualified controller profile (render_phase5_params.py): in-place
-    # rotate-to-heading's zero linear velocity deadlocks against the goal
-    # checker's stale-stamp odom-frame target. The 0.80 m envelope swing starts
-    # >90 degrees off the start heading, which engages rotate mode on the D2
-    # base params (observed 2026-10-30: is_rotating_to_heading true, zero
-    # cmd_vel, progress-checker abort).
-    follow_path["use_rotate_to_heading"] = False
+    # Finish the requested goal orientation in place. Disabling this made the
+    # direct-goal demo circle past its goal after successfully avoiding the mat.
+    # The runner now uses simulation-time goals and verifies command transport.
+    follow_path["stateful"] = True
+    follow_path["use_rotate_to_heading"] = True
     # Limit steering in the existing smoother, not with an extra command
     # publisher. Collision Monitor remains the last stage before transport.
     smoother = params["velocity_smoother"]["ros__parameters"]
@@ -67,16 +69,22 @@ def render_documents(preflight=False, candidate_pods=False, semantic_arm="on",
         costmap = params[name][name]["ros__parameters"]
         costmap["robot_radius"] = 0.246
         costmap["inflation_layer"]["enabled"] = True
-        # Approach waypoints now provide corner standoff. Reduce the blanket
-        # 1.0 m gradient for the closer lane; the ground-truth rectangle
-        # preflight and independent live envelope monitor must still pass. Earlier
-        # single-goal trials do not validate this waypoint-guided candidate.
-        costmap["inflation_layer"]["inflation_radius"] = 0.60
+        # Keep a 0.60 m local gradient for the closer controller lane. The
+        # semantic-on global map uses a 1.0 m gradient to preserve hull standoff
+        # when the moving camera only observes part of the fixed mat.
+        costmap["inflation_layer"]["inflation_radius"] = (
+            1.0 if semantic_arm == "on" and name == "global_costmap" else 0.60)
         # Keep the observed standalone D2 behavior: semantics are global-only.
         # Local lethal cells made RPP abort in place at the mat in the live demo.
         costmap["semantic_layer"]["enabled"] = (
             semantic_arm == "on" and name == "global_costmap")
         costmap["semantic_layer"]["target_cost"] = 254
+        if semantic_arm == "on" and name == "global_costmap":
+            # This demo's mat is fixed. Keep observed world cells through a
+            # complete run even when the camera turns away; capture freshness
+            # and epoch/reset clearing remain independent of this memory.
+            costmap["semantic_layer"]["observation_lifetime"] = 5.0
+            costmap["semantic_layer"]["static_obstacle_memory"] = 300.0
     config = documents[0]
     config_name = f"semantic-phase6-d2-nav2-config-{semantic_arm}"
     config["metadata"]["name"] = config_name
@@ -92,6 +100,7 @@ def render_documents(preflight=False, candidate_pods=False, semantic_arm="on",
     config["data"]["install_phase1_camera.py"] = SCENE_SCRIPT.read_text()
     config["data"]["support_geometry.py"] = SUPPORT_SCRIPT.read_text()
     config["data"]["demo_ground_truth.py"] = TRUTH_SCRIPT.read_text()
+    config["data"]["phase6_sam3_policy.py"] = POLICY_SCRIPT.read_text()
     config["data"]["entrypoint-phase1.sh"] = SIM_ENTRYPOINT.read_text()
     entrypoint_key = "entrypoint_phase6_nav2.sh"
     entrypoint = config["data"][entrypoint_key]
@@ -121,6 +130,19 @@ sleep 2
         raise ValueError("unexpected D1 Nav2 entrypoint; cannot add D2 startup gate")
     config["data"][entrypoint_key] = entrypoint.replace(
         launch_marker, startup_wait + launch_marker, 1)
+
+    sam3 = next(d for d in documents if d.get("metadata", {}).get("name") ==
+                "semantic-phase6-sam3")
+    inference = next(c for c in sam3["spec"]["containers"] if c["name"] == "sam3-inference")
+    inference["command"] = ["/bin/bash", "-lc"]
+    inference["args"] = [
+        "mkdir -p \"$HOME\" \"$ROS_LOG_DIR\"; source /opt/ros/jazzy/setup.bash; "
+        "exec /opt/sam3-venv/bin/python /phase6-policy/phase6_sam3_policy.py"]
+    inference["volumeMounts"].append({
+        "name": "phase6-policy", "mountPath": "/phase6-policy", "readOnly": True})
+    sam3["spec"]["volumes"].append({
+        "name": "phase6-policy", "configMap": {"name": config_name,
+        "items": [{"key": "phase6_sam3_policy.py", "path": "phase6_sam3_policy.py"}]}})
 
     simulator = next(d for d in documents if d.get("metadata", {}).get("name") ==
                      "semantic-phase6-simulator")
@@ -194,6 +216,7 @@ sleep 2
     })
     nav2["spec"]["volumes"][0]["configMap"]["name"] = config["metadata"]["name"]
     main = next(c for c in nav2["spec"]["containers"] if c["name"] == "nav2")
+    main["image"] = nav2_image
     for env in main["env"]:
         if env["name"] == "PHASE6_PARAMS":
             env["value"] = f"/phase6-nav2-config/phase6-demo-nav2-{semantic_arm}.yaml"
@@ -223,7 +246,7 @@ sleep 2
         config = deepcopy(config)
         config["metadata"]["name"] += "-preflight"
         selected = [config]
-        for name in ("semantic-phase6-simulator", "semantic-phase6-nav2"):
+        for name in ("semantic-phase6-simulator", "semantic-phase6-nav2", "semantic-phase6-sam3"):
             pod = next(d for d in documents if d.get("metadata", {}).get("name") == name)
             pod = deepcopy(pod)
             pod["metadata"]["name"] += "-d2-preflight"
@@ -231,12 +254,12 @@ sleep 2
                 pod["spec"]["volumes"][0]["configMap"]["name"] = config["metadata"]["name"]
             else:
                 for volume in pod["spec"]["volumes"]:
-                    if volume["name"] == "phase6-demo-world-config":
+                    if volume["name"] in ("phase6-demo-world-config", "phase6-policy"):
                         volume["configMap"]["name"] = config["metadata"]["name"]
             selected.append(pod)
         return selected
     if candidate_pods:
-        return [config, simulator, nav2]
+        return [config, simulator, nav2, sam3]
     return documents
 
 
@@ -245,14 +268,17 @@ if __name__ == "__main__":
     parser.add_argument("--preflight", action="store_true",
                         help="render uniquely named config/pods for API dry-run only")
     parser.add_argument("--candidate-pods", action="store_true",
-                        help="render the D2 ConfigMap and two isolated candidate Pods")
+                        help="render the D2 ConfigMap and simulator, Nav2, inference Pods")
     parser.add_argument("--semantic-arm", choices=("on", "off"), default="on",
                         help="bake the Nav2 semantic layer state at startup")
     parser.add_argument("--nav2-node", default=DEFAULT_NAV2_NODE,
                         help="hostname for the isolated CPU-only Nav2 candidate")
+    parser.add_argument("--nav2-image", default=DEFAULT_NAV2_IMAGE,
+                        help="pinned image containing the D2 semantic memory plugin")
     args = parser.parse_args()
     yaml.safe_dump_all(render_documents(preflight=args.preflight,
                                         candidate_pods=args.candidate_pods,
                                         semantic_arm=args.semantic_arm,
-                                        nav2_node=args.nav2_node),
+                                        nav2_node=args.nav2_node,
+                                        nav2_image=args.nav2_image),
                        sys.stdout, sort_keys=False)

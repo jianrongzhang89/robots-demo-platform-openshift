@@ -1,0 +1,49 @@
+{
+  "trial": "semantic-cost-nav-amcl-preflight-20261110",
+  "semantic_arm": "on",
+  "semantic_layer_enabled": true,
+  "semantic_arm_state_confirmed": true,
+  "semantic_layer_cost254_samples": {
+    "global": 917,
+    "local": null
+  },
+  "path_preflight": {
+    "planner_error_code": 0,
+    "planning_time_s": 0.0,
+    "mat_centerline_samples": 0,
+    "mat_centerline_intersection": false,
+    "minimum_hull_clearance_m": 0.6764,
+    "path_frame_id": "map",
+    "required_hull_clearance_m": 0.1,
+    "planning_clearance_m": 0.2,
+    "clearance_envelope_intersection": false
+  },
+  "motion_dispatched": false,
+  "via_map": [],
+  "goal_map": [
+    19.5,
+    -31.594
+  ],
+  "goal_yaw_rad": 0.0,
+  "navigation_action": "/navigate_to_pose",
+  "clearance_pose_source": "gazebo_model_pose",
+  "amcl_initial_pose": {
+    "source": "initialpose_from_independent_gazebo_pose",
+    "frame_id": "map",
+    "map_xy_yaw": [
+      15.3733,
+      -31.5914,
+      0.0109
+    ],
+    "gazebo_position_error_m": 0.0283,
+    "gazebo_yaw_error_rad": 0.0109
+  },
+  "odom_truth_position_error_m": 0.0006,
+  "odom_truth_yaw_error_rad": 0.0,
+  "post_preflight_gazebo_pose": [
+    15.4014,
+    -31.594
+  ],
+  "post_preflight_planar_velocity_mps": 0.0,
+  "post_preflight_angular_velocity_radps": 0.0
+}

@@ -1,0 +1,96 @@
+{
+  "trial": "semantic-transport-restored-20261111",
+  "semantic_arm": "on",
+  "semantic_cells_cost254": {
+    "global": 991,
+    "local": null
+  },
+  "semantic_global_cost254_updates": 3,
+  "semantic_global_cost254_min": 917,
+  "semantic_global_cost254_max": 991,
+  "semantic_arm_state_confirmed": true,
+  "semantic_layer_enabled": true,
+  "amcl_initial_pose": {
+    "source": "initialpose_from_independent_gazebo_pose",
+    "frame_id": "map",
+    "map_xy_yaw": [
+      15.3919,
+      -31.5994,
+      0.0015
+    ],
+    "gazebo_position_error_m": 0.0109,
+    "gazebo_yaw_error_rad": 0.0015
+  },
+  "amcl_dispatch_error_m_rad": [
+    0.0109,
+    0.0015
+  ],
+  "path_preflight": {
+    "planner_error_code": 0,
+    "planning_time_s": 0.0,
+    "mat_centerline_samples": 0,
+    "mat_centerline_intersection": false,
+    "minimum_hull_clearance_m": 0.6764,
+    "path_frame_id": "map",
+    "required_hull_clearance_m": 0.1,
+    "planning_clearance_m": 0.2,
+    "clearance_envelope_intersection": false
+  },
+  "dispatch_preflight": {
+    "planner_error_code": 0,
+    "planning_time_s": 0.0,
+    "mat_centerline_samples": 0,
+    "mat_centerline_intersection": false,
+    "minimum_hull_clearance_m": 0.6764,
+    "path_frame_id": "map",
+    "required_hull_clearance_m": 0.1,
+    "planning_clearance_m": 0.2,
+    "clearance_envelope_intersection": false
+  },
+  "goal_map": [
+    19.5,
+    -31.594
+  ],
+  "goal_yaw_rad": 0.0,
+  "via_map": [],
+  "navigation_action": "/navigate_to_pose",
+  "action_status": 5,
+  "succeeded": false,
+  "cap_breach": false,
+  "speed_limit_mps": 0.1,
+  "max_odom_speed_mps": 0.06,
+  "max_truth_speed_mps": 0.0621,
+  "clearance_pose_source": "gazebo_model_pose",
+  "truth_liveness_breach": false,
+  "odom_liveness_breach": false,
+  "pose_alignment_breach": true,
+  "max_odom_truth_position_error_m": 0.0515,
+  "max_odom_truth_yaw_error_rad": 0.1582,
+  "max_cmd_speed_mps": 0.06,
+  "max_angular_speed_radps": 0.238,
+  "max_wheel_angular_speed_radps": 0.2388,
+  "collision_monitor_events": [],
+  "minimum_hull_clearance_m": 0.9947,
+  "clearance_monitor_triggered": false,
+  "global_plan_minimum_hull_clearance_m": 0.6147,
+  "global_plan_clearance_monitor_triggered": false,
+  "global_plan_frame_id": "map",
+  "global_plan_frame_error": null,
+  "required_hull_clearance_m": 0.1,
+  "mat_hull_overlap_detected": false,
+  "sim_duration_s": 3.77,
+  "wall_duration_s": 2.872,
+  "final_map_pose": [
+    15.5607,
+    -31.6127
+  ],
+  "speed_cap_messages": 34,
+  "steering_metrics": {
+    "angular_deadband_radps": 0.05,
+    "turn_direction_changes": 1,
+    "absolute_yaw_travel_rad": 0.475,
+    "net_yaw_change_rad": 0.03,
+    "extra_yaw_travel_rad": 0.4449
+  },
+  "controller_plan_frame_id": "base_footprint"
+}

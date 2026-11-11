@@ -3,6 +3,7 @@ import importlib.util
 import ast
 import json
 import math
+import threading
 from pathlib import Path
 from types import SimpleNamespace
 import unittest
@@ -22,6 +23,60 @@ spec.loader.exec_module(d2)
 
 
 class Phase6D2ProfileTests(unittest.TestCase):
+    def test_policy_metadata_tracks_the_producers_epoch_after_reset(self):
+        source = ROOT / "scripts/semantic-navigation/phase6_sam3_policy.py"
+        tree = ast.parse(source.read_text())
+        cls = next(n for n in tree.body if isinstance(n, ast.ClassDef))
+        method = next(n for n in cls.body if isinstance(n, ast.FunctionDef)
+                      and n.name == "publish_demo_policy")
+        namespace = {"json": json, "String": SimpleNamespace,
+                     "runtime": SimpleNamespace(POLICY="avoid-target/v1")}
+        exec(compile(ast.Module(body=[method], type_ignores=[]), str(source), "exec"), namespace)
+        received = []
+        producer = SimpleNamespace(lock=threading.Lock(), epoch="before-reset",
+            prompt="red mat", label_pub=SimpleNamespace(publish=received.append))
+        publish = namespace["publish_demo_policy"]
+        publish(producer)
+        producer.epoch = "after-reset"
+        publish(producer)
+        self.assertEqual([json.loads(m.data)["stream_epoch"] for m in received],
+                         ["before-reset", "after-reset"])
+        self.assertEqual(json.loads(received[-1].data)["generation"], 1)
+        producer.policy_generation = 2
+        producer.prompt = "blue crate"
+        publish(producer)
+        message = json.loads(received[-1].data)
+        self.assertEqual((message["generation"], message["prompt"]), (2, "blue crate"))
+
+    def test_motion_bridge_gate_rejects_the_runners_own_reader(self):
+        tree = ast.parse(TRIAL_RUNNER.read_text())
+        trial = next(n for n in tree.body if isinstance(n, ast.ClassDef) and n.name == "Trial")
+        method = next(n for n in trial.body if isinstance(n, ast.FunctionDef)
+                      and n.name == "verify_motion_bridge")
+        namespace = {}
+        exec(compile(ast.Module(body=[method], type_ignores=[]), str(TRIAL_RUNNER), "exec"), namespace)
+        endpoints = [SimpleNamespace(node_name="phase6_d2_trial_runner")]
+        runner = SimpleNamespace(node=SimpleNamespace(
+            get_subscriptions_info_by_topic=lambda topic: endpoints))
+        with self.assertRaisesRegex(RuntimeError, "DDS reader missing"):
+            namespace["verify_motion_bridge"](runner)
+        endpoints.append(SimpleNamespace(node_name="zenoh_bridge_ros2dds"))
+        namespace["verify_motion_bridge"](runner)
+
+    def test_pose_comparison_uses_source_timestamps_across_second_boundary(self):
+        tree = ast.parse(TRIAL_RUNNER.read_text())
+        trial = next(n for n in tree.body if isinstance(n, ast.ClassDef) and n.name == "Trial")
+        method = next(n for n in trial.body if isinstance(n, ast.FunctionDef)
+                      and n.name == "pose_stamp_skew")
+        namespace = {}
+        exec(compile(ast.Module(body=[method], type_ignores=[]), str(TRIAL_RUNNER), "exec"), namespace)
+        def msg(sec, ns):
+            return SimpleNamespace(header=SimpleNamespace(stamp=SimpleNamespace(sec=sec, nanosec=ns)))
+        runner = SimpleNamespace(latest_odom=msg(11, 10000000), latest_truth=msg(10, 990000000))
+        self.assertAlmostEqual(namespace["pose_stamp_skew"](runner), 0.02)
+        runner.latest_truth = msg(10, 100000000)
+        self.assertAlmostEqual(namespace["pose_stamp_skew"](runner), 0.91)
+
     @classmethod
     def setUpClass(cls):
         cls.docs = d2.render_documents()
@@ -39,21 +94,24 @@ class Phase6D2ProfileTests(unittest.TestCase):
         local_params = d2_params["local_costmap"]["local_costmap"]["ros__parameters"]
         self.assertTrue(global_params["semantic_layer"]["enabled"])
         self.assertEqual(global_params["semantic_layer"]["target_cost"], 254)
+        self.assertEqual(global_params["semantic_layer"]["observation_lifetime"], 5.0)
+        self.assertEqual(global_params["semantic_layer"]["static_obstacle_memory"], 300.0)
         self.assertFalse(local_params["semantic_layer"]["enabled"])
         for costmap in (global_params, local_params):
             self.assertEqual(costmap["robot_radius"], 0.246)
             self.assertTrue(costmap["inflation_layer"]["enabled"])
-            self.assertEqual(costmap["inflation_layer"]["inflation_radius"], 0.60)
+        self.assertEqual(global_params["inflation_layer"]["inflation_radius"], 1.0)
+        self.assertEqual(local_params["inflation_layer"]["inflation_radius"], 0.60)
         follow_path = d2_params["controller_server"]["ros__parameters"]["FollowPath"]
         self.assertEqual(follow_path["desired_linear_vel"], 0.12)
         self.assertEqual(follow_path["lookahead_dist"], 0.5)
         self.assertEqual(follow_path["min_lookahead_dist"], 0.25)
         self.assertEqual(follow_path["regulated_linear_scaling_min_speed"], 0.06)
         self.assertEqual(follow_path["min_approach_linear_velocity"], 0.04)
-        self.assertFalse(follow_path["stateful"])
-        # In-place rotation deadlocks against the goal checker's stale-stamp
-        # odom-frame target (documented in render_phase5_params.py).
-        self.assertFalse(follow_path["use_rotate_to_heading"])
+        self.assertTrue(follow_path["stateful"])
+        # Simulation-time goals and verified transport support in-place
+        # rotation to complete the requested final heading.
+        self.assertTrue(follow_path["use_rotate_to_heading"])
 
     def test_d2_smoother_limits_steering_speed_and_acceleration(self):
         params = yaml.safe_load(self.by_name["semantic-phase6-d2-nav2-config-on"][
@@ -300,6 +358,7 @@ class Phase6D2ProfileTests(unittest.TestCase):
         self.assertIn('parser.add_argument("--summary-only"', source)
         self.assertIn('result.pop("trajectory_map_xyv", None)', source)
         self.assertIn('result["path_preflight"].pop("path_map_xy", None)', source)
+        self.assertIn('result.pop("controller_path_xy", None)', source)
 
     def test_d2_does_not_add_rmfor_nav2_action_or_simulator_topics(self):
         nav2 = self.by_name["semantic-phase6-nav2"]
@@ -316,24 +375,28 @@ class Phase6D2ProfileTests(unittest.TestCase):
 
     def test_preflight_renderer_uses_non_live_pod_names(self):
         docs = d2.render_documents(preflight=True)
-        self.assertEqual([d["kind"] for d in docs], ["ConfigMap", "Pod", "Pod"])
+        self.assertEqual([d["kind"] for d in docs], ["ConfigMap", "Pod", "Pod", "Pod"])
         self.assertEqual(docs[0]["metadata"]["name"],
                          "semantic-phase6-d2-nav2-config-on-preflight")
         self.assertEqual([d["metadata"]["name"] for d in docs[1:]], [
             "semantic-phase6-simulator-d2-preflight",
             "semantic-phase6-nav2-d2-preflight",
+            "semantic-phase6-sam3-d2-preflight",
         ])
         sim_volume = next(v for v in docs[1]["spec"]["volumes"]
                           if v["name"] == "phase6-demo-world-config")
         self.assertEqual(sim_volume["configMap"]["name"], docs[0]["metadata"]["name"])
 
-    def test_candidate_deployment_renderer_contains_only_d2_config_and_two_pods(self):
+    def test_candidate_deployment_includes_epoch_compatible_inference(self):
         docs = d2.render_documents(candidate_pods=True)
-        self.assertEqual([d["kind"] for d in docs], ["ConfigMap", "Pod", "Pod"])
+        self.assertEqual([d["kind"] for d in docs], ["ConfigMap", "Pod", "Pod", "Pod"])
         self.assertEqual([d["metadata"]["name"] for d in docs[1:]], [
-            "semantic-phase6-simulator", "semantic-phase6-nav2"])
+            "semantic-phase6-simulator", "semantic-phase6-nav2", "semantic-phase6-sam3"])
+        inference = next(c for c in docs[3]["spec"]["containers"]
+                         if c["name"] == "sam3-inference")
+        self.assertIn("phase6_sam3_policy.py", inference["args"][0])
 
-    def test_arm_profiles_are_static_and_differ_only_in_semantic_enable_flags(self):
+    def test_arm_profiles_use_a_wider_and_longer_lived_global_semantic_avoidance(self):
         on = yaml.safe_load(d2.render_documents(semantic_arm="on")[0]["data"][
             "phase6-demo-nav2-on.yaml"])
         off = yaml.safe_load(d2.render_documents(semantic_arm="off")[0]["data"][
@@ -348,9 +411,16 @@ class Phase6D2ProfileTests(unittest.TestCase):
                          ["semantic_layer"]["enabled"])
         self.assertTrue(off["collision_monitor"]["ros__parameters"]
                         ["FootprintApproach"]["enabled"])
-        for params in (on, off):
-            glob = params["global_costmap"]["global_costmap"]["ros__parameters"]
-            glob["semantic_layer"]["enabled"] = False
+        on_global = on["global_costmap"]["global_costmap"]["ros__parameters"]
+        off_global = off["global_costmap"]["global_costmap"]["ros__parameters"]
+        self.assertEqual(on_global["inflation_layer"]["inflation_radius"], 1.0)
+        self.assertEqual(on_global["semantic_layer"]["observation_lifetime"], 5.0)
+        self.assertEqual(on_global["semantic_layer"].pop("static_obstacle_memory"), 300.0)
+        on_global["semantic_layer"]["enabled"] = False
+        on_global["semantic_layer"]["observation_lifetime"] = (
+            off_global["semantic_layer"]["observation_lifetime"])
+        on_global["inflation_layer"]["inflation_radius"] = (
+            off_global["inflation_layer"]["inflation_radius"])
         self.assertEqual(on, off)
 
     def test_trial_runner_fails_closed_on_insufficient_hull_clearance(self):

@@ -65,6 +65,7 @@ private:
   std::set<std::string> retired_policy_epochs_;
   int64_t barrier_wall_{0}, last_sim_{-1}, last_stamp_{-1}, last_wall_{-1};
   int64_t ttl_ns_{1000000000}, max_age_ns_{500000000}, uncertainty_ns_{2000000};
+  int64_t memory_ns_{0};
   int64_t last_runtime_log_wall_ns_{0};
   int64_t last_cost_log_wall_ns_{0};
   int64_t last_label_log_wall_ns_{0};

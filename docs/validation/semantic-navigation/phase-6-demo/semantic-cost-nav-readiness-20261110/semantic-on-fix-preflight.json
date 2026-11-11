@@ -1,0 +1,37 @@
+{
+  "trial": "semantic-cost-nav-fix-preflight-20261110",
+  "semantic_arm": "on",
+  "semantic_layer_enabled": true,
+  "semantic_arm_state_confirmed": true,
+  "semantic_layer_cost254_samples": {
+    "global": 917,
+    "local": null
+  },
+  "path_preflight": {
+    "planner_error_code": 0,
+    "planning_time_s": 0.02,
+    "mat_centerline_samples": 0,
+    "mat_centerline_intersection": false,
+    "minimum_hull_clearance_m": 0.6764,
+    "required_hull_clearance_m": 0.1,
+    "planning_clearance_m": 0.2,
+    "clearance_envelope_intersection": false,
+    "path_frame_id": "map"
+  },
+  "motion_dispatched": false,
+  "via_map": [],
+  "goal_map": [
+    19.5,
+    -31.594
+  ],
+  "navigation_action": "/navigate_to_pose",
+  "clearance_pose_source": "gazebo_model_pose",
+  "odom_truth_position_error_m": 0.0006,
+  "odom_truth_yaw_error_rad": 0.0,
+  "active_profile": {
+    "global_inflation_radius_m": 1.0,
+    "global_semantic_observation_lifetime_s": 5.0,
+    "global_semantic_target_cost": 254,
+    "local_semantic_enabled": false
+  }
+}

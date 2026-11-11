@@ -41,6 +41,7 @@ void SemanticLayer::onInitialize()
   declareParameter("enabled", rclcpp::ParameterValue(true));
   declareParameter("topic_prefix", rclcpp::ParameterValue("/robot_1/semantic"));
   declareParameter("observation_lifetime", rclcpp::ParameterValue(1.0));
+  declareParameter("static_obstacle_memory", rclcpp::ParameterValue(0.0));
   declareParameter("max_capture_age", rclcpp::ParameterValue(0.5));
   declareParameter("target_cost", rclcpp::ParameterValue(200));
   declareParameter("optical_frame", rclcpp::ParameterValue(frame_));
@@ -50,15 +51,22 @@ void SemanticLayer::onInitialize()
   auto param = [&](const char * key) {return node->get_parameter(name_ + "." + key);};
   enabled_ = param("enabled").as_bool();
   double ttl = param("observation_lifetime").as_double();
+  double memory = param("static_obstacle_memory").as_double();
   double age = param("max_capture_age").as_double();
   int cost = param("target_cost").as_int();
   min_height_ = param("min_height").as_double(); max_height_ = param("max_height").as_double();
   max_range_ = param("max_range").as_double(); frame_ = param("optical_frame").as_string();
   if (!std::isfinite(ttl) || ttl <= 0 || ttl > 5 || !std::isfinite(age) || age <= 0 || age > ttl ||
+    !std::isfinite(memory) || memory < 0 || memory > 300 ||
+    (memory > 0 && (memory < ttl || layered_costmap_->isRolling())) ||
     cost < 1 || cost > 254 || !std::isfinite(min_height_) || !std::isfinite(max_height_) ||
     min_height_ > max_height_ || !std::isfinite(max_range_) || max_range_ <= 0 || frame_.empty())
   {throw std::invalid_argument("invalid semantic policy parameters");}
   ttl_ns_ = int64_t(ttl * 1e9); max_age_ns_ = int64_t(age * 1e9); target_cost_ = cost;
+  // Opt-in memory for fixed obstacles in a static-world demo. Only admitted,
+  // capture-time transformed observations populate it. Freshness/currentness
+  // still use max_capture_age; all epoch, policy and lifecycle clears apply.
+  memory_ns_ = int64_t(memory * 1e9);
   default_value_ = NO_INFORMATION;
   matchSize();
   std::string prefix = param("topic_prefix").as_string();
@@ -329,8 +337,9 @@ void SemanticLayer::attempt(int64_t stamp)
 void SemanticLayer::expire()
 {
   const auto sim = simNow(); const auto wall = wallNow();
+  const auto lifetime = memory_ns_ > 0 ? memory_ns_ : ttl_ns_;
   for (auto it = cells_.begin(); it != cells_.end();) {
-    if (sim - it->second.sim_ns >= ttl_ns_ || wall - it->second.wall_ns + uncertainty_ns_ >= ttl_ns_)
+    if (sim - it->second.sim_ns >= lifetime || wall - it->second.wall_ns + uncertainty_ns_ >= lifetime)
     {it = cells_.erase(it);} else {++it;}
   }
   for (auto it = pending_.begin(); it != pending_.end();) {

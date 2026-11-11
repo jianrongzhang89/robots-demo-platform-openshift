@@ -124,17 +124,18 @@ def polyline_min_hull_clearance(points) -> float:
 
 
 def polyline_enters_clearance_envelope(points, clearance=REQUIRED_HULL_CLEARANCE) -> bool:
-    """Conservative gate: reject a path within hull radius + margin of the mat.
+    """Reject a path within hull radius + margin of the mat.
 
-    Expanding an AABB by a circle's radius produces a square at its corners;
-    this is intentionally conservative and cannot understate circle overlap.
+    Use segment-to-rectangle distance so the circular hull offset has rounded
+    corners. Expanding the mat's AABB directly would add square corners and can
+    incorrectly reject a route that clears the actual circumscribed hull.
     """
     if not points:
         return True
-    expanded = mat_bounds(ROBOT_HULL_RADIUS + clearance)
+    required_center_distance = ROBOT_HULL_RADIUS + clearance
     if len(points) == 1:
-        return point_rect_distance(points[0], expanded) == 0.0
-    return any(segment_intersects_rect(a, b, expanded)
+        return point_rect_distance(points[0]) <= required_center_distance
+    return any(segment_rect_distance(a, b) <= required_center_distance
                for a, b in zip(points, points[1:]))
 
 
