@@ -1,0 +1,53 @@
+{
+  "status": "PASS",
+  "trial": "phase8-openshift-ai-served",
+  "backend": "http",
+  "model_name": "sam3-mat-v1",
+  "model_prompt": "red mat",
+  "deployment_identity_digest": "sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+  "adapter_ready": true,
+  "adapter_emitted_results_at_capture": 6,
+  "semantic_layer_enabled": true,
+  "semantic_arm": "on",
+  "semantic_global_cost254": 1089,
+  "openrmf_task_id": "compose.dispatch-a294b01aee",
+  "rmf_task_seen_in_fleet": true,
+  "nav2_succeeded": true,
+  "nav2_action_status": 4,
+  "wall_duration_s": 82.61,
+  "live_global_plans": 78,
+  "moving_global_plans": 67,
+  "minimum_hull_clearance_m": 0.8107,
+  "global_plan_minimum_hull_clearance_m": 0.6215,
+  "mat_hull_overlap_detected": false,
+  "collision_monitor_events": [],
+  "cap_breach": false,
+  "rmf_fleet_idle": true,
+  "final_map_pose": [
+    19.4298,
+    -31.4171
+  ],
+  "final_ground_truth_twist_mps_and_radps": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "evidence": {
+    "full_trial": "semantic-navigation.json",
+    "served_inference_status": "phase8-serving-adapter-status.json",
+    "served_model_identity": "openshift-ai-serving-identity.json",
+    "final_stopped_pose": "stopped-pose.yaml",
+    "stationary_preflight": "openshift-ai-preflight-summary.json",
+    "served_inference_log": "phase8-serving-adapter-final.log",
+    "final_serving_adapter_status": "phase8-serving-adapter-final-status.json"
+  },
+  "adapter_emitted_results_at_final_capture": 3779,
+  "valid_served_results_during_semantic_costmap_monitor_window": 509,
+  "semantic_costmap_monitor_window_wall_s": [
+    1794406482.263,
+    1794406565.257
+  ]
+}

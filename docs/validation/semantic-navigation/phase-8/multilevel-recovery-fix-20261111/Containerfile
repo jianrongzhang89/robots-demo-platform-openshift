@@ -1,0 +1,6 @@
+FROM image-registry.openshift-image-registry.svc:5000/semantic-navigation/phase8-multilevel-hotel@sha256:6e1404dc3e01dd98f27b386878578bf55d3285e6e13d5085093e33aa3d40ef16
+USER 0
+SHELL ["/bin/bash", "-c"]
+COPY semantic-costmap /tmp/semantic-fix/src/demo_semantic_costmap
+WORKDIR /tmp/semantic-fix
+RUN source /opt/ros/jazzy/setup.bash && colcon build --merge-install --install-base /opt/semantic-costmap-ws/install --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON && source /opt/semantic-costmap-ws/install/setup.bash && colcon test --event-handlers console_direct+ && colcon test-result --verbose

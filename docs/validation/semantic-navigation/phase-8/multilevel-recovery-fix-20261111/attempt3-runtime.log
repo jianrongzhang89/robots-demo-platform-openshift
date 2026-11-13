@@ -1,0 +1,1172 @@
+[hotel-nav2-rmf] Phase 8 RGB-D sensor rate set to 5 Hz for fresh served inference
+[hotel-nav2-rmf] Starting Xorg/noVNC display on :99
+_XSERVTransmkdir: ERROR: euid != 0,directory /tmp/.X11-unix will not be created.
+
+X.Org X Server 1.21.1.11
+X Protocol Version 11, Revision 0
+Current Operating System: Linux phase8-multilevel-hotel-cb64f9448-9k74m 5.14.0-570.113.1.el9_6.x86_64 #1 SMP PREEMPT_DYNAMIC Sun May 10 07:30:39 EDT 2026 x86_64
+Kernel command line: BOOT_IMAGE=(hd0,gpt3)/boot/ostree/rhcos-bb443b432eae97af3e38179a467059734ee65793f14a237b15e82ec4cc329571/vmlinuz-5.14.0-570.113.1.el9_6.x86_64 rw ostree=/ostree/boot.0/rhcos/bb443b432eae97af3e38179a467059734ee65793f14a237b15e82ec4cc329571/0 ignition.platform.id=aws console=tty0 console=ttyS0,115200n8 root=UUID=0ddacb1d-a4df-4bdb-ae5a-7ea0d473f16c rw rootflags=prjquota boot=UUID=a1da78e6-63df-4208-b8f0-ccf31078d14c systemd.unified_cgroup_hierarchy=1 cgroup_no_v1=all
+xorg-server 2:21.1.12-1ubuntu1.9 (For technical support please see http://www.ubuntu.com/support) 
+Current version of pixman: 0.42.2
+	Before reporting problems, check http://wiki.x.org
+	to make sure that you have the latest version.
+Markers: (--) probed, (**) from config file, (==) default setting,
+	(++) from command line, (!!) notice, (II) informational,
+	(WW) warning, (EE) error, (NI) not implemented, (??) unknown.
+(++) Log file: "/tmp/Xorg.hotel-nav2-rmf.log", Time: Wed Nov 11 16:43:28 2026
+(++) Using config file: "/etc/X11/xorg-dummy.conf"
+(==) Using system config directory "/usr/share/X11/xorg.conf.d"
+[hotel-nav2-rmf] Starting Gazebo Harmonic from /tmp/phase8-multilevel-hotel.world
+11/11/2026 16:43:30 passing arg to libvncserver: -rfbport
+11/11/2026 16:43:30 passing arg to libvncserver: 5900
+11/11/2026 16:43:30 x11vnc version: 0.9.16 lastmod: 2019-01-05  pid: 34
+11/11/2026 16:43:30 Using X display :99
+11/11/2026 16:43:30 rootwin: 0x25d reswin: 0x200001 dpy: 0x7fdbe350
+11/11/2026 16:43:30 
+11/11/2026 16:43:30 ------------------ USEFUL INFORMATION ------------------
+11/11/2026 16:43:30 
+11/11/2026 16:43:30 Wireframing: -wireframe mode is in effect for window moves.
+11/11/2026 16:43:30   If this yields undesired behavior (poor response, painting
+11/11/2026 16:43:30   errors, etc) it may be disabled:
+11/11/2026 16:43:30    - use '-nowf' to disable wireframing completely.
+11/11/2026 16:43:30    - use '-nowcr' to disable the Copy Rectangle after the
+11/11/2026 16:43:30      moved window is released in the new position.
+11/11/2026 16:43:30   Also see the -help entry for tuning parameters.
+11/11/2026 16:43:30   You can press 3 Alt_L's (Left "Alt" key) in a row to 
+11/11/2026 16:43:30   repaint the screen, also see the -fixscreen option for
+11/11/2026 16:43:30   periodic repaints.
+11/11/2026 16:43:30 
+11/11/2026 16:43:30 XFIXES available on display, resetting cursor mode
+11/11/2026 16:43:30   to: '-cursor most'.
+11/11/2026 16:43:30   to disable this behavior use: '-cursor arrow'
+11/11/2026 16:43:30   or '-noxfixes'.
+11/11/2026 16:43:30 using XFIXES for cursor drawing.
+11/11/2026 16:43:30 GrabServer control via XTEST.
+11/11/2026 16:43:30 
+11/11/2026 16:43:30 XKEYBOARD: number of keysyms per keycode 7 is greater
+11/11/2026 16:43:30   than 4 and 51 keysyms are mapped above 4.
+11/11/2026 16:43:30   Automatically switching to -xkb mode.
+11/11/2026 16:43:30   If this makes the key mapping worse you can
+11/11/2026 16:43:30   disable it with the "-noxkb" option.
+11/11/2026 16:43:30   Also, remember "-remap DEAD" for accenting characters.
+11/11/2026 16:43:30 
+11/11/2026 16:43:30 X FBPM extension not supported.
+Xlib:  extension "DPMS" missing on display ":99".
+11/11/2026 16:43:30 X display is not capable of DPMS.
+11/11/2026 16:43:30 --------------------------------------------------------
+11/11/2026 16:43:30 
+11/11/2026 16:43:30 Default visual ID: 0x21
+11/11/2026 16:43:30 Read initial data from X display into framebuffer.
+11/11/2026 16:43:30 initialize_screen: fb_depth/fb_bpp/fb_Bpl 24/32/6400
+11/11/2026 16:43:30 
+11/11/2026 16:43:30 X display :99 is 32bpp depth=24 true color
+11/11/2026 16:43:30 
+11/11/2026 16:43:30 Listening for VNC connections on TCP port 5900
+11/11/2026 16:43:30 Listening for VNC connections on TCP6 port 5900
+11/11/2026 16:43:30 listen6: bind: Address already in use
+11/11/2026 16:43:30 Not listening on IPv6 interface.
+11/11/2026 16:43:30 
+11/11/2026 16:43:30 Xinerama is present and active (e.g. multi-head).
+11/11/2026 16:43:30 Xinerama: number of sub-screens: 1
+11/11/2026 16:43:30 Xinerama: no blackouts needed (only one sub-screen)
+11/11/2026 16:43:30 
+11/11/2026 16:43:30 fb read rate: 2050 MB/sec
+11/11/2026 16:43:30 fast read: reset -wait  ms to: 10
+11/11/2026 16:43:30 fast read: reset -defer ms to: 10
+11/11/2026 16:43:30 The X server says there are 10 mouse buttons.
+11/11/2026 16:43:30 screen setup finished.
+11/11/2026 16:43:30 
+
+The VNC desktop is:      phase8-multilevel-hotel-cb64f9448-9k74m:0
+PORT=5900
+
+******************************************************************************
+Have you tried the x11vnc '-ncache' VNC client-side pixel caching feature yet?
+
+The scheme stores pixel data offscreen on the VNC viewer side for faster
+retrieval.  It should work with any VNC viewer.  Try it by running:
+
+    x11vnc -ncache 10 ...
+
+One can also add -ncache_cr for smooth 'copyrect' window motion.
+More info: http://www.karlrunge.com/x11vnc/faq.html#faq-client-caching
+
+[hotel-nav2-rmf] Starting direct Gazebo ROS bridge
+[hotel-nav2-rmf] Starting the Phase 8 RGB-D bridge and camera compressor
+[INFO] [1794415413.719010580] [ros_gz_bridge]: Creating GZ->ROS Bridge: [/clock (gz.msgs.Clock) -> /clock (rosgraph_msgs/msg/Clock)] (Lazy 0)
+[INFO] [1794415413.719796256] [ros_gz_bridge]: Creating ROS->GZ Bridge: [/robot_1/cmd_vel (geometry_msgs/msg/Twist) -> /robot_1/cmd_vel (gz.msgs.Twist)] (Lazy 0)
+[INFO] [1794415413.720974857] [ros_gz_bridge]: Creating GZ->ROS Bridge: [/robot_1/odom (gz.msgs.Odometry) -> /robot_1/odom (nav_msgs/msg/Odometry)] (Lazy 0)
+[INFO] [1794415413.721752563] [ros_gz_bridge]: Creating GZ->ROS Bridge: [/scan (gz.msgs.LaserScan) -> /scan (sensor_msgs/msg/LaserScan)] (Lazy 0)
+[INFO] [launch]: All log files can be found below /tmp/ros-home/.ros/log/2026-11-11-16-43-33-767273-phase8-multilevel-hotel-cb64f9448-9k74m-52
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [bridge_node-1]: process started with pid [158]
+[bridge_node-1] [INFO] [1794415414.889090563] [phase8_rgbd_camera_bridge]: Creating GZ->ROS Bridge: [/robot_1/camera/image (gz.msgs.Image) -> /robot_1/camera/color/image_raw (sensor_msgs/msg/Image)] (Lazy 0)
+[bridge_node-1] [INFO] [1794415414.891651148] [phase8_rgbd_camera_bridge]: Creating GZ->ROS Bridge: [/robot_1/camera/camera_info (gz.msgs.CameraInfo) -> /robot_1/camera/color/camera_info (sensor_msgs/msg/CameraInfo)] (Lazy 0)
+[bridge_node-1] [INFO] [1794415414.892368053] [phase8_rgbd_camera_bridge]: Creating GZ->ROS Bridge: [/robot_1/camera/depth_image (gz.msgs.Image) -> /robot_1/camera/depth/image_raw (sensor_msgs/msg/Image)] (Lazy 0)
+[bridge_node-1] [INFO] [1794415414.892832964] [phase8_rgbd_camera_bridge]: Creating GZ->ROS Bridge: [/robot_1/camera/capture_trace (gz.msgs.StringMsg) -> /robot_1/camera/capture_trace (std_msgs/msg/String)] (Lazy 0)
+[hotel-nav2-rmf] Waiting for odom to base_footprint TF
+[INFO] [1794415416.816455147] [robot_state_publisher]: Robot initialized
+[INFO] [1794415417.013160847] [scan_frame_rewriter]: Scan frame rewriter active: /robot_1/scan -> /robot_1/scan_fixed
+[hotel-nav2-rmf] Starting lifecycle-driven Nav2
+[hotel-nav2-rmf] Starting RMF schedule, map, lift, door, and dispatcher nodes
+[hotel-nav2-rmf] Waiting for /robot_1/navigate_to_pose
+~Initializing Dispatcher Node~
+[INFO] [1794415419.115009943] [rmf_dispatcher_node]:  Declared Time Window Param as: 2.000000 secs
+[INFO] [1794415419.115187320] [rmf_dispatcher_node]:  Declared Terminated Tasks Max Size Param as: 100
+[INFO] [1794415419.115207511] [rmf_dispatcher_node]:  Declared publish_active_tasks_period as: 2 secs
+[INFO] [1794415419.115218842] [rmf_dispatcher_node]:  Use timestamp with task_id: false
+[INFO] [1794415419.115227893] [rmf_dispatcher_node]:  Use unique hex string with task_id: true
+[INFO] [1794415419.119303472] [rmf_traffic_blockade_node]: Beginning traffic blockade node
+[INFO] [1794415419.120838391] [rmf_dispatcher_node]: Starting task dispatcher node
+[INFO] [1794415419.135459091] [rmf_traffic_schedule_node_697c81a0_7cd6_482d_ad34_6c9818eaa47b]: Successfully loaded logfile .rmf_schedule_node.yaml 
+[INFO] [1794415419.139368516] [rmf_traffic_schedule_node_697c81a0_7cd6_482d_ad34_6c9818eaa47b]: Set up heartbeat on /rmf_traffic/heartbeat with liveliness lease duration of 10000 ms and deadline of 10000 ms
+[INFO] [1794415419.157337158] [rmf_traffic_schedule_node_697c81a0_7cd6_482d_ad34_6c9818eaa47b]: Beginning traffic schedule node
+[INFO] [launch]: All log files can be found below /tmp/ros-home/.ros/log/2026-11-11-16-43-39-214700-phase8-multilevel-hotel-cb64f9448-9k74m-457
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [map_server-1]: process started with pid [555]
+[INFO] [amcl-2]: process started with pid [556]
+[INFO] [lifecycle_manager-3]: process started with pid [557]
+[INFO] [controller_server-4]: process started with pid [558]
+[INFO] [smoother_server-5]: process started with pid [559]
+[INFO] [planner_server-6]: process started with pid [560]
+[INFO] [route_server-7]: process started with pid [561]
+[INFO] [behavior_server-8]: process started with pid [562]
+[INFO] [bt_navigator-9]: process started with pid [563]
+[INFO] [waypoint_follower-10]: process started with pid [564]
+[INFO] [velocity_smoother-11]: process started with pid [565]
+[INFO] [collision_monitor-12]: process started with pid [566]
+[INFO] [lifecycle_manager-13]: process started with pid [567]
+[amcl-2] [INFO] [1794415419.637490113] [robot_1.amcl]: 
+[amcl-2] 	amcl lifecycle node launched. 
+[amcl-2] 	Waiting on external lifecycle transitions to activate
+[amcl-2] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[amcl-2] [INFO] [1794415419.637964342] [robot_1.amcl]: Creating
+[lifecycle_manager-3] [INFO] [1794415419.638857563] [robot_1.lifecycle_manager_localization]: Creating
+[planner_server-6] [INFO] [1794415419.642008377] [robot_1.planner_server]: 
+[planner_server-6] 	planner_server lifecycle node launched. 
+[planner_server-6] 	Waiting on external lifecycle transitions to activate
+[planner_server-6] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[velocity_smoother-11] [INFO] [1794415419.642063362] [robot_1.velocity_smoother]: 
+[velocity_smoother-11] 	velocity_smoother lifecycle node launched. 
+[velocity_smoother-11] 	Waiting on external lifecycle transitions to activate
+[velocity_smoother-11] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[planner_server-6] [INFO] [1794415419.644101071] [robot_1.planner_server]: Creating
+[lifecycle_manager-3] [INFO] [1794415419.645101423] [robot_1.lifecycle_manager_localization]: [34m[1mCreating and initializing lifecycle service clients[0m[0m
+[behavior_server-8] [INFO] [1794415419.649494813] [robot_1.behavior_server]: 
+[behavior_server-8] 	behavior_server lifecycle node launched. 
+[behavior_server-8] 	Waiting on external lifecycle transitions to activate
+[behavior_server-8] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[waypoint_follower-10] [INFO] [1794415419.649513086] [robot_1.waypoint_follower]: 
+[waypoint_follower-10] 	waypoint_follower lifecycle node launched. 
+[waypoint_follower-10] 	Waiting on external lifecycle transitions to activate
+[waypoint_follower-10] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[waypoint_follower-10] [INFO] [1794415419.650071777] [robot_1.waypoint_follower]: Creating
+[smoother_server-5] [INFO] [1794415419.654432213] [robot_1.smoother_server]: 
+[smoother_server-5] 	smoother_server lifecycle node launched. 
+[smoother_server-5] 	Waiting on external lifecycle transitions to activate
+[smoother_server-5] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[bt_navigator-9] [INFO] [1794415419.657531959] [robot_1.bt_navigator]: 
+[bt_navigator-9] 	bt_navigator lifecycle node launched. 
+[bt_navigator-9] 	Waiting on external lifecycle transitions to activate
+[bt_navigator-9] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[smoother_server-5] [INFO] [1794415419.657769481] [robot_1.smoother_server]: Creating smoother server
+[bt_navigator-9] [INFO] [1794415419.658662334] [robot_1.bt_navigator]: Creating
+[map_server-1] [INFO] [1794415419.709336690] [robot_1.map_server]: 
+[map_server-1] 	map_server lifecycle node launched. 
+[map_server-1] 	Waiting on external lifecycle transitions to activate
+[map_server-1] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[map_server-1] [INFO] [1794415419.709469638] [robot_1.map_server]: Creating
+[planner_server-6] [INFO] [1794415419.711074514] [robot_1.global_costmap.global_costmap]: 
+[planner_server-6] 	global_costmap lifecycle node launched. 
+[planner_server-6] 	Waiting on external lifecycle transitions to activate
+[planner_server-6] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[planner_server-6] [INFO] [1794415419.712508908] [robot_1.global_costmap.global_costmap]: Creating Costmap
+[collision_monitor-12] [INFO] [1794415419.714357039] [robot_1.collision_monitor]: 
+[collision_monitor-12] 	collision_monitor lifecycle node launched. 
+[collision_monitor-12] 	Waiting on external lifecycle transitions to activate
+[collision_monitor-12] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[route_server-7] [INFO] [1794415419.717271652] [robot_1.route_server]: 
+[route_server-7] 	route_server lifecycle node launched. 
+[route_server-7] 	Waiting on external lifecycle transitions to activate
+[route_server-7] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[lifecycle_manager-13] [INFO] [1794415419.723680318] [robot_1.lifecycle_manager_navigation]: Creating
+[lifecycle_manager-13] [INFO] [1794415419.729435173] [robot_1.lifecycle_manager_navigation]: [34m[1mCreating and initializing lifecycle service clients[0m[0m
+[controller_server-4] [INFO] [1794415419.828309242] [robot_1.controller_server]: 
+[controller_server-4] 	controller_server lifecycle node launched. 
+[controller_server-4] 	Waiting on external lifecycle transitions to activate
+[controller_server-4] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[INFO] [1794415419.843802612] [building_map_server]: loading map path: /opt/ros2-demo/hotel-assets/hotel.building.yaml
+[controller_server-4] [INFO] [1794415419.859776331] [robot_1.controller_server]: Creating controller server
+[lifecycle_manager-3] [INFO] [1794415419.916804754] [robot_1.lifecycle_manager_localization]: [34m[1mStarting managed nodes bringup...[0m[0m
+[lifecycle_manager-3] [INFO] [1794415419.917430170] [robot_1.lifecycle_manager_localization]: [34m[1mConfiguring map_server[0m[0m
+[map_server-1] [INFO] [1794415419.918352086] [robot_1.map_server]: Configuring
+[map_server-1] [INFO] [1794415419.918432644] [map_io]: Loading yaml file: /opt/ros2-demo/maps/hotel_L1.yaml
+[map_server-1] [INFO] [1794415419.918806066] [map_io]: resolution: 0.05
+[map_server-1] [INFO] [1794415419.918821658] [map_io]: origin[0]: 0
+[map_server-1] [INFO] [1794415419.918828355] [map_io]: origin[1]: -42.25
+[map_server-1] [INFO] [1794415419.918832777] [map_io]: origin[2]: 0
+[map_server-1] [INFO] [1794415419.918837373] [map_io]: free_thresh: 0.196
+[map_server-1] [INFO] [1794415419.918841599] [map_io]: occupied_thresh: 0.65
+[map_server-1] [INFO] [1794415419.918847898] [map_io]: mode: trinary
+[map_server-1] [INFO] [1794415419.918853044] [map_io]: negate: 0
+[map_server-1] [INFO] [1794415419.919060210] [map_io]: Loading image_file: /opt/ros2-demo/maps/hotel_L1.pgm
+[map_server-1] [INFO] [1794415419.929770528] [map_io]: Read map /opt/ros2-demo/maps/hotel_L1.pgm: 693 X 845 map @ 0.05 m/cell
+[lifecycle_manager-3] [INFO] [1794415419.949840663] [robot_1.lifecycle_manager_localization]: [34m[1mConfiguring amcl[0m[0m
+[amcl-2] [INFO] [1794415419.950099606] [robot_1.amcl]: Configuring
+[amcl-2] [INFO] [1794415419.950199202] [robot_1.amcl]: initTransforms
+[amcl-2] [INFO] [1794415419.961232757] [robot_1.amcl]: initPubSub
+[controller_server-4] [INFO] [1794415420.013126252] [robot_1.local_costmap.local_costmap]: 
+[controller_server-4] 	local_costmap lifecycle node launched. 
+[controller_server-4] 	Waiting on external lifecycle transitions to activate
+[controller_server-4] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[controller_server-4] [INFO] [1794415420.015686111] [robot_1.local_costmap.local_costmap]: Creating Costmap
+[amcl-2] [INFO] [1794415420.015843771] [robot_1.amcl]: Subscribed to map topic.
+[lifecycle_manager-3] [INFO] [1794415420.021797897] [robot_1.lifecycle_manager_localization]: [34m[1mActivating map_server[0m[0m
+[map_server-1] [INFO] [1794415420.022018697] [robot_1.map_server]: Activating
+[map_server-1] [INFO] [1794415420.022899599] [robot_1.map_server]: Creating bond (map_server) to lifecycle manager.
+[amcl-2] [INFO] [1794415420.024663932] [robot_1.amcl]: Received a 693 X 845 map @ 0.050 m/pix
+building name: hotel
+coordinate system: reference_image
+parsing level L1
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsing level L2
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsing level L3
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now
+parsed a deprecated .building.yaml, model should have a  [dispensable] field, setting [dispensable] to false for now[INFO] [1794415420.109654802] [building_map_server]: opening: /opt/ros2-demo/hotel-assets/hotel_L1.png
+[INFO] [1794415420.110340830] [building_map_server]: read 39941 byte image
+[INFO] [1794415420.120693663] [building_map_server]: opening: /opt/ros2-demo/hotel-assets/hotel_L2.png
+[INFO] [1794415420.121435489] [building_map_server]: read 47811 byte image
+[INFO] [1794415420.129116499] [building_map_server]: opening: /opt/ros2-demo/hotel-assets/hotel_L3.png
+[INFO] [1794415420.129773612] [building_map_server]: read 47951 byte image
+[lifecycle_manager-3] [INFO] [1794415420.133773272] [robot_1.lifecycle_manager_localization]: Server map_server connected with bond.
+[lifecycle_manager-3] [INFO] [1794415420.133828739] [robot_1.lifecycle_manager_localization]: [34m[1mActivating amcl[0m[0m
+[amcl-2] [INFO] [1794415420.134103797] [robot_1.amcl]: Activating
+[amcl-2] [INFO] [1794415420.134146940] [robot_1.amcl]: Creating bond (amcl) to lifecycle manager.
+[INFO] [1794415420.137663724] [building_map_server]: unable to generate GeoJSON for this map.
+[INFO] [1794415420.147771828] [building_map_server]: publishing map...
+[INFO] [1794415420.154732187] [building_map_server]: ready to serve map: "hotel"  Ctrl+C to exit...
+[amcl-2] [INFO] [1794415420.167256201] [robot_1.amcl]: createLaserObject
+[lifecycle_manager-3] [INFO] [1794415420.237839747] [robot_1.lifecycle_manager_localization]: Server amcl connected with bond.
+[lifecycle_manager-3] [INFO] [1794415420.237899549] [robot_1.lifecycle_manager_localization]: [34m[1mManaged nodes are active[0m[0m
+[lifecycle_manager-3] [INFO] [1794415420.237911836] [robot_1.lifecycle_manager_localization]: [34m[1mCreating bond timer...[0m[0m
+[amcl-2] [INFO] [1794415420.585981923] [robot_1.amcl]: Message Filter dropping message: frame 'base_scan' at time 3.400 for reason 'the timestamp on the message is earlier than all the data in the transform cache'
+[lifecycle_manager-13] [INFO] [1794415420.862214701] [robot_1.lifecycle_manager_navigation]: [34m[1mStarting managed nodes bringup...[0m[0m
+[lifecycle_manager-13] [INFO] [1794415420.862270251] [robot_1.lifecycle_manager_navigation]: [34m[1mConfiguring controller_server[0m[0m
+[controller_server-4] [INFO] [1794415420.862485472] [robot_1.controller_server]: Configuring controller interface
+[controller_server-4] [INFO] [1794415420.862508696] [robot_1.controller_server]: getting progress checker plugins..
+[controller_server-4] [INFO] [1794415420.862719420] [robot_1.controller_server]: getting goal checker plugins..
+[controller_server-4] [INFO] [1794415420.862873467] [robot_1.controller_server]: Controller frequency set to 20.0000Hz
+[controller_server-4] [INFO] [1794415420.862912059] [robot_1.local_costmap.local_costmap]: Configuring
+[controller_server-4] [INFO] [1794415420.868193631] [robot_1.local_costmap.local_costmap]: Using plugin "voxel_layer"
+[controller_server-4] [INFO] [1794415420.872173975] [robot_1.local_costmap.local_costmap]: Subscribed to Topics: scan
+[controller_server-4] [INFO] [1794415420.877742317] [robot_1.local_costmap.local_costmap]: Initialized plugin "voxel_layer"
+[controller_server-4] [INFO] [1794415420.877777102] [robot_1.local_costmap.local_costmap]: Using plugin "inflation_layer"
+[controller_server-4] [INFO] [1794415420.878628367] [robot_1.local_costmap.local_costmap]: Initialized plugin "inflation_layer"
+[controller_server-4] [ERROR] [1794415420.888420770] [robot_1.local_costmap.local_costmap]: The configured inflation radius (0.200) is smaller than the computed inscribed radius (0.251) of your footprint, it is highly recommended to set inflation radius to be at least as big as the inscribed radius to avoid collisions
+[controller_server-4] [INFO] [1794415420.891885910] [robot_1.controller_server]: Created progress_checker : progress_checker of type nav2_controller::SimpleProgressChecker
+[controller_server-4] [INFO] [1794415420.892280127] [robot_1.controller_server]: Controller Server has progress_checker  progress checkers available.
+[controller_server-4] [INFO] [1794415420.892781845] [robot_1.controller_server]: Created goal checker : general_goal_checker of type nav2_controller::SimpleGoalChecker
+[controller_server-4] [INFO] [1794415420.893372941] [robot_1.controller_server]: Controller Server has general_goal_checker  goal checkers available.
+[controller_server-4] [INFO] [1794415420.894243159] [robot_1.controller_server]: Created controller : FollowPath of type nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController
+[controller_server-4] [INFO] [1794415420.901649288] [robot_1.controller_server]: Controller Server has FollowPath  controllers available.
+[lifecycle_manager-13] [INFO] [1794415420.907707533] [robot_1.lifecycle_manager_navigation]: [34m[1mConfiguring smoother_server[0m[0m
+[smoother_server-5] [INFO] [1794415420.908320810] [robot_1.smoother_server]: Configuring smoother server
+[smoother_server-5] [INFO] [1794415420.921072995] [robot_1.smoother_server]: Created smoother : simple_smoother of type nav2_smoother::SimpleSmoother
+[smoother_server-5] [INFO] [1794415420.923895607] [robot_1.smoother_server]: Smoother Server has simple_smoother  smoothers available.
+[lifecycle_manager-13] [INFO] [1794415420.938108256] [robot_1.lifecycle_manager_navigation]: [34m[1mConfiguring planner_server[0m[0m
+[planner_server-6] [INFO] [1794415420.939113259] [robot_1.planner_server]: Configuring
+[planner_server-6] [INFO] [1794415420.939155967] [robot_1.global_costmap.global_costmap]: Configuring
+[planner_server-6] [INFO] [1794415420.946928842] [robot_1.global_costmap.global_costmap]: Using plugin "static_layer"
+[planner_server-6] [INFO] [1794415420.956562487] [robot_1.global_costmap.global_costmap]: Subscribing to the map topic (/robot_1/map) with transient local durability
+[planner_server-6] [INFO] [1794415420.958849662] [robot_1.global_costmap.global_costmap]: Initialized plugin "static_layer"
+[planner_server-6] [INFO] [1794415420.959109123] [robot_1.global_costmap.global_costmap]: Using plugin "obstacle_layer"
+[planner_server-6] [INFO] [1794415420.961675105] [robot_1.global_costmap.global_costmap]: Subscribed to Topics: scan
+[planner_server-6] [INFO] [1794415420.968108023] [robot_1.global_costmap.global_costmap]: Initialized plugin "obstacle_layer"
+[planner_server-6] [INFO] [1794415420.968257278] [robot_1.global_costmap.global_costmap]: Using plugin "semantic_layer"
+[planner_server-6] [INFO] [1794415420.974458646] [robot_1.global_costmap.global_costmap]: Initialized plugin "semantic_layer"
+[planner_server-6] [INFO] [1794415420.974491415] [robot_1.global_costmap.global_costmap]: Using plugin "inflation_layer"
+[planner_server-6] [INFO] [1794415420.975527086] [robot_1.global_costmap.global_costmap]: Initialized plugin "inflation_layer"
+[planner_server-6] [INFO] [1794415421.021581172] [robot_1.global_costmap.global_costmap]: StaticLayer: Resizing costmap to 693 X 845 at 0.050000 m/pix
+[planner_server-6] [INFO] [1794415421.021678594] [robot_1.planner_server]: Created global planner plugin GridBased of type nav2_navfn_planner::NavfnPlanner
+[planner_server-6] [INFO] [1794415421.021708862] [robot_1.planner_server]: Configuring plugin GridBased of type NavfnPlanner
+[planner_server-6] [WARN] [1794415421.021850919] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794415421.023060722] [robot_1.planner_server]: Planner Server has GridBased  planners available.
+[lifecycle_manager-13] [INFO] [1794415421.032860330] [robot_1.lifecycle_manager_navigation]: [34m[1mConfiguring route_server[0m[0m
+[route_server-7] [INFO] [1794415421.033049539] [robot_1.route_server]: Configuring
+[route_server-7] [INFO] [1794415421.053619950] [robot_1.route_server]: Created GraphFileLoader GeoJsonGraphFileLoader of type nav2_route::GeoJsonGraphFileLoader
+[route_server-7] [INFO] [1794415421.053654154] [robot_1.route_server]: Configuring geojson graph file loader
+[route_server-7] [INFO] [1794415421.053662094] [robot_1.route_server]: No graph file provided to load yet.
+[route_server-7] [INFO] [1794415421.056458806] [robot_1.route_server]: Created edge cost function plugin DistanceScorer of type nav2_route::DistanceScorer
+[route_server-7] [INFO] [1794415421.056489334] [robot_1.route_server]: Configuring distance scorer.
+[route_server-7] [INFO] [1794415421.056862802] [robot_1.route_server]: Created edge cost function plugin DynamicEdgesScorer of type nav2_route::DynamicEdgesScorer
+[route_server-7] [INFO] [1794415421.056878615] [robot_1.route_server]: Configuring adjust edges scorer.
+[route_server-7] [INFO] [1794415421.060296820] [robot_1.route_server]: Created route operation AdjustSpeedLimit of type nav2_route::AdjustSpeedLimit
+[route_server-7] [INFO] [1794415421.060326668] [robot_1.route_server]: Configuring Adjust speed limit operation.
+[route_server-7] [INFO] [1794415421.061444044] [robot_1.route_server]: Created route operation ReroutingService of type nav2_route::ReroutingService
+[route_server-7] [INFO] [1794415421.061468872] [robot_1.route_server]: Configuring Rerouting service operation.
+[lifecycle_manager-13] [INFO] [1794415421.064080105] [robot_1.lifecycle_manager_navigation]: [34m[1mConfiguring behavior_server[0m[0m
+[behavior_server-8] [INFO] [1794415421.064254452] [robot_1.behavior_server]: Configuring
+[behavior_server-8] [INFO] [1794415421.067348352] [robot_1.behavior_server]: Creating behavior plugin spin of type nav2_behaviors::Spin
+[behavior_server-8] [INFO] [1794415421.068404927] [robot_1.behavior_server]: Creating behavior plugin backup of type nav2_behaviors::BackUp
+[behavior_server-8] [INFO] [1794415421.069328239] [robot_1.behavior_server]: Creating behavior plugin drive_on_heading of type nav2_behaviors::DriveOnHeading
+[behavior_server-8] [INFO] [1794415421.070321729] [robot_1.behavior_server]: Creating behavior plugin wait of type nav2_behaviors::Wait
+[behavior_server-8] [INFO] [1794415421.076124663] [robot_1.behavior_server]: Configuring spin
+[behavior_server-8] [INFO] [1794415421.081931410] [robot_1.behavior_server]: Configuring backup
+[behavior_server-8] [INFO] [1794415421.085532685] [robot_1.behavior_server]: Configuring drive_on_heading
+[behavior_server-8] [INFO] [1794415421.090162931] [robot_1.behavior_server]: Configuring wait
+[lifecycle_manager-13] [INFO] [1794415421.094773704] [robot_1.lifecycle_manager_navigation]: [34m[1mConfiguring velocity_smoother[0m[0m
+[velocity_smoother-11] [INFO] [1794415421.094958685] [robot_1.velocity_smoother]: Configuring velocity smoother
+[lifecycle_manager-13] [INFO] [1794415421.106514404] [robot_1.lifecycle_manager_navigation]: [34m[1mConfiguring collision_monitor[0m[0m
+[collision_monitor-12] [INFO] [1794415421.106771178] [robot_1.collision_monitor]: Configuring
+[collision_monitor-12] [INFO] [1794415421.111542510] [collision_monitor]: [scan]: Creating Scan
+[collision_monitor-12] [INFO] [1794415421.113653595] [collision_monitor]: [FootprintApproach]: Creating Polygon
+[collision_monitor-12] [INFO] [1794415421.113909942] [collision_monitor]: [FootprintApproach]: Polygon points are not defined. Using dynamic subscription instead.
+[collision_monitor-12] [INFO] [1794415421.115416428] [collision_monitor]: [FootprintApproach]: Making footprint subscriber on local_costmap/published_footprint topic
+[lifecycle_manager-13] [INFO] [1794415421.123203625] [robot_1.lifecycle_manager_navigation]: [34m[1mConfiguring bt_navigator[0m[0m
+[bt_navigator-9] [INFO] [1794415421.123364790] [robot_1.bt_navigator]: Configuring
+[bt_navigator-9] [INFO] [1794415421.127482522] [robot_1.bt_navigator]: Creating navigator id navigate_to_pose of type nav2_bt_navigator::NavigateToPoseNavigator
+[bt_navigator-9] [WARN] [1794415421.131919995] [robot_1.bt_navigator]: Error_code parameters were not set. Using default values of: follow_path_error_code compute_path_error_code
+[bt_navigator-9] Make sure these match your BT and there are not other sources of error codes youreported to your application
+[bt_navigator-9] [INFO] [1794415421.206896486] [robot_1.bt_navigator]: Creating navigator id navigate_through_poses of type nav2_bt_navigator::NavigateThroughPosesNavigator
+[lifecycle_manager-13] [INFO] [1794415421.240820795] [robot_1.lifecycle_manager_navigation]: [34m[1mConfiguring waypoint_follower[0m[0m
+[waypoint_follower-10] [INFO] [1794415421.241046401] [robot_1.waypoint_follower]: Configuring
+[waypoint_follower-10] [INFO] [1794415421.264249726] [robot_1.waypoint_follower]: Created waypoint_task_executor : wait_at_waypoint of type nav2_waypoint_follower::WaitAtWaypoint
+[waypoint_follower-10] [INFO] [1794415421.264522046] [robot_1.waypoint_follower]: Waypoint pause duration is set to zero, disabling task executor plugin.
+[lifecycle_manager-13] [INFO] [1794415421.264922708] [robot_1.lifecycle_manager_navigation]: [34m[1mActivating controller_server[0m[0m
+[controller_server-4] [INFO] [1794415421.308418214] [robot_1.controller_server]: Activating
+[controller_server-4] [INFO] [1794415421.308468730] [robot_1.local_costmap.local_costmap]: Activating
+[controller_server-4] [INFO] [1794415421.308480200] [robot_1.local_costmap.local_costmap]: Checking transform
+[controller_server-4] [INFO] [1794415421.308635472] [robot_1.local_costmap.local_costmap]: start
+[controller_server-4] [INFO] [1794415421.511723473] [robot_1.controller_server]: Activating controller: FollowPath of type regulated_pure_pursuit_controller::RegulatedPurePursuitController
+[controller_server-4] [INFO] [1794415421.511773139] [robot_1.controller_server]: Creating bond (controller_server) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794415421.615153524] [robot_1.lifecycle_manager_navigation]: Server controller_server connected with bond.
+[lifecycle_manager-13] [INFO] [1794415421.615199318] [robot_1.lifecycle_manager_navigation]: [34m[1mActivating smoother_server[0m[0m
+[smoother_server-5] [INFO] [1794415421.615486539] [robot_1.smoother_server]: Activating
+[smoother_server-5] [INFO] [1794415421.615523271] [robot_1.smoother_server]: Creating bond (smoother_server) to lifecycle manager.
+[planner_server-6] [WARN] [1794415421.656302812] [robot_1.global_costmap.global_costmap]: semantic observation rejected=1 accepted=0 reason="map" passed to lookupTransform argument target_frame does not exist.  pending=0 wall_age_ms=224.65 sim_age_ms=220.00 labels_valid=1
+[lifecycle_manager-13] [INFO] [1794415421.718185086] [robot_1.lifecycle_manager_navigation]: Server smoother_server connected with bond.
+[lifecycle_manager-13] [INFO] [1794415421.718236388] [robot_1.lifecycle_manager_navigation]: [34m[1mActivating planner_server[0m[0m
+[planner_server-6] [INFO] [1794415421.718588009] [robot_1.planner_server]: Activating
+[planner_server-6] [INFO] [1794415421.718633273] [robot_1.global_costmap.global_costmap]: Activating
+[planner_server-6] [INFO] [1794415421.718645330] [robot_1.global_costmap.global_costmap]: Checking transform
+[planner_server-6] [INFO] [1794415421.718677437] [robot_1.global_costmap.global_costmap]: Timed out waiting for transform from base_footprint to map to become available, tf error: Invalid frame ID "map" passed to canTransform argument target_frame - frame does not exist
+[hotel-nav2-rmf] Waiting for /robot_1/map_server/load_map
+[planner_server-6] [INFO] [1794415422.218760559] [robot_1.global_costmap.global_costmap]: Timed out waiting for transform from base_footprint to map to become available, tf error: Invalid frame ID "map" passed to canTransform argument target_frame - frame does not exist
+[amcl-2] [WARN] [1794415422.319204150] [robot_1.amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794415422.718744914] [robot_1.global_costmap.global_costmap]: Timed out waiting for transform from base_footprint to map to become available, tf error: Invalid frame ID "map" passed to canTransform argument target_frame - frame does not exist
+[hotel-nav2-rmf] Seeding AMCL on the initial floor
+[planner_server-6] [INFO] [1794415423.218903759] [robot_1.global_costmap.global_costmap]: Timed out waiting for transform from base_footprint to map to become available, tf error: Invalid frame ID "map" passed to canTransform argument target_frame - frame does not exist
+[planner_server-6] [INFO] [1794415423.718746015] [robot_1.global_costmap.global_costmap]: Timed out waiting for transform from base_footprint to map to become available, tf error: Invalid frame ID "map" passed to canTransform argument target_frame - frame does not exist
+[amcl-2] [INFO] [1794415423.956904518] [robot_1.amcl]: initialPoseReceived
+[amcl-2] [INFO] [1794415423.956973870] [robot_1.amcl]: Setting pose (7.120000): 15.402 -31.594 0.000
+[planner_server-6] [INFO] [1794415424.218799678] [robot_1.global_costmap.global_costmap]: Timed out waiting for transform from base_footprint to map to become available, tf error: Lookup would require extrapolation at time 7.300000, but only time 7.700000 is in the buffer, when looking up transform from frame [base_footprint] to frame [map]
+[planner_server-6] [INFO] [1794415424.718778511] [robot_1.global_costmap.global_costmap]: Timed out waiting for transform from base_footprint to map to become available, tf error: Lookup would require extrapolation into the past.  Requested time 7.660000 but the earliest data is at time 7.700000, when looking up transform from frame [base_footprint] to frame [map]
+[planner_server-6] [INFO] [1794415425.218823795] [robot_1.global_costmap.global_costmap]: start
+[planner_server-6] [INFO] [1794415425.427079857] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[planner_server-6] [INFO] [1794415425.504682101] [robot_1.planner_server]: Activating plugin GridBased of type NavfnPlanner
+[planner_server-6] [INFO] [1794415425.506681391] [robot_1.planner_server]: Creating bond (planner_server) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794415425.614683449] [robot_1.lifecycle_manager_navigation]: Server planner_server connected with bond.
+[lifecycle_manager-13] [INFO] [1794415425.614734309] [robot_1.lifecycle_manager_navigation]: [34m[1mActivating route_server[0m[0m
+[route_server-7] [INFO] [1794415425.615783997] [robot_1.route_server]: Activating
+[route_server-7] [INFO] [1794415425.615868284] [robot_1.route_server]: Creating bond (route_server) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794415425.719581757] [robot_1.lifecycle_manager_navigation]: Server route_server connected with bond.
+[lifecycle_manager-13] [INFO] [1794415425.719629726] [robot_1.lifecycle_manager_navigation]: [34m[1mActivating behavior_server[0m[0m
+[behavior_server-8] [INFO] [1794415425.719956880] [robot_1.behavior_server]: Activating
+[behavior_server-8] [INFO] [1794415425.719990911] [robot_1.behavior_server]: Activating spin
+[behavior_server-8] [INFO] [1794415425.720008415] [robot_1.behavior_server]: Activating backup
+[behavior_server-8] [INFO] [1794415425.720022514] [robot_1.behavior_server]: Activating drive_on_heading
+[behavior_server-8] [INFO] [1794415425.720031520] [robot_1.behavior_server]: Activating wait
+[behavior_server-8] [INFO] [1794415425.720045220] [robot_1.behavior_server]: Creating bond (behavior_server) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794415425.824635530] [robot_1.lifecycle_manager_navigation]: Server behavior_server connected with bond.
+[lifecycle_manager-13] [INFO] [1794415425.824684813] [robot_1.lifecycle_manager_navigation]: [34m[1mActivating velocity_smoother[0m[0m
+[velocity_smoother-11] [INFO] [1794415425.825016199] [robot_1.velocity_smoother]: Activating
+[velocity_smoother-11] [INFO] [1794415425.825402754] [robot_1.velocity_smoother]: Creating bond (velocity_smoother) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794415425.934882108] [robot_1.lifecycle_manager_navigation]: Server velocity_smoother connected with bond.
+[lifecycle_manager-13] [INFO] [1794415425.934933798] [robot_1.lifecycle_manager_navigation]: [34m[1mActivating collision_monitor[0m[0m
+[collision_monitor-12] [INFO] [1794415425.935260110] [robot_1.collision_monitor]: Activating
+[collision_monitor-12] [INFO] [1794415425.935300348] [robot_1.collision_monitor]: Creating bond (collision_monitor) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794415426.039541733] [robot_1.lifecycle_manager_navigation]: Server collision_monitor connected with bond.
+[lifecycle_manager-13] [INFO] [1794415426.039603911] [robot_1.lifecycle_manager_navigation]: [34m[1mActivating bt_navigator[0m[0m
+[bt_navigator-9] [INFO] [1794415426.039917791] [robot_1.bt_navigator]: Activating
+[bt_navigator-9] [INFO] [1794415426.128221991] [robot_1.bt_navigator]: Creating bond (bt_navigator) to lifecycle manager.
+[planner_server-6] [WARN] [1794415426.223064827] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[lifecycle_manager-13] [INFO] [1794415426.232741363] [robot_1.lifecycle_manager_navigation]: Server bt_navigator connected with bond.
+[lifecycle_manager-13] [INFO] [1794415426.232790909] [robot_1.lifecycle_manager_navigation]: [34m[1mActivating waypoint_follower[0m[0m
+[waypoint_follower-10] [INFO] [1794415426.233101776] [robot_1.waypoint_follower]: Activating
+[waypoint_follower-10] [INFO] [1794415426.233151658] [robot_1.waypoint_follower]: Creating bond (waypoint_follower) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794415426.336996041] [robot_1.lifecycle_manager_navigation]: Server waypoint_follower connected with bond.
+[lifecycle_manager-13] [INFO] [1794415426.337049199] [robot_1.lifecycle_manager_navigation]: [34m[1mManaged nodes are active[0m[0m
+[lifecycle_manager-13] [INFO] [1794415426.337062959] [robot_1.lifecycle_manager_navigation]: [34m[1mCreating bond timer...[0m[0m
+[planner_server-6] [INFO] [1794415427.021986093] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=9000000000 total_ms=6.35 digest_ms=4.32 tf_ms=0.02 project_ms=1.88 projected=885 cells=885
+[planner_server-6] [INFO] [1794415427.022845759] [robot_1.global_costmap.global_costmap]: semantic observation accepted=1 rejected=14 projected_cells=885 sim_age_ms=400.00 wall_age_ms=494.21
+[planner_server-6] [INFO] [1794415427.409220547] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=9400000000 total_ms=27.70 digest_ms=26.17 tf_ms=0.02 project_ms=1.43 projected=845 cells=926
+[hotel-nav2-rmf] AMCL map transform is available
+[hotel-nav2-rmf] Waiting for RMF schedule startup
+[hotel-nav2-rmf] Gazebo camera following robot_1
+[planner_server-6] [INFO] [1794415430.623198024] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=926 merged=926 master_unknown=0 stored_cells=926 window=[0,0,693,845]
+[planner_server-6] [WARN] [1794415431.223193373] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[hotel-nav2-rmf] Starting local EasyFullControl adapter
+[planner_server-6] [WARN] [1794415432.120364484] [robot_1.global_costmap.global_costmap]: semantic observation rejected=21 accepted=2 reason=wall_age pending=1 wall_age_ms=700.37 sim_age_ms=520.00 labels_valid=1
+[planner_server-6] [INFO] [1794415432.127402614] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=12800000000 total_ms=5.89 digest_ms=4.10 tf_ms=0.03 project_ms=1.65 projected=914 cells=956
+[INFO] [1794415433.444366782] [robot_1_local_backend]: Waiting for Nav2 readiness: fresh_pose=False pose_age=None map=False shape=None global_costmap=False action_server=True
+[INFO] [1794415434.455985495] [robot_1_local_backend]: RMF backend ready: fresh map-frame TF pose, map, and Nav2 action server
+[retreat_to_charger_interval] value is not provided, default to 10 seconds
+Finishing request: nothing
+Fleet is not configured to perform any finishing request
+Maximum delay is not provided, default to 10.0
+[INFO] [1794415434.564350657] [hotel_nav2_local_adapter]: Parameter [discovery_timeout] set to: 60.000000
+[INFO] [1794415434.616942317] [rmf_traffic_schedule_node_697c81a0_7cd6_482d_ad34_6c9818eaa47b]: Registered new query [1]
+[INFO] [1794415434.619401813] [hotel_nav2_local_adapter]: Registering to query topic rmf_traffic/query_update_1
+[INFO] [1794415434.645101479] [hotel_nav2_local_adapter]: Mirror handling new sync of 1 queries from schedule node [697c81a0-7cd6-482d-ad34-6c9818eaa47b]
+[INFO] [1794415434.656599455] [hotel_nav2_local_adapter]: Fleet [hotel_nav2] is configured to perform delivery tasks
+[INFO] [1794415434.656642325] [hotel_nav2_local_adapter]: Fleet [hotel_nav2] is configured to perform patrol tasks
+[INFO] [1794415434.656954061] [hotel_nav2_local_adapter]: Finished configuring Easy Full Control adapter for fleet [hotel_nav2]
+[INFO] [1794415434.660213088] [hotel_nav2_local_adapter]: Adding robot [robot_1] to fleet [hotel_nav2].
+[INFO] [1794415434.660454770] [hotel_nav2_local_adapter]: Planning for [0] robot(s) and [0] request(s)
+[ERROR] [1794415434.660500742] [hotel_nav2_local_adapter]: [TaskPlanner] Failed to compute assignments for task_id []
+[INFO] [1794415434.665670261] [rmf_traffic_schedule_node_697c81a0_7cd6_482d_ad34_6c9818eaa47b]: Registered participant [0] named [robot_1] owned by [hotel_nav2]
+[INFO] [1794415434.710709645] [hotel_nav2_local_adapter]: Added a robot named [robot_1] with participant ID [0]
+[INFO] [1794415434.711724138] [robot_1_local_backend]: RMF robot registered: fleet=hotel_nav2 robot=robot_1 map=L1 pose=[15.40289156578037, -31.606634330537844, 1.0435458011606433e-11]
+[INFO] [1794415434.717799695] [hotel_nav2_local_adapter]: Successfully added robot [robot_1] to the fleet [hotel_nav2].
+[INFO] [1794415434.717863319] [hotel_nav2_local_adapter]: Charger waypoint for robot [hotel_nav2/robot_1] set to index [12]
+[planner_server-6] [INFO] [1794415435.623415858] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=956 merged=956 master_unknown=0 stored_cells=956 window=[0,0,693,845]
+[planner_server-6] [WARN] [1794415436.223374650] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794415436.846686180] [robot_1.global_costmap.global_costmap]: Received request to get cost at point (16.950001, -32.400002)
+[planner_server-6] [INFO] [1794415436.848462312] [robot_1.global_costmap.global_costmap]: Received request to get cost at point (17.250000, -32.400002)
+[planner_server-6] [INFO] [1794415436.849478864] [robot_1.global_costmap.global_costmap]: Received request to get cost at point (17.549999, -32.400002)
+[planner_server-6] [INFO] [1794415436.850307348] [robot_1.global_costmap.global_costmap]: Received request to get cost at point (17.850000, -32.400002)
+[planner_server-6] [INFO] [1794415436.851288204] [robot_1.global_costmap.global_costmap]: Received request to get cost at point (16.950001, -31.950001)
+[planner_server-6] [INFO] [1794415436.852034722] [robot_1.global_costmap.global_costmap]: Received request to get cost at point (17.250000, -31.950001)
+[planner_server-6] [INFO] [1794415436.852746756] [robot_1.global_costmap.global_costmap]: Received request to get cost at point (17.549999, -31.950001)
+[planner_server-6] [INFO] [1794415436.853501367] [robot_1.global_costmap.global_costmap]: Received request to get cost at point (17.850000, -31.950001)
+[planner_server-6] [INFO] [1794415436.854298618] [robot_1.global_costmap.global_costmap]: Received request to get cost at point (16.950001, -31.500000)
+[planner_server-6] [INFO] [1794415436.854982175] [robot_1.global_costmap.global_costmap]: Received request to get cost at point (17.250000, -31.500000)
+[planner_server-6] [INFO] [1794415436.855463221] [robot_1.global_costmap.global_costmap]: Received request to get cost at point (17.549999, -31.500000)
+[planner_server-6] [INFO] [1794415436.856167899] [robot_1.global_costmap.global_costmap]: Received request to get cost at point (17.850000, -31.500000)
+[planner_server-6] [INFO] [1794415436.856818233] [robot_1.global_costmap.global_costmap]: Received request to get cost at point (16.950001, -31.049999)
+[planner_server-6] [INFO] [1794415436.857365417] [robot_1.global_costmap.global_costmap]: Received request to get cost at point (17.250000, -31.049999)
+[planner_server-6] [INFO] [1794415436.858148650] [robot_1.global_costmap.global_costmap]: Received request to get cost at point (17.549999, -31.049999)
+[planner_server-6] [INFO] [1794415436.859094795] [robot_1.global_costmap.global_costmap]: Received request to get cost at point (17.850000, -31.049999)
+[planner_server-6] [INFO] [1794415436.859924319] [robot_1.global_costmap.global_costmap]: Received request to get cost at point (16.950001, -30.750000)
+[planner_server-6] [INFO] [1794415436.860449677] [robot_1.global_costmap.global_costmap]: Received request to get cost at point (17.250000, -30.750000)
+[planner_server-6] [INFO] [1794415436.860974583] [robot_1.global_costmap.global_costmap]: Received request to get cost at point (17.549999, -30.750000)
+[planner_server-6] [INFO] [1794415436.861511993] [robot_1.global_costmap.global_costmap]: Received request to get cost at point (17.850000, -30.750000)
+[planner_server-6] [WARN] [1794415437.714683930] [robot_1.global_costmap.global_costmap]: semantic observation rejected=23 accepted=3 reason=wall_age pending=2 wall_age_ms=692.62 sim_age_ms=490.00 labels_valid=1
+[planner_server-6] [INFO] [1794415438.519757518] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=17200000000 total_ms=7.39 digest_ms=5.28 tf_ms=0.02 project_ms=1.98 projected=915 cells=957
+[planner_server-6] [WARN] [1794415438.532955300] [robot_1.planner_server]: Planner loop missed its desired rate of 1.0000 Hz. Current loop rate is 0.8475 Hz
+[INFO] [1794415438.606501149] [rmf_dispatcher_node]: Add Task [patrol.dispatch-3e80b56243] to a bidding queue
+[INFO] [1794415438.722596097] [rmf_dispatcher_node]:  - Start new bidding task: patrol.dispatch-3e80b56243
+[INFO] [1794415438.724772864] [hotel_nav2_local_adapter]: [Bidder] Received Bidding notice for task_id [patrol.dispatch-3e80b56243]
+[INFO] [1794415438.725098555] [hotel_nav2_local_adapter]: Planning for [1] robot(s) and [1] request(s)
+[INFO] [1794415438.737301304] [hotel_nav2_local_adapter]: Submitted BidProposal to accommodate task [patrol.dispatch-3e80b56243] by robot [robot_1] with new cost [206.329731]
+[planner_server-6] [INFO] [1794415440.015069348] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=18200000000 total_ms=6.60 digest_ms=4.54 tf_ms=0.02 project_ms=1.94 projected=916 cells=958
+[planner_server-6] [INFO] [1794415440.316054241] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=18400000000 total_ms=7.29 digest_ms=5.28 tf_ms=0.02 project_ms=1.90 projected=916 cells=958
+[planner_server-6] [INFO] [1794415440.624817621] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=958 merged=958 master_unknown=0 stored_cells=958 window=[0,0,693,845]
+[INFO] [1794415441.519885792] [rmf_dispatcher_node]: Determined winning Fleet Adapter: [hotel_nav2], from 1 responses
+[INFO] [1794415441.519966358] [rmf_dispatcher_node]: Dispatcher Bidding Result: task [patrol.dispatch-3e80b56243] is awarded to fleet adapter [hotel_nav2], with expected robot [robot_1].
+[INFO] [1794415441.520261506] [hotel_nav2_local_adapter]: Bid for task_id [patrol.dispatch-3e80b56243] awarded to fleet [hotel_nav2]. Processing request...
+[INFO] [1794415441.521511977] [hotel_nav2_local_adapter]: Beginning next task [patrol.dispatch-3e80b56243] for robot [hotel_nav2/robot_1]
+[INFO] [1794415441.521923190] [hotel_nav2_local_adapter]: Selecting a new go_to_place location from [1] choices for robot [hotel_nav2/robot_1]
+[INFO] [1794415441.521993899] [hotel_nav2_local_adapter]: Got distance from [3] as 11.103798
+[INFO] [1794415441.522105601] [hotel_nav2_local_adapter]: Planning for [hotel_nav2/robot_1] to [lobby] from one of these locations:
+ -- lane 0: { L1 < 15.4023 -31.5937> [#0] event DoorOpen L1_door1 } -> { L1 < 9.60127 -35.0142> [#1] event DoorClose L1_door1 } | location < 15.4029 -31.6066> | orientation 6.16122e-10
+ -- lane 1: { L1 < 9.60127 -35.0142> [#1] event DoorOpen L1_door1 } -> { L1 < 15.4023 -31.5937> [#0] event DoorClose L1_door1 } | location < 15.4029 -31.6066> | orientation 6.16122e-10
+ -- L1 < 15.4023 -31.5937> [#0] | location < 15.4029 -31.6066> | orientation 6.16122e-10
+[INFO] [1794415441.522783326] [hotel_nav2_local_adapter]: Beginning new task [patrol.dispatch-3e80b56243] for [hotel_nav2/robot_1]. Remaining queue size: 0
+[INFO] [1794415441.522898721] [hotel_nav2_local_adapter]: TaskAssignments updated for robots in fleet [hotel_nav2] to accommodate task_id [patrol.dispatch-3e80b56243]
+[INFO] [1794415441.528100173] [hotel_nav2_local_adapter]: Executing go_to_place [lobby] for robot [hotel_nav2/robot_1]
+[INFO] [1794415441.531074455] [robot_1_local_backend]: RMF navigate callback: map=L1 pose=[15.402254826884418, -31.593720701112698, -2.998536739050509]
+[bt_navigator-9] [INFO] [1794415441.532620482] [robot_1.bt_navigator]: Begin navigating from current location (15.40, -31.61) to (15.40, -31.59)
+[controller_server-4] [INFO] [1794415441.554753419] [robot_1.controller_server]: Received a goal, begin computing control effort.
+[controller_server-4] [WARN] [1794415441.555590470] [robot_1.controller_server]: No progress checker was specified in parameter 'current_progress_checker'. Server will use only plugin loaded progress_checker . This warning will appear once.
+[INFO] [1794415441.605404967] [ros_gz_bridge]: Passing message from ROS geometry_msgs/msg/Twist to Gazebo gz.msgs.Twist (showing msg only once per type)
+[planner_server-6] [WARN] [1794415442.224803590] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[controller_server-4] [INFO] [1794415442.606160086] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415443.656183177] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415444.656158178] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415445.625529865] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=958 merged=958 master_unknown=0 stored_cells=958 window=[0,0,693,845]
+[planner_server-6] [WARN] [1794415446.814453954] [robot_1.global_costmap.global_costmap]: semantic observation rejected=33 accepted=6 reason=wall_age pending=2 wall_age_ms=691.41 sim_age_ms=490.00 labels_valid=1
+[planner_server-6] [INFO] [1794415446.820899243] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=23000000000 total_ms=5.77 digest_ms=5.16 tf_ms=0.02 project_ms=0.55 projected=0 cells=958
+[controller_server-4] [INFO] [1794415446.856156262] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415446.906189411] [robot_1.controller_server]: Reached the goal!
+[bt_navigator-9] [INFO] [1794415446.936843126] [robot_1.bt_navigator]: Goal succeeded
+[INFO] [1794415447.462761258] [robot_1_local_backend]: RMF activity <rmf_adapter.robot_update_handle.ActivityIdentifier object at 0x7f2389a8efb0> finished after Nav2 success and pose validation
+[INFO] [1794415447.463696290] [robot_1_local_backend]: RMF navigate callback: map=L1 pose=[19.43756541205105, -31.012475172452998, -1.6049648693422114]
+[bt_navigator-9] [INFO] [1794415447.464930154] [robot_1.bt_navigator]: Begin navigating from current location (15.46, -31.64) to (19.44, -31.01)
+[controller_server-4] [INFO] [1794415447.505916930] [robot_1.controller_server]: Received a goal, begin computing control effort.
+[planner_server-6] [INFO] [1794415448.028471344] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=23800000000 total_ms=4.27 digest_ms=3.79 tf_ms=0.02 project_ms=0.42 projected=0 cells=958
+[planner_server-6] [INFO] [1794415448.211464351] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=24000000000 total_ms=4.94 digest_ms=4.34 tf_ms=0.02 project_ms=0.54 projected=0 cells=958
+[planner_server-6] [WARN] [1794415448.225667116] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794415448.506838789] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=24200000000 total_ms=31.47 digest_ms=30.88 tf_ms=0.02 project_ms=0.49 projected=0 cells=958
+[controller_server-4] [INFO] [1794415448.556101748] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415449.165831300] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=24600000000 total_ms=4.30 digest_ms=3.92 tf_ms=0.03 project_ms=0.32 projected=0 cells=958
+[planner_server-6] [INFO] [1794415449.416450229] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=24800000000 total_ms=4.65 digest_ms=4.12 tf_ms=0.02 project_ms=0.47 projected=0 cells=958
+[controller_server-4] [INFO] [1794415449.606106589] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415450.310806948] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=25200000000 total_ms=5.62 digest_ms=4.08 tf_ms=0.02 project_ms=1.47 projected=0 cells=958
+[planner_server-6] [INFO] [1794415450.519052110] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=25400000000 total_ms=5.34 digest_ms=4.80 tf_ms=0.02 project_ms=0.49 projected=0 cells=958
+[controller_server-4] [INFO] [1794415450.656102495] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415450.824033751] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=958 merged=958 master_unknown=0 stored_cells=958 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415451.656095566] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415451.911268703] [robot_1.global_costmap.global_costmap]: semantic observation rejected=38 accepted=14 reason=wall_age pending=1 wall_age_ms=769.09 sim_age_ms=530.00 labels_valid=1
+[planner_server-6] [INFO] [1794415451.918491324] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=26200000000 total_ms=5.21 digest_ms=4.64 tf_ms=0.02 project_ms=0.51 projected=0 cells=958
+[planner_server-6] [INFO] [1794415452.117402246] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=26400000000 total_ms=5.15 digest_ms=4.61 tf_ms=0.02 project_ms=0.48 projected=0 cells=958
+[controller_server-4] [INFO] [1794415452.706504834] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415453.756097003] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415454.223357769] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[controller_server-4] [INFO] [1794415454.756102484] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415455.806100639] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415456.023035276] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=958 merged=958 master_unknown=0 stored_cells=958 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415456.806097923] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415458.325388472] [robot_1.global_costmap.global_costmap]: semantic observation rejected=41 accepted=16 reason=wall_age pending=3 wall_age_ms=872.43 sim_age_ms=560.00 labels_valid=1
+[planner_server-6] [WARN] [1794415460.224098406] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794415460.509155032] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=32200000000 total_ms=4.35 digest_ms=3.93 tf_ms=0.02 project_ms=0.37 projected=0 cells=958
+[planner_server-6] [WARN] [1794415460.518296746] [robot_1.planner_server]: Planner loop missed its desired rate of 1.0000 Hz. Current loop rate is 0.5236 Hz
+[controller_server-4] [INFO] [1794415460.556102528] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415461.023243462] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=958 merged=958 master_unknown=0 stored_cells=958 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415461.606205702] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415462.429921225] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=33600000000 total_ms=5.13 digest_ms=4.56 tf_ms=0.02 project_ms=0.51 projected=0 cells=958
+[controller_server-4] [INFO] [1794415462.656102372] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415463.413212132] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=34200000000 total_ms=4.34 digest_ms=3.86 tf_ms=0.02 project_ms=0.42 projected=0 cells=958
+[planner_server-6] [INFO] [1794415463.413259121] [robot_1.global_costmap.global_costmap]: semantic observation accepted=19 rejected=44 projected_cells=0 sim_age_ms=370.00 wall_age_ms=493.48
+[controller_server-4] [INFO] [1794415463.656101384] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415463.762755398] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=34600000000 total_ms=5.00 digest_ms=4.40 tf_ms=0.02 project_ms=0.48 projected=0 cells=958
+[controller_server-4] [INFO] [1794415464.706095034] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415465.225263295] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[controller_server-4] [INFO] [1794415465.756816344] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415465.830772071] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=36000000000 total_ms=7.32 digest_ms=6.74 tf_ms=0.02 project_ms=0.52 projected=0 cells=958
+[planner_server-6] [INFO] [1794415466.223157975] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=958 merged=958 master_unknown=0 stored_cells=958 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415466.806099864] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415467.806098175] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415468.421687548] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=37800000000 total_ms=5.06 digest_ms=4.43 tf_ms=0.08 project_ms=0.50 projected=0 cells=958
+[planner_server-6] [INFO] [1794415468.422267508] [robot_1.global_costmap.global_costmap]: semantic observation accepted=22 rejected=54 projected_cells=0 sim_age_ms=250.00 wall_age_ms=380.53
+[planner_server-6] [INFO] [1794415468.662789723] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=38000000000 total_ms=3.98 digest_ms=3.64 tf_ms=0.02 project_ms=0.29 projected=0 cells=958
+[controller_server-4] [INFO] [1794415468.856095347] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415468.909840336] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=38200000000 total_ms=4.08 digest_ms=3.44 tf_ms=0.02 project_ms=0.57 projected=0 cells=958
+[controller_server-4] [INFO] [1794415469.856110424] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415470.906126171] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415471.223280319] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=958 merged=958 master_unknown=0 stored_cells=958 window=[0,0,693,845]
+[planner_server-6] [WARN] [1794415471.223371802] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[controller_server-4] [INFO] [1794415471.956108575] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415472.956102849] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415473.510249631] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=41400000000 total_ms=4.52 digest_ms=3.95 tf_ms=0.02 project_ms=0.51 projected=0 cells=958
+[planner_server-6] [INFO] [1794415473.510298856] [robot_1.global_costmap.global_costmap]: semantic observation accepted=25 rejected=59 projected_cells=0 sim_age_ms=290.00 wall_age_ms=450.68
+[controller_server-4] [INFO] [1794415474.006097495] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415475.006099911] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415476.056110742] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415476.423442817] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=958 merged=958 master_unknown=0 stored_cells=958 window=[0,0,693,845]
+[planner_server-6] [INFO] [1794415477.009070049] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=44000000000 total_ms=4.00 digest_ms=3.69 tf_ms=0.01 project_ms=0.27 projected=0 cells=958
+[controller_server-4] [INFO] [1794415477.056100772] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415477.223794961] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[INFO] [1794415477.650504979] [hotel_nav2_local_adapter]: Planning for [1] robot(s) and [0] request(s)
+[controller_server-4] [INFO] [1794415478.106581007] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415478.615255691] [robot_1.global_costmap.global_costmap]: semantic observation rejected=65 accepted=26 reason=wall_age pending=2 wall_age_ms=607.90 sim_age_ms=450.00 labels_valid=1
+[planner_server-6] [INFO] [1794415478.630139001] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=45200000000 total_ms=5.29 digest_ms=4.83 tf_ms=0.02 project_ms=0.40 projected=0 cells=958
+[controller_server-4] [INFO] [1794415479.156105952] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415480.156096889] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415481.206094461] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415481.417383263] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=47200000000 total_ms=4.66 digest_ms=4.13 tf_ms=0.02 project_ms=0.47 projected=0 cells=958
+[planner_server-6] [INFO] [1794415481.622730347] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=958 merged=958 master_unknown=0 stored_cells=958 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415482.256099065] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415482.530404520] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=48000000000 total_ms=4.60 digest_ms=4.11 tf_ms=0.02 project_ms=0.43 projected=0 cells=958
+[planner_server-6] [WARN] [1794415483.224010687] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[controller_server-4] [INFO] [1794415483.256094987] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415483.309943669] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=48600000000 total_ms=4.83 digest_ms=4.11 tf_ms=0.02 project_ms=0.66 projected=0 cells=958
+[planner_server-6] [WARN] [1794415484.008134949] [robot_1.global_costmap.global_costmap]: semantic observation rejected=73 accepted=30 reason=wall_age pending=2 wall_age_ms=795.66 sim_age_ms=570.00 labels_valid=1
+[planner_server-6] [INFO] [1794415484.214803453] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=49200000000 total_ms=6.01 digest_ms=5.45 tf_ms=0.03 project_ms=0.48 projected=0 cells=958
+[controller_server-4] [INFO] [1794415484.306096411] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415484.414856010] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=49400000000 total_ms=4.76 digest_ms=4.32 tf_ms=0.03 project_ms=0.37 projected=0 cells=958
+[controller_server-4] [INFO] [1794415485.356100497] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415486.356111294] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415486.623431733] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=958 merged=958 master_unknown=0 stored_cells=958 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415487.406106237] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415488.225631663] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794415488.313270426] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=52200000000 total_ms=6.54 digest_ms=5.83 tf_ms=0.02 project_ms=0.63 projected=0 cells=958
+[controller_server-4] [INFO] [1794415488.456075311] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415489.456105946] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415490.108277112] [robot_1.global_costmap.global_costmap]: semantic observation rejected=77 accepted=33 reason=wall_age pending=1 wall_age_ms=502.19 sim_age_ms=380.00 labels_valid=1
+[planner_server-6] [INFO] [1794415490.262357689] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=53600000000 total_ms=5.03 digest_ms=4.48 tf_ms=0.02 project_ms=0.49 projected=0 cells=958
+[controller_server-4] [INFO] [1794415490.508132760] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415490.627910945] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=53800000000 total_ms=4.40 digest_ms=3.85 tf_ms=0.02 project_ms=0.50 projected=0 cells=958
+[controller_server-4] [INFO] [1794415491.556103051] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415491.823497880] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=958 merged=958 master_unknown=0 stored_cells=958 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415492.556106344] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415493.318653563] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=55800000000 total_ms=4.62 digest_ms=4.06 tf_ms=0.02 project_ms=0.50 projected=0 cells=958
+[controller_server-4] [INFO] [1794415493.606341843] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415493.612095028] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=56000000000 total_ms=4.56 digest_ms=4.08 tf_ms=0.02 project_ms=0.42 projected=0 cells=958
+[planner_server-6] [WARN] [1794415494.224785979] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[controller_server-4] [INFO] [1794415494.656104186] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415495.017304415] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=57000000000 total_ms=4.56 digest_ms=4.17 tf_ms=0.02 project_ms=0.33 projected=0 cells=958
+[controller_server-4] [INFO] [1794415495.706127434] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415496.706060103] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415496.823647425] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=958 merged=958 master_unknown=0 stored_cells=958 window=[0,0,693,845]
+[planner_server-6] [WARN] [1794415497.037154418] [robot_1.global_costmap.global_costmap]: semantic observation rejected=82 accepted=38 reason=wall_age pending=2 wall_age_ms=577.55 sim_age_ms=390.00 labels_valid=1
+[controller_server-4] [INFO] [1794415497.756104884] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415498.012571924] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=59200000000 total_ms=4.59 digest_ms=4.01 tf_ms=0.03 project_ms=0.49 projected=0 cells=958
+[planner_server-6] [INFO] [1794415498.316119690] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=59400000000 total_ms=4.71 digest_ms=4.16 tf_ms=0.02 project_ms=0.48 projected=0 cells=958
+[planner_server-6] [INFO] [1794415498.612448897] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=59600000000 total_ms=4.72 digest_ms=4.14 tf_ms=0.02 project_ms=0.51 projected=0 cells=958
+[controller_server-4] [INFO] [1794415498.756099202] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415499.806098346] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415500.121117388] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=60800000000 total_ms=4.77 digest_ms=4.21 tf_ms=0.02 project_ms=0.49 projected=0 cells=958
+[planner_server-6] [WARN] [1794415500.220704087] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794415500.507100345] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=61000000000 total_ms=42.53 digest_ms=41.96 tf_ms=0.05 project_ms=0.48 projected=0 cells=958
+[controller_server-4] [INFO] [1794415500.856113240] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415501.824369932] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=958 merged=958 master_unknown=0 stored_cells=958 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415501.856940892] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415502.906114126] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415503.564847270] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=63200000000 total_ms=5.47 digest_ms=4.91 tf_ms=0.03 project_ms=0.50 projected=0 cells=958
+[planner_server-6] [INFO] [1794415503.565505386] [robot_1.global_costmap.global_costmap]: semantic observation accepted=44 rejected=88 projected_cells=0 sim_age_ms=310.00 wall_age_ms=434.51
+[planner_server-6] [INFO] [1794415503.912840311] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=63400000000 total_ms=4.54 digest_ms=4.03 tf_ms=0.02 project_ms=0.46 projected=0 cells=958
+[controller_server-4] [INFO] [1794415503.956102230] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415504.956103649] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415505.223375459] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794415505.720883206] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=64800000000 total_ms=4.65 digest_ms=4.09 tf_ms=0.02 project_ms=0.49 projected=0 cells=958
+[controller_server-4] [INFO] [1794415506.006184822] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415507.006104066] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415507.022995558] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=958 merged=958 master_unknown=0 stored_cells=958 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415508.056102309] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415509.106097590] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415510.106307587] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415511.223023503] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794415512.023221259] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=958 merged=958 master_unknown=0 stored_cells=958 window=[0,0,693,845]
+[planner_server-6] [WARN] [1794415513.718899200] [robot_1.global_costmap.global_costmap]: semantic observation rejected=94 accepted=46 reason=wall_age pending=4 wall_age_ms=773.77 sim_age_ms=560.00 labels_valid=1
+[planner_server-6] [WARN] [1794415516.224521743] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794415516.824572206] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=72600000000 total_ms=5.33 digest_ms=4.46 tf_ms=0.02 project_ms=0.73 projected=0 cells=958
+[planner_server-6] [WARN] [1794415516.834218516] [robot_1.planner_server]: Planner loop missed its desired rate of 1.0000 Hz. Current loop rate is 0.2475 Hz
+[controller_server-4] [INFO] [1794415516.856098445] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415517.224213977] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=958 merged=958 master_unknown=0 stored_cells=958 window=[0,0,693,845]
+[planner_server-6] [INFO] [1794415517.414002463] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=73000000000 total_ms=6.46 digest_ms=6.00 tf_ms=0.02 project_ms=0.38 projected=0 cells=958
+[controller_server-4] [INFO] [1794415517.906223363] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415518.956097396] [robot_1.controller_server]: Passing new path to controller.
+[INFO] [1794415519.461780725] [hotel_nav2_local_adapter]: Planning for [1] robot(s) and [0] request(s)
+[controller_server-4] [INFO] [1794415519.956101008] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415520.624028015] [robot_1.global_costmap.global_costmap]: semantic observation rejected=103 accepted=48 reason=wall_age pending=0 wall_age_ms=563.81 sim_age_ms=400.00 labels_valid=1
+[controller_server-4] [INFO] [1794415521.056106201] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415522.056113458] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415522.222658854] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794415522.423231436] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=958 merged=958 master_unknown=0 stored_cells=958 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415526.106335907] [robot_1.controller_server]: Reached the goal!
+[bt_navigator-9] [ERROR] [1794415526.146365945] [robot_1.bt_navigator_navigate_to_pose_rclcpp_node]: Failed to get result for compute_path_to_pose in node halt!
+[bt_navigator-9] [INFO] [1794415526.146599738] [robot_1.bt_navigator]: Goal succeeded
+[planner_server-6] [WARN] [1794415527.223738733] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794415527.623484283] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=958 merged=958 master_unknown=0 stored_cells=958 window=[0,0,693,845]
+[planner_server-6] [INFO] [1794415528.628259896] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=81000000000 total_ms=4.44 digest_ms=3.90 tf_ms=0.03 project_ms=0.47 projected=0 cells=958
+[planner_server-6] [INFO] [1794415528.628954898] [robot_1.global_costmap.global_costmap]: semantic observation accepted=49 rejected=105 projected_cells=0 sim_age_ms=350.00 wall_age_ms=498.19
+[planner_server-6] [INFO] [1794415528.637870022] [robot_1.planner_server]: Goal was canceled. Canceling planning action.
+[planner_server-6] [INFO] [1794415528.637925033] [robot_1.planner_server]: [compute_path_to_pose] [ActionServer] Client requested to cancel the goal. Cancelling.
+[WARN] [1794415529.156290261] [robot_1_local_backend]: Nav2 status 4 at destination; retrying goal (1/3)
+[INFO] [1794415529.657260432] [robot_1_local_backend]: RMF navigate callback: map=L1 pose=[19.43756541205105, -31.012475172452998, -1.6049648693422114]
+[bt_navigator-9] [INFO] [1794415529.661667263] [robot_1.bt_navigator]: Begin navigating from current location (19.39, -30.77) to (19.44, -31.01)
+[controller_server-4] [INFO] [1794415529.704862010] [robot_1.controller_server]: Received a goal, begin computing control effort.
+[planner_server-6] [INFO] [1794415529.714281857] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=81800000000 total_ms=4.45 digest_ms=4.02 tf_ms=0.02 project_ms=0.37 projected=0 cells=958
+[planner_server-6] [INFO] [1794415530.628370554] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=82400000000 total_ms=5.10 digest_ms=4.56 tf_ms=0.02 project_ms=0.47 projected=0 cells=958
+[controller_server-4] [INFO] [1794415530.755041414] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415530.811649215] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=82600000000 total_ms=4.87 digest_ms=4.28 tf_ms=0.03 project_ms=0.52 projected=0 cells=958
+[planner_server-6] [INFO] [1794415531.164315639] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=82800000000 total_ms=3.70 digest_ms=3.26 tf_ms=0.02 project_ms=0.38 projected=0 cells=958
+[controller_server-4] [INFO] [1794415531.455094300] [robot_1.controller_server]: Reached the goal!
+[bt_navigator-9] [INFO] [1794415531.477179745] [robot_1.bt_navigator]: Goal succeeded
+[INFO] [1794415531.509520397] [robot_1_local_backend]: RMF activity <rmf_adapter.robot_update_handle.ActivityIdentifier object at 0x7f2389a8efb0> finished after Nav2 success and pose validation
+[INFO] [1794415531.512079356] [robot_1_local_backend]: RMF navigate callback: map=L1 pose=[19.487510544650704, -29.55131556299923, -1.6049648693422114]
+[bt_navigator-9] [INFO] [1794415531.514782140] [robot_1.bt_navigator]: Begin navigating from current location (19.40, -30.82) to (19.49, -29.55)
+[controller_server-4] [INFO] [1794415531.535486031] [robot_1.controller_server]: Received a goal, begin computing control effort.
+[controller_server-4] [INFO] [1794415532.585661997] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415532.718918941] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=83800000000 total_ms=4.50 digest_ms=3.94 tf_ms=0.02 project_ms=0.51 projected=0 cells=958
+[planner_server-6] [INFO] [1794415532.823498203] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=958 merged=958 master_unknown=0 stored_cells=958 window=[0,0,693,845]
+[planner_server-6] [INFO] [1794415532.837383446] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=84000000000 total_ms=4.95 digest_ms=4.39 tf_ms=0.02 project_ms=0.51 projected=0 cells=958
+[planner_server-6] [WARN] [1794415533.223326445] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[controller_server-4] [INFO] [1794415533.604785936] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415534.685664433] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415535.685673343] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415536.735655391] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415538.023602646] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=958 merged=958 master_unknown=0 stored_cells=958 window=[0,0,693,845]
+[planner_server-6] [WARN] [1794415539.223609192] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794415543.024105010] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=958 merged=958 master_unknown=0 stored_cells=958 window=[0,0,693,845]
+[planner_server-6] [WARN] [1794415545.223500979] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794415546.968733589] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=94000000000 total_ms=4.17 digest_ms=3.83 tf_ms=0.02 project_ms=0.28 projected=0 cells=958
+[planner_server-6] [INFO] [1794415546.968783616] [robot_1.global_costmap.global_costmap]: semantic observation accepted=56 rejected=109 projected_cells=0 sim_age_ms=340.00 wall_age_ms=458.18
+[planner_server-6] [WARN] [1794415547.007645421] [robot_1.planner_server]: Planner loop missed its desired rate of 1.0000 Hz. Current loop rate is 0.1511 Hz
+[controller_server-4] [INFO] [1794415547.035768657] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415548.104621734] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415548.223285883] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=958 merged=958 master_unknown=0 stored_cells=958 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415549.104629749] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415550.135686706] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415551.135655799] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415551.223333336] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [WARN] [1794415552.619428858] [robot_1.global_costmap.global_costmap]: semantic observation rejected=112 accepted=56 reason=wall_age pending=0 wall_age_ms=675.25 sim_age_ms=490.00 labels_valid=1
+[planner_server-6] [INFO] [1794415553.423017870] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=958 merged=958 master_unknown=0 stored_cells=958 window=[0,0,693,845]
+[planner_server-6] [WARN] [1794415557.223646435] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794415558.623322715] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=958 merged=958 master_unknown=0 stored_cells=958 window=[0,0,693,845]
+[planner_server-6] [WARN] [1794415561.613631749] [robot_1.global_costmap.global_costmap]: semantic observation rejected=116 accepted=56 reason=wall_age pending=1 wall_age_ms=599.64 sim_age_ms=390.00 labels_valid=1
+[INFO] [1794415561.858659979] [hotel_nav2_local_adapter]: Planning for [1] robot(s) and [0] request(s)
+[planner_server-6] [INFO] [1794415561.913830270] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=104600000000 total_ms=5.16 digest_ms=4.14 tf_ms=0.02 project_ms=0.91 projected=683 cells=1097
+[planner_server-6] [WARN] [1794415561.919517949] [robot_1.planner_server]: Planner loop missed its desired rate of 1.0000 Hz. Current loop rate is 0.1460 Hz
+[controller_server-4] [INFO] [1794415562.004830368] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415562.005039111] [robot_1.controller_server]: Reached the goal!
+[bt_navigator-9] [INFO] [1794415562.048385826] [robot_1.bt_navigator]: Goal succeeded
+[planner_server-6] [WARN] [1794415562.224290632] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[INFO] [1794415562.556559258] [robot_1_local_backend]: RMF activity <rmf_adapter.robot_update_handle.ActivityIdentifier object at 0x7f2391adefb0> finished after Nav2 success and pose validation
+[INFO] [1794415562.557400311] [hotel_nav2_local_adapter]: Selecting a new go_to_place location from [1] choices for robot [hotel_nav2/robot_1]
+[INFO] [1794415562.557497455] [hotel_nav2_local_adapter]: Got distance from [40] as 63.493625
+[INFO] [1794415562.557635810] [hotel_nav2_local_adapter]: Planning for [hotel_nav2/robot_1] to [L3_middle_hallway] from one of these locations:
+ -- lane 4: { L1 < 19.4376 -31.0125> [#2] } -> { L1 < 19.4875 -29.5513> [lobby] } | location < 19.5206 -29.6963> | orientation -102.562
+ -- lane 5: { L1 < 19.4875 -29.5513> [lobby] } -> { L1 < 19.4376 -31.0125> [#2] } | location < 19.5206 -29.6963> | orientation -102.562
+[INFO] [1794415562.629823652] [hotel_nav2_local_adapter]: Executing go_to_place [L3_middle_hallway] for robot [hotel_nav2/robot_1]
+[INFO] [1794415562.633200155] [robot_1_local_backend]: RMF navigate callback: map=L1 pose=[19.43756541205105, -31.012475172452998, -2.998536739050509]
+[bt_navigator-9] [INFO] [1794415562.634936485] [robot_1.bt_navigator]: Begin navigating from current location (19.49, -29.61) to (19.44, -31.01)
+[controller_server-4] [INFO] [1794415562.655611416] [robot_1.controller_server]: Received a goal, begin computing control effort.
+[planner_server-6] [INFO] [1794415562.926915880] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=105200000000 total_ms=5.21 digest_ms=4.51 tf_ms=0.02 project_ms=0.62 projected=211 cells=1160
+[controller_server-4] [INFO] [1794415563.755794774] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415563.822752291] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1160 merged=1160 master_unknown=0 stored_cells=1160 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415564.755788046] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415565.805813944] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415565.819238107] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=107200000000 total_ms=4.39 digest_ms=3.85 tf_ms=0.03 project_ms=0.45 projected=79 cells=1185
+[planner_server-6] [INFO] [1794415566.118986681] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=107400000000 total_ms=4.37 digest_ms=3.82 tf_ms=0.02 project_ms=0.48 projected=80 cells=1192
+[planner_server-6] [WARN] [1794415566.805104704] [robot_1.global_costmap.global_costmap]: semantic observation rejected=122 accepted=60 reason=wall_age pending=0 wall_age_ms=598.06 sim_age_ms=420.00 labels_valid=1
+[controller_server-4] [INFO] [1794415566.805782066] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415567.217132906] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=108200000000 total_ms=4.38 digest_ms=3.76 tf_ms=0.04 project_ms=0.53 projected=59 cells=1193
+[planner_server-6] [INFO] [1794415567.712187760] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=108600000000 total_ms=4.95 digest_ms=4.26 tf_ms=0.02 project_ms=0.62 projected=47 cells=1194
+[controller_server-4] [INFO] [1794415567.855779985] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415568.225197992] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794415568.822990049] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1194 merged=1194 master_unknown=0 stored_cells=1194 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415568.905782066] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415569.905780624] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415570.955828294] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415571.907913154] [robot_1.global_costmap.global_costmap]: semantic observation rejected=127 accepted=62 reason=wall_age pending=0 wall_age_ms=556.58 sim_age_ms=350.00 labels_valid=1
+[controller_server-4] [INFO] [1794415571.959813567] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415573.823594694] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1194 merged=1194 master_unknown=0 stored_cells=1194 window=[0,0,693,845]
+[planner_server-6] [WARN] [1794415574.223393557] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794415575.424479894] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=114000000000 total_ms=4.64 digest_ms=4.08 tf_ms=0.02 project_ms=0.49 projected=0 cells=1194
+[planner_server-6] [WARN] [1794415575.435269423] [robot_1.planner_server]: Planner loop missed its desired rate of 1.0000 Hz. Current loop rate is 0.5747 Hz
+[controller_server-4] [INFO] [1794415575.455788088] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415576.311852354] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=114600000000 total_ms=4.52 digest_ms=3.78 tf_ms=0.02 project_ms=0.68 projected=0 cells=1194
+[controller_server-4] [INFO] [1794415576.505780465] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415577.121095476] [robot_1.global_costmap.global_costmap]: semantic observation rejected=132 accepted=64 reason=wall_age pending=2 wall_age_ms=714.91 sim_age_ms=500.00 labels_valid=1
+[controller_server-4] [INFO] [1794415577.555787466] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415578.555794571] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415579.023367383] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1194 merged=1194 master_unknown=0 stored_cells=1194 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415579.605786342] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415580.211133520] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=117400000000 total_ms=5.32 digest_ms=4.78 tf_ms=0.02 project_ms=0.48 projected=0 cells=1194
+[planner_server-6] [WARN] [1794415580.226703467] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[controller_server-4] [INFO] [1794415580.655827826] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415580.910444303] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=117800000000 total_ms=4.73 digest_ms=4.17 tf_ms=0.02 project_ms=0.50 projected=0 cells=1194
+[controller_server-4] [INFO] [1794415581.655784756] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415582.705783512] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415582.809477186] [robot_1.global_costmap.global_costmap]: semantic observation rejected=137 accepted=66 reason=wall_age pending=1 wall_age_ms=899.46 sim_age_ms=610.00 labels_valid=1
+[controller_server-4] [INFO] [1794415583.755794115] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415584.025481665] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1194 merged=1194 master_unknown=0 stored_cells=1194 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415584.755797755] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415586.223244454] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794415589.224193956] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1194 merged=1194 master_unknown=0 stored_cells=1194 window=[0,0,693,845]
+[planner_server-6] [WARN] [1794415592.223306045] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [WARN] [1794415593.612962767] [robot_1.global_costmap.global_costmap]: semantic observation rejected=140 accepted=66 reason=wall_age pending=0 wall_age_ms=853.13 sim_age_ms=570.00 labels_valid=1
+[planner_server-6] [INFO] [1794415594.111662927] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=126800000000 total_ms=5.53 digest_ms=4.06 tf_ms=0.02 project_ms=1.29 projected=847 cells=1562
+[planner_server-6] [WARN] [1794415594.120645470] [robot_1.planner_server]: Planner loop missed its desired rate of 1.0000 Hz. Current loop rate is 0.1767 Hz
+[controller_server-4] [INFO] [1794415594.155790212] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415594.424142364] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1562 merged=1562 master_unknown=0 stored_cells=1562 window=[0,0,693,845]
+[planner_server-6] [INFO] [1794415595.013533507] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=127400000000 total_ms=4.80 digest_ms=3.85 tf_ms=0.02 project_ms=0.83 projected=796 cells=1595
+[controller_server-4] [INFO] [1794415595.205785998] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415595.922967165] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=128000000000 total_ms=6.75 digest_ms=5.85 tf_ms=0.02 project_ms=0.79 projected=436 cells=1609
+[controller_server-4] [INFO] [1794415596.255783689] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415596.524904052] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=128400000000 total_ms=4.48 digest_ms=3.84 tf_ms=0.03 project_ms=0.56 projected=83 cells=1609
+[controller_server-4] [INFO] [1794415597.255798587] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415597.627807133] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=129200000000 total_ms=4.76 digest_ms=3.88 tf_ms=0.02 project_ms=0.81 projected=0 cells=1609
+[planner_server-6] [WARN] [1794415598.223350548] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[controller_server-4] [INFO] [1794415598.305919878] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415599.355788788] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415599.622807058] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1609 merged=1609 master_unknown=0 stored_cells=1609 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415600.355782746] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415601.405748676] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415604.222910831] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794415604.623438169] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1609 merged=1609 master_unknown=0 stored_cells=1609 window=[0,0,693,845]
+[INFO] [1794415605.237016804] [hotel_nav2_local_adapter]: Planning for [1] robot(s) and [0] request(s)
+[planner_server-6] [WARN] [1794415606.105203783] [robot_1.global_costmap.global_costmap]: semantic observation rejected=145 accepted=71 reason=wall_age pending=0 wall_age_ms=553.98 sim_age_ms=370.00 labels_valid=1
+[planner_server-6] [INFO] [1794415606.918978467] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=135600000000 total_ms=6.26 digest_ms=4.60 tf_ms=0.02 project_ms=1.51 projected=867 cells=1737
+[planner_server-6] [WARN] [1794415606.927854200] [robot_1.planner_server]: Planner loop missed its desired rate of 1.0000 Hz. Current loop rate is 0.3195 Hz
+[controller_server-4] [INFO] [1794415606.955783776] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415608.005777563] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415609.055777272] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415609.822998855] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1737 merged=1737 master_unknown=0 stored_cells=1737 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415610.055784576] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415610.223383468] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[controller_server-4] [INFO] [1794415611.105783931] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415612.216221412] [robot_1.global_costmap.global_costmap]: semantic observation rejected=152 accepted=72 reason=wall_age pending=1 wall_age_ms=883.42 sim_age_ms=560.00 labels_valid=1
+[planner_server-6] [INFO] [1794415612.716817086] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=139600000000 total_ms=4.45 digest_ms=3.98 tf_ms=0.02 project_ms=0.40 projected=0 cells=1737
+[controller_server-4] [INFO] [1794415612.755780707] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415613.209460958] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=140000000000 total_ms=4.50 digest_ms=4.00 tf_ms=0.02 project_ms=0.43 projected=0 cells=1737
+[controller_server-4] [INFO] [1794415613.805782801] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415614.423025868] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=140800000000 total_ms=5.49 digest_ms=4.87 tf_ms=0.02 project_ms=0.51 projected=0 cells=1737
+[planner_server-6] [INFO] [1794415614.823218282] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1737 merged=1737 master_unknown=0 stored_cells=1737 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415614.855789185] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415615.207645686] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=141400000000 total_ms=36.15 digest_ms=35.58 tf_ms=0.02 project_ms=0.49 projected=0 cells=1737
+[controller_server-4] [INFO] [1794415615.905782042] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415616.223157822] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[controller_server-4] [INFO] [1794415616.955788876] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415617.955786709] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415619.005780917] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415619.075006513] [robot_1.global_costmap.global_costmap]: semantic observation rejected=157 accepted=76 reason=wall_age pending=3 wall_age_ms=610.61 sim_age_ms=440.00 labels_valid=1
+[planner_server-6] [INFO] [1794415619.105045185] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=144200000000 total_ms=28.74 digest_ms=3.08 tf_ms=0.03 project_ms=25.57 projected=0 cells=1737
+[planner_server-6] [INFO] [1794415619.420535097] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=144400000000 total_ms=4.46 digest_ms=3.92 tf_ms=0.02 project_ms=0.48 projected=0 cells=1737
+[planner_server-6] [INFO] [1794415619.719601886] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=144600000000 total_ms=4.83 digest_ms=4.11 tf_ms=0.02 project_ms=0.61 projected=0 cells=1737
+[planner_server-6] [INFO] [1794415620.023948863] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1737 merged=1737 master_unknown=0 stored_cells=1737 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415620.055779944] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415620.610270321] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=145200000000 total_ms=5.16 digest_ms=4.06 tf_ms=0.02 project_ms=1.03 projected=0 cells=1737
+[controller_server-4] [INFO] [1794415621.055781672] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415621.223378871] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[controller_server-4] [INFO] [1794415622.105781501] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415623.155785656] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415623.222047798] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=147000000000 total_ms=4.98 digest_ms=4.52 tf_ms=0.02 project_ms=0.40 projected=0 cells=1737
+[planner_server-6] [WARN] [1794415624.123602781] [robot_1.global_costmap.global_costmap]: semantic observation rejected=162 accepted=81 reason=wall_age pending=1 wall_age_ms=573.67 sim_age_ms=380.00 labels_valid=1
+[controller_server-4] [INFO] [1794415624.157352530] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415624.219539056] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=147800000000 total_ms=5.01 digest_ms=4.36 tf_ms=0.02 project_ms=0.57 projected=0 cells=1737
+[planner_server-6] [INFO] [1794415624.917194665] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=148200000000 total_ms=4.33 digest_ms=3.77 tf_ms=0.02 project_ms=0.49 projected=0 cells=1737
+[planner_server-6] [INFO] [1794415625.019034915] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=148400000000 total_ms=4.93 digest_ms=4.28 tf_ms=0.02 project_ms=0.49 projected=0 cells=1737
+[controller_server-4] [INFO] [1794415625.205789235] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415625.222616662] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1737 merged=1737 master_unknown=0 stored_cells=1737 window=[0,0,693,845]
+[planner_server-6] [INFO] [1794415625.321371483] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=148600000000 total_ms=8.17 digest_ms=5.69 tf_ms=0.02 project_ms=2.39 projected=0 cells=1737
+[controller_server-4] [INFO] [1794415626.255810879] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415627.223340471] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[controller_server-4] [INFO] [1794415627.255899525] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415628.011686240] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=150400000000 total_ms=4.75 digest_ms=4.34 tf_ms=0.02 project_ms=0.34 projected=0 cells=1737
+[planner_server-6] [INFO] [1794415628.266422926] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=150600000000 total_ms=4.50 digest_ms=3.99 tf_ms=0.02 project_ms=0.45 projected=0 cells=1737
+[controller_server-4] [INFO] [1794415628.305790052] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415629.212679288] [robot_1.global_costmap.global_costmap]: semantic observation rejected=168 accepted=87 reason=wall_age pending=2 wall_age_ms=605.93 sim_age_ms=450.00 labels_valid=1
+[planner_server-6] [INFO] [1794415629.219710020] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=151400000000 total_ms=5.25 digest_ms=4.68 tf_ms=0.02 project_ms=0.50 projected=0 cells=1737
+[controller_server-4] [INFO] [1794415629.355786500] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415629.414819229] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=151600000000 total_ms=4.73 digest_ms=4.08 tf_ms=0.03 project_ms=0.55 projected=0 cells=1737
+[planner_server-6] [INFO] [1794415630.223111694] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1737 merged=1737 master_unknown=0 stored_cells=1737 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415630.355821282] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415631.405784190] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415632.430515629] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=153600000000 total_ms=4.68 digest_ms=4.19 tf_ms=0.02 project_ms=0.40 projected=0 cells=1737
+[controller_server-4] [INFO] [1794415632.456300808] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415633.222794901] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[controller_server-4] [INFO] [1794415633.455783503] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415634.505780093] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415635.423483192] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1737 merged=1737 master_unknown=0 stored_cells=1737 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415635.555779831] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415636.410357258] [robot_1.global_costmap.global_costmap]: semantic observation rejected=179 accepted=90 reason=wall_age pending=0 wall_age_ms=848.65 sim_age_ms=550.00 labels_valid=1
+[controller_server-4] [INFO] [1794415636.555779117] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415638.223081732] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794415640.623654988] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1737 merged=1737 master_unknown=0 stored_cells=1737 window=[0,0,693,845]
+[planner_server-6] [WARN] [1794415641.618364375] [robot_1.global_costmap.global_costmap]: semantic observation rejected=183 accepted=90 reason=wall_age pending=1 wall_age_ms=582.55 sim_age_ms=400.00 labels_valid=1
+[planner_server-6] [INFO] [1794415642.417266059] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=160600000000 total_ms=4.94 digest_ms=3.85 tf_ms=0.02 project_ms=0.95 projected=825 cells=1742
+[planner_server-6] [WARN] [1794415642.428307462] [robot_1.planner_server]: Planner loop missed its desired rate of 1.0000 Hz. Current loop rate is 0.2994 Hz
+[controller_server-4] [INFO] [1794415642.455787559] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415642.456020391] [robot_1.controller_server]: Reached the goal!
+[bt_navigator-9] [INFO] [1794415642.504961260] [robot_1.bt_navigator]: Goal succeeded
+[planner_server-6] [INFO] [1794415642.721605969] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=160800000000 total_ms=4.84 digest_ms=3.73 tf_ms=0.02 project_ms=0.97 projected=869 cells=1744
+[INFO] [1794415642.758833025] [robot_1_local_backend]: RMF activity <rmf_adapter.robot_update_handle.ActivityIdentifier object at 0x7f237c876fb0> finished after Nav2 success and pose validation
+[INFO] [1794415642.759703244] [robot_1_local_backend]: RMF navigate callback: map=L1 pose=[15.402254826884418, -31.593720701112698, 1.755300068471639]
+[bt_navigator-9] [INFO] [1794415642.760775324] [robot_1.bt_navigator]: Begin navigating from current location (19.57, -30.94) to (15.40, -31.59)
+[controller_server-4] [INFO] [1794415642.806092289] [robot_1.controller_server]: Received a goal, begin computing control effort.
+[planner_server-6] [INFO] [1794415642.832762927] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=161000000000 total_ms=6.34 digest_ms=4.86 tf_ms=0.03 project_ms=1.35 projected=829 cells=1744
+[planner_server-6] [INFO] [1794415643.123668129] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=161200000000 total_ms=5.60 digest_ms=4.18 tf_ms=0.03 project_ms=1.25 projected=819 cells=1746
+[planner_server-6] [WARN] [1794415643.223297729] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[controller_server-4] [INFO] [1794415643.856473675] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415644.906490435] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415645.823170233] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1746 merged=1746 master_unknown=0 stored_cells=1746 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415645.906473995] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415646.956474663] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415647.908953618] [robot_1.global_costmap.global_costmap]: semantic observation rejected=186 accepted=94 reason=wall_age pending=0 wall_age_ms=766.02 sim_age_ms=500.00 labels_valid=1
+[controller_server-4] [INFO] [1794415647.956465509] [robot_1.controller_server]: Passing new path to controller.
+[INFO] [1794415648.017292195] [hotel_nav2_local_adapter]: Planning for [1] robot(s) and [0] request(s)
+[planner_server-6] [WARN] [1794415649.223056910] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794415649.410956486] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=165400000000 total_ms=6.28 digest_ms=5.57 tf_ms=0.02 project_ms=0.63 projected=106 cells=1757
+[controller_server-4] [INFO] [1794415649.456475822] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415650.011995168] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=165800000000 total_ms=4.75 digest_ms=4.00 tf_ms=0.02 project_ms=0.68 projected=48 cells=1757
+[controller_server-4] [INFO] [1794415650.506476554] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415650.823525125] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1757 merged=1757 master_unknown=0 stored_cells=1757 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415651.556469850] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415652.556466017] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415653.606462638] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415653.809439808] [robot_1.global_costmap.global_costmap]: semantic observation rejected=190 accepted=96 reason=wall_age pending=2 wall_age_ms=744.86 sim_age_ms=520.00 labels_valid=1
+[planner_server-6] [INFO] [1794415653.829528422] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=168400000000 total_ms=6.09 digest_ms=4.71 tf_ms=0.02 project_ms=1.30 projected=0 cells=1757
+[planner_server-6] [WARN] [1794415654.223537528] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794415654.414564400] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=168800000000 total_ms=4.31 digest_ms=3.80 tf_ms=0.02 project_ms=0.42 projected=0 cells=1757
+[planner_server-6] [INFO] [1794415654.619740479] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=169000000000 total_ms=4.47 digest_ms=3.92 tf_ms=0.02 project_ms=0.48 projected=0 cells=1757
+[controller_server-4] [INFO] [1794415654.656466029] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415655.656485881] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415655.823631482] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1757 merged=1757 master_unknown=0 stored_cells=1757 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415656.706797802] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415657.756468840] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415658.541194342] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=171800000000 total_ms=4.72 digest_ms=4.17 tf_ms=0.02 project_ms=0.47 projected=0 cells=1757
+[controller_server-4] [INFO] [1794415658.806996752] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415658.813961869] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=172000000000 total_ms=6.36 digest_ms=5.71 tf_ms=0.02 project_ms=0.57 projected=0 cells=1757
+[planner_server-6] [INFO] [1794415658.814008860] [robot_1.global_costmap.global_costmap]: semantic observation accepted=101 rejected=195 projected_cells=0 sim_age_ms=310.00 wall_age_ms=464.81
+[planner_server-6] [INFO] [1794415659.508003089] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=172600000000 total_ms=10.41 digest_ms=9.82 tf_ms=0.02 project_ms=0.51 projected=0 cells=1757
+[controller_server-4] [INFO] [1794415659.856475833] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415660.114720225] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=173000000000 total_ms=4.90 digest_ms=4.32 tf_ms=0.02 project_ms=0.49 projected=0 cells=1757
+[planner_server-6] [WARN] [1794415660.225139774] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[controller_server-4] [INFO] [1794415660.856481442] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415661.023662663] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1757 merged=1757 master_unknown=0 stored_cells=1757 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415661.906481884] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415662.956525238] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415663.111756566] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=175000000000 total_ms=7.11 digest_ms=6.50 tf_ms=0.02 project_ms=0.53 projected=0 cells=1757
+[controller_server-4] [INFO] [1794415663.956497160] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415664.315254450] [robot_1.global_costmap.global_costmap]: semantic observation rejected=198 accepted=104 reason=wall_age pending=1 wall_age_ms=775.13 sim_age_ms=510.00 labels_valid=1
+[planner_server-6] [INFO] [1794415664.320957345] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=175800000000 total_ms=4.35 digest_ms=3.89 tf_ms=0.02 project_ms=0.38 projected=0 cells=1757
+[controller_server-4] [INFO] [1794415665.006463580] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415666.056588836] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415666.223906108] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1757 merged=1757 master_unknown=0 stored_cells=1757 window=[0,0,693,845]
+[planner_server-6] [WARN] [1794415666.224005478] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794415666.515806299] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=177400000000 total_ms=5.04 digest_ms=4.46 tf_ms=0.02 project_ms=0.50 projected=0 cells=1757
+[controller_server-4] [INFO] [1794415667.056477477] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415667.319950377] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=178000000000 total_ms=4.70 digest_ms=4.10 tf_ms=0.04 project_ms=0.49 projected=0 cells=1757
+[controller_server-4] [INFO] [1794415668.106474150] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415668.111198391] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=178600000000 total_ms=4.94 digest_ms=4.40 tf_ms=0.02 project_ms=0.47 projected=0 cells=1757
+[planner_server-6] [INFO] [1794415668.474830703] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=178800000000 total_ms=3.48 digest_ms=3.13 tf_ms=0.02 project_ms=0.28 projected=0 cells=1757
+[planner_server-6] [INFO] [1794415668.711332141] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=179000000000 total_ms=4.47 digest_ms=4.02 tf_ms=0.02 project_ms=0.38 projected=0 cells=1757
+[planner_server-6] [INFO] [1794415668.910925051] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=179200000000 total_ms=4.88 digest_ms=4.30 tf_ms=0.02 project_ms=0.50 projected=0 cells=1757
+[controller_server-4] [INFO] [1794415669.106466638] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415669.605750976] [robot_1.global_costmap.global_costmap]: semantic observation rejected=205 accepted=111 reason=wall_age pending=1 wall_age_ms=742.95 sim_age_ms=530.00 labels_valid=1
+[planner_server-6] [INFO] [1794415669.613322816] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=179600000000 total_ms=5.62 digest_ms=5.09 tf_ms=0.03 project_ms=0.45 projected=0 cells=1757
+[controller_server-4] [INFO] [1794415670.156479373] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415671.156468318] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415671.423122449] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1757 merged=1757 master_unknown=0 stored_cells=1757 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415672.206472381] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415672.223157401] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[controller_server-4] [INFO] [1794415673.256474831] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415676.423129019] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1757 merged=1757 master_unknown=0 stored_cells=1757 window=[0,0,693,845]
+[planner_server-6] [WARN] [1794415676.608830012] [robot_1.global_costmap.global_costmap]: semantic observation rejected=214 accepted=112 reason=wall_age pending=1 wall_age_ms=888.65 sim_age_ms=630.00 labels_valid=1
+[planner_server-6] [WARN] [1794415677.223816308] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794415680.519292569] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=187400000000 total_ms=4.54 digest_ms=3.96 tf_ms=0.02 project_ms=0.50 projected=0 cells=1757
+[planner_server-6] [WARN] [1794415680.532883889] [robot_1.planner_server]: Planner loop missed its desired rate of 1.0000 Hz. Current loop rate is 0.2141 Hz
+[controller_server-4] [INFO] [1794415680.556853635] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415681.423482128] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1757 merged=1757 master_unknown=0 stored_cells=1757 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415681.606475310] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415682.223901769] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794415682.523484228] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=189000000000 total_ms=4.56 digest_ms=3.90 tf_ms=0.03 project_ms=0.57 projected=0 cells=1757
+[planner_server-6] [INFO] [1794415682.523582230] [robot_1.global_costmap.global_costmap]: semantic observation accepted=114 rejected=217 projected_cells=0 sim_age_ms=390.00 wall_age_ms=479.70
+[controller_server-4] [INFO] [1794415682.606474544] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415683.656440185] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415683.906659461] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=190200000000 total_ms=41.18 digest_ms=40.61 tf_ms=0.02 project_ms=0.48 projected=0 cells=1757
+[controller_server-4] [INFO] [1794415684.706496734] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415685.706468052] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415686.623214604] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1757 merged=1757 master_unknown=0 stored_cells=1757 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415686.856482792] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [ERROR] [1794415687.706654511] [robot_1.controller_server]: Resulting plan has 0 poses in it.
+[controller_server-4] [WARN] [1794415687.706772615] [robot_1.controller_server]: [follow_path] [ActionServer] Aborting handle.
+[bt_navigator-9] [WARN] [1794415687.735046534] [robot_1.bt_navigator]: [navigate_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-9] [ERROR] [1794415687.735218598] [robot_1.bt_navigator]: Goal failed
+[planner_server-6] [WARN] [1794415688.210921788] [robot_1.global_costmap.global_costmap]: semantic observation rejected=223 accepted=115 reason=wall_age pending=1 wall_age_ms=680.72 sim_age_ms=460.00 labels_valid=1
+[planner_server-6] [WARN] [1794415688.223137372] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794415688.517128804] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=193400000000 total_ms=4.33 digest_ms=3.78 tf_ms=0.03 project_ms=0.47 projected=0 cells=1757
+[planner_server-6] [INFO] [1794415689.723476797] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=194200000000 total_ms=8.15 digest_ms=7.58 tf_ms=0.02 project_ms=0.49 projected=0 cells=1757
+[INFO] [1794415690.048772510] [hotel_nav2_local_adapter]: Planning for [1] robot(s) and [0] request(s)
+[planner_server-6] [INFO] [1794415690.523835275] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=194800000000 total_ms=4.48 digest_ms=3.91 tf_ms=0.02 project_ms=0.50 projected=0 cells=1757
+[WARN] [1794415690.756515770] [robot_1_local_backend]: Nav2 status 6 at destination; retrying goal (1/3)
+[INFO] [1794415691.260015752] [robot_1_local_backend]: RMF navigate callback: map=L1 pose=[15.402254826884418, -31.593720701112698, 1.755300068471639]
+[bt_navigator-9] [INFO] [1794415691.261522468] [robot_1.bt_navigator]: Begin navigating from current location (18.42, -26.86) to (15.40, -31.59)
+[controller_server-4] [INFO] [1794415691.306241578] [robot_1.controller_server]: Received a goal, begin computing control effort.
+[planner_server-6] [INFO] [1794415691.626226343] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1757 merged=1757 master_unknown=0 stored_cells=1757 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415692.357039876] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415693.223278673] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[controller_server-4] [INFO] [1794415693.357036038] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415694.213136371] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=197400000000 total_ms=6.23 digest_ms=5.66 tf_ms=0.02 project_ms=0.50 projected=0 cells=1757
+[planner_server-6] [INFO] [1794415694.213849873] [robot_1.global_costmap.global_costmap]: semantic observation accepted=119 rejected=227 projected_cells=0 sim_age_ms=200.00 wall_age_ms=299.92
+[controller_server-4] [INFO] [1794415694.407582419] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [ERROR] [1794415694.857155154] [robot_1.controller_server]: Resulting plan has 0 poses in it.
+[controller_server-4] [WARN] [1794415694.857273562] [robot_1.controller_server]: [follow_path] [ActionServer] Aborting handle.
+[bt_navigator-9] [WARN] [1794415694.888469893] [robot_1.bt_navigator]: [navigate_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-9] [ERROR] [1794415694.888660624] [robot_1.bt_navigator]: Goal failed
+[planner_server-6] [INFO] [1794415695.512410106] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=198200000000 total_ms=5.12 digest_ms=4.16 tf_ms=0.02 project_ms=0.85 projected=233 cells=1797
+[planner_server-6] [INFO] [1794415695.965163473] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=198600000000 total_ms=3.73 digest_ms=3.18 tf_ms=0.02 project_ms=0.47 projected=273 cells=1819
+[planner_server-6] [INFO] [1794415696.823582338] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1819 merged=1819 master_unknown=0 stored_cells=1819 window=[0,0,693,845]
+[planner_server-6] [INFO] [1794415696.938942132] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=199200000000 total_ms=4.72 digest_ms=3.82 tf_ms=0.03 project_ms=0.79 projected=268 cells=1839
+[WARN] [1794415697.916491836] [robot_1_local_backend]: Nav2 status 6 at destination; retrying goal (2/3)
+[planner_server-6] [WARN] [1794415698.223436681] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[INFO] [1794415698.418252618] [robot_1_local_backend]: RMF navigate callback: map=L1 pose=[15.402254826884418, -31.593720701112698, 1.755300068471639]
+[bt_navigator-9] [INFO] [1794415698.419289439] [robot_1.bt_navigator]: Begin navigating from current location (18.59, -30.56) to (15.40, -31.59)
+[controller_server-4] [INFO] [1794415698.440854703] [robot_1.controller_server]: Received a goal, begin computing control effort.
+[planner_server-6] [WARN] [1794415699.414806694] [robot_1.global_costmap.global_costmap]: semantic observation rejected=233 accepted=122 reason=wall_age pending=0 wall_age_ms=649.01 sim_age_ms=450.00 labels_valid=1
+[controller_server-4] [INFO] [1794415699.505063245] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415699.511060516] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=201000000000 total_ms=4.99 digest_ms=4.38 tf_ms=0.02 project_ms=0.54 projected=121 cells=1839
+[controller_server-4] [INFO] [1794415700.541039059] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415701.591045184] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415702.023458288] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1839 merged=1839 master_unknown=0 stored_cells=1839 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415702.641041444] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415703.641045955] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415704.223431947] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794415704.464318038] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=204400000000 total_ms=4.45 digest_ms=3.96 tf_ms=0.02 project_ms=0.42 projected=0 cells=1839
+[planner_server-6] [INFO] [1794415704.464375598] [robot_1.global_costmap.global_costmap]: semantic observation accepted=124 rejected=236 projected_cells=0 sim_age_ms=320.00 wall_age_ms=453.25
+[controller_server-4] [INFO] [1794415704.704643478] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [ERROR] [1794415705.091145228] [robot_1.controller_server]: Resulting plan has 0 poses in it.
+[controller_server-4] [WARN] [1794415705.091271377] [robot_1.controller_server]: [follow_path] [ActionServer] Aborting handle.
+[bt_navigator-9] [WARN] [1794415705.114263620] [robot_1.bt_navigator]: [navigate_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-9] [ERROR] [1794415705.114447432] [robot_1.bt_navigator]: Goal failed
+[planner_server-6] [INFO] [1794415707.023635052] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1839 merged=1839 master_unknown=0 stored_cells=1839 window=[0,0,693,845]
+[WARN] [1794415708.161126468] [robot_1_local_backend]: Nav2 status 6 at destination; retrying goal (3/3)
+[INFO] [1794415708.662947451] [robot_1_local_backend]: RMF navigate callback: map=L1 pose=[15.402254826884418, -31.593720701112698, 1.755300068471639]
+[bt_navigator-9] [INFO] [1794415708.665018563] [robot_1.bt_navigator]: Begin navigating from current location (18.14, -28.40) to (15.40, -31.59)
+[controller_server-4] [INFO] [1794415708.707224597] [robot_1.controller_server]: Received a goal, begin computing control effort.
+[planner_server-6] [WARN] [1794415710.223404422] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794415711.820936239] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=209400000000 total_ms=6.74 digest_ms=6.15 tf_ms=0.02 project_ms=0.51 projected=0 cells=1839
+[planner_server-6] [INFO] [1794415711.821597227] [robot_1.global_costmap.global_costmap]: semantic observation accepted=125 rejected=240 projected_cells=0 sim_age_ms=290.00 wall_age_ms=473.20
+[planner_server-6] [WARN] [1794415711.832275310] [robot_1.planner_server]: Planner loop missed its desired rate of 1.0000 Hz. Current loop rate is 0.7092 Hz
+[controller_server-4] [INFO] [1794415711.857448874] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415712.023637814] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1839 merged=1839 master_unknown=0 stored_cells=1839 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794415712.907398592] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415713.957403634] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415714.957402869] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415715.223749593] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[controller_server-4] [INFO] [1794415716.007398992] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415716.620354989] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=212800000000 total_ms=5.18 digest_ms=4.63 tf_ms=0.02 project_ms=0.47 projected=0 cells=1839
+[planner_server-6] [INFO] [1794415716.934068510] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=213000000000 total_ms=4.56 digest_ms=3.98 tf_ms=0.02 project_ms=0.50 projected=0 cells=1839
+[planner_server-6] [INFO] [1794415716.934468616] [robot_1.global_costmap.global_costmap]: semantic observation accepted=127 rejected=243 projected_cells=0 sim_age_ms=250.00 wall_age_ms=413.75
+[controller_server-4] [INFO] [1794415717.057410239] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415717.223227737] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1839 merged=1839 master_unknown=0 stored_cells=1839 window=[0,0,693,845]
+[planner_server-6] [INFO] [1794415717.269359298] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=213200000000 total_ms=3.67 digest_ms=3.32 tf_ms=0.02 project_ms=0.27 projected=0 cells=1839
+[controller_server-4] [INFO] [1794415718.057395660] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415719.107400375] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415720.157402335] [robot_1.controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794415721.157402217] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [WARN] [1794415721.223845954] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794415722.223396444] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1839 merged=1839 master_unknown=0 stored_cells=1839 window=[0,0,693,845]
+[planner_server-6] [WARN] [1794415723.230394237] [robot_1.global_costmap.global_costmap]: semantic observation rejected=246 accepted=128 reason=wall_age pending=1 wall_age_ms=580.29 sim_age_ms=400.00 labels_valid=1
+[planner_server-6] [WARN] [1794415726.224049252] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794415727.225873223] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1838 merged=1838 master_unknown=0 stored_cells=1838 window=[0,0,693,845]
+[planner_server-6] [WARN] [1794415728.406730822] [robot_1.global_costmap.global_costmap]: semantic observation rejected=252 accepted=128 reason=wall_age pending=2 wall_age_ms=895.60 sim_age_ms=640.00 labels_valid=1
+[planner_server-6] [WARN] [1794415732.223124742] [robot_1.global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794415732.423259285] [robot_1.global_costmap.global_costmap]: semantic cost merge marked=1838 merged=1838 master_unknown=0 stored_cells=1838 window=[0,0,693,845]
+[planner_server-6] [INFO] [1794415733.228076129] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=224200000000 total_ms=4.68 digest_ms=4.05 tf_ms=0.02 project_ms=0.55 projected=0 cells=1838
+[planner_server-6] [WARN] [1794415733.240002814] [robot_1.planner_server]: Planner loop missed its desired rate of 1.0000 Hz. Current loop rate is 0.1300 Hz
+[controller_server-4] [INFO] [1794415733.307484675] [robot_1.controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794415733.462290352] [robot_1.global_costmap.global_costmap]: semantic attempt timing stamp_ns=224400000000 total_ms=4.18 digest_ms=3.76 tf_ms=0.02 project_ms=0.35 projected=0 cells=1838
+[planner_server-6] [INFO] [1794415733.462389646] [robot_1.global_costmap.global_costmap]: semantic observation accepted=130 rejected=255 projected_cells=0 sim_age_ms=320.00 wall_age_ms=441.40
+[INFO] [1794415733.550747325] [hotel_nav2_local_adapter]: Planning for [1] robot(s) and [0] request(s)
+[controller_server-4] [INFO] [1794415734.357399589] [robot_1.controller_server]: Passing new path to controller.

@@ -1,0 +1,200 @@
+[controller_server-4] 	local_costmap lifecycle node launched. 
+[controller_server-4] 	Waiting on external lifecycle transitions to activate
+[controller_server-4] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[controller_server-4] [INFO] [1794365436.609255599] [local_costmap.local_costmap]: Creating Costmap
+[lifecycle_manager-13] [INFO] [1794365436.616451008] [lifecycle_manager_navigation]: Creating
+[lifecycle_manager-13] [INFO] [1794365436.629696496] [lifecycle_manager_navigation]: [34m[1mCreating and initializing lifecycle service clients[0m[0m
+[bt_navigator-9] [INFO] [1794365436.630225436] [bt_navigator]: 
+[bt_navigator-9] 	bt_navigator lifecycle node launched. 
+[bt_navigator-9] 	Waiting on external lifecycle transitions to activate
+[bt_navigator-9] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[bt_navigator-9] [INFO] [1794365436.650334136] [bt_navigator]: Creating
+[lifecycle_manager-3] [INFO] [1794365436.687383335] [lifecycle_manager_localization]: [34m[1mStarting managed nodes bringup...[0m[0m
+[lifecycle_manager-3] [INFO] [1794365436.688061258] [lifecycle_manager_localization]: [34m[1mConfiguring map_server[0m[0m
+[map_server-1] [INFO] [1794365436.688616579] [map_server]: Configuring
+[map_server-1] [INFO] [1794365436.688688660] [map_io]: Loading yaml file: /opt/ros2-demo/maps/hotel_L1.yaml
+[map_server-1] [INFO] [1794365436.689046997] [map_io]: resolution: 0.05
+[map_server-1] [INFO] [1794365436.689059107] [map_io]: origin[0]: 0
+[map_server-1] [INFO] [1794365436.689066447] [map_io]: origin[1]: -42.25
+[map_server-1] [INFO] [1794365436.689071657] [map_io]: origin[2]: 0
+[map_server-1] [INFO] [1794365436.689076908] [map_io]: free_thresh: 0.196
+[map_server-1] [INFO] [1794365436.689081938] [map_io]: occupied_thresh: 0.65
+[map_server-1] [INFO] [1794365436.689088798] [map_io]: mode: trinary
+[map_server-1] [INFO] [1794365436.689094408] [map_io]: negate: 0
+[map_server-1] [INFO] [1794365436.689389764] [map_io]: Loading image_file: /opt/ros2-demo/maps/hotel_L1.pgm
+[map_server-1] [INFO] [1794365436.711816289] [map_io]: Read map /opt/ros2-demo/maps/hotel_L1.pgm: 693 X 845 map @ 0.05 m/cell
+[collision_monitor-12] [INFO] [1794365436.716192183] [collision_monitor]: 
+[collision_monitor-12] 	collision_monitor lifecycle node launched. 
+[collision_monitor-12] 	Waiting on external lifecycle transitions to activate
+[collision_monitor-12] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[lifecycle_manager-3] [INFO] [1794365436.750966168] [lifecycle_manager_localization]: [34m[1mConfiguring amcl[0m[0m
+[amcl-2] [INFO] [1794365436.751173332] [amcl]: Configuring
+[amcl-2] [INFO] [1794365436.751264144] [amcl]: initTransforms
+[amcl-2] [INFO] [1794365436.762899340] [amcl]: initPubSub
+[amcl-2] [INFO] [1794365436.778084054] [amcl]: Subscribed to map topic.
+[lifecycle_manager-3] [INFO] [1794365436.783346786] [lifecycle_manager_localization]: [34m[1mActivating map_server[0m[0m
+[map_server-1] [INFO] [1794365436.783531390] [map_server]: Activating
+[map_server-1] [INFO] [1794365436.785977087] [map_server]: Creating bond (map_server) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794365436.813205365] [lifecycle_manager_navigation]: [34m[1mStarting managed nodes bringup...[0m[0m
+[lifecycle_manager-13] [INFO] [1794365436.813259197] [lifecycle_manager_navigation]: [34m[1mConfiguring controller_server[0m[0m
+[controller_server-4] [INFO] [1794365436.813515742] [controller_server]: Configuring controller interface
+[controller_server-4] [INFO] [1794365436.813540612] [controller_server]: getting progress checker plugins..
+[controller_server-4] [INFO] [1794365436.813777237] [controller_server]: getting goal checker plugins..
+[controller_server-4] [INFO] [1794365436.813923219] [controller_server]: Controller frequency set to 20.0000Hz
+[controller_server-4] [INFO] [1794365436.813958680] [local_costmap.local_costmap]: Configuring
+[controller_server-4] [INFO] [1794365436.821386294] [local_costmap.local_costmap]: Using plugin "voxel_layer"
+[controller_server-4] [INFO] [1794365436.827598775] [local_costmap.local_costmap]: Subscribed to Topics: scan
+[controller_server-4] [INFO] [1794365436.839110148] [local_costmap.local_costmap]: Initialized plugin "voxel_layer"
+[controller_server-4] [INFO] [1794365436.839160539] [local_costmap.local_costmap]: Using plugin "semantic_layer"
+[controller_server-4] [INFO] [1794365436.848134693] [local_costmap.local_costmap]: Initialized plugin "semantic_layer"
+[controller_server-4] [INFO] [1794365436.848173114] [local_costmap.local_costmap]: Using plugin "inflation_layer"
+[controller_server-4] [INFO] [1794365436.850539260] [local_costmap.local_costmap]: Initialized plugin "inflation_layer"
+[controller_server-4] [INFO] [1794365436.874325671] [controller_server]: Created progress_checker : progress_checker of type nav2_controller::SimpleProgressChecker
+[controller_server-4] [INFO] [1794365436.874782050] [controller_server]: Controller Server has progress_checker  progress checkers available.
+[controller_server-4] [INFO] [1794365436.875464373] [controller_server]: Created goal checker : general_goal_checker of type nav2_controller::SimpleGoalChecker
+[controller_server-4] [INFO] [1794365436.876255649] [controller_server]: Controller Server has general_goal_checker  goal checkers available.
+[controller_server-4] [INFO] [1794365436.877134496] [controller_server]: Created controller : FollowPath of type nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController
+[controller_server-4] [INFO] [1794365436.885692652] [controller_server]: Controller Server has FollowPath  controllers available.
+[lifecycle_manager-3] [INFO] [1794365436.893983563] [lifecycle_manager_localization]: Server map_server connected with bond.
+[lifecycle_manager-3] [INFO] [1794365436.894025343] [lifecycle_manager_localization]: [34m[1mActivating amcl[0m[0m
+[amcl-2] [INFO] [1794365436.894375020] [amcl]: Activating
+[amcl-2] [INFO] [1794365436.894409511] [amcl]: Creating bond (amcl) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794365436.897065262] [lifecycle_manager_navigation]: [34m[1mConfiguring smoother_server[0m[0m
+[smoother_server-5] [INFO] [1794365436.897286307] [smoother_server]: Configuring smoother server
+[smoother_server-5] [INFO] [1794365436.913286847] [smoother_server]: Created smoother : simple_smoother of type nav2_smoother::SimpleSmoother
+[smoother_server-5] [INFO] [1794365436.915231715] [smoother_server]: Smoother Server has simple_smoother  smoothers available.
+[lifecycle_manager-13] [INFO] [1794365436.922198970] [lifecycle_manager_navigation]: [34m[1mConfiguring planner_server[0m[0m
+[planner_server-6] [INFO] [1794365436.922396554] [planner_server]: Configuring
+[planner_server-6] [INFO] [1794365436.922426274] [global_costmap.global_costmap]: Configuring
+[planner_server-6] [INFO] [1794365436.930232116] [global_costmap.global_costmap]: Using plugin "static_layer"
+[controller_server-4] [WARN] [1794365436.934073940] [local_costmap.local_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794365436.938104228] [global_costmap.global_costmap]: Subscribing to the map topic (/map) with transient local durability
+[planner_server-6] [INFO] [1794365436.939798341] [global_costmap.global_costmap]: Initialized plugin "static_layer"
+[planner_server-6] [INFO] [1794365436.939832502] [global_costmap.global_costmap]: Using plugin "obstacle_layer"
+[planner_server-6] [INFO] [1794365436.941839601] [global_costmap.global_costmap]: Subscribed to Topics: scan
+[planner_server-6] [INFO] [1794365436.948446579] [global_costmap.global_costmap]: Initialized plugin "obstacle_layer"
+[planner_server-6] [INFO] [1794365436.948485040] [global_costmap.global_costmap]: Using plugin "semantic_layer"
+[planner_server-6] [INFO] [1794365436.958072026] [global_costmap.global_costmap]: Initialized plugin "semantic_layer"
+[planner_server-6] [INFO] [1794365436.958109807] [global_costmap.global_costmap]: Using plugin "inflation_layer"
+[planner_server-6] [INFO] [1794365436.959628536] [global_costmap.global_costmap]: Initialized plugin "inflation_layer"
+[planner_server-6] [WARN] [1794365436.987474876] [global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794365436.988155319] [planner_server]: Created global planner plugin GridBased of type nav2_navfn_planner::NavfnPlanner
+[planner_server-6] [INFO] [1794365436.988188810] [planner_server]: Configuring plugin GridBased of type NavfnPlanner
+[planner_server-6] [INFO] [1794365436.989981545] [planner_server]: Planner Server has GridBased  planners available.
+[lifecycle_manager-3] [INFO] [1794365437.000752964] [lifecycle_manager_localization]: Server amcl connected with bond.
+[lifecycle_manager-3] [INFO] [1794365437.000792025] [lifecycle_manager_localization]: [34m[1mManaged nodes are active[0m[0m
+[lifecycle_manager-3] [INFO] [1794365437.000803935] [lifecycle_manager_localization]: [34m[1mCreating bond timer...[0m[0m
+[lifecycle_manager-13] [INFO] [1794365437.002023249] [lifecycle_manager_navigation]: [34m[1mConfiguring route_server[0m[0m
+[route_server-7] [INFO] [1794365437.002347255] [route_server]: Configuring
+[route_server-7] [INFO] [1794365437.035599770] [route_server]: Created GraphFileLoader GeoJsonGraphFileLoader of type nav2_route::GeoJsonGraphFileLoader
+[route_server-7] [INFO] [1794365437.035638661] [route_server]: Configuring geojson graph file loader
+[route_server-7] [INFO] [1794365437.035647561] [route_server]: No graph file provided to load yet.
+[route_server-7] [INFO] [1794365437.040951304] [route_server]: Created edge cost function plugin DistanceScorer of type nav2_route::DistanceScorer
+[route_server-7] [INFO] [1794365437.040990295] [route_server]: Configuring distance scorer.
+[route_server-7] [INFO] [1794365437.041642437] [route_server]: Created edge cost function plugin DynamicEdgesScorer of type nav2_route::DynamicEdgesScorer
+[route_server-7] [INFO] [1794365437.041667508] [route_server]: Configuring adjust edges scorer.
+[amcl-2] [INFO] [1794365437.042456223] [amcl]: Received a 693 X 845 map @ 0.050 m/pix
+[route_server-7] [INFO] [1794365437.047291567] [route_server]: Created route operation AdjustSpeedLimit of type nav2_route::AdjustSpeedLimit
+[route_server-7] [INFO] [1794365437.047333407] [route_server]: Configuring Adjust speed limit operation.
+[route_server-7] [INFO] [1794365437.050396287] [route_server]: Created route operation ReroutingService of type nav2_route::ReroutingService
+[route_server-7] [INFO] [1794365437.050433448] [route_server]: Configuring Rerouting service operation.
+[lifecycle_manager-13] [INFO] [1794365437.054613139] [lifecycle_manager_navigation]: [34m[1mConfiguring behavior_server[0m[0m
+[behavior_server-8] [INFO] [1794365437.054839363] [behavior_server]: Configuring
+[behavior_server-8] [INFO] [1794365437.059474823] [behavior_server]: Creating behavior plugin spin of type nav2_behaviors::Spin
+[behavior_server-8] [INFO] [1794365437.060612815] [behavior_server]: Creating behavior plugin backup of type nav2_behaviors::BackUp
+[behavior_server-8] [INFO] [1794365437.061448051] [behavior_server]: Creating behavior plugin drive_on_heading of type nav2_behaviors::DriveOnHeading
+[behavior_server-8] [INFO] [1794365437.062216856] [behavior_server]: Creating behavior plugin wait of type nav2_behaviors::Wait
+[behavior_server-8] [INFO] [1794365437.071327163] [behavior_server]: Configuring spin
+[behavior_server-8] [INFO] [1794365437.083456388] [behavior_server]: Configuring backup
+[behavior_server-8] [INFO] [1794365437.090588047] [behavior_server]: Configuring drive_on_heading
+[behavior_server-8] [INFO] [1794365437.098199474] [behavior_server]: Configuring wait
+[lifecycle_manager-13] [INFO] [1794365437.104996566] [lifecycle_manager_navigation]: [34m[1mConfiguring velocity_smoother[0m[0m
+[velocity_smoother-11] [INFO] [1794365437.105195060] [velocity_smoother]: Configuring velocity smoother
+[lifecycle_manager-13] [INFO] [1794365437.112021152] [lifecycle_manager_navigation]: [34m[1mConfiguring collision_monitor[0m[0m
+[collision_monitor-12] [INFO] [1794365437.112280497] [collision_monitor]: Configuring
+[collision_monitor-12] [INFO] [1794365437.120920785] [collision_monitor]: [scan]: Creating Scan
+[collision_monitor-12] [INFO] [1794365437.124384152] [collision_monitor]: [FootprintApproach]: Creating Polygon
+[collision_monitor-12] [INFO] [1794365437.124858261] [collision_monitor]: [FootprintApproach]: Polygon points are not defined. Using dynamic subscription instead.
+[collision_monitor-12] [INFO] [1794365437.128354719] [collision_monitor]: [FootprintApproach]: Making footprint subscriber on local_costmap/published_footprint topic
+[amcl-2] [INFO] [1794365437.141633107] [amcl]: createLaserObject
+[lifecycle_manager-13] [INFO] [1794365437.142446493] [lifecycle_manager_navigation]: [34m[1mConfiguring bt_navigator[0m[0m
+[bt_navigator-9] [INFO] [1794365437.142678717] [bt_navigator]: Configuring
+[planner_server-6] [INFO] [1794365437.145477321] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 693 X 845 at 0.050000 m/pix
+[bt_navigator-9] [INFO] [1794365437.151520679] [bt_navigator]: Creating navigator id navigate_to_pose of type nav2_bt_navigator::NavigateToPoseNavigator
+[bt_navigator-9] [WARN] [1794365437.157786680] [bt_navigator]: Error_code parameters were not set. Using default values of: follow_path_error_code compute_path_error_code
+[bt_navigator-9] Make sure these match your BT and there are not other sources of error codes youreported to your application
+[bt_navigator-9] [INFO] [1794365437.244210547] [bt_navigator]: Creating navigator id navigate_through_poses of type nav2_bt_navigator::NavigateThroughPosesNavigator
+[lifecycle_manager-13] [INFO] [1794365437.276543054] [lifecycle_manager_navigation]: [34m[1mConfiguring waypoint_follower[0m[0m
+[waypoint_follower-10] [INFO] [1794365437.276778039] [waypoint_follower]: Configuring
+[amcl-2] [INFO] [1794365437.279954280] [amcl]: Message Filter dropping message: frame 'base_scan' at time 9.000 for reason 'the timestamp on the message is earlier than all the data in the transform cache'
+[waypoint_follower-10] [INFO] [1794365437.306608777] [waypoint_follower]: Created waypoint_task_executor : wait_at_waypoint of type nav2_waypoint_follower::WaitAtWaypoint
+[waypoint_follower-10] [INFO] [1794365437.307579186] [waypoint_follower]: Waypoint pause duration is set to zero, disabling task executor plugin.
+[lifecycle_manager-13] [INFO] [1794365437.308078336] [lifecycle_manager_navigation]: [34m[1mActivating controller_server[0m[0m
+[controller_server-4] [INFO] [1794365437.308264940] [controller_server]: Activating
+[controller_server-4] [INFO] [1794365437.308297890] [local_costmap.local_costmap]: Activating
+[controller_server-4] [INFO] [1794365437.308307370] [local_costmap.local_costmap]: Checking transform
+[controller_server-4] [INFO] [1794365437.308436653] [local_costmap.local_costmap]: start
+[controller_server-4] [INFO] [1794365437.509761499] [controller_server]: Activating controller: FollowPath of type regulated_pure_pursuit_controller::RegulatedPurePursuitController
+[controller_server-4] [INFO] [1794365437.509801989] [controller_server]: Creating bond (controller_server) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794365437.614745795] [lifecycle_manager_navigation]: Server controller_server connected with bond.
+[lifecycle_manager-13] [INFO] [1794365437.614788266] [lifecycle_manager_navigation]: [34m[1mActivating smoother_server[0m[0m
+[smoother_server-5] [INFO] [1794365437.615107662] [smoother_server]: Activating
+[smoother_server-5] [INFO] [1794365437.615152283] [smoother_server]: Creating bond (smoother_server) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794365437.719376485] [lifecycle_manager_navigation]: Server smoother_server connected with bond.
+[lifecycle_manager-13] [INFO] [1794365437.719422776] [lifecycle_manager_navigation]: [34m[1mActivating planner_server[0m[0m
+[planner_server-6] [INFO] [1794365437.719694771] [planner_server]: Activating
+[planner_server-6] [INFO] [1794365437.719754742] [global_costmap.global_costmap]: Activating
+[planner_server-6] [INFO] [1794365437.719768893] [global_costmap.global_costmap]: Checking transform
+[planner_server-6] [INFO] [1794365437.719903615] [global_costmap.global_costmap]: start
+[planner_server-6] [INFO] [1794365437.923468684] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[planner_server-6] [INFO] [1794365437.971244551] [planner_server]: Activating plugin GridBased of type NavfnPlanner
+[planner_server-6] [INFO] [1794365437.972385243] [planner_server]: Creating bond (planner_server) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794365438.075783419] [lifecycle_manager_navigation]: Server planner_server connected with bond.
+[lifecycle_manager-13] [INFO] [1794365438.075825670] [lifecycle_manager_navigation]: [34m[1mActivating route_server[0m[0m
+[route_server-7] [INFO] [1794365438.076107075] [route_server]: Activating
+[route_server-7] [INFO] [1794365438.076166147] [route_server]: Creating bond (route_server) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794365438.180071572] [lifecycle_manager_navigation]: Server route_server connected with bond.
+[lifecycle_manager-13] [INFO] [1794365438.180118333] [lifecycle_manager_navigation]: [34m[1mActivating behavior_server[0m[0m
+[behavior_server-8] [INFO] [1794365438.180406169] [behavior_server]: Activating
+[behavior_server-8] [INFO] [1794365438.180431519] [behavior_server]: Activating spin
+[behavior_server-8] [INFO] [1794365438.180441870] [behavior_server]: Activating backup
+[behavior_server-8] [INFO] [1794365438.180450330] [behavior_server]: Activating drive_on_heading
+[behavior_server-8] [INFO] [1794365438.180458410] [behavior_server]: Activating wait
+[behavior_server-8] [INFO] [1794365438.180470050] [behavior_server]: Creating bond (behavior_server) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794365438.286127760] [lifecycle_manager_navigation]: Server behavior_server connected with bond.
+[lifecycle_manager-13] [INFO] [1794365438.286173771] [lifecycle_manager_navigation]: [34m[1mActivating velocity_smoother[0m[0m
+[velocity_smoother-11] [INFO] [1794365438.286527607] [velocity_smoother]: Activating
+[velocity_smoother-11] [INFO] [1794365438.286598759] [velocity_smoother]: Creating bond (velocity_smoother) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794365438.391646397] [lifecycle_manager_navigation]: Server velocity_smoother connected with bond.
+[lifecycle_manager-13] [INFO] [1794365438.391689688] [lifecycle_manager_navigation]: [34m[1mActivating collision_monitor[0m[0m
+[collision_monitor-12] [INFO] [1794365438.392153157] [collision_monitor]: Activating
+[collision_monitor-12] [INFO] [1794365438.392192447] [collision_monitor]: Creating bond (collision_monitor) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794365438.497783436] [lifecycle_manager_navigation]: Server collision_monitor connected with bond.
+[lifecycle_manager-13] [INFO] [1794365438.497826687] [lifecycle_manager_navigation]: [34m[1mActivating bt_navigator[0m[0m
+[bt_navigator-9] [INFO] [1794365438.498175183] [bt_navigator]: Activating
+[bt_navigator-9] [INFO] [1794365438.567701942] [bt_navigator]: Creating bond (bt_navigator) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794365438.672995315] [lifecycle_manager_navigation]: Server bt_navigator connected with bond.
+[lifecycle_manager-13] [INFO] [1794365438.673041176] [lifecycle_manager_navigation]: [34m[1mActivating waypoint_follower[0m[0m
+[waypoint_follower-10] [INFO] [1794365438.673364042] [waypoint_follower]: Activating
+[waypoint_follower-10] [INFO] [1794365438.673426473] [waypoint_follower]: Creating bond (waypoint_follower) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794365438.778576253] [lifecycle_manager_navigation]: Server waypoint_follower connected with bond.
+[lifecycle_manager-13] [INFO] [1794365438.778619564] [lifecycle_manager_navigation]: [34m[1mManaged nodes are active[0m[0m
+[lifecycle_manager-13] [INFO] [1794365438.778647894] [lifecycle_manager_navigation]: [34m[1mCreating bond timer...[0m[0m
+[amcl-2] [WARN] [1794365438.937921284] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[amcl-2] [WARN] [1794365441.134368265] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[controller_server-4] [WARN] [1794365442.492592594] [local_costmap.local_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [WARN] [1794365442.492617805] [global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [INFO] [1794365443.123310737] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[amcl-2] [WARN] [1794365443.149890323] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[amcl-2] [WARN] [1794365445.348522862] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[amcl-2] [WARN] [1794365447.568439744] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794365448.123318287] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[controller_server-4] [WARN] [1794365448.492532363] [local_costmap.local_costmap]: semantic label_info received bytes=220 valid=1 why=
+[planner_server-6] [WARN] [1794365448.492553343] [global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[amcl-2] [WARN] [1794365449.740329275] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[amcl-2] [WARN] [1794365451.747646867] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794365453.123319677] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[planner_server-6] [WARN] [1794365453.492713686] [global_costmap.global_costmap]: semantic label_info received bytes=220 valid=1 why=
+[controller_server-4] [WARN] [1794365453.492713676] [local_costmap.local_costmap]: semantic label_info received bytes=220 valid=1 why=
+[amcl-2] [WARN] [1794365453.947291876] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[amcl-2] [WARN] [1794365456.146052597] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...

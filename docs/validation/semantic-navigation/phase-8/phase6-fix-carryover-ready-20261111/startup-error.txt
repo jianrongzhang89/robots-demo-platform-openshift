@@ -1,0 +1,13 @@
+oc exec -n semantic-navigation semantic-phase8-nav2 -c nav2 -- bash -lc source /opt/ros/jazzy/setup.bash; source /opt/rmf_demos_ws/install/setup.bash; python3 /phase8/phase8_semantic_trial.py --trial phase8-preflight --preflight-only failed (1): Traceback (most recent call last):
+  File "/phase8/phase8_semantic_trial.py", line 225, in <module>
+    main()
+  File "/phase8/phase8_semantic_trial.py", line 218, in main
+    trial.run()
+  File "/phase8/phase8_semantic_trial.py", line 182, in run
+    super().run()
+  File "/phase8/..2026_11_11_02_35_42.2206502775/run_phase6_demo_d2_trial.py", line 581, in run
+    self.verify_motion_bridge()
+  File "/phase8/..2026_11_11_02_35_42.2206502775/run_phase6_demo_d2_trial.py", line 297, in verify_motion_bridge
+    raise RuntimeError("motion bridge DDS reader missing on /cmd_vel; "
+RuntimeError: motion bridge DDS reader missing on /cmd_vel; repair the bridge before dispatch
+command terminated with exit code 1

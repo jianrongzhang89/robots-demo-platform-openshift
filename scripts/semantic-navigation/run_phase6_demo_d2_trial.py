@@ -557,6 +557,18 @@ class Trial:
                 "clearance_envelope_intersection": enters_clearance_envelope,
                 "path_map_xy": [[round(x, 4), round(y, 4)] for x, y in points]}
 
+    def dispatch_navigation(self, goal):
+        """Dispatch locally; RMF demos override this while retaining all gates."""
+        send_future = self.action.send_goal_async(goal)
+        rclpy.spin_until_future_complete(self.node, send_future, timeout_sec=15)
+        handle = send_future.result()
+        if handle is None or not handle.accepted:
+            raise RuntimeError("Nav2 rejected the D2 goal")
+        return handle
+
+    def dispatch_evidence(self):
+        return {}
+
     def run(self):
         self.verify_semantic_arm()
         self.wait_until(lambda: self.latest_odom is not None, 20,
@@ -614,11 +626,7 @@ class Trial:
             goal.pose = self.goal_poses()[0]
         sent_wall = time.time()
         last_sample_xy = (map_x, map_y)
-        send_future = self.action.send_goal_async(goal)
-        rclpy.spin_until_future_complete(self.node, send_future, timeout_sec=15)
-        handle = send_future.result()
-        if handle is None or not handle.accepted:
-            raise RuntimeError("Nav2 rejected the D2 goal")
+        handle = self.dispatch_navigation(goal)
         result_future = handle.get_result_async()
         deadline = time.monotonic() + self.args.timeout
         last_sample = 0.0
@@ -810,6 +818,7 @@ class Trial:
             "controller_path_xy": plan_points,
             "trajectory_map_xyv": self.trajectory,
         }
+        result.update(self.dispatch_evidence())
         if self.args.summary_only:
             result["path_preflight"].pop("path_map_xy", None)
             result.pop("controller_path_xy", None)

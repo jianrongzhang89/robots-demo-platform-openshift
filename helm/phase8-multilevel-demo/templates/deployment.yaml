@@ -1,0 +1,169 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phase8-multilevel-hotel
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: phase8-multilevel-hotel
+    app.kubernetes.io/part-of: semantic-navigation-phase8
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+  selector:
+    matchLabels: {app: phase8-multilevel-hotel}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/serving-config.yaml") . | sha256sum }}
+      labels:
+        app: phase8-multilevel-hotel
+        app.kubernetes.io/part-of: semantic-navigation-phase8
+        semantic-navigation.robots-demo/phase: phase8-multilevel
+        semantic-serving-client: {{ .Values.serving.modelName | quote }}
+    spec:
+      serviceAccountName: default
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: hotel-nav2-rmf
+          image: {{ .Values.image | quote }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          command: ["/entrypoint-hotel-nav2-rmf.sh"]
+          ports:
+            - {name: novnc, containerPort: 6080, protocol: TCP}
+          env:
+            - {name: ROS_DISTRO, value: jazzy}
+            - {name: ROS_DOMAIN_ID, value: {{ .Values.rosDomainId | quote }}}
+            - {name: RMW_IMPLEMENTATION, value: rmw_cyclonedds_cpp}
+            - {name: GZ_PARTITION, value: {{ .Values.partition | quote }}}
+            - {name: PHASE8_MULTILEVEL_SEMANTIC, value: "1"}
+            - {name: CYCLONEDDS_URI, value: file:///phase8-config/cyclonedds.xml}
+            - {name: ROS_LOG_DIR, value: /tmp/ros-home/.ros/log}
+            - name: NAV2_PARAMS
+              value: /opt/ros2-demo/config/nav2/hotel_nav2_params_phase8_multilevel.yaml
+            - name: HOTEL_MAP_TEMPLATE
+              value: "/opt/ros2-demo/maps/hotel_{level}.yaml"
+            - {name: INITIAL_X, value: {{ .Values.initialPose.xCoord | quote }}}
+            - {name: INITIAL_Y, value: {{ .Values.initialPose.yCoord | quote }}}
+            - {name: INITIAL_YAW, value: {{ .Values.initialPose.yawRad | quote }}}
+            - {name: PHASE8_MAT_X, value: {{ .Values.semanticMat.x | quote }}}
+            - {name: PHASE8_MAT_Y, value: {{ .Values.semanticMat.y | quote }}}
+            - {name: PHASE8_MAT_YAW, value: {{ .Values.semanticMat.yawRad | quote }}}
+            - {name: PHASE8_MAT_SIZE_X, value: {{ .Values.semanticMat.sizeX | quote }}}
+            - {name: PHASE8_MAT_SIZE_Y, value: {{ .Values.semanticMat.sizeY | quote }}}
+            - {name: RESOLUTION, value: "1600x900x24"}
+          volumeMounts:
+            - {name: serving-config, mountPath: /opt/ros2-demo/scripts/lift_request_relay.py, subPath: lift_request_relay.py, readOnly: true}
+            - {name: serving-config, mountPath: /opt/ros2-demo/scripts/phase8_sim_odometry.py, subPath: phase8_sim_odometry.py, readOnly: true}
+            - {name: serving-config, mountPath: /opt/ros2-demo/scripts/phase8_lift_maps.py, subPath: phase8_lift_maps.py, readOnly: true}
+            - {name: serving-config, mountPath: /opt/ros2-demo/scripts/phase8_lift_payload.py, subPath: phase8_lift_payload.py, readOnly: true}
+            - {name: serving-config, mountPath: /opt/ros2-demo/scripts/support_geometry.py, subPath: support_geometry.py, readOnly: true}
+            - {name: serving-config, mountPath: /opt/ros2-demo/scripts/odom_tf_authority.py, subPath: odom_tf_authority.py, readOnly: true}
+            - {name: serving-config, mountPath: /opt/ros2-demo/scripts/local_nav2_fleet_adapter.py, subPath: local_nav2_fleet_adapter.py, readOnly: true}
+            - {name: serving-config, mountPath: /opt/ros2-demo/scripts/phase8_physics_monitor.py, subPath: phase8_physics_monitor.py, readOnly: true}
+            - {name: serving-config, mountPath: /phase8-config, readOnly: true}
+            - {name: serving-config, mountPath: /opt/ros2-demo/config/nav2/hotel_nav2_params_phase8_multilevel.yaml, subPath: hotel_nav2_params_phase8_multilevel.yaml, readOnly: true}
+            - {name: serving-config, mountPath: /opt/ros2-demo/config/nav2/phase8_preserve_semantics.xml, subPath: phase8_preserve_semantics.xml, readOnly: true}
+            - {name: serving-status, mountPath: /phase8-status, readOnly: true}
+            - name: serving-config
+              mountPath: /opt/ros2-demo/config/phase8-rgbd-camera-bridge.yaml
+              subPath: rgbd-camera-bridge.yaml
+              readOnly: true
+            - name: serving-config
+              mountPath: /entrypoint-hotel-nav2-rmf.sh
+              subPath: entrypoint-hotel-nav2-rmf.sh
+              readOnly: true
+            - name: serving-config
+              mountPath: /opt/ros2-demo/scripts/local_nav2_fleet_adapter_contract.py
+              subPath: local_nav2_fleet_adapter_contract.py
+              readOnly: true
+            - name: serving-config
+              mountPath: /opt/ros2-demo/scripts/phase8_multilevel_trial.py
+              subPath: phase8_multilevel_trial.py
+              readOnly: true
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          readinessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -lc
+                - >-
+                  source /opt/ros/jazzy/setup.bash &&
+                  ros2 service list | grep -qx /robot_1/map_server/load_map &&
+                  ros2 action list | grep -qx /robot_1/navigate_to_pose
+            initialDelaySeconds: 120
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 30
+          livenessProbe:
+            exec:
+              command: ["/bin/bash", "-lc", "source /opt/ros/jazzy/setup.bash && ros2 topic list | grep -qx /clock"]
+            initialDelaySeconds: 180
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 10
+        - name: sam3-serving-client
+          image: {{ .Values.serving.adapterImage | quote }}
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/bash", "-lc"]
+          args:
+            - >-
+              source /opt/ros/jazzy/setup.bash;
+              exec python3 /phase8/phase8_sam3_http_policy.py
+              --ros-args -p backend:=http -p robot_id:=robot_1
+              -p stream_id:=camera/color -p input_prefix:=/robot_1/camera
+              -p output_prefix:=/robot_1/semantic
+          env:
+            - {name: ROS_DISTRO, value: jazzy}
+            - {name: ROS_DOMAIN_ID, value: {{ .Values.rosDomainId | quote }}}
+            - {name: RMW_IMPLEMENTATION, value: rmw_cyclonedds_cpp}
+            - {name: CYCLONEDDS_URI, value: file:///phase8/cyclonedds.xml}
+            - {name: SEMANTIC_BACKEND, value: http}
+            - {name: SEMANTIC_ENDPOINT, value: {{ .Values.serving.endpoint | quote }}}
+            - {name: SEMANTIC_TLS_CA, value: /phase8-tls/ca.crt}
+            - {name: SEMANTIC_TLS_CERT, value: /phase8-tls/tls.crt}
+            - {name: SEMANTIC_TLS_KEY, value: /phase8-tls/tls.key}
+            - {name: SEMANTIC_DEPLOYMENT_IDENTITY, value: /phase8/identity.json}
+            - {name: SEMANTIC_REQUIRE_CAPTURE_TRACE, value: "1"}
+            - {name: SEMANTIC_CLOCK_UNCERTAINTY_MS, value: "2"}
+            - {name: SEMANTIC_MAX_WORK_WAIT_MS, value: "40"}
+            - {name: SEMANTIC_STATUS_FILE, value: /phase8-status/semantic-status.json}
+            - {name: HOME, value: /tmp/phase8-sam3-home}
+            - {name: ROS_LOG_DIR, value: /tmp/phase8-sam3-logs}
+          volumeMounts:
+            - {name: serving-config, mountPath: /phase8, readOnly: true}
+            - {name: serving-tls, mountPath: /phase8-tls, readOnly: true}
+            - {name: serving-tmp, mountPath: /tmp}
+            - {name: serving-status, mountPath: /phase8-status}
+          resources:
+            requests: {cpu: "1", memory: 1Gi}
+            limits: {cpu: "2", memory: 2Gi}
+          readinessProbe:
+            exec:
+              command:
+                - python3
+                - -c
+                - >-
+                  import json,time;
+                  s=json.load(open('/phase8-status/semantic-status.json'));
+                  assert s['ready'] and s['backend']=='http' and
+                  s['deployment_identity']==json.load(open('/phase8/identity.json')) and
+                  0 <= time.time_ns()-s['status_wall_ns'] < 500000000
+            periodSeconds: 1
+            timeoutSeconds: 1
+            failureThreshold: 1
+      volumes:
+        - name: serving-config
+          configMap:
+            name: phase8-multilevel-serving-config
+            defaultMode: 493
+        - name: serving-tls
+          secret: {secretName: {{ .Values.serving.tlsSecret }}, defaultMode: 288}
+        - name: serving-tmp
+          emptyDir: {sizeLimit: 256Mi}
+        - name: serving-status
+          emptyDir: {sizeLimit: 16Mi}

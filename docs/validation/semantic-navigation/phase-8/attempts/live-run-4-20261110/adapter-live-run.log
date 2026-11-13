@@ -1,0 +1,73 @@
+[INFO] [1794335583.410754614] [robot_1_local_backend]: Waiting for Nav2 readiness: fresh_pose=False pose_age=None map=False shape=None global_costmap=False action_server=False
+[INFO] [1794335598.420538442] [robot_1_local_backend]: Waiting for Nav2 readiness: fresh_pose=False pose_age=None map=True shape=(693, 845) global_costmap=False action_server=True
+[INFO] [1794335600.672590118] [robot_1_local_backend]: RMF backend ready: fresh map-frame TF pose, map, and Nav2 action server
+[retreat_to_charger_interval] value is not provided, default to 10 seconds
+Finishing request: nothing
+Fleet is not configured to perform any finishing request
+Maximum delay is not provided, default to 10.0
+[INFO] [1794335600.719082079] [phase8_semantic_local_adapter]: Parameter [discovery_timeout] set to: 60.000000
+[INFO] [1794335600.730752058] [phase8_semantic_local_adapter]: Registering to query topic rmf_traffic/query_update_1
+[INFO] [1794335600.751802780] [phase8_semantic_local_adapter]: Mirror handling new sync of 1 queries from schedule node [eefd5dc0-7050-4ae9-89e7-5af56f1da666]
+[INFO] [1794335600.761612942] [phase8_semantic_local_adapter]: Fleet [phase8_semantic] is configured to perform delivery tasks
+[INFO] [1794335600.761654883] [phase8_semantic_local_adapter]: Fleet [phase8_semantic] is configured to perform patrol tasks
+[INFO] [1794335600.761794026] [phase8_semantic_local_adapter]: Finished configuring Easy Full Control adapter for fleet [phase8_semantic]
+[INFO] [1794335600.762542311] [phase8_semantic_local_adapter]: Adding robot [robot_1] to fleet [phase8_semantic].
+[INFO] [1794335600.762773255] [phase8_semantic_local_adapter]: Planning for [0] robot(s) and [0] request(s)
+[ERROR] [1794335600.762821336] [phase8_semantic_local_adapter]: [TaskPlanner] Failed to compute assignments for task_id []
+[INFO] [1794335600.767706212] [phase8_semantic_local_adapter]: Added a robot named [robot_1] with participant ID [0]
+[INFO] [1794335600.771101978] [phase8_semantic_local_adapter]: Successfully added robot [robot_1] to the fleet [phase8_semantic].
+[INFO] [1794335600.771152649] [robot_1_local_backend]: RMF robot registered: fleet=phase8_semantic robot=robot_1 map=L1 pose=[15.401999999999997, -31.594, 5.551115123125783e-16]
+[INFO] [1794335600.771974195] [phase8_semantic_local_adapter]: Charger waypoint for robot [phase8_semantic/robot_1] set to index [0]
+[INFO] [1794335620.731941332] [phase8_semantic_local_adapter]: Requesting new schedule update because update timed out
+[INFO] [1794335620.731994213] [phase8_semantic_local_adapter]: [rmf_traffic_ros2::MirrorManager::request_update] Requesting changes for query ID [1] since beginning of recorded history
+[INFO] [1794335630.796639394] [phase8_semantic_local_adapter]: Planning for [1] robot(s) and [0] request(s)
+[INFO] [1794335640.735871427] [phase8_semantic_local_adapter]: Requesting new schedule update because update timed out
+[INFO] [1794335640.735915618] [phase8_semantic_local_adapter]: [rmf_traffic_ros2::MirrorManager::request_update] Requesting changes for query ID [1] since version [1]
+[INFO] [1794335652.783058155] [phase8_semantic_local_adapter]: [Bidder] Received Bidding notice for task_id [compose.dispatch-9df0ddaafa]
+[INFO] [1794335652.783293280] [phase8_semantic_local_adapter]: Planning for [1] robot(s) and [1] request(s)
+[INFO] [1794335652.783520474] [phase8_semantic_local_adapter]: Submitted BidProposal to accommodate task [compose.dispatch-9df0ddaafa] by robot [robot_1] with new cost [0.000000]
+[INFO] [1794335654.783048281] [phase8_semantic_local_adapter]: Bid for task_id [compose.dispatch-9df0ddaafa] awarded to fleet [phase8_semantic]. Processing request...
+[INFO] [1794335654.784057221] [phase8_semantic_local_adapter]: Beginning next task [compose.dispatch-9df0ddaafa] for robot [phase8_semantic/robot_1]
+[INFO] [1794335654.784193234] [phase8_semantic_local_adapter]: Selecting a new go_to_place location from [1] choices for robot [phase8_semantic/robot_1]
+[INFO] [1794335654.784222074] [phase8_semantic_local_adapter]: Got distance from [1] as 33.333333
+[INFO] [1794335654.784273485] [phase8_semantic_local_adapter]: Planning for [phase8_semantic/robot_1] to [phase8_dropoff] from one of these locations:
+ -- lane 0: { L1 < 15.3738 -31.5914> [phase8_pickup] } -> { L1 < 19.402 -31.594> [phase8_dropoff] } | location < 15.402 -31.594> | orientation 0
+ -- lane 1: { L1 < 19.402 -31.594> [phase8_dropoff] } -> { L1 < 15.3738 -31.5914> [phase8_pickup] } | location < 15.402 -31.594> | orientation 0
+[INFO] [1794335654.784445869] [phase8_semantic_local_adapter]: Beginning new task [compose.dispatch-9df0ddaafa] for [phase8_semantic/robot_1]. Remaining queue size: 0
+[INFO] [1794335654.784505180] [phase8_semantic_local_adapter]: TaskAssignments updated for robots in fleet [phase8_semantic] to accommodate task_id [compose.dispatch-9df0ddaafa]
+[INFO] [1794335654.784915998] [phase8_semantic_local_adapter]: Executing go_to_place [phase8_dropoff] for robot [phase8_semantic/robot_1]
+[INFO] [1794335654.785950738] [robot_1_local_backend]: RMF navigate callback: map=L1 pose=[19.402, -31.594, 0.0]
+[INFO] [1794335660.936975229] [phase8_semantic_local_adapter]: Planning for [1] robot(s) and [0] request(s)
+[INFO] [1794335690.946970986] [phase8_semantic_local_adapter]: Planning for [1] robot(s) and [0] request(s)
+[INFO] [1794335703.891165956] [robot_1_local_backend]: RMF activity <rmf_adapter.robot_update_handle.ActivityIdentifier object at 0x7f3368577c70> finished after Nav2 success and pose validation
+[INFO] [1794335720.947166158] [phase8_semantic_local_adapter]: Planning for [1] robot(s) and [0] request(s)
+[INFO] [1794335723.895797577] [phase8_semantic_local_adapter]: Requesting new schedule update because update timed out
+[INFO] [1794335723.895838198] [phase8_semantic_local_adapter]: [rmf_traffic_ros2::MirrorManager::request_update] Requesting changes for query ID [1] since version [42]
+[INFO] [1794335743.895833157] [phase8_semantic_local_adapter]: Requesting new schedule update because update timed out
+[INFO] [1794335743.895873888] [phase8_semantic_local_adapter]: [rmf_traffic_ros2::MirrorManager::request_update] Requesting changes for query ID [1] since beginning of recorded history
+[INFO] [1794335750.946925881] [phase8_semantic_local_adapter]: Planning for [1] robot(s) and [0] request(s)
+[INFO] [1794335780.947095670] [phase8_semantic_local_adapter]: Planning for [1] robot(s) and [0] request(s)
+[INFO] [1794335783.366089820] [phase8_semantic_local_adapter]: Requesting new schedule update because update timed out
+[INFO] [1794335783.366146381] [phase8_semantic_local_adapter]: [rmf_traffic_ros2::MirrorManager::request_update] Requesting changes for query ID [1] since version [43]
+[INFO] [1794335803.366098679] [phase8_semantic_local_adapter]: Requesting new schedule update because update timed out
+[INFO] [1794335803.366146070] [phase8_semantic_local_adapter]: [rmf_traffic_ros2::MirrorManager::request_update] Requesting changes for query ID [1] since beginning of recorded history
+[INFO] [1794335808.383073477] [phase8_semantic_local_adapter]: [Bidder] Received Bidding notice for task_id [compose.dispatch-1523bca378]
+[INFO] [1794335808.383241061] [phase8_semantic_local_adapter]: Planning for [1] robot(s) and [1] request(s)
+[INFO] [1794335808.383512986] [phase8_semantic_local_adapter]: Submitted BidProposal to accommodate task [compose.dispatch-1523bca378] by robot [robot_1] with new cost [41.753247]
+[INFO] [1794335810.382997625] [phase8_semantic_local_adapter]: Bid for task_id [compose.dispatch-1523bca378] awarded to fleet [phase8_semantic]. Processing request...
+[INFO] [1794335810.383093777] [phase8_semantic_local_adapter]: Beginning next task [compose.dispatch-1523bca378] for robot [phase8_semantic/robot_1]
+[INFO] [1794335810.383242950] [phase8_semantic_local_adapter]: Selecting a new go_to_place location from [1] choices for robot [phase8_semantic/robot_1]
+[INFO] [1794335810.383266450] [phase8_semantic_local_adapter]: Got distance from [0] as 31.929661
+[INFO] [1794335810.383315191] [phase8_semantic_local_adapter]: Planning for [phase8_semantic/robot_1] to [phase8_pickup] from one of these locations:
+ -- lane 0: { L1 < 15.3738 -31.5914> [phase8_pickup] } -> { L1 < 19.402 -31.594> [phase8_dropoff] } | location < 19.2054 -31.5982> | orientation 0.975457
+ -- lane 1: { L1 < 19.402 -31.594> [phase8_dropoff] } -> { L1 < 15.3738 -31.5914> [phase8_pickup] } | location < 19.2054 -31.5982> | orientation 0.975457
+[INFO] [1794335810.383442024] [phase8_semantic_local_adapter]: Beginning new task [compose.dispatch-1523bca378] for [phase8_semantic/robot_1]. Remaining queue size: 0
+[INFO] [1794335810.383502365] [phase8_semantic_local_adapter]: TaskAssignments updated for robots in fleet [phase8_semantic] to accommodate task_id [compose.dispatch-1523bca378]
+[INFO] [1794335810.383885973] [phase8_semantic_local_adapter]: Executing go_to_place [phase8_pickup] for robot [phase8_semantic/robot_1]
+[INFO] [1794335810.384861783] [robot_1_local_backend]: RMF navigate callback: map=L1 pose=[15.3738, -31.5914, 3.139813608442444]
+[INFO] [1794335810.948948270] [phase8_semantic_local_adapter]: Planning for [1] robot(s) and [0] request(s)
+[INFO] [1794335824.199297486] [phase8_semantic_local_adapter]: Canceling go_to_place for robot [phase8_semantic/robot_1]
+[INFO] [1794335824.543409402] [robot_1_local_backend]: RMF stop confirmed: Nav2 cancellation terminal and measured velocity is zero
+[INFO] [1794335840.947854713] [phase8_semantic_local_adapter]: Planning for [1] robot(s) and [0] request(s)
+[INFO] [1794335844.205797017] [phase8_semantic_local_adapter]: Requesting new schedule update because update timed out
+[INFO] [1794335844.205849568] [phase8_semantic_local_adapter]: [rmf_traffic_ros2::MirrorManager::request_update] Requesting changes for query ID [1] since version [60]

@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "/phase8/phase8_semantic_trial.py", line 225, in <module>
+    main()
+  File "/phase8/phase8_semantic_trial.py", line 218, in main
+    trial.run()
+  File "/phase8/phase8_semantic_trial.py", line 182, in run
+    super().run()
+  File "/phase8/..2026_11_11_02_50_26.3999040716/run_phase6_demo_d2_trial.py", line 573, in run
+    self.verify_semantic_arm()
+  File "/phase8/..2026_11_11_02_50_26.3999040716/run_phase6_demo_d2_trial.py", line 484, in verify_semantic_arm
+    self.wait_until(lambda: self.semantic_counts["global"] is not None and
+  File "/phase8/..2026_11_11_02_50_26.3999040716/run_phase6_demo_d2_trial.py", line 384, in wait_until
+    raise TimeoutError(label)
+TimeoutError: fresh lethal semantic costs did not reach global costmap
+command terminated with exit code 1

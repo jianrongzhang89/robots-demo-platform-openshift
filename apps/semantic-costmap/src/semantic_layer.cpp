@@ -42,6 +42,7 @@ void SemanticLayer::onInitialize()
   declareParameter("topic_prefix", rclcpp::ParameterValue("/robot_1/semantic"));
   declareParameter("observation_lifetime", rclcpp::ParameterValue(1.0));
   declareParameter("static_obstacle_memory", rclcpp::ParameterValue(0.0));
+  declareParameter("static_scene_current_age", rclcpp::ParameterValue(0.0));
   declareParameter("max_capture_age", rclcpp::ParameterValue(0.5));
   declareParameter("target_cost", rclcpp::ParameterValue(200));
   declareParameter("optical_frame", rclcpp::ParameterValue(frame_));
@@ -53,12 +54,15 @@ void SemanticLayer::onInitialize()
   double ttl = param("observation_lifetime").as_double();
   double memory = param("static_obstacle_memory").as_double();
   double age = param("max_capture_age").as_double();
+  double current_age = param("static_scene_current_age").as_double();
   int cost = param("target_cost").as_int();
   min_height_ = param("min_height").as_double(); max_height_ = param("max_height").as_double();
   max_range_ = param("max_range").as_double(); frame_ = param("optical_frame").as_string();
   if (!std::isfinite(ttl) || ttl <= 0 || ttl > 5 || !std::isfinite(age) || age <= 0 || age > ttl ||
     !std::isfinite(memory) || memory < 0 || memory > 300 ||
     (memory > 0 && (memory < ttl || layered_costmap_->isRolling())) ||
+    !std::isfinite(current_age) || current_age < 0 ||
+    (current_age > 0 && (memory <= 0 || current_age < age || current_age > ttl)) ||
     cost < 1 || cost > 254 || !std::isfinite(min_height_) || !std::isfinite(max_height_) ||
     min_height_ > max_height_ || !std::isfinite(max_range_) || max_range_ <= 0 || frame_.empty())
   {throw std::invalid_argument("invalid semantic policy parameters");}
@@ -67,6 +71,9 @@ void SemanticLayer::onInitialize()
   // capture-time transformed observations populate it. Freshness/currentness
   // still use max_capture_age; all epoch, policy and lifecycle clears apply.
   memory_ns_ = int64_t(memory * 1e9);
+  // Static-scene opt-in: tolerate inter-update gaps separately from admission.
+  // Incoming masks/clouds still pass the unchanged max_capture_age gate.
+  current_age_ns_ = current_age > 0 ? int64_t(current_age * 1e9) : max_age_ns_;
   default_value_ = NO_INFORMATION;
   matchSize();
   std::string prefix = param("topic_prefix").as_string();
@@ -347,7 +354,7 @@ void SemanticLayer::expire()
     else {++it;}
   }
   current_ = active_ && labels_valid_ && last_wall_ > 0 &&
-    wall - last_wall_ + uncertainty_ns_ <= max_age_ns_ && sim >= last_stamp_ && sim - last_stamp_ <= max_age_ns_;
+    wall - last_wall_ + uncertainty_ns_ <= current_age_ns_ && sim >= last_stamp_ && sim - last_stamp_ <= current_age_ns_;
 }
 void SemanticLayer::updateBounds(double rx, double ry, double, double * minx, double * miny, double * maxx, double * maxy)
 {

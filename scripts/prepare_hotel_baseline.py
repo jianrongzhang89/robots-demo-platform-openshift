@@ -115,6 +115,32 @@ def prepare_world(source: Path, output: Path, x: float, y: float, yaw: float) ->
     tree.write(output, encoding="utf-8", xml_declaration=True)
 
 
+def add_phase8_semantic_scene(world_path: Path) -> None:
+    """Add the Phase 8 RGB-D sensor and route-blocking L1 red mat."""
+    sys.path.insert(0, str(Path(__file__).parent / "semantic-navigation"))
+    from install_phase1_camera import add_camera
+
+    add_camera(world_path)
+    tree = ET.parse(world_path)
+    world = tree.getroot().find("world")
+    if world is None:
+        raise ValueError("hotel world has no world element")
+    if world.find("model[@name='semantic_target_mat']") is not None:
+        raise ValueError("Phase 8 semantic mat already exists")
+    mat = ET.SubElement(world, "model", {"name": "semantic_target_mat"})
+    ET.SubElement(mat, "static").text = "true"
+    ET.SubElement(mat, "pose").text = "15.138498 -30.180363 0.005 0 0 0.184495"
+    link = ET.SubElement(mat, "link", {"name": "surface"})
+    visual = ET.SubElement(link, "visual", {"name": "visual"})
+    geometry = ET.SubElement(visual, "geometry")
+    ET.SubElement(geometry, "box")
+    ET.SubElement(geometry.find("box"), "size").text = "1.0 1.4 0.012"
+    material = ET.SubElement(visual, "material")
+    ET.SubElement(material, "ambient").text = "0.85 0.08 0.06 1"
+    ET.SubElement(material, "diffuse").text = "0.85 0.08 0.06 1"
+    tree.write(world_path, encoding="utf-8", xml_declaration=True)
+
+
 def prepare_maps(map_dir: Path, nav_graph_path: Path, output_dir: Path,
                  resolution: float) -> None:
     graph = yaml.safe_load(nav_graph_path.read_text())
@@ -195,6 +221,8 @@ def main() -> None:
     parser.add_argument("--robot-y", type=float, default=-31.594)
     parser.add_argument("--robot-yaw", type=float, default=0.0)
     parser.add_argument("--resolution", type=float, default=0.05)
+    parser.add_argument("--phase8-semantic", action="store_true",
+                        help="add the RGB-D camera and fixed L1 red mat for Phase 8")
     parser.add_argument("--commit", required=True)
     args = parser.parse_args()
 
@@ -202,6 +230,8 @@ def main() -> None:
     prepare_building(args.building, args.output / "hotel.building.yaml")
     prepare_world(args.world, args.output / "hotel.world",
                   args.robot_x, args.robot_y, args.robot_yaw)
+    if args.phase8_semantic:
+        add_phase8_semantic_scene(args.output / "hotel.world")
     prepare_maps(args.maps, args.nav_graph, args.output / "maps", args.resolution)
     if not args.nav_graph.is_file():
         raise FileNotFoundError(f"generated RMF graph not found: {args.nav_graph}")

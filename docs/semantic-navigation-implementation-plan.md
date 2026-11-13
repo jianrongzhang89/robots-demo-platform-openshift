@@ -1132,13 +1132,31 @@ qualification are future work if those capabilities are later requested. The
 Phase 7 demo acceptance and run procedure are in
 [`phase7-demo-signoff-20261110.md`](validation/semantic-navigation/phase-7/phase7-demo-signoff-20261110.md).
 
-### Phase 8 Optional RMF integration
+### Phase 8 Demo-scoped RMF integration
 
-**Entry:** phase 6 passes; phase 7 is needed only if dynamic prompts are included.
+**Goal:** demonstrate selected end-to-end use cases that show how semantic navigation works with RMF. This phase is for demonstrations of key functionality, not production deployment, operational qualification, or broad reliability claims.
 
-**Work and verification:** first dispatch the same single-floor semantic task through RMF without changing the navigation model. Verify itinerary handling for detours, task correlation, cancel, and truthful fault/completion status. Require 10/10 nominal single-floor tasks plus passing cancellation/fault tests before attempting lifts. Then test floor switching as a separate subgate: stop, clear old floor/model state, switch maps/localization, confirm fresh TF and observations, and resume.
+**Entry:** use the accepted Phase 6 demo configuration. Phase 7 is needed only when a selected demo includes dynamic prompts. Add floor switching only when multi-floor behavior is one of the agreed demo use cases.
 
-**Pass gate:** no bypass of RMF traffic authority, no old-floor costs after a switch, and no task reported complete after semantic failure. Require 10/10 representative multi-floor round trips and passing interrupted-transition tests before presenting multi-floor semantic capability. Evidence includes RMF task IDs, trajectories, map/policy transitions, and stop/restart logs. Roll back to the accepted single-floor demonstration if either subgate fails.
+**Work and verification:** dispatch a representative single-floor navigation task through RMF without changing the accepted navigation model. For a semantic-obstacle demonstration, capture the actual moving Nav2 plan and correlate it with live semantic costmap cells; a no-motion planner preflight alone is insufficient. Also demonstrate cancellation while moving. Record RMF task IDs, Nav2 action results, adapter completion/stop messages, poses, and route evidence. Add a floor transition or other scenario only when it is explicitly selected for demonstration.
+
+**Demo acceptance:** RMF dispatches the navigation activity; Nav2 and the adapter report navigation completion; cancellation reaches a terminal Nav2 state and measured zero velocity; and, when semantic obstacle avoidance is claimed, the captured moving plan demonstrably avoids the staged semantic obstacle. Unsupported or unshown scenarios are marked out of scope. These results demonstrate the selected use cases only and do not qualify production readiness, general multi-floor operation, or fleet-wide reliability.
+
+**November 10 implementation result:** RMF task dispatch/navigation and moving cancellation passed in the isolated Phase 8 topology. A Phase 8-only Zenoh bridge policy fix was required for velocity commands to reach Gazebo; the Phase 6 bridge ConfigMap was not changed. The viewer showed the robot crossing the staged red mat directly, and the moving plan was not captured. Semantic-costmap avoidance is therefore **not demonstrated**, despite accepted semantic observations, costmap merges, and a separate no-motion detour preflight. The dispatcher state sample also retained the navigation task as assigned after adapter activity completion, so completion evidence is based on the Nav2 result, adapter log, pose, and idle monitor rather than a clean dispatcher terminal-state transition. See the [demo-scoped sign-off record](validation/semantic-navigation/phase-8/phase8-demo-signoff-20261110.md) and its live-run evidence. Multi-leg delivery completion and floor transitions were not demonstrated.
+
+**November 11 carryover result:** Phase 8 now renders the accepted Phase 6 semantic-on image/configuration, retains fixed-obstacle memory and epoch-aware producer metadata, and reuses the Phase 6 live navigation gates around RMF task dispatch. Task `compose.dispatch-7f9faace79` completed through Nav2 and the adapter, with the fleet subsequently idle, 0.8105 m minimum physical hull clearance, and 83 captured global plans (70 while moving). This demonstrates semantic-costmap avoidance in the selected single-floor RMF demo. See the [carryover validation](validation/semantic-navigation/phase-8/phase6-fix-carryover-validated-20261111/README.md). Production and multi-floor qualification remain out of scope.
+
+**November 13 demo result — PASS:** The selected multi-level demo passed with
+one RMF-dispatched robot using OpenShift AI-served SAM3 semantic costs in Nav2.
+Task `patrol.dispatch-71ef8eb28b` completed L1 → L3 → L1, returned within
+0.019 m of `phase8_spawn`, and passed the independent audit for both floor
+transitions, lift support, semantic-plan mat clearance, and final pose.
+Minimum physical mat clearance was 0.625 m; moving semantic plans cleared the
+mat by at least 0.651 m. This satisfies the agreed demo acceptance for the
+selected key use cases. It is not production qualification or a general
+multi-floor, multi-robot, or fleet-reliability claim. See the [Phase 8 demo
+guide](validation/semantic-navigation/phase-8-demo/README.md) and the
+[demo-scoped sign-off record](validation/semantic-navigation/phase-8/phase8-demo-signoff-20261110.md).
 
 ## ONNX implementation branch
 

@@ -46,10 +46,11 @@ protected:
   int sequence{0};
   static void SetUpTestSuite() {if (!rclcpp::ok()) {rclcpp::init(0, nullptr);}}
   void SetUp() override {setup(false);}
-  void setup(bool rolling, double memory = 0.0) {
+  void setup(bool rolling, double memory = 0.0, double current_age = 0.0) {
     layer.reset(); map.reset(); tf.reset(); node.reset();
     node = std::make_shared<nav2_util::LifecycleNode>("phase4_test", "");
     node->declare_parameter("semantic.static_obstacle_memory", memory);
+    node->declare_parameter("semantic.static_scene_current_age", current_age);
     group = node->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
     tf = std::make_unique<tf2_ros::Buffer>(node->get_clock());
     geometry_msgs::msg::TransformStamped transform;
@@ -269,6 +270,21 @@ TEST_F(LayerTest, ResetBetweenBoundsAndCostsCannotRepaintOldRaster) {
   send(bundle()); update(); layer->reset();
   map->getCostmap()->setCost(0,0,0); layer->updateCosts(*map->getCostmap(),0,0,6,6);
   EXPECT_EQ(cost(0,0),0); EXPECT_EQ(layer->diagnostics()["cells"],0);
+}
+TEST_F(LayerTest, StaticSceneUpdateGapDoesNotRelaxCaptureAdmission) {
+  setup(false, 10.0, 1.0);
+  send(bundle()); update();
+  advance(0.01); auto delayed = bundle({2}, {1.25, 0.25, 1.0});
+  advance(0.6); send(delayed); update();
+  EXPECT_TRUE(layer->isCurrent());
+  EXPECT_EQ(cost(0,0), 200); EXPECT_EQ(cost(1,0), 0);
+  EXPECT_EQ(layer->diagnostics()["reason"], "wall_age");
+  advance(0.5); update(); EXPECT_FALSE(layer->isCurrent());
+  EXPECT_EQ(cost(0,0), 200);
+  layer->reset(); expectClear(); EXPECT_FALSE(layer->isCurrent());
+}
+TEST_F(LayerTest, StaticSceneGapRequiresStaticMemory) {
+  EXPECT_THROW(setup(false, 0.0, 1.0), std::invalid_argument);
 }
 TEST_F(LayerTest, PluginlibLoadsInstalledLayer) {
   pluginlib::ClassLoader<nav2_costmap_2d::Layer> loader("nav2_costmap_2d","nav2_costmap_2d::Layer");

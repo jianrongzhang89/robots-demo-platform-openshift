@@ -4,6 +4,7 @@ FROM --platform=linux/amd64 ros:jazzy@sha256:efbc8cb259b6346f1c8944ffd49d3fbffd6
 
 ARG RMF_DEMOS_COMMIT=3f7b9727ce39ba421ba5727eed9d8612f1c85f66
 ARG RMF_SIMULATION_COMMIT=ec6add4a842a5051a070fafb146208e7f2aa9742
+ARG PHASE8_MULTILEVEL_SEMANTIC=0
 ENV DEBIAN_FRONTEND=noninteractive ROS_DISTRO=jazzy
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -73,16 +74,25 @@ COPY scripts/patch_hotel_world_add_robot.py /tmp/patch_hotel_world_add_robot.py
 COPY scripts/patch_hotel_robot_physics.py /tmp/patch_hotel_robot_physics.py
 COPY scripts/patch_hotel_lift_wall_collisions.py /tmp/patch_hotel_lift_wall_collisions.py
 COPY scripts/hotel-build/create_stubs.py /tmp/create_hotel_stubs.py
+COPY scripts/semantic-navigation/install_phase1_camera.py /tmp/semantic-navigation/install_phase1_camera.py
+COPY scripts/semantic-navigation/SemanticCaptureTrace.hh /tmp/SemanticCaptureTrace.hh
+COPY scripts/semantic-navigation/gz-capture-trace.patch /tmp/gz-capture-trace.patch
 RUN mkdir -p /opt/ros2-demo/hotel-assets \
     && WORLD=$(find /opt/rmf_demos_ws -path '*/maps/hotel/hotel.world' -type f | head -1) \
     && BUILDING=$(find /opt/rmf_demos_ws -path '*/maps/hotel/hotel.building.yaml' -type f | head -1) \
     && GRAPH=$(find /opt/rmf_demos_ws -path '*/maps/hotel/nav_graphs/0.yaml' -type f | head -1) \
     && MAPS=$(dirname "${BUILDING}") \
-      && python3 /tmp/prepare_hotel_baseline.py \
-         --building "${BUILDING}" --world "${WORLD}" \
-         --maps "${MAPS}" \
-         --nav-graph "${GRAPH}" --output /opt/ros2-demo/hotel-assets \
-         --commit "${RMF_DEMOS_COMMIT}" \
+      && if [ "${PHASE8_MULTILEVEL_SEMANTIC}" = "1" ]; then \
+           python3 /tmp/prepare_hotel_baseline.py \
+             --building "${BUILDING}" --world "${WORLD}" --maps "${MAPS}" \
+             --nav-graph "${GRAPH}" --output /opt/ros2-demo/hotel-assets \
+             --commit "${RMF_DEMOS_COMMIT}" --phase8-semantic; \
+         else \
+           python3 /tmp/prepare_hotel_baseline.py \
+             --building "${BUILDING}" --world "${WORLD}" --maps "${MAPS}" \
+             --nav-graph "${GRAPH}" --output /opt/ros2-demo/hotel-assets \
+             --commit "${RMF_DEMOS_COMMIT}"; \
+         fi \
       && cp -a /opt/rmf_demos_ws/hotel-models /opt/ros2-demo/hotel-assets/models \
        && python3 /tmp/patch_hotel_robot_physics.py /opt/ros2-demo/hotel-assets/hotel.world \
       && python3 /tmp/patch_hotel_lift_wall_collisions.py /opt/ros2-demo/hotel-assets/hotel.world \
@@ -94,17 +104,23 @@ RUN mkdir -p /opt/ros2-demo/hotel-assets \
 
 COPY config/nav2 /opt/ros2-demo/config/nav2
 COPY config/cyclonedds/hotel-nav2-rmf.xml /opt/ros2-demo/config/cyclonedds.xml
+COPY scripts/semantic-navigation/rgbd-camera-timing-bridge.yaml /opt/ros2-demo/config/phase8-rgbd-camera-bridge.yaml
+COPY scripts/semantic-navigation/camera_compressor.py scripts/semantic-navigation/rgbd_pairing.py scripts/semantic-navigation/camera_qos.py /opt/ros2-demo/scripts/
 COPY config/rmf/fleet_config.hotel_nav2.yaml /opt/ros2-demo/rmf/fleet_config.yaml
-COPY scripts/local_nav2_fleet_adapter.py /opt/ros2-demo/scripts/local_nav2_fleet_adapter.py
+COPY scripts/local_nav2_fleet_adapter.py scripts/local_nav2_fleet_adapter_contract.py /opt/ros2-demo/scripts/
 COPY scripts/odom_tf_authority.py /opt/ros2-demo/scripts/odom_tf_authority.py
 COPY scripts/scan_frame_rewriter.py /opt/ros2-demo/scripts/scan_frame_rewriter.py
+COPY scripts/phase8_lift_payload.py scripts/phase8_lift_maps.py scripts/phase8_sim_odometry.py scripts/phase8_physics_monitor.py /opt/ros2-demo/scripts/phase8_lift_payload.py scripts/phase8_lift_maps.py scripts/phase8_sim_odometry.py scripts/phase8_physics_monitor.py
+COPY apps/semantic-safety/support_geometry.py /opt/ros2-demo/scripts/support_geometry.py
 COPY scripts/lift_request_relay.py /opt/ros2-demo/scripts/lift_request_relay.py
 COPY scripts/camera_follow_supervisor.py /opt/ros2-demo/scripts/camera_follow_supervisor.py
 COPY scripts/validate_hotel_baseline.py /opt/ros2-demo/scripts/validate_hotel_baseline.py
+COPY demo/phase8_multilevel_trial.py /opt/ros2-demo/scripts/phase8_multilevel_trial.py
 COPY entrypoints/entrypoint-hotel-nav2-rmf.sh /entrypoint-hotel-nav2-rmf.sh
 COPY scripts/turtlebot3_waffle.urdf /opt/ros2-demo/robot/turtlebot3_waffle.urdf
 COPY config/hotel/xorg-dummy.conf /etc/X11/xorg-dummy.conf
 COPY scripts/patch_nav2_disable_docking.py /tmp/patch_nav2_disable_docking.py
+COPY apps/semantic-costmap /tmp/phase8-semantic-costmap
 RUN mkdir -p /opt/ros2-demo/maps /opt/ros2-demo/rmf \
     && cp /opt/ros2-demo/hotel-assets/nav_graph.yaml /opt/ros2-demo/rmf/nav_graph.yaml \
     && cp /opt/ros2-demo/hotel-assets/maps/hotel_*.yaml /opt/ros2-demo/maps/ \
@@ -113,6 +129,38 @@ RUN mkdir -p /opt/ros2-demo/maps /opt/ros2-demo/rmf \
      && python3 /tmp/patch_nav2_disable_docking.py \
      && rm /tmp/patch_nav2_disable_docking.py \
      && chmod +x /entrypoint-hotel-nav2-rmf.sh /opt/ros2-demo/scripts/*.py
+
+# Build the semantic layer and render-time capture trace only into the
+# dedicated Phase 8 multi-level image. The canonical hotel image stays lean.
+RUN if [ "${PHASE8_MULTILEVEL_SEMANTIC}" = "1" ]; then \
+      apt-get update && apt-get install -y --no-install-recommends \
+        build-essential pkg-config python3-numpy python3-opencv \
+        libgz-sensors8-dev libssl-dev nlohmann-json3-dev \
+      && rm -rf /var/lib/apt/lists/* \
+      && mkdir -p /opt/semantic-costmap-ws/src \
+      && cp -a /tmp/phase8-semantic-costmap /opt/semantic-costmap-ws/src/demo_semantic_costmap \
+      && . /opt/ros/jazzy/setup.sh \
+      && colcon build --merge-install --base-paths /opt/semantic-costmap-ws/src \
+           --build-base /tmp/phase8-semantic-build --install-base /opt/semantic-costmap-ws/install \
+           --packages-select demo_semantic_costmap \
+           --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF \
+      && git clone https://github.com/gazebosim/gz-sensors.git /tmp/phase8-gz-sensors \
+      && git -C /tmp/phase8-gz-sensors checkout 9348f9fe8a11b9d50381819f51e17e136aedab8a \
+      && patch -d /tmp/phase8-gz-sensors -p1 < /tmp/gz-capture-trace.patch \
+      && cp /tmp/SemanticCaptureTrace.hh /tmp/phase8-gz-sensors/src/SemanticCaptureTrace.hh \
+      && mkdir -p /opt/semantic-navigation/capture-lib \
+      && g++ -std=c++17 -O2 -fPIC -shared -DRgbdCameraSensor_EXPORTS \
+           -I/tmp/phase8-gz-sensors -I/tmp/phase8-gz-sensors/src \
+           /tmp/phase8-gz-sensors/src/RgbdCameraSensor.cc \
+           $(pkg-config --cflags --libs gz-sensors8-camera gz-sensors8-rendering gz-common5-profiler) \
+           -lgz-sensors8-camera -lgz-sensors8-rendering \
+           -Wl,-z,defs -Wl,-soname,libgz-sensors8-rgbd_camera.so.8 \
+           -o /opt/semantic-navigation/capture-lib/libgz-sensors8-rgbd_camera.so.8 \
+      && ldd /opt/semantic-navigation/capture-lib/libgz-sensors8-rgbd_camera.so.8 \
+      && rm -rf /tmp/phase8-gz-sensors /tmp/phase8-semantic-costmap; \
+    elif [ "${PHASE8_MULTILEVEL_SEMANTIC}" != "0" ]; then \
+      echo "PHASE8_MULTILEVEL_SEMANTIC must be 0 or 1" >&2; exit 2; \
+    fi
 
 ENV GZ_SIM_RESOURCE_PATH=/opt/ros2-demo/hotel-assets/models:/opt/ros2-demo/hotel-assets:/opt/rmf_demos_ws/install/share/rmf_demos_assets/models \
     GZ_SIM_SYSTEM_PLUGIN_PATH=/opt/ros/jazzy/opt/gz_sim_vendor/lib/gz-sim-8/plugins \

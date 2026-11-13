@@ -203,7 +203,7 @@ If a fault causes fallback to RPP or geometry-only navigation, label it as degra
 | SAM3 semantic navigation | Follow phases 0–6 of the semantic implementation plan: runtime, camera, recognition, live inference, costmaps, safety, A/B | Each phase passes before the next; repeatable single-floor semantic benefit |
 | ONNX alternative | Follow stages O0–O3 using the same interfaces and evaluation | Suitable artifact, recognition, runtime, and navigation gates all pass |
 | Learned controller | Separately validate common geometry/safety, train/validate DUNE, harden NeuPAN, benchmark, and compare against RPP | Frame, geometry, cancellation, runtime, and comparison gates pass; not a dependency of semantic navigation |
-| Optional extensions | Semantic phase 7 for prompts and phase 8 for RMF/lifts | Fresh policy/floor state and verified traffic, cancellation, and fault behavior |
+| Optional extensions | Semantic phase 7 for prompts and phase 8 for selected RMF demo use cases | Demonstrate traffic-authorized task handling, cancellation, truthful fault status, and fresh floor state when multi-floor behavior is in the demo scope; not production qualification |
 
 Implementation would touch the robot SDF/URDF, simulator sensor bridge, per-robot Zenoh configuration, dedicated inference packaging, Nav2 image/launch parameter selection, and Helm resources. Add new evaluation configs rather than overwriting `hotel_nav2_params.yaml`. The current federated entrypoint hard-codes that filename, so profile selection needs an explicit launch/entrypoint change. Add isolated benchmark scripts and validation results under `docs/validation/`; no such implementation is included in this proposal.
 

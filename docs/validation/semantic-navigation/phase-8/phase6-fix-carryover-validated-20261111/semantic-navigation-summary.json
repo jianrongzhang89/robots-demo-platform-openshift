@@ -1,0 +1,142 @@
+{
+  "trial": "phase8-semantic-carryover-20261111",
+  "semantic_arm": "on",
+  "semantic_cells_cost254": {
+    "global": 1105,
+    "local": null
+  },
+  "semantic_global_cost254_updates": 74,
+  "semantic_global_cost254_min": 961,
+  "semantic_global_cost254_max": 1105,
+  "semantic_arm_state_confirmed": true,
+  "semantic_layer_enabled": true,
+  "amcl_initial_pose": {
+    "source": "initialpose_from_independent_gazebo_pose",
+    "frame_id": "map",
+    "map_xy_yaw": [
+      15.4098,
+      -31.5708,
+      -0.0082
+    ],
+    "gazebo_position_error_m": 0.0246,
+    "gazebo_yaw_error_rad": 0.0082
+  },
+  "amcl_dispatch_error_m_rad": [
+    0.0246,
+    0.0082
+  ],
+  "path_preflight": {
+    "planner_error_code": 0,
+    "planning_time_s": 0.0,
+    "mat_centerline_samples": 0,
+    "mat_centerline_intersection": false,
+    "minimum_hull_clearance_m": 0.6268,
+    "path_frame_id": "map",
+    "required_hull_clearance_m": 0.1,
+    "planning_clearance_m": 0.2,
+    "clearance_envelope_intersection": false
+  },
+  "dispatch_preflight": {
+    "planner_error_code": 0,
+    "planning_time_s": 0.0,
+    "mat_centerline_samples": 0,
+    "mat_centerline_intersection": false,
+    "minimum_hull_clearance_m": 0.6268,
+    "path_frame_id": "map",
+    "required_hull_clearance_m": 0.1,
+    "planning_clearance_m": 0.2,
+    "clearance_envelope_intersection": false
+  },
+  "goal_map": [
+    19.5,
+    -31.594
+  ],
+  "goal_yaw_rad": 0.0,
+  "via_map": [],
+  "navigation_action": "/navigate_to_pose",
+  "action_status": 4,
+  "succeeded": true,
+  "cap_breach": false,
+  "speed_limit_mps": 0.1,
+  "max_odom_speed_mps": 0.1,
+  "max_truth_speed_mps": 0.101,
+  "clearance_pose_source": "gazebo_model_pose",
+  "truth_liveness_breach": false,
+  "odom_liveness_breach": false,
+  "pose_alignment_breach": false,
+  "pose_time_alignment_breach": false,
+  "max_odom_truth_position_error_m": 0.0241,
+  "max_odom_truth_yaw_error_rad": 0.0247,
+  "max_cmd_speed_mps": 0.1,
+  "max_angular_speed_radps": 0.4485,
+  "max_wheel_angular_speed_radps": 0.45,
+  "collision_monitor_events": [],
+  "minimum_hull_clearance_m": 0.8105,
+  "clearance_monitor_triggered": false,
+  "global_plan_minimum_hull_clearance_m": 0.6268,
+  "global_plan_clearance_monitor_triggered": false,
+  "global_plan_frame_id": "map",
+  "global_plan_frame_error": null,
+  "required_hull_clearance_m": 0.1,
+  "mat_hull_overlap_detected": false,
+  "sim_duration_s": 88.0,
+  "wall_duration_s": 87.878,
+  "final_map_pose": [
+    19.4383,
+    -31.4125
+  ],
+  "speed_cap_messages": 881,
+  "steering_metrics": {
+    "angular_deadband_radps": 0.05,
+    "turn_direction_changes": 4,
+    "absolute_yaw_travel_rad": 8.9821,
+    "net_yaw_change_rad": -0.1683,
+    "extra_yaw_travel_rad": 8.8138
+  },
+  "controller_plan_frame_id": "base_footprint",
+  "navigation_dispatch": "OpenRMF task API",
+  "rmf_task_id": "compose.dispatch-7f9faace79",
+  "rmf_request_id": "a0a2dff4-e48e-4823-94d3-1f0b81eb9143",
+  "rmf_response": {
+    "state": {
+      "booking": {
+        "id": "compose.dispatch-7f9faace79",
+        "requester": "phase8-demo",
+        "unix_millis_earliest_start_time": null
+      },
+      "category": "compose",
+      "detail": {
+        "category": "go_to_place",
+        "phases": [
+          {
+            "activity": {
+              "category": "go_to_place",
+              "description": {
+                "one_of": [
+                  {
+                    "waypoint": "phase8_dropoff"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "dispatch": {
+        "errors": [],
+        "status": "queued"
+      },
+      "status": "queued",
+      "unix_millis_start_time": null
+    },
+    "success": true
+  },
+  "rmf_cancel_response": null,
+  "rmf_fleet_idle": true,
+  "rmf_task_seen_in_fleet": true,
+  "rmf_nav2_goals": {
+    "bad6f844141e4fb3a3c0fe6966fe6b88": 4
+  },
+  "captured_global_plan_count": 83,
+  "captured_moving_global_plan_count": 70
+}

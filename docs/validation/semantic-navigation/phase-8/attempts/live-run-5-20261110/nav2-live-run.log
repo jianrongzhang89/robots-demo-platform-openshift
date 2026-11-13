@@ -1,0 +1,354 @@
+[INFO] [launch]: All log files can be found below /tmp/phase6-nav2-logs/2026-11-10-18-49-35-046298-semantic-phase8-nav2-1
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [map_server-1]: process started with pid [109]
+[INFO] [amcl-2]: process started with pid [110]
+[INFO] [lifecycle_manager-3]: process started with pid [111]
+[INFO] [controller_server-4]: process started with pid [112]
+[INFO] [smoother_server-5]: process started with pid [113]
+[INFO] [planner_server-6]: process started with pid [114]
+[INFO] [route_server-7]: process started with pid [115]
+[INFO] [behavior_server-8]: process started with pid [116]
+[INFO] [bt_navigator-9]: process started with pid [117]
+[INFO] [waypoint_follower-10]: process started with pid [118]
+[INFO] [velocity_smoother-11]: process started with pid [119]
+[INFO] [collision_monitor-12]: process started with pid [120]
+[INFO] [lifecycle_manager-13]: process started with pid [121]
+[lifecycle_manager-3] [INFO] [1794336575.456629842] [lifecycle_manager_localization]: Creating
+[planner_server-6] [INFO] [1794336575.466480526] [planner_server]: 
+[planner_server-6] 	planner_server lifecycle node launched. 
+[planner_server-6] 	Waiting on external lifecycle transitions to activate
+[planner_server-6] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[behavior_server-8] [INFO] [1794336575.469608956] [behavior_server]: 
+[behavior_server-8] 	behavior_server lifecycle node launched. 
+[behavior_server-8] 	Waiting on external lifecycle transitions to activate
+[behavior_server-8] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[lifecycle_manager-3] [INFO] [1794336575.471347619] [lifecycle_manager_localization]: [34m[1mCreating and initializing lifecycle service clients[0m[0m
+[planner_server-6] [INFO] [1794336575.472807351] [planner_server]: Creating
+[amcl-2] [INFO] [1794336575.472844404] [amcl]: 
+[amcl-2] 	amcl lifecycle node launched. 
+[amcl-2] 	Waiting on external lifecycle transitions to activate
+[amcl-2] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[amcl-2] [INFO] [1794336575.473373294] [amcl]: Creating
+[route_server-7] [INFO] [1794336575.478650949] [route_server]: 
+[route_server-7] 	route_server lifecycle node launched. 
+[route_server-7] 	Waiting on external lifecycle transitions to activate
+[route_server-7] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[planner_server-6] [INFO] [1794336575.538721650] [global_costmap.global_costmap]: 
+[planner_server-6] 	global_costmap lifecycle node launched. 
+[planner_server-6] 	Waiting on external lifecycle transitions to activate
+[planner_server-6] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[planner_server-6] [INFO] [1794336575.543261238] [global_costmap.global_costmap]: Creating Costmap
+[lifecycle_manager-13] [INFO] [1794336575.557213226] [lifecycle_manager_navigation]: Creating
+[smoother_server-5] [INFO] [1794336575.564930547] [smoother_server]: 
+[smoother_server-5] 	smoother_server lifecycle node launched. 
+[smoother_server-5] 	Waiting on external lifecycle transitions to activate
+[smoother_server-5] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[smoother_server-5] [INFO] [1794336575.567804788] [smoother_server]: Creating smoother server
+[lifecycle_manager-13] [INFO] [1794336575.568799064] [lifecycle_manager_navigation]: [34m[1mCreating and initializing lifecycle service clients[0m[0m
+[bt_navigator-9] [INFO] [1794336575.573812768] [bt_navigator]: 
+[bt_navigator-9] 	bt_navigator lifecycle node launched. 
+[bt_navigator-9] 	Waiting on external lifecycle transitions to activate
+[bt_navigator-9] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[bt_navigator-9] [INFO] [1794336575.576566159] [bt_navigator]: Creating
+[controller_server-4] [INFO] [1794336575.581161371] [controller_server]: 
+[map_server-1] [INFO] [1794336575.582061670] [map_server]: 
+[map_server-1] 	map_server lifecycle node launched. 
+[map_server-1] 	Waiting on external lifecycle transitions to activate
+[map_server-1] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[map_server-1] [INFO] [1794336575.583152043] [map_server]: Creating
+[controller_server-4] 	controller_server lifecycle node launched. 
+[controller_server-4] 	Waiting on external lifecycle transitions to activate
+[controller_server-4] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[velocity_smoother-11] [INFO] [1794336575.585287157] [velocity_smoother]: 
+[velocity_smoother-11] 	velocity_smoother lifecycle node launched. 
+[velocity_smoother-11] 	Waiting on external lifecycle transitions to activate
+[velocity_smoother-11] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[controller_server-4] [INFO] [1794336575.590744755] [controller_server]: Creating controller server
+[waypoint_follower-10] [INFO] [1794336575.604041383] [waypoint_follower]: 
+[waypoint_follower-10] 	waypoint_follower lifecycle node launched. 
+[waypoint_follower-10] 	Waiting on external lifecycle transitions to activate
+[waypoint_follower-10] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[waypoint_follower-10] [INFO] [1794336575.607359217] [waypoint_follower]: Creating
+[controller_server-4] [INFO] [1794336575.608293099] [local_costmap.local_costmap]: 
+[controller_server-4] 	local_costmap lifecycle node launched. 
+[controller_server-4] 	Waiting on external lifecycle transitions to activate
+[controller_server-4] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[controller_server-4] [INFO] [1794336575.609869160] [local_costmap.local_costmap]: Creating Costmap
+[lifecycle_manager-3] [INFO] [1794336575.612671944] [lifecycle_manager_localization]: [34m[1mStarting managed nodes bringup...[0m[0m
+[lifecycle_manager-3] [INFO] [1794336575.613412331] [lifecycle_manager_localization]: [34m[1mConfiguring map_server[0m[0m
+[map_server-1] [INFO] [1794336575.648577055] [map_server]: Configuring
+[map_server-1] [INFO] [1794336575.648653351] [map_io]: Loading yaml file: /opt/ros2-demo/maps/hotel_L1.yaml
+[map_server-1] [INFO] [1794336575.648997137] [map_io]: resolution: 0.05
+[map_server-1] [INFO] [1794336575.649009968] [map_io]: origin[0]: 0
+[map_server-1] [INFO] [1794336575.649017818] [map_io]: origin[1]: -42.25
+[map_server-1] [INFO] [1794336575.649023159] [map_io]: origin[2]: 0
+[map_server-1] [INFO] [1794336575.649028909] [map_io]: free_thresh: 0.196
+[map_server-1] [INFO] [1794336575.649034420] [map_io]: occupied_thresh: 0.65
+[map_server-1] [INFO] [1794336575.649041950] [map_io]: mode: trinary
+[map_server-1] [INFO] [1794336575.649048081] [map_io]: negate: 0
+[map_server-1] [INFO] [1794336575.649332433] [map_io]: Loading image_file: /opt/ros2-demo/maps/hotel_L1.pgm
+[collision_monitor-12] [INFO] [1794336575.659834717] [collision_monitor]: 
+[collision_monitor-12] 	collision_monitor lifecycle node launched. 
+[collision_monitor-12] 	Waiting on external lifecycle transitions to activate
+[collision_monitor-12] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[map_server-1] [INFO] [1794336575.689868418] [map_io]: Read map /opt/ros2-demo/maps/hotel_L1.pgm: 693 X 845 map @ 0.05 m/cell
+[lifecycle_manager-3] [INFO] [1794336575.704869717] [lifecycle_manager_localization]: [34m[1mConfiguring amcl[0m[0m
+[amcl-2] [INFO] [1794336575.705078723] [amcl]: Configuring
+[amcl-2] [INFO] [1794336575.705173130] [amcl]: initTransforms
+[amcl-2] [INFO] [1794336575.736142912] [amcl]: initPubSub
+[amcl-2] [INFO] [1794336575.751063625] [amcl]: Subscribed to map topic.
+[lifecycle_manager-3] [INFO] [1794336575.760596175] [lifecycle_manager_localization]: [34m[1mActivating map_server[0m[0m
+[map_server-1] [INFO] [1794336575.760812062] [map_server]: Activating
+[map_server-1] [INFO] [1794336575.763602896] [map_server]: Creating bond (map_server) to lifecycle manager.
+[amcl-2] [INFO] [1794336575.765138803] [amcl]: Received a 693 X 845 map @ 0.050 m/pix
+[lifecycle_manager-13] [INFO] [1794336575.799512576] [lifecycle_manager_navigation]: [34m[1mStarting managed nodes bringup...[0m[0m
+[lifecycle_manager-13] [INFO] [1794336575.799597123] [lifecycle_manager_navigation]: [34m[1mConfiguring controller_server[0m[0m
+[controller_server-4] [INFO] [1794336575.801240679] [controller_server]: Configuring controller interface
+[controller_server-4] [INFO] [1794336575.801275461] [controller_server]: getting progress checker plugins..
+[controller_server-4] [INFO] [1794336575.801491268] [controller_server]: getting goal checker plugins..
+[controller_server-4] [INFO] [1794336575.801641489] [controller_server]: Controller frequency set to 20.0000Hz
+[controller_server-4] [INFO] [1794336575.801674412] [local_costmap.local_costmap]: Configuring
+[controller_server-4] [INFO] [1794336575.810700383] [local_costmap.local_costmap]: Using plugin "voxel_layer"
+[controller_server-4] [INFO] [1794336575.816766218] [local_costmap.local_costmap]: Subscribed to Topics: scan
+[controller_server-4] [INFO] [1794336575.825944091] [local_costmap.local_costmap]: Initialized plugin "voxel_layer"
+[controller_server-4] [INFO] [1794336575.825988244] [local_costmap.local_costmap]: Using plugin "semantic_layer"
+[controller_server-4] [INFO] [1794336575.833594747] [local_costmap.local_costmap]: Initialized plugin "semantic_layer"
+[controller_server-4] [INFO] [1794336575.833632290] [local_costmap.local_costmap]: Using plugin "inflation_layer"
+[controller_server-4] [INFO] [1794336575.834852023] [local_costmap.local_costmap]: Initialized plugin "inflation_layer"
+[controller_server-4] [INFO] [1794336575.856933255] [controller_server]: Created progress_checker : progress_checker of type nav2_controller::SimpleProgressChecker
+[controller_server-4] [INFO] [1794336575.857418852] [controller_server]: Controller Server has progress_checker  progress checkers available.
+[controller_server-4] [INFO] [1794336575.858062111] [controller_server]: Created goal checker : general_goal_checker of type nav2_controller::SimpleGoalChecker
+[controller_server-4] [INFO] [1794336575.858856612] [controller_server]: Controller Server has general_goal_checker  goal checkers available.
+[controller_server-4] [INFO] [1794336575.859659553] [controller_server]: Created controller : FollowPath of type nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController
+[controller_server-4] [INFO] [1794336575.868356660] [controller_server]: Controller Server has FollowPath  controllers available.
+[lifecycle_manager-3] [INFO] [1794336575.870084252] [lifecycle_manager_localization]: Server map_server connected with bond.
+[lifecycle_manager-3] [INFO] [1794336575.870125375] [lifecycle_manager_localization]: [34m[1mActivating amcl[0m[0m
+[amcl-2] [INFO] [1794336575.870399676] [amcl]: Activating
+[amcl-2] [INFO] [1794336575.870433609] [amcl]: Creating bond (amcl) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794336575.877624880] [lifecycle_manager_navigation]: [34m[1mConfiguring smoother_server[0m[0m
+[smoother_server-5] [INFO] [1794336575.877847337] [smoother_server]: Configuring smoother server
+[smoother_server-5] [INFO] [1794336575.890177281] [smoother_server]: Created smoother : simple_smoother of type nav2_smoother::SimpleSmoother
+[smoother_server-5] [INFO] [1794336575.891833538] [smoother_server]: Smoother Server has simple_smoother  smoothers available.
+[lifecycle_manager-13] [INFO] [1794336575.899036590] [lifecycle_manager_navigation]: [34m[1mConfiguring planner_server[0m[0m
+[planner_server-6] [INFO] [1794336575.899252886] [planner_server]: Configuring
+[planner_server-6] [INFO] [1794336575.899288299] [global_costmap.global_costmap]: Configuring
+[planner_server-6] [INFO] [1794336575.906452018] [global_costmap.global_costmap]: Using plugin "static_layer"
+[planner_server-6] [INFO] [1794336575.912752470] [global_costmap.global_costmap]: Subscribing to the map topic (/map) with transient local durability
+[planner_server-6] [INFO] [1794336575.914470542] [global_costmap.global_costmap]: Initialized plugin "static_layer"
+[planner_server-6] [INFO] [1794336575.914599382] [global_costmap.global_costmap]: Using plugin "obstacle_layer"
+[planner_server-6] [INFO] [1794336575.917648715] [global_costmap.global_costmap]: Subscribed to Topics: scan
+[planner_server-6] [INFO] [1794336575.925072764] [global_costmap.global_costmap]: Initialized plugin "obstacle_layer"
+[planner_server-6] [INFO] [1794336575.925113967] [global_costmap.global_costmap]: Using plugin "semantic_layer"
+[planner_server-6] [INFO] [1794336575.934145399] [global_costmap.global_costmap]: Initialized plugin "semantic_layer"
+[planner_server-6] [INFO] [1794336575.934342244] [global_costmap.global_costmap]: Using plugin "inflation_layer"
+[planner_server-6] [INFO] [1794336575.936396171] [global_costmap.global_costmap]: Initialized plugin "inflation_layer"
+[amcl-2] [INFO] [1794336575.946267898] [amcl]: createLaserObject
+[planner_server-6] [INFO] [1794336575.963675001] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 693 X 845 at 0.050000 m/pix
+[planner_server-6] [INFO] [1794336575.963723845] [planner_server]: Created global planner plugin GridBased of type nav2_navfn_planner::NavfnPlanner
+[planner_server-6] [INFO] [1794336575.963748387] [planner_server]: Configuring plugin GridBased of type NavfnPlanner
+[planner_server-6] [INFO] [1794336575.965634261] [planner_server]: Planner Server has GridBased  planners available.
+[lifecycle_manager-3] [INFO] [1794336575.975075774] [lifecycle_manager_localization]: Server amcl connected with bond.
+[lifecycle_manager-3] [INFO] [1794336575.975114137] [lifecycle_manager_localization]: [34m[1mManaged nodes are active[0m[0m
+[lifecycle_manager-3] [INFO] [1794336575.975193283] [lifecycle_manager_localization]: [34m[1mCreating bond timer...[0m[0m
+[lifecycle_manager-13] [INFO] [1794336575.977086358] [lifecycle_manager_navigation]: [34m[1mConfiguring route_server[0m[0m
+[route_server-7] [INFO] [1794336575.977317456] [route_server]: Configuring
+[route_server-7] [INFO] [1794336576.009240471] [route_server]: Created GraphFileLoader GeoJsonGraphFileLoader of type nav2_route::GeoJsonGraphFileLoader
+[route_server-7] [INFO] [1794336576.009282814] [route_server]: Configuring geojson graph file loader
+[route_server-7] [INFO] [1794336576.009291245] [route_server]: No graph file provided to load yet.
+[route_server-7] [INFO] [1794336576.013634028] [route_server]: Created edge cost function plugin DistanceScorer of type nav2_route::DistanceScorer
+[route_server-7] [INFO] [1794336576.013664380] [route_server]: Configuring distance scorer.
+[route_server-7] [INFO] [1794336576.014278227] [route_server]: Created edge cost function plugin DynamicEdgesScorer of type nav2_route::DynamicEdgesScorer
+[route_server-7] [INFO] [1794336576.014302809] [route_server]: Configuring adjust edges scorer.
+[route_server-7] [INFO] [1794336576.019703283] [route_server]: Created route operation AdjustSpeedLimit of type nav2_route::AdjustSpeedLimit
+[route_server-7] [INFO] [1794336576.019744496] [route_server]: Configuring Adjust speed limit operation.
+[route_server-7] [INFO] [1794336576.021207558] [route_server]: Created route operation ReroutingService of type nav2_route::ReroutingService
+[route_server-7] [INFO] [1794336576.021237160] [route_server]: Configuring Rerouting service operation.
+[lifecycle_manager-13] [INFO] [1794336576.024714166] [lifecycle_manager_navigation]: [34m[1mConfiguring behavior_server[0m[0m
+[behavior_server-8] [INFO] [1794336576.024937284] [behavior_server]: Configuring
+[behavior_server-8] [INFO] [1794336576.029823838] [behavior_server]: Creating behavior plugin spin of type nav2_behaviors::Spin
+[behavior_server-8] [INFO] [1794336576.030828545] [behavior_server]: Creating behavior plugin backup of type nav2_behaviors::BackUp
+[behavior_server-8] [INFO] [1794336576.031616545] [behavior_server]: Creating behavior plugin drive_on_heading of type nav2_behaviors::DriveOnHeading
+[behavior_server-8] [INFO] [1794336576.032353172] [behavior_server]: Creating behavior plugin wait of type nav2_behaviors::Wait
+[behavior_server-8] [INFO] [1794336576.039881738] [behavior_server]: Configuring spin
+[behavior_server-8] [INFO] [1794336576.047383113] [behavior_server]: Configuring backup
+[behavior_server-8] [INFO] [1794336576.052693160] [behavior_server]: Configuring drive_on_heading
+[behavior_server-8] [INFO] [1794336576.057968134] [behavior_server]: Configuring wait
+[lifecycle_manager-13] [INFO] [1794336576.063758427] [lifecycle_manager_navigation]: [34m[1mConfiguring velocity_smoother[0m[0m
+[velocity_smoother-11] [INFO] [1794336576.063972704] [velocity_smoother]: Configuring velocity smoother
+[lifecycle_manager-13] [INFO] [1794336576.070155827] [lifecycle_manager_navigation]: [34m[1mConfiguring collision_monitor[0m[0m
+[collision_monitor-12] [INFO] [1794336576.070364133] [collision_monitor]: Configuring
+[collision_monitor-12] [INFO] [1794336576.078521648] [collision_monitor]: [scan]: Creating Scan
+[collision_monitor-12] [INFO] [1794336576.081946140] [collision_monitor]: [FootprintApproach]: Creating Polygon
+[collision_monitor-12] [INFO] [1794336576.082314419] [collision_monitor]: [FootprintApproach]: Polygon points are not defined. Using dynamic subscription instead.
+[collision_monitor-12] [INFO] [1794336576.085309618] [collision_monitor]: [FootprintApproach]: Making footprint subscriber on local_costmap/published_footprint topic
+[lifecycle_manager-13] [INFO] [1794336576.098991236] [lifecycle_manager_navigation]: [34m[1mConfiguring bt_navigator[0m[0m
+[bt_navigator-9] [INFO] [1794336576.099250796] [bt_navigator]: Configuring
+[planner_server-6] [WARN] [1794336576.104721855] [global_costmap.global_costmap]: semantic observation rejected=1 accepted=0 reason=stale_or_wrong_identity pending=0
+[bt_navigator-9] [INFO] [1794336576.108411038] [bt_navigator]: Creating navigator id navigate_to_pose of type nav2_bt_navigator::NavigateToPoseNavigator
+[bt_navigator-9] [WARN] [1794336576.114843390] [bt_navigator]: Error_code parameters were not set. Using default values of: follow_path_error_code compute_path_error_code
+[bt_navigator-9] Make sure these match your BT and there are not other sources of error codes youreported to your application
+[bt_navigator-9] [INFO] [1794336576.200566777] [bt_navigator]: Creating navigator id navigate_through_poses of type nav2_bt_navigator::NavigateThroughPosesNavigator
+[lifecycle_manager-13] [INFO] [1794336576.232382594] [lifecycle_manager_navigation]: [34m[1mConfiguring waypoint_follower[0m[0m
+[waypoint_follower-10] [INFO] [1794336576.232628443] [waypoint_follower]: Configuring
+[waypoint_follower-10] [INFO] [1794336576.253221420] [waypoint_follower]: Created waypoint_task_executor : wait_at_waypoint of type nav2_waypoint_follower::WaitAtWaypoint
+[waypoint_follower-10] [INFO] [1794336576.254019901] [waypoint_follower]: Waypoint pause duration is set to zero, disabling task executor plugin.
+[lifecycle_manager-13] [INFO] [1794336576.254462275] [lifecycle_manager_navigation]: [34m[1mActivating controller_server[0m[0m
+[controller_server-4] [INFO] [1794336576.254653040] [controller_server]: Activating
+[controller_server-4] [INFO] [1794336576.254683152] [local_costmap.local_costmap]: Activating
+[controller_server-4] [INFO] [1794336576.254692313] [local_costmap.local_costmap]: Checking transform
+[controller_server-4] [INFO] [1794336576.254941292] [local_costmap.local_costmap]: start
+[amcl-2] [INFO] [1794336576.256760281] [amcl]: Message Filter dropping message: frame 'base_scan' at time 60.200 for reason 'the timestamp on the message is earlier than all the data in the transform cache'
+[controller_server-4] [INFO] [1794336576.455928087] [controller_server]: Activating controller: FollowPath of type regulated_pure_pursuit_controller::RegulatedPurePursuitController
+[controller_server-4] [INFO] [1794336576.455975580] [controller_server]: Creating bond (controller_server) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794336576.560191213] [lifecycle_manager_navigation]: Server controller_server connected with bond.
+[lifecycle_manager-13] [INFO] [1794336576.560258458] [lifecycle_manager_navigation]: [34m[1mActivating smoother_server[0m[0m
+[smoother_server-5] [INFO] [1794336576.560572033] [smoother_server]: Activating
+[smoother_server-5] [INFO] [1794336576.560605405] [smoother_server]: Creating bond (smoother_server) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794336576.664733221] [lifecycle_manager_navigation]: Server smoother_server connected with bond.
+[lifecycle_manager-13] [INFO] [1794336576.664786745] [lifecycle_manager_navigation]: [34m[1mActivating planner_server[0m[0m
+[planner_server-6] [INFO] [1794336576.665061096] [planner_server]: Activating
+[planner_server-6] [INFO] [1794336576.665102680] [global_costmap.global_costmap]: Activating
+[planner_server-6] [INFO] [1794336576.665115130] [global_costmap.global_costmap]: Checking transform
+[planner_server-6] [INFO] [1794336576.665143463] [global_costmap.global_costmap]: Timed out waiting for transform from base_footprint to map to become available, tf error: Invalid frame ID "map" passed to canTransform argument target_frame - frame does not exist
+[planner_server-6] [INFO] [1794336577.165219418] [global_costmap.global_costmap]: Timed out waiting for transform from base_footprint to map to become available, tf error: Invalid frame ID "map" passed to canTransform argument target_frame - frame does not exist
+[planner_server-6] [INFO] [1794336577.665238129] [global_costmap.global_costmap]: Timed out waiting for transform from base_footprint to map to become available, tf error: Invalid frame ID "map" passed to canTransform argument target_frame - frame does not exist
+[amcl-2] [WARN] [1794336577.747767580] [amcl]: AMCL cannot publish a pose or update the transform. Please set the initial pose...
+[planner_server-6] [INFO] [1794336578.165204286] [global_costmap.global_costmap]: Timed out waiting for transform from base_footprint to map to become available, tf error: Invalid frame ID "map" passed to canTransform argument target_frame - frame does not exist
+[planner_server-6] [INFO] [1794336578.665215046] [global_costmap.global_costmap]: Timed out waiting for transform from base_footprint to map to become available, tf error: Invalid frame ID "map" passed to canTransform argument target_frame - frame does not exist
+[planner_server-6] [INFO] [1794336579.165220126] [global_costmap.global_costmap]: Timed out waiting for transform from base_footprint to map to become available, tf error: Invalid frame ID "map" passed to canTransform argument target_frame - frame does not exist
+[amcl-2] [INFO] [1794336579.175171668] [amcl]: initialPoseReceived
+[amcl-2] [INFO] [1794336579.175293688] [amcl]: Setting pose (63.710000): 15.402 -31.594 0.000
+[planner_server-6] [INFO] [1794336579.665368957] [global_costmap.global_costmap]: start
+[planner_server-6] [INFO] [1794336579.868982924] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[planner_server-6] [INFO] [1794336579.916383775] [planner_server]: Activating plugin GridBased of type NavfnPlanner
+[planner_server-6] [INFO] [1794336579.917333777] [planner_server]: Creating bond (planner_server) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794336580.020585426] [lifecycle_manager_navigation]: Server planner_server connected with bond.
+[lifecycle_manager-13] [INFO] [1794336580.020630720] [lifecycle_manager_navigation]: [34m[1mActivating route_server[0m[0m
+[route_server-7] [INFO] [1794336580.020924332] [route_server]: Activating
+[route_server-7] [INFO] [1794336580.020993498] [route_server]: Creating bond (route_server) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794336580.124602604] [lifecycle_manager_navigation]: Server route_server connected with bond.
+[lifecycle_manager-13] [INFO] [1794336580.124641597] [lifecycle_manager_navigation]: [34m[1mActivating behavior_server[0m[0m
+[behavior_server-8] [INFO] [1794336580.124982353] [behavior_server]: Activating
+[behavior_server-8] [INFO] [1794336580.125005965] [behavior_server]: Activating spin
+[behavior_server-8] [INFO] [1794336580.125016406] [behavior_server]: Activating backup
+[behavior_server-8] [INFO] [1794336580.125025066] [behavior_server]: Activating drive_on_heading
+[behavior_server-8] [INFO] [1794336580.125033197] [behavior_server]: Activating wait
+[behavior_server-8] [INFO] [1794336580.125044618] [behavior_server]: Creating bond (behavior_server) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794336580.229134111] [lifecycle_manager_navigation]: Server behavior_server connected with bond.
+[lifecycle_manager-13] [INFO] [1794336580.229180264] [lifecycle_manager_navigation]: [34m[1mActivating velocity_smoother[0m[0m
+[velocity_smoother-11] [INFO] [1794336580.229513270] [velocity_smoother]: Activating
+[velocity_smoother-11] [INFO] [1794336580.229600717] [velocity_smoother]: Creating bond (velocity_smoother) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794336580.332859236] [lifecycle_manager_navigation]: Server velocity_smoother connected with bond.
+[lifecycle_manager-13] [INFO] [1794336580.332921391] [lifecycle_manager_navigation]: [34m[1mActivating collision_monitor[0m[0m
+[collision_monitor-12] [INFO] [1794336580.333246726] [collision_monitor]: Activating
+[collision_monitor-12] [INFO] [1794336580.333281368] [collision_monitor]: Creating bond (collision_monitor) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794336580.437300076] [lifecycle_manager_navigation]: Server collision_monitor connected with bond.
+[lifecycle_manager-13] [INFO] [1794336580.437348520] [lifecycle_manager_navigation]: [34m[1mActivating bt_navigator[0m[0m
+[bt_navigator-9] [INFO] [1794336580.437823696] [bt_navigator]: Activating
+[bt_navigator-9] [INFO] [1794336580.516237993] [bt_navigator]: Creating bond (bt_navigator) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794336580.623048834] [lifecycle_manager_navigation]: Server bt_navigator connected with bond.
+[lifecycle_manager-13] [INFO] [1794336580.623095008] [lifecycle_manager_navigation]: [34m[1mActivating waypoint_follower[0m[0m
+[waypoint_follower-10] [INFO] [1794336580.623394321] [waypoint_follower]: Activating
+[waypoint_follower-10] [INFO] [1794336580.623433534] [waypoint_follower]: Creating bond (waypoint_follower) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1794336580.729005101] [lifecycle_manager_navigation]: Server waypoint_follower connected with bond.
+[lifecycle_manager-13] [INFO] [1794336580.729044504] [lifecycle_manager_navigation]: [34m[1mManaged nodes are active[0m[0m
+[lifecycle_manager-13] [INFO] [1794336580.729053704] [lifecycle_manager_navigation]: [34m[1mCreating bond timer...[0m[0m
+[planner_server-6] [INFO] [1794336581.230432039] [global_costmap.global_costmap]: semantic observation accepted=10 rejected=25 projected_cells=885 sim_age_ms=360.00 wall_age_ms=366.23
+[planner_server-6] [INFO] [1794336584.869230734] [global_costmap.global_costmap]: semantic cost merge marked=885 merged=885 master_unknown=0 stored_cells=885 window=[0,0,693,845]
+[planner_server-6] [INFO] [1794336586.310892678] [global_costmap.global_costmap]: semantic observation accepted=44 rejected=26 projected_cells=885 sim_age_ms=350.00 wall_age_ms=344.17
+[planner_server-6] [INFO] [1794336589.869360483] [global_costmap.global_costmap]: semantic cost merge marked=885 merged=885 master_unknown=0 stored_cells=885 window=[0,0,693,845]
+[planner_server-6] [INFO] [1794336591.318934143] [global_costmap.global_costmap]: semantic observation accepted=78 rejected=26 projected_cells=885 sim_age_ms=350.00 wall_age_ms=351.17
+[planner_server-6] [INFO] [1794336595.069111653] [global_costmap.global_costmap]: semantic cost merge marked=885 merged=885 master_unknown=0 stored_cells=885 window=[0,0,693,845]
+[planner_server-6] [INFO] [1794336596.425623054] [global_costmap.global_costmap]: semantic observation accepted=113 rejected=26 projected_cells=885 sim_age_ms=260.00 wall_age_ms=262.43
+[planner_server-6] [INFO] [1794336600.069659580] [global_costmap.global_costmap]: semantic cost merge marked=885 merged=885 master_unknown=0 stored_cells=885 window=[0,0,693,845]
+[planner_server-6] [INFO] [1794336601.516193020] [global_costmap.global_costmap]: semantic observation accepted=146 rejected=26 projected_cells=885 sim_age_ms=350.00 wall_age_ms=348.56
+[bt_navigator-9] [INFO] [1794336602.953784875] [bt_navigator]: Begin navigating from current location (15.40, -31.59) to (15.40, -31.61)
+[controller_server-4] [INFO] [1794336602.974578829] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-4] [WARN] [1794336602.974629312] [controller_server]: No goal checker was specified in parameter 'current_goal_checker'. Server will use only plugin loaded general_goal_checker . This warning will appear once.
+[controller_server-4] [WARN] [1794336602.974640993] [controller_server]: No progress checker was specified in parameter 'current_progress_checker'. Server will use only plugin loaded progress_checker . This warning will appear once.
+[controller_server-4] [INFO] [1794336602.974723110] [controller_server]: Reached the goal!
+[bt_navigator-9] [INFO] [1794336603.004209399] [bt_navigator]: Goal succeeded
+[bt_navigator-9] [INFO] [1794336603.009599722] [bt_navigator]: Begin navigating from current location (15.40, -31.59) to (19.40, -31.59)
+[controller_server-4] [INFO] [1794336603.030467691] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-4] [INFO] [1794336604.180655996] [controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794336605.180653353] [controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794336605.269216799] [global_costmap.global_costmap]: semantic cost merge marked=839 merged=839 master_unknown=0 stored_cells=839 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794336606.230652642] [controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794336606.528959218] [global_costmap.global_costmap]: semantic observation accepted=178 rejected=27 projected_cells=790 sim_age_ms=250.00 wall_age_ms=256.54
+[controller_server-4] [INFO] [1794336607.230774359] [controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794336608.280661829] [controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794336609.280662377] [controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794336610.330691568] [controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794336610.468957032] [global_costmap.global_costmap]: semantic cost merge marked=871 merged=871 master_unknown=0 stored_cells=871 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794336611.330663714] [controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794336611.610765385] [global_costmap.global_costmap]: semantic observation accepted=212 rejected=27 projected_cells=646 sim_age_ms=230.00 wall_age_ms=238.33
+[controller_server-4] [INFO] [1794336612.380657592] [controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794336613.380653970] [controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794336614.430661409] [controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794336615.430687119] [controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794336615.469246514] [global_costmap.global_costmap]: semantic cost merge marked=648 merged=648 master_unknown=0 stored_cells=648 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794336616.480654970] [controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794336616.702924103] [global_costmap.global_costmap]: semantic observation accepted=247 rejected=27 projected_cells=0 sim_age_ms=220.00 wall_age_ms=231.35
+[controller_server-4] [INFO] [1794336617.480658543] [controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794336618.530660227] [controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794336619.530659110] [controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794336620.580844718] [controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794336620.668989433] [global_costmap.global_costmap]: semantic cost merge marked=508 merged=508 master_unknown=0 stored_cells=508 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794336621.580666917] [controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794336621.832790558] [global_costmap.global_costmap]: semantic observation accepted=280 rejected=27 projected_cells=477 sim_age_ms=230.00 wall_age_ms=240.34
+[controller_server-4] [INFO] [1794336622.630663601] [controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794336623.630657743] [controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794336624.680663297] [controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794336625.669209512] [global_costmap.global_costmap]: semantic cost merge marked=415 merged=415 master_unknown=0 stored_cells=415 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794336625.680675641] [controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794336626.680670173] [controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794336626.938189267] [global_costmap.global_costmap]: semantic observation accepted=315 rejected=27 projected_cells=304 sim_age_ms=330.00 wall_age_ms=346.82
+[controller_server-4] [INFO] [1794336627.730663006] [controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794336628.780678912] [controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794336629.780685325] [controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794336630.669250517] [global_costmap.global_costmap]: semantic cost merge marked=209 merged=209 master_unknown=0 stored_cells=209 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794336630.830664307] [controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794336631.830694212] [controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794336632.051224630] [global_costmap.global_costmap]: semantic observation accepted=351 rejected=27 projected_cells=154 sim_age_ms=250.00 wall_age_ms=259.14
+[controller_server-4] [INFO] [1794336632.880776340] [controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794336633.880678104] [controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794336634.930656894] [controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794336635.869093638] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794336635.930655635] [controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794336636.980681709] [controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794336637.145953402] [global_costmap.global_costmap]: semantic observation accepted=386 rejected=27 projected_cells=0 sim_age_ms=250.00 wall_age_ms=254.24
+[controller_server-4] [INFO] [1794336637.980656238] [controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794336639.030667860] [controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794336640.030659500] [controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794336641.068937904] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794336641.080681764] [controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794336642.080685905] [controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794336642.427856216] [global_costmap.global_costmap]: semantic observation accepted=420 rejected=28 projected_cells=0 sim_age_ms=330.00 wall_age_ms=336.51
+[controller_server-4] [INFO] [1794336643.130665305] [controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794336644.130663686] [controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794336645.180764986] [controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794336646.069101731] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794336646.180681060] [controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794336647.230666321] [controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794336647.518109539] [global_costmap.global_costmap]: semantic observation accepted=455 rejected=29 projected_cells=0 sim_age_ms=220.00 wall_age_ms=226.10
+[controller_server-4] [INFO] [1794336648.230889497] [controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794336649.280664733] [controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794336650.280674185] [controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794336651.268943067] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[controller_server-4] [INFO] [1794336651.330667938] [controller_server]: Passing new path to controller.
+[controller_server-4] [INFO] [1794336652.330665848] [controller_server]: Passing new path to controller.
+[planner_server-6] [INFO] [1794336652.717748585] [global_costmap.global_costmap]: semantic observation accepted=490 rejected=29 projected_cells=0 sim_age_ms=320.00 wall_age_ms=325.33
+[controller_server-4] [INFO] [1794336653.280701530] [controller_server]: Reached the goal!
+[bt_navigator-9] [INFO] [1794336653.309912189] [bt_navigator]: Goal succeeded
+[planner_server-6] [INFO] [1794336656.269078142] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[planner_server-6] [INFO] [1794336657.745530789] [global_costmap.global_costmap]: semantic observation accepted=524 rejected=29 projected_cells=0 sim_age_ms=350.00 wall_age_ms=353.45
+[planner_server-6] [INFO] [1794336661.469123870] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[planner_server-6] [INFO] [1794336662.828056250] [global_costmap.global_costmap]: semantic observation accepted=559 rejected=29 projected_cells=0 sim_age_ms=330.00 wall_age_ms=336.16
+[planner_server-6] [INFO] [1794336666.668922271] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[planner_server-6] [INFO] [1794336667.933983026] [global_costmap.global_costmap]: semantic observation accepted=595 rejected=29 projected_cells=0 sim_age_ms=240.00 wall_age_ms=242.82
+[planner_server-6] [INFO] [1794336671.668945929] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[planner_server-6] [INFO] [1794336672.939135068] [global_costmap.global_costmap]: semantic observation accepted=630 rejected=29 projected_cells=0 sim_age_ms=240.00 wall_age_ms=247.43
+[planner_server-6] [INFO] [1794336676.669106349] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[planner_server-6] [INFO] [1794336678.132038503] [global_costmap.global_costmap]: semantic observation accepted=665 rejected=29 projected_cells=0 sim_age_ms=330.00 wall_age_ms=340.07
+[planner_server-6] [INFO] [1794336681.868958675] [global_costmap.global_costmap]: semantic cost merge marked=0 merged=0 master_unknown=0 stored_cells=0 window=[0,0,693,845]
+[planner_server-6] [INFO] [1794336683.216419072] [global_costmap.global_costmap]: semantic observation accepted=701 rejected=29 projected_cells=0 sim_age_ms=320.00 wall_age_ms=324.64

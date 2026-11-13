@@ -1,0 +1,32 @@
+Traceback (most recent call last):
+  File "/Users/zhangj/devt/src/robots-demo-platform-openshift/scripts/semantic-navigation/phase8_topology.py", line 420, in <module>
+    else:
+    
+  File "/Users/zhangj/devt/src/robots-demo-platform-openshift/scripts/semantic-navigation/phase8_topology.py", line 413, in main
+    up_parser = sub.add_parser("up")
+        ^^^^^^^^
+  File "/Users/zhangj/devt/src/robots-demo-platform-openshift/scripts/semantic-navigation/phase8_topology.py", line 349, in up
+    probe = oc("exec", "-n", NAMESPACE, PHASE8_POD, "-c", "nav2", "--",
+               "bash", "-lc",
+    ...<2 lines>...
+               "python3 /phase8/phase8_semantic_trial.py --trial phase8-preflight --preflight-only",
+               timeout=90)
+  File "/Users/zhangj/devt/src/robots-demo-platform-openshift/scripts/semantic-navigation/phase8_topology.py", line 47, in oc
+    raise RuntimeError(
+    ...<2 lines>...
+    )
+RuntimeError: oc exec -n semantic-navigation semantic-phase8-nav2 -c nav2 -- bash -lc source /opt/ros/jazzy/setup.bash; source /opt/rmf_demos_ws/install/setup.bash; python3 /phase8/phase8_semantic_trial.py --trial phase8-preflight --preflight-only failed (1): Traceback (most recent call last):
+  File "/phase8/phase8_semantic_trial.py", line 206, in <module>
+    main()
+  File "/phase8/phase8_semantic_trial.py", line 199, in main
+    trial.run()
+  File "/phase8/phase8_semantic_trial.py", line 163, in run
+    super().run()
+  File "/phase8/..2026_11_11_02_32_31.1345597886/run_phase6_demo_d2_trial.py", line 573, in run
+    self.verify_semantic_arm()
+  File "/phase8/..2026_11_11_02_32_31.1345597886/run_phase6_demo_d2_trial.py", line 482, in verify_semantic_arm
+    self.verify_profile_parameters()
+  File "/phase8/..2026_11_11_02_32_31.1345597886/run_phase6_demo_d2_trial.py", line 472, in verify_profile_parameters
+    raise RuntimeError("velocity smoother parameters unavailable")
+RuntimeError: velocity smoother parameters unavailable
+command terminated with exit code 1

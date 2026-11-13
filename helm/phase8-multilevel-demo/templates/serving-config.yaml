@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: phase8-multilevel-serving-config
+  namespace: {{ .Values.namespace }}
+data:
+  identity.json: |-
+{{ .Files.Get .Values.serving.identityFile | indent 4 }}
+  phase8_sam3_http_policy.py: |-
+{{ .Files.Get "files/phase8_sam3_http_policy.py" | indent 4 }}
+  rgbd-camera-bridge.yaml: |-
+{{ .Files.Get "files/rgbd-camera-bridge.yaml" | indent 4 }}
+  entrypoint-hotel-nav2-rmf.sh: |-
+{{ .Files.Get "files/entrypoint-hotel-nav2-rmf.sh" | indent 4 }}
+  local_nav2_fleet_adapter_contract.py: |-
+{{ .Files.Get "files/local_nav2_fleet_adapter_contract.py" | indent 4 }}
+  phase8_multilevel_trial.py: |-
+{{ .Files.Get "files/phase8_multilevel_trial.py" | indent 4 }}
+  hotel_nav2_params_phase8_multilevel.yaml: |-
+{{ .Files.Get "files/hotel_nav2_params_phase8_multilevel.yaml" | indent 4 }}
+  phase8_preserve_semantics.xml: |-
+{{ .Files.Get "files/phase8_preserve_semantics.xml" | indent 4 }}
+  cyclonedds.xml: |-
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <CycloneDDS xmlns="https://cdds.io/config">
+      <Domain id="any">
+        <General><Interfaces><NetworkInterface name="lo" /></Interfaces><AllowMulticast>false</AllowMulticast></General>
+        <Discovery><ParticipantIndex>auto</ParticipantIndex><MaxAutoParticipantIndex>200</MaxAutoParticipantIndex></Discovery>
+        <Internal><SocketReceiveBufferSize min="128 KiB" max="4 MiB"/><NackDelay>1ms</NackDelay></Internal>
+      </Domain>
+    </CycloneDDS>
+  phase8_physics_monitor.py: |-
+{{ .Files.Get "files/phase8_physics_monitor.py" | indent 4 }}
+  local_nav2_fleet_adapter.py: |-
+{{ .Files.Get "files/local_nav2_fleet_adapter.py" | indent 4 }}
+  odom_tf_authority.py: |-
+{{ .Files.Get "files/odom_tf_authority.py" | indent 4 }}
+  support_geometry.py: |-
+{{ .Files.Get "files/support_geometry.py" | indent 4 }}
+  lift_request_relay.py: |-
+{{ .Files.Get "files/lift_request_relay.py" | indent 4 }}
+  phase8_sim_odometry.py: |-
+{{ .Files.Get "files/phase8_sim_odometry.py" | indent 4 }}
+  phase8_lift_maps.py: |-
+{{ .Files.Get "files/phase8_lift_maps.py" | indent 4 }}
+  phase8_lift_payload.py: |-
+{{ .Files.Get "files/phase8_lift_payload.py" | indent 4 }}

@@ -22,6 +22,7 @@ IMAGE_NAV2_REF := $(REGISTRY)/ros2-rmf-nav2:$(TAG)
 IMAGE_HOTEL_NAV2_RMF_REF := $(REGISTRY)/ros2-rmf-hotel-nav2-rmf:jazzy
 HOTEL_NAV2_RMF_TAG ?= canonical-20260925
 IMAGE_HOTEL_NAV2_RMF_CANONICAL_REF := $(REGISTRY)/ros2-rmf-hotel-nav2-rmf:$(HOTEL_NAV2_RMF_TAG)
+IMAGE_PHASE8_MULTILEVEL_REF ?= quay.io/jianrzha/ros2-rmf-hotel-nav2-rmf:phase8-multilevel-semantic-20261111
 HOTEL_NAV2_RMF_NS ?= ros2-rmf-hotel
 OPENSHIFT_RMF_IMAGE ?= image-registry.openshift-image-registry.svc:5000/$(HOTEL_NAV2_RMF_NS)/rmf-image:latest
 HOTEL_NAV2_RMF_ROBOT ?= robot_1
@@ -157,6 +158,24 @@ push-hotel-nav2-rmf-canonical: ## Push the immutable canonical hotel Nav2/RMF im
 
 .PHONY: build-push-hotel-nav2-rmf-canonical
 build-push-hotel-nav2-rmf-canonical: build-hotel-nav2-rmf-canonical push-hotel-nav2-rmf-canonical ## Build and push the canonical hotel image
+
+.PHONY: build-phase8-multilevel-image
+build-phase8-multilevel-image: ## Build the lift-enabled Phase 8 image with the semantic costmap and RGB-D capture trace
+	$(PODMAN) build --platform linux/amd64 --build-arg PHASE8_MULTILEVEL_SEMANTIC=1 \
+	  -t $(IMAGE_PHASE8_MULTILEVEL_REF) -f Containerfile.hotel-nav2-rmf .
+
+.PHONY: push-phase8-multilevel-image
+push-phase8-multilevel-image: ## Push the Phase 8 multi-level image
+	$(PODMAN) push $(IMAGE_PHASE8_MULTILEVEL_REF)
+
+.PHONY: build-push-phase8-multilevel-image
+build-push-phase8-multilevel-image: build-phase8-multilevel-image push-phase8-multilevel-image ## Build and push the Phase 8 multi-level image
+
+.PHONY: deploy-phase8-multilevel-demo
+deploy-phase8-multilevel-demo: ## Deploy the single-robot Phase 8 multi-level demo with OpenShift AI SAM3 serving
+	helm upgrade --install phase8-multilevel ./helm/phase8-multilevel-demo \
+	  --namespace semantic-navigation $(if $(PHASE8_MULTILEVEL_DEPLOY_IMAGE),--set image=$(PHASE8_MULTILEVEL_DEPLOY_IMAGE)) \
+	  --wait --timeout 20m
 
 .PHONY: deploy-hotel-nav2-rmf-canonical
 deploy-hotel-nav2-rmf-canonical: ## Deploy the canonical hotel Nav2/RMF image

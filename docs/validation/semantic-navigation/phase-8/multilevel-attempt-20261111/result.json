@@ -1,0 +1,19 @@
+{
+  "status": "FAIL",
+  "task_id": "patrol.dispatch-8e3f89d06b",
+  "motion_authorized": true,
+  "rmf_dispatch_confirmed": true,
+  "nav2_execution_confirmed": true,
+  "lift_travel_verified": false,
+  "floor_transitions_verified": false,
+  "failure": "Semantic currentness gaps triggered Nav2 planner timeouts and default recovery costmap clears. A later Nav2 goal logged the robot inside the red mat rectangle at approximately (17.35, -31.76).",
+  "contributing_configuration": {
+    "camera_update_rate_hz": 2,
+    "semantic_max_capture_age_s": 0.5,
+    "semantic_static_obstacle_memory_s": 300,
+    "behavior_tree": "Nav2 default recovery tree"
+  },
+  "cancellation": "Initial ROS cancellation attempts failed due to incompatible durability and then exhausted CycloneDDS participant indices. Deployment was scaled to zero; absence of simulator pods was verified.",
+  "evidence": "runtime.log",
+  "sign_off": false
+}
