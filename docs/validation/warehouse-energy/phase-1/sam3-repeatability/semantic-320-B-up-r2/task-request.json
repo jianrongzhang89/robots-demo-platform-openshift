@@ -1,0 +1,75 @@
+{
+  "type": "dispatch_task_request",
+  "request": {
+    "category": "compose",
+    "fleet_name": "warehouse_energy",
+    "requester": "warehouse-phase0",
+    "unix_millis_request_time": 35148,
+    "unix_millis_earliest_start_time": 35148,
+    "description": {
+      "category": "warehouse_route",
+      "phases": [
+        {
+          "activity": {
+            "category": "go_to_place",
+            "description": {
+              "one_of": [
+                {
+                  "waypoint": "fork"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "activity": {
+            "category": "go_to_place",
+            "description": {
+              "one_of": [
+                {
+                  "waypoint": "b_bottom"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "activity": {
+            "category": "go_to_place",
+            "description": {
+              "one_of": [
+                {
+                  "waypoint": "b_top"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "activity": {
+            "category": "go_to_place",
+            "description": {
+              "one_of": [
+                {
+                  "waypoint": "b_exit"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "activity": {
+            "category": "go_to_place",
+            "description": {
+              "one_of": [
+                {
+                  "waypoint": "transfer"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

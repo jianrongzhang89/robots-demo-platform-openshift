@@ -1,0 +1,79 @@
+{
+  "status": "PASS",
+  "errors": [],
+  "arm": "A",
+  "selected_route": "A",
+  "selection": {
+    "arm": "A",
+    "objective": "minimum_distance",
+    "payload_kg": 0.5,
+    "initial_soc": 0.8,
+    "excluded_routes": [],
+    "routes": {
+      "A": {
+        "path": [
+          "loading",
+          "fork",
+          "a_top",
+          "transfer"
+        ],
+        "distance_m": 14.0,
+        "predicted_mission_wh": 0.475204,
+        "predicted_duration_s": 170.0,
+        "charger_access_policy": "minimum predicted energy over routes available at planning time",
+        "charger_access_wh": 0.568348,
+        "predicted_final_soc": 0.756519,
+        "feasible": true,
+        "violations": []
+      },
+      "B": {
+        "path": [
+          "loading",
+          "fork",
+          "b_bottom",
+          "b_top",
+          "b_exit",
+          "transfer"
+        ],
+        "distance_m": 42.0,
+        "predicted_mission_wh": 1.392251,
+        "predicted_duration_s": 499.94,
+        "charger_access_policy": "minimum predicted energy over routes available at planning time",
+        "charger_access_wh": 0.568348,
+        "predicted_final_soc": 0.718308,
+        "feasible": true,
+        "violations": []
+      }
+    },
+    "selected_route": "A",
+    "rejection_reason": null,
+    "tie_energy_wh": 0.01,
+    "tie_break": "shorter_duration_then_route_id",
+    "status": "SELECTED",
+    "fixture_sha256": "1216c321fecd570c991184981c7fe3eddc20b0812a239034ef8317955e56a13e",
+    "physics_model_sha256": "608330117e6470cd0fb7f97f43f20c8cca37d6723460b6f423e36651d6f4636d",
+    "scope": "planning-time selection over the frozen simulation fixture using the calibrated physics model; not a physical energy measurement"
+  },
+  "trial_status": "PASS",
+  "task_id": "compose.dispatch-7390e5b538",
+  "prediction": {
+    "predicted_mission_wh": 0.475204,
+    "predicted_duration_s": 170.0,
+    "predicted_final_soc": 0.756519
+  },
+  "observation": {
+    "mission_window_sim_s": [
+      32.422,
+      203.85
+    ],
+    "observed_duration_s": 171.4,
+    "observed_mission_wh": 0.479494,
+    "observed_mission_traction_j": 7.128,
+    "observed_final_soc": 0.776268753496,
+    "nav2_goal_submissions": 5
+  },
+  "prediction_error_wh": 0.00429,
+  "prediction_error_fraction": 0.0089,
+  "telemetry_model": "frozen Phase 1 accounting (drive efficiency 0.6, auxiliary 10 W); the Stage 2 physics model is a separate planning estimator",
+  "scope": "physics routing and modeled-energy comparison in simulation; no physical battery calibration or energy-saving claim"
+}

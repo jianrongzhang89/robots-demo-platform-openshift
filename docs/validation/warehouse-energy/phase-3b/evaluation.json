@@ -1,0 +1,63 @@
+{
+  "held_out_partition": "final_test (scripted payload 0.25 kg and navigation route-B-up-at-0.08 m/s combinations)",
+  "test_missions": 27,
+  "physics_only": {
+    "mission_mae_wh": 0.00301081,
+    "segment_mae_wh": 0.00116276,
+    "missions": 27,
+    "bounds_rejections": 0,
+    "max_mission_abs_error_wh": 0.027595
+  },
+  "physics_plus_linear": {
+    "mission_mae_wh": 0.00213308,
+    "segment_mae_wh": 0.00135314,
+    "missions": 27,
+    "bounds_rejections": 0,
+    "max_mission_abs_error_wh": 0.01327705
+  },
+  "physics_plus_xgboost": {
+    "mission_mae_wh": 0.0006796,
+    "segment_mae_wh": 0.00071794,
+    "missions": 27,
+    "bounds_rejections": 0,
+    "max_mission_abs_error_wh": 0.00732543
+  },
+  "mission_mae_improvement_fraction_linear_vs_physics": 0.2915262,
+  "mission_mae_improvement_fraction_xgboost_vs_physics": 0.77428001,
+  "upper_estimate_coverage": {
+    "learned_mode": {
+      "covered": 26,
+      "missions": 27,
+      "fraction": 0.963
+    },
+    "physics_fallback": {
+      "covered": 27,
+      "missions": 27,
+      "fraction": 1.0
+    }
+  },
+  "development_selection_metrics": {
+    "xgboost": {
+      "mission_mae_wh": 0.00046527,
+      "segment_mae_wh": 0.00046381,
+      "missions": 14,
+      "bounds_rejections": 0,
+      "max_mission_abs_error_wh": 0.00338247
+    },
+    "linear": {
+      "mission_mae_wh": 0.00164103,
+      "segment_mae_wh": 0.00100342,
+      "missions": 14,
+      "bounds_rejections": 0,
+      "max_mission_abs_error_wh": 0.00737024
+    },
+    "selected_hyperparameters": {
+      "max_depth": 4,
+      "n_estimators": 40,
+      "learning_rate": 0.1,
+      "min_child_weight": 1
+    },
+    "selected_ridge_lambda": 0.001
+  },
+  "test_opened_once_after_freeze": true
+}

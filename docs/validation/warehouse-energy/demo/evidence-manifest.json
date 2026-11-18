@@ -1,0 +1,29 @@
+{
+  "schema_version": "warehouse-demo-evidence-manifest-v1",
+  "scope": "Operator demonstration: three matched deliveries, payload views, fallback; modeled energy only",
+  "removed_raw_archives": {
+    "note": "The raw demo trial directories were removed to save storage; the loose per-trial records above and the regeneration command (run_energy_demo.py) remain."
+  },
+  "artifacts": [
+    {
+      "path": "demo-summary.html",
+      "description": "Self-contained operator summary with charts and snapshots",
+      "sha256": "0f50f8688aae06da90ae779400235c13861f5ed47b2d502012d8f974a4ce9f72"
+    },
+    {
+      "path": "demo-evidence.json",
+      "description": "Machine-readable demonstration evidence",
+      "sha256": "78a90236c8f35cfd0013420362e10d57b317b32c0ade53d319d5df1b73fc3551"
+    },
+    {
+      "path": "demo-run.out",
+      "description": "Demonstration run narrative log",
+      "sha256": "613b7ef4fa0edfa28912955010d6e5c041fbebaf444cd845662c701d5db060f7"
+    },
+    {
+      "path": "series/<trial>/",
+      "description": "21 loose per-trial records (aggregate sha256)",
+      "sha256": "f1754df81276985d9a649b1960ecd60fc82440e8c0d7a61c4bbc626408ac5ff3"
+    }
+  ]
+}

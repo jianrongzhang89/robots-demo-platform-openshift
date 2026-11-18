@@ -1,0 +1,237 @@
+{
+  "route": "A",
+  "direction": "up",
+  "payload_kg": 0.5,
+  "start": [
+    0,
+    0,
+    0,
+    0.0
+  ],
+  "path": [
+    "loading",
+    "fork",
+    "a_top",
+    "transfer"
+  ],
+  "nodes": {
+    "loading": [
+      0,
+      0,
+      0
+    ],
+    "fork": [
+      2,
+      0,
+      0
+    ],
+    "a_top": [
+      12,
+      0,
+      0.2
+    ],
+    "transfer": [
+      14,
+      0,
+      0.2
+    ],
+    "b_bottom": [
+      2,
+      6,
+      0
+    ],
+    "b_top": [
+      22,
+      6,
+      0.2
+    ],
+    "b_exit": [
+      22,
+      0,
+      0.2
+    ],
+    "charger": [
+      -2,
+      0,
+      0
+    ]
+  },
+  "rtf_target": 2.0,
+  "camera": {
+    "width": 320,
+    "height": 240,
+    "configured_rate_hz": 10
+  },
+  "source_fixture": {
+    "schema_version": "warehouse-fixture-v1",
+    "status": "qualified_simulation_motion_fixture_frozen_for_stage_1",
+    "robot": {
+      "id": "warehouse-bounded-differential-drive-v1",
+      "physical_mass_kg": 1.653,
+      "wheel_radius_m": 0.033,
+      "wheel_separation_m": 0.288,
+      "payload_candidates_kg": [
+        0.0,
+        0.25,
+        0.5
+      ],
+      "qualified_payload_max_kg": 0.5,
+      "payload_box_m": [
+        0.1,
+        0.1,
+        0.05
+      ],
+      "payload_center_base_link_m": [
+        -0.06,
+        0.0,
+        0.165
+      ],
+      "speed_cap_mps": 0.1,
+      "acceleration_cap_mps2": 0.1,
+      "effort_limit_nm": 0.08,
+      "wheel_velocity_limit_rad_s": 8.0,
+      "joint_friction_nm": 0.001,
+      "qualification_scope": "simulation only, surveyed empty ramps, 0.10 m/s, payload placement fixed"
+    },
+    "geometry": {
+      "map": "warehouse",
+      "initial_rise_m": 0.2,
+      "proposal_rise_m": 1.0,
+      "corridor_width_m": 1.5,
+      "transition_length_m": 1.0,
+      "safe_stopping_length_m": 1.0,
+      "nodes": {
+        "loading": [
+          0,
+          0,
+          0
+        ],
+        "fork": [
+          2,
+          0,
+          0
+        ],
+        "a_top": [
+          12,
+          0,
+          0.2
+        ],
+        "transfer": [
+          14,
+          0,
+          0.2
+        ],
+        "b_bottom": [
+          2,
+          6,
+          0
+        ],
+        "b_top": [
+          22,
+          6,
+          0.2
+        ],
+        "b_exit": [
+          22,
+          0,
+          0.2
+        ],
+        "charger": [
+          -2,
+          0,
+          0
+        ]
+      },
+      "routes": {
+        "A": [
+          "loading",
+          "fork",
+          "a_top",
+          "transfer"
+        ],
+        "B": [
+          "loading",
+          "fork",
+          "b_bottom",
+          "b_top",
+          "b_exit",
+          "transfer"
+        ]
+      },
+      "ramps": {
+        "A": [
+          "fork",
+          "a_top"
+        ],
+        "B": [
+          "b_bottom",
+          "b_top"
+        ]
+      },
+      "surface": "same_uncalibrated_surface_both_routes",
+      "transition_profile": "cosine slope entry and exit, 1 m each, 5 cm mesh sampling",
+      "maximum_peak_grade": {
+        "A": 0.022222222222222223,
+        "B": 0.010526315789473684
+      },
+      "map_traversable_half_width_m": 0.7
+    },
+    "energy": {
+      "boundary": "simulated_robot_battery_terminals",
+      "regeneration": false,
+      "nominal_battery_wh": 24.0,
+      "battery_parameter_status": "simulation_design_assumption",
+      "initial_soc": 0.8,
+      "minimum_soc_after_mission_and_charger": 0.2,
+      "deadline_one_way_s": 900,
+      "deadline_round_trip_s": 1800,
+      "objective": "minimum_mean_energy_subject_to_upper_energy_reserve_and_deadline",
+      "tie_energy_wh": 0.01,
+      "tie_break": "shorter_duration_then_route_id",
+      "replan_hysteresis_fraction": 0.05,
+      "sensitivity_only": {
+        "crr": [
+          0.01,
+          0.03,
+          0.06
+        ],
+        "efficiency": [
+          0.4,
+          0.6,
+          0.8
+        ],
+        "auxiliary_w": [
+          2,
+          10,
+          20
+        ]
+      }
+    },
+    "acceptance": {
+      "collision_or_departure_or_reserve_violations": 0,
+      "route_agreement_fraction": 1.0,
+      "prediction_mae_improvement_fraction": 0.2,
+      "ai_energy_improvement_fraction": 0.05,
+      "paired_energy_ci_lower_bound_above_zero": true,
+      "mission_upper_coverage_fraction": 0.95,
+      "maximum_time_increase_fraction_vs_A": 0.1,
+      "serving_p95_ms": 250,
+      "serving_deadline_ms": 1000,
+      "serving_max_segments_per_batch": 32,
+      "qualification_repeats_per_route_direction_payload": 3,
+      "minimum_ramp_trials": 36,
+      "evaluation_one_way_pilot_runs": 180,
+      "status": "design_targets_frozen_before_trials_not_achieved"
+    },
+    "source_candidate": "fixture-v0.json",
+    "qualification": {
+      "protocol": "qualification-protocol-v1.json",
+      "independent_ramp_trials_passed": 36,
+      "ramp_evidence": "../../docs/validation/warehouse-energy/phase-0/qualification-20261116/ramp-audit.json",
+      "live_route_gate": "PASS_4_OF_4_WITH_INDEPENDENT_AUDIT",
+      "perception": "not qualified for warehouse",
+      "electrical_energy_telemetry": "not implemented",
+      "route_evidence": "../../docs/validation/warehouse-energy/phase-0/qualification-20261116/navigation-audit.json"
+    }
+  }
+}

@@ -1,0 +1,93 @@
+building_name: warehouse
+levels:
+  warehouse:
+    vertices:
+    - - 0
+      - 0
+      - name: loading
+        is_charger: false
+        is_holding_point: true
+    - - 2
+      - 0
+      - name: fork
+        is_charger: false
+        is_holding_point: true
+    - - 12
+      - 0
+      - name: a_top
+        is_charger: false
+        is_holding_point: true
+    - - 14
+      - 0
+      - name: transfer
+        is_charger: false
+        is_holding_point: true
+    - - 2
+      - 6
+      - name: b_bottom
+        is_charger: false
+        is_holding_point: true
+    - - 22
+      - 6
+      - name: b_top
+        is_charger: false
+        is_holding_point: true
+    - - 22
+      - 0
+      - name: b_exit
+        is_charger: false
+        is_holding_point: true
+    - - -2
+      - 0
+      - name: charger
+        is_charger: true
+        is_holding_point: true
+    lanes:
+    - - 0
+      - 1
+      - {}
+    - - 1
+      - 0
+      - {}
+    - - 1
+      - 2
+      - {}
+    - - 2
+      - 1
+      - {}
+    - - 2
+      - 3
+      - {}
+    - - 3
+      - 2
+      - {}
+    - - 1
+      - 4
+      - {}
+    - - 4
+      - 1
+      - {}
+    - - 4
+      - 5
+      - {}
+    - - 5
+      - 4
+      - {}
+    - - 5
+      - 6
+      - {}
+    - - 6
+      - 5
+      - {}
+    - - 6
+      - 3
+      - {}
+    - - 3
+      - 6
+      - {}
+    - - 0
+      - 7
+      - {}
+    - - 7
+      - 0
+      - {}

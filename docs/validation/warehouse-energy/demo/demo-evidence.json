@@ -1,0 +1,229 @@
+{
+  "date": "2026-11-18 13:25 UTC",
+  "deliveries": [
+    {
+      "label": "Delivery 1: arm A",
+      "arm": "A",
+      "route": "A",
+      "predicted": 0.950408,
+      "observed": 0.876823,
+      "error": -0.073585,
+      "duration_s": 314.4,
+      "estimator_mode": "physics",
+      "snapshots_dir": "/work/energy-demo/delivery1-armA-out",
+      "final_soc": 0.776056263412
+    },
+    {
+      "label": "Delivery 2: arm B",
+      "arm": "B",
+      "route": "A",
+      "predicted": 0.950408,
+      "observed": 0.876409,
+      "error": -0.073999,
+      "duration_s": 314.3,
+      "estimator_mode": "physics",
+      "snapshots_dir": "/work/energy-demo/delivery2-armB-out",
+      "final_soc": 0.777046664604
+    },
+    {
+      "label": "Delivery 3: arm C",
+      "arm": "C",
+      "route": "A",
+      "predicted": 0.882302,
+      "observed": 0.876917,
+      "error": -0.005385,
+      "duration_s": 314.5,
+      "estimator_mode": "served",
+      "snapshots_dir": "/work/energy-demo/delivery3-armC-out",
+      "final_soc": 0.776958840531
+    }
+  ],
+  "payload_sensitivity": [
+    {
+      "payload_kg": 0.0,
+      "route": "A",
+      "physics_wh": 0.474557,
+      "served_wh": 0.440504,
+      "predicted_final_soc": 0.759919
+    },
+    {
+      "payload_kg": 0.25,
+      "route": "A",
+      "physics_wh": 0.474881,
+      "served_wh": 0.440827,
+      "predicted_final_soc": 0.759905
+    },
+    {
+      "payload_kg": 0.5,
+      "route": "A",
+      "physics_wh": 0.475204,
+      "served_wh": 0.441151,
+      "predicted_final_soc": 0.759892
+    }
+  ],
+  "fallback": {
+    "route": "A",
+    "observed_wh": 0.440167,
+    "duration_s": 157.3,
+    "estimator_mode": "fallback"
+  },
+  "briefing": {
+    "A": {
+      "arm": "A",
+      "payload_kg": 0.5,
+      "initial_soc": 0.8,
+      "direction": "up",
+      "excluded_routes": [],
+      "round_trip_return_payload_kg": 0.0,
+      "routes": {
+        "A": {
+          "path": [
+            "loading",
+            "fork",
+            "a_top",
+            "transfer"
+          ],
+          "distance_m": 14.0,
+          "predicted_mission_wh": 0.475204,
+          "predicted_duration_s": 170.0,
+          "round_trip_predicted_total_wh": 1.006023,
+          "charger_access_wh": 0.05837,
+          "uncertainty_allowance_wh": 0.037041,
+          "predicted_final_soc": 0.756539,
+          "estimator_mode": "physics",
+          "feasible": true,
+          "violations": []
+        },
+        "B": {
+          "path": [
+            "loading",
+            "fork",
+            "b_bottom",
+            "b_top",
+            "b_exit",
+            "transfer"
+          ],
+          "distance_m": 42.0,
+          "predicted_mission_wh": 1.392251,
+          "predicted_duration_s": 499.94,
+          "round_trip_predicted_total_wh": 2.84004,
+          "charger_access_wh": 0.05837,
+          "uncertainty_allowance_wh": 0.037041,
+          "predicted_final_soc": 0.680122,
+          "estimator_mode": "physics",
+          "feasible": true,
+          "violations": []
+        }
+      },
+      "tie_energy_wh": 0.01,
+      "selected_route": "A",
+      "rejection_reason": null,
+      "status": "SELECTED"
+    },
+    "B": {
+      "arm": "B",
+      "payload_kg": 0.5,
+      "initial_soc": 0.8,
+      "direction": "up",
+      "excluded_routes": [],
+      "round_trip_return_payload_kg": 0.0,
+      "routes": {
+        "A": {
+          "path": [
+            "loading",
+            "fork",
+            "a_top",
+            "transfer"
+          ],
+          "distance_m": 14.0,
+          "predicted_mission_wh": 0.475204,
+          "predicted_duration_s": 170.0,
+          "round_trip_predicted_total_wh": 1.006023,
+          "charger_access_wh": 0.05837,
+          "uncertainty_allowance_wh": 0.037041,
+          "predicted_final_soc": 0.756539,
+          "estimator_mode": "physics",
+          "feasible": true,
+          "violations": []
+        },
+        "B": {
+          "path": [
+            "loading",
+            "fork",
+            "b_bottom",
+            "b_top",
+            "b_exit",
+            "transfer"
+          ],
+          "distance_m": 42.0,
+          "predicted_mission_wh": 1.392251,
+          "predicted_duration_s": 499.94,
+          "round_trip_predicted_total_wh": 2.84004,
+          "charger_access_wh": 0.05837,
+          "uncertainty_allowance_wh": 0.037041,
+          "predicted_final_soc": 0.680122,
+          "estimator_mode": "physics",
+          "feasible": true,
+          "violations": []
+        }
+      },
+      "tie_energy_wh": 0.01,
+      "selected_route": "A",
+      "rejection_reason": null,
+      "status": "SELECTED"
+    },
+    "C": {
+      "arm": "C",
+      "payload_kg": 0.5,
+      "initial_soc": 0.8,
+      "direction": "up",
+      "excluded_routes": [],
+      "round_trip_return_payload_kg": 0.0,
+      "routes": {
+        "A": {
+          "path": [
+            "loading",
+            "fork",
+            "a_top",
+            "transfer"
+          ],
+          "distance_m": 14.0,
+          "predicted_mission_wh": 0.441151,
+          "predicted_duration_s": 170.0,
+          "round_trip_predicted_total_wh": 0.938047,
+          "charger_access_wh": 0.058753,
+          "uncertainty_allowance_wh": 0.00471347,
+          "predicted_final_soc": 0.760718,
+          "estimator_mode": "served",
+          "feasible": true,
+          "violations": []
+        },
+        "B": {
+          "path": [
+            "loading",
+            "fork",
+            "b_bottom",
+            "b_top",
+            "b_exit",
+            "transfer"
+          ],
+          "distance_m": 42.0,
+          "predicted_mission_wh": 1.356623,
+          "predicted_duration_s": 499.96,
+          "round_trip_predicted_total_wh": 2.767521,
+          "charger_access_wh": 0.058753,
+          "uncertainty_allowance_wh": 0.00471347,
+          "predicted_final_soc": 0.68449,
+          "estimator_mode": "served",
+          "feasible": true,
+          "violations": []
+        }
+      },
+      "tie_energy_wh": 0.01,
+      "selected_route": "A",
+      "rejection_reason": null,
+      "status": "SELECTED"
+    }
+  },
+  "scope": "simulation demonstration over modeled energy; no physical battery-saving claim"
+}

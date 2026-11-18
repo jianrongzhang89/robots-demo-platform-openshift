@@ -1,0 +1,111 @@
+{
+  "status": "PASS_BOUNDED",
+  "scope": "four single simulated route/direction runs at 320x240 with frozen red-mat prompt/policy; no physical calibration",
+  "prompt": "red mat",
+  "policy": "avoid-target/v1",
+  "target_cost": 254,
+  "cases": [
+    {
+      "route": "A",
+      "direction": "up",
+      "trial": "sam3-attempts/phase1-semantic-320-A-up-12/result.json",
+      "energy_audit": "sam3-attempts/phase1-semantic-320-A-up-12/phase1-audit.json",
+      "semantic_audit": "sam3-attempts/phase1-semantic-320-A-up-12/semantic-warehouse-audit.json",
+      "task_id": "compose.dispatch-4555acc1ef",
+      "status": "PASS",
+      "semantic_audit_status": "PASS",
+      "mask_samples": 628,
+      "nonempty_target_masks": 76,
+      "saved_rgb_mask_pairs": 24,
+      "minimum_red_pixel_precision": 0.9755434782608695,
+      "minimum_red_pixel_coverage": 0.9957081545064378,
+      "nav2_goal_statuses": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "max_plan_centerline_distance_m": 0.2723968099414833,
+      "max_physical_corridor_distance_m": 0.17431902049269696,
+      "modeled_wh": 0.6109221894582602,
+      "modeled_final_soc": 0.774544908773
+    },
+    {
+      "route": "A",
+      "direction": "down",
+      "trial": "sam3-attempts/phase1-semantic-320-A-down-3/result.json",
+      "energy_audit": "sam3-attempts/phase1-semantic-320-A-down-3/phase1-audit.json",
+      "semantic_audit": "sam3-attempts/phase1-semantic-320-A-down-3/semantic-warehouse-audit.json",
+      "task_id": "compose.dispatch-15171b1dc9",
+      "status": "PASS",
+      "semantic_audit_status": "PASS",
+      "mask_samples": 568,
+      "nonempty_target_masks": 63,
+      "saved_rgb_mask_pairs": 24,
+      "minimum_red_pixel_precision": 0.9968992248062015,
+      "minimum_red_pixel_coverage": 0.9925213675213675,
+      "nav2_goal_statuses": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "max_plan_centerline_distance_m": 0.3221910077659942,
+      "max_physical_corridor_distance_m": 0.20221408902632917,
+      "modeled_wh": 0.5864221251395629,
+      "modeled_final_soc": 0.775565744786
+    },
+    {
+      "route": "B",
+      "direction": "up",
+      "trial": "sam3-attempts/phase1-semantic-320-B-up-1/result.json",
+      "energy_audit": "sam3-attempts/phase1-semantic-320-B-up-1/phase1-audit.json",
+      "semantic_audit": "sam3-attempts/phase1-semantic-320-B-up-1/semantic-warehouse-audit.json",
+      "task_id": "compose.dispatch-e605f6baee",
+      "status": "PASS",
+      "semantic_audit_status": "PASS",
+      "mask_samples": 1697,
+      "nonempty_target_masks": 78,
+      "saved_rgb_mask_pairs": 24,
+      "minimum_red_pixel_precision": 0.9908814589665653,
+      "minimum_red_pixel_coverage": 0.9949558638083228,
+      "nav2_goal_statuses": [
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "max_plan_centerline_distance_m": 0.4247046146497837,
+      "max_physical_corridor_distance_m": 0.31436669597653033,
+      "modeled_wh": 1.5580078441305465,
+      "modeled_final_soc": 0.735083006495
+    },
+    {
+      "route": "B",
+      "direction": "down",
+      "trial": "sam3-attempts/phase1-semantic-320-B-down-1/result.json",
+      "energy_audit": "sam3-attempts/phase1-semantic-320-B-down-1/phase1-audit.json",
+      "semantic_audit": "sam3-attempts/phase1-semantic-320-B-down-1/semantic-warehouse-audit.json",
+      "task_id": "compose.dispatch-43ed1906f2",
+      "status": "PASS",
+      "semantic_audit_status": "PASS",
+      "mask_samples": 1673,
+      "nonempty_target_masks": 76,
+      "saved_rgb_mask_pairs": 24,
+      "minimum_red_pixel_precision": 0.9944649446494465,
+      "minimum_red_pixel_coverage": 0.9928104575163399,
+      "nav2_goal_statuses": [
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "max_plan_centerline_distance_m": 0.4645796457615461,
+      "max_physical_corridor_distance_m": 0.3239313446755263,
+      "modeled_wh": 1.5557855863812424,
+      "modeled_final_soc": 0.735175600568
+    }
+  ]
+}

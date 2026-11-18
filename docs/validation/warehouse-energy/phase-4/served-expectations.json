@@ -1,0 +1,145 @@
+{
+  "schema": "warehouse-stage4-expectations/v1",
+  "payloads_kg": [
+    0.0,
+    0.25,
+    0.5
+  ],
+  "paths": [
+    "A-down",
+    "A-up",
+    "B-down",
+    "B-up",
+    "access-A",
+    "access-B",
+    "start-charger"
+  ],
+  "expectations": {
+    "A-down|p0.0": {
+      "segments": 3,
+      "predicted_wh": 0.438143,
+      "physics_wh": 0.472448,
+      "duration_s": 170.0
+    },
+    "A-down|p0.25": {
+      "segments": 3,
+      "predicted_wh": 0.438148,
+      "physics_wh": 0.472453,
+      "duration_s": 170.0
+    },
+    "A-down|p0.5": {
+      "segments": 3,
+      "predicted_wh": 0.438153,
+      "physics_wh": 0.472458,
+      "duration_s": 170.0
+    },
+    "A-up|p0.0": {
+      "segments": 3,
+      "predicted_wh": 0.440504,
+      "physics_wh": 0.474557,
+      "duration_s": 170.0
+    },
+    "A-up|p0.25": {
+      "segments": 3,
+      "predicted_wh": 0.440827,
+      "physics_wh": 0.47488,
+      "duration_s": 170.0
+    },
+    "A-up|p0.5": {
+      "segments": 3,
+      "predicted_wh": 0.441151,
+      "physics_wh": 0.475204,
+      "duration_s": 170.0
+    },
+    "B-down|p0.0": {
+      "segments": 5,
+      "predicted_wh": 1.352145,
+      "physics_wh": 1.389418,
+      "duration_s": 499.96
+    },
+    "B-down|p0.25": {
+      "segments": 5,
+      "predicted_wh": 1.352162,
+      "physics_wh": 1.389435,
+      "duration_s": 499.96
+    },
+    "B-down|p0.5": {
+      "segments": 5,
+      "predicted_wh": 1.35218,
+      "physics_wh": 1.389453,
+      "duration_s": 499.96
+    },
+    "B-up|p0.0": {
+      "segments": 5,
+      "predicted_wh": 1.356544,
+      "physics_wh": 1.391566,
+      "duration_s": 499.96
+    },
+    "B-up|p0.25": {
+      "segments": 5,
+      "predicted_wh": 1.35628,
+      "physics_wh": 1.391908,
+      "duration_s": 499.96
+    },
+    "B-up|p0.5": {
+      "segments": 5,
+      "predicted_wh": 1.356623,
+      "physics_wh": 1.392251,
+      "duration_s": 499.96
+    },
+    "access-A|p0.0": {
+      "segments": 4,
+      "predicted_wh": 0.516722,
+      "physics_wh": 0.568334,
+      "duration_s": 204.5
+    },
+    "access-A|p0.25": {
+      "segments": 4,
+      "predicted_wh": 0.516729,
+      "physics_wh": 0.568341,
+      "duration_s": 204.5
+    },
+    "access-A|p0.5": {
+      "segments": 4,
+      "predicted_wh": 0.516736,
+      "physics_wh": 0.568348,
+      "duration_s": 204.5
+    },
+    "access-B|p0.0": {
+      "segments": 6,
+      "predicted_wh": 1.430724,
+      "physics_wh": 1.485304,
+      "duration_s": 534.46
+    },
+    "access-B|p0.25": {
+      "segments": 6,
+      "predicted_wh": 1.430743,
+      "physics_wh": 1.485323,
+      "duration_s": 534.46
+    },
+    "access-B|p0.5": {
+      "segments": 6,
+      "predicted_wh": 1.430763,
+      "physics_wh": 1.485343,
+      "duration_s": 534.46
+    },
+    "start-charger|p0.0": {
+      "segments": 1,
+      "predicted_wh": 0.058753,
+      "physics_wh": 0.05837,
+      "duration_s": 21.0
+    },
+    "start-charger|p0.25": {
+      "segments": 1,
+      "predicted_wh": 0.058755,
+      "physics_wh": 0.058372,
+      "duration_s": 21.0
+    },
+    "start-charger|p0.5": {
+      "segments": 1,
+      "predicted_wh": 0.058757,
+      "physics_wh": 0.058374,
+      "duration_s": 21.0
+    }
+  }
+}

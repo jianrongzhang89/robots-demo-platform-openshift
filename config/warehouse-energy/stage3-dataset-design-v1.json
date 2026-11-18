@@ -1,0 +1,45 @@
+{
+  "schema_version": "warehouse-stage3-dataset-design-v1",
+  "status": "frozen_before_collection",
+  "frozen_date": "2026-11-17",
+  "sweep": {
+    "scripted": {
+      "routes": ["A", "B"],
+      "directions": ["up", "down"],
+      "payloads_kg": [0.0, 0.25, 0.5],
+      "speeds_mps": [0.06, 0.08, 0.1],
+      "stop_profiles": [
+        {"stops": 0},
+        {"stops": 1, "hold_s": 3.0}
+      ],
+      "repeats": 1
+    },
+    "nav": {
+      "routes": ["A", "B"],
+      "directions": ["up", "down"],
+      "payloads_kg": [0.0, 0.25, 0.5],
+      "speeds_mps": [0.08, 0.1],
+      "repeats": 1
+    }
+  },
+  "partitions": {
+    "final_test": [
+      {"class": "scripted", "payload_kg": 0.25},
+      {"class": "nav", "route": "B", "direction": "up", "speed_mps": 0.08}
+    ],
+    "deterministic_split": {
+      "rule": "first byte of sha256(run_id) modulo 10",
+      "residual_train": [0, 1, 2, 3, 4, 5],
+      "development": [6, 7],
+      "uncertainty_calibration": [8, 9]
+    },
+    "complete_run_separation": true,
+    "seed_note": "the pinned fixture is deterministic (Phase 0 finding); repeat variation comes from real-time-factor wall-clock jitter, not seeds"
+  },
+  "scope": "Stage 3A training-data sweep design; the 180-run A/B/C pilot is Stage 4 evaluation work, not this budget",
+  "limitations": [
+    "One qualified surface on both ramps; surface variation remains future work.",
+    "Scripted traversals use the standalone single-ramp fixture; navigation missions use the full warehouse graph.",
+    "Planned speeds are at or below the qualified 0.10 m/s cap with unchanged acceleration, effort, and braking limits."
+  ]
+}

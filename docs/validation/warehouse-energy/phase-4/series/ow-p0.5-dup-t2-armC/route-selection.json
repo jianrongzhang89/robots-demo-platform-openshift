@@ -1,0 +1,90 @@
+{
+  "arm": "C",
+  "payload_kg": 0.5,
+  "initial_soc": 0.8,
+  "direction": "up",
+  "excluded_routes": [],
+  "round_trip_return_payload_kg": null,
+  "routes": {
+    "A": {
+      "path": [
+        "loading",
+        "fork",
+        "a_top",
+        "transfer"
+      ],
+      "distance_m": 14.0,
+      "predicted_mission_wh": 0.441151,
+      "predicted_duration_s": 170.0,
+      "round_trip_predicted_total_wh": null,
+      "charger_access_wh": 0.516736,
+      "uncertainty_allowance_wh": 0.00471347,
+      "predicted_final_soc": 0.759892,
+      "estimator_mode": "served",
+      "feasible": true,
+      "violations": []
+    },
+    "B": {
+      "path": [
+        "loading",
+        "fork",
+        "b_bottom",
+        "b_top",
+        "b_exit",
+        "transfer"
+      ],
+      "distance_m": 42.0,
+      "predicted_mission_wh": 1.356623,
+      "predicted_duration_s": 499.96,
+      "round_trip_predicted_total_wh": null,
+      "charger_access_wh": 0.516736,
+      "uncertainty_allowance_wh": 0.00471347,
+      "predicted_final_soc": 0.721747,
+      "estimator_mode": "served",
+      "feasible": true,
+      "violations": []
+    }
+  },
+  "tie_energy_wh": 0.01,
+  "selected_route": "A",
+  "rejection_reason": null,
+  "status": "SELECTED",
+  "mission": "oneway",
+  "operator_view": {
+    "warehouse": "frozen warehouse fixture v1",
+    "candidate_routes": {
+      "A": {
+        "distance_m": 14.0,
+        "predicted_mission_wh": 0.441151,
+        "predicted_duration_s": 170.0,
+        "round_trip_predicted_total_wh": null,
+        "uncertainty_allowance_wh": 0.00471347,
+        "predicted_final_soc": 0.759892,
+        "feasible": true,
+        "estimator_mode": "served"
+      },
+      "B": {
+        "distance_m": 42.0,
+        "predicted_mission_wh": 1.356623,
+        "predicted_duration_s": 499.96,
+        "round_trip_predicted_total_wh": null,
+        "uncertainty_allowance_wh": 0.00471347,
+        "predicted_final_soc": 0.721747,
+        "feasible": true,
+        "estimator_mode": "served"
+      }
+    },
+    "battery_reserve_minimum": 0.2,
+    "deadline_one_way_s": 900,
+    "selected_route": "A",
+    "arm": "C",
+    "serving": {
+      "mode": "served",
+      "endpoint": "https://energy-predictor-v1-tls.semantic-model-serving.svc:8443",
+      "model_version": "energy-predictor-v1",
+      "frozen_sha256": "288b38674dab867a61be51e2d7cd888a2c77c8d18aded70268cc13e8940f286b"
+    }
+  },
+  "fixture_sha256": "1216c321fecd570c991184981c7fe3eddc20b0812a239034ef8317955e56a13e",
+  "scope": "Stage 4 comparative demonstration selection; modeled energy only"
+}

@@ -1,0 +1,204 @@
+{
+  "frozen": {
+    "schema_version": "warehouse-energy-model-release-v1",
+    "status": "frozen_for_stage_3c_serving",
+    "target": "residual_target_Wh = observed_segment_Wh - physics_segment_Wh",
+    "feature_schema": {
+      "names": [
+        "length_m",
+        "ramp_run_m",
+        "ascent_m",
+        "descent_m",
+        "max_abs_grade",
+        "mean_grade",
+        "turn_rad",
+        "speed_mps",
+        "planned_stops_in_segment",
+        "planned_dwell_s",
+        "total_mass_kg",
+        "physics_wh",
+        "planned_duration_s",
+        "is_nav"
+      ],
+      "note": "planning-time features only; baseline physics Wh and planned duration are inputs by design"
+    },
+    "dataset": {
+      "segments_sha256": "a8802f918fc28d6bb1e6801273c16b7b44f2f0b91da4cdff394d9feb8c9b8064",
+      "manifest": "warehouse-stage3-dataset-v1 partitions"
+    },
+    "xgboost_hyperparameters": {
+      "max_depth": 4,
+      "n_estimators": 40,
+      "learning_rate": 0.1,
+      "min_child_weight": 1
+    },
+    "linear_model": {
+      "lambda": 0.001,
+      "mean": [
+        6.3913043478,
+        4.7826086957,
+        0.0405797101,
+        0.0202898551,
+        0.0047288043,
+        -0.0004346884,
+        0.2731826087,
+        0.0853623188,
+        0.1014492754,
+        5.9855072464,
+        1.8975652174,
+        0.2347449348,
+        84.3504347826,
+        0.4130434783
+      ],
+      "scale": [
+        6.9828306857,
+        7.7288647107,
+        0.0804315184,
+        0.060384541,
+        0.0078296779,
+        0.0083280236,
+        0.5953876922,
+        0.0158872577,
+        0.3019227052,
+        5.2027522082,
+        0.2320891869,
+        0.2508013274,
+        90.0970212304,
+        0.4923805066
+      ],
+      "weights": [
+        -0.0002739205,
+        0.0012838254,
+        0.0002643021,
+        -0.0007679896,
+        -0.0005551976,
+        -0.0004508896,
+        0.002797718,
+        -0.0004208338,
+        0.0014136003,
+        -0.0062422413,
+        5.21306e-05,
+        -0.0305377371,
+        0.0291487193,
+        -0.0014352803,
+        -0.0036428287
+      ]
+    },
+    "uncertainty_calibration": {
+      "method": "mission-level absolute Wh allowance; empirical 95th percentile (higher interpolation) of mission absolute error on the uncertainty-calibration partition",
+      "calibration_missions": 13,
+      "allowance_learned_wh": 0.00471347,
+      "allowance_physics_fallback_wh": 0.037041,
+      "allowance_linear_wh": 0.00898018,
+      "small_sample_caveat": "13 calibration missions; the empirical 95th percentile has finite-sample coverage below the nominal 95 percent"
+    },
+    "bounds_rule": "combined = physics + correction; reject to physics fallback when combined < 0 or |correction| > physics Wh",
+    "training": {
+      "seed": 17,
+      "n_jobs": 1,
+      "selection_objective": "development-partition mission-energy MAE",
+      "hypergrid": {
+        "max_depth": [
+          2,
+          3,
+          4
+        ],
+        "n_estimators": [
+          40,
+          80,
+          160
+        ],
+        "learning_rate": [
+          0.05,
+          0.1
+        ],
+        "min_child_weight": [
+          1,
+          5
+        ]
+      },
+      "ridge_lambdas": [
+        1e-06,
+        0.001,
+        0.1,
+        1.0,
+        10.0
+      ]
+    },
+    "environment": {
+      "python": "3.12.3",
+      "xgboost": "2.1.4",
+      "numpy": "1.26.4"
+    },
+    "xgb_model_sha256": "67e8a1d1042b048ced6876d71833528a98fe7fdc4c989f63a67b800b37838614",
+    "linear_model_sha256": "57dc8a571e8a32529cd77aa1bcf97c87452b15c915674193550c0bf24a157cf3",
+    "scope_limits": [
+      "Simulation-trained for the frozen warehouse fixture, robot, payloads, and surfaces; not valid across robots, battery systems, or physical facilities.",
+      "Labels are modeled energy under the frozen Phase 1 accounting assumptions, not physical battery measurements."
+    ]
+  },
+  "frozen_sha256": "288b38674dab867a61be51e2d7cd888a2c77c8d18aded70268cc13e8940f286b",
+  "evaluation": {
+    "held_out_partition": "final_test (scripted payload 0.25 kg and navigation route-B-up-at-0.08 m/s combinations)",
+    "test_missions": 27,
+    "physics_only": {
+      "mission_mae_wh": 0.00301081,
+      "segment_mae_wh": 0.00116276,
+      "missions": 27,
+      "bounds_rejections": 0,
+      "max_mission_abs_error_wh": 0.027595
+    },
+    "physics_plus_linear": {
+      "mission_mae_wh": 0.00213308,
+      "segment_mae_wh": 0.00135314,
+      "missions": 27,
+      "bounds_rejections": 0,
+      "max_mission_abs_error_wh": 0.01327705
+    },
+    "physics_plus_xgboost": {
+      "mission_mae_wh": 0.0006796,
+      "segment_mae_wh": 0.00071794,
+      "missions": 27,
+      "bounds_rejections": 0,
+      "max_mission_abs_error_wh": 0.00732543
+    },
+    "mission_mae_improvement_fraction_linear_vs_physics": 0.2915262,
+    "mission_mae_improvement_fraction_xgboost_vs_physics": 0.77428001,
+    "upper_estimate_coverage": {
+      "learned_mode": {
+        "covered": 26,
+        "missions": 27,
+        "fraction": 0.963
+      },
+      "physics_fallback": {
+        "covered": 27,
+        "missions": 27,
+        "fraction": 1.0
+      }
+    },
+    "development_selection_metrics": {
+      "xgboost": {
+        "mission_mae_wh": 0.00046527,
+        "segment_mae_wh": 0.00046381,
+        "missions": 14,
+        "bounds_rejections": 0,
+        "max_mission_abs_error_wh": 0.00338247
+      },
+      "linear": {
+        "mission_mae_wh": 0.00164103,
+        "segment_mae_wh": 0.00100342,
+        "missions": 14,
+        "bounds_rejections": 0,
+        "max_mission_abs_error_wh": 0.00737024
+      },
+      "selected_hyperparameters": {
+        "max_depth": 4,
+        "n_estimators": 40,
+        "learning_rate": 0.1,
+        "min_child_weight": 1
+      },
+      "selected_ridge_lambda": 0.001
+    },
+    "test_opened_once_after_freeze": true
+  }
+}

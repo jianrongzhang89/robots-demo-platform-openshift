@@ -1,0 +1,65 @@
+{
+  "rgb_samples": 375,
+  "depth_samples": 375,
+  "configured_rate_hz": 10,
+  "rgb_rate": {
+    "first_stamp_s": 23.9,
+    "last_stamp_s": 61.3,
+    "average_hz": 10.0,
+    "max_gap_s": 0.10000000000000142
+  },
+  "depth_rate": {
+    "first_stamp_s": 23.9,
+    "last_stamp_s": 61.3,
+    "average_hz": 10.0,
+    "max_gap_s": 0.10000000000000142
+  },
+  "camera_info_samples": 375,
+  "rgb_latest": {
+    "stamp_s": 61.3,
+    "frame_id": "camera_color_optical_frame",
+    "width": 320,
+    "height": 240,
+    "encoding": "rgb8",
+    "step": 960,
+    "data_bytes": 230400
+  },
+  "depth_latest": {
+    "stamp_s": 61.3,
+    "frame_id": "camera_color_optical_frame",
+    "width": 320,
+    "height": 240,
+    "encoding": "32FC1",
+    "step": 1280,
+    "data_bytes": 307200
+  },
+  "camera_info": {
+    "stamp_s": 61.3,
+    "frame_id": "camera_color_optical_frame",
+    "width": 320,
+    "height": 240,
+    "fx": 277.1281295939317,
+    "fy": 277.1281295939317
+  },
+  "camera_tf_samples": 835,
+  "camera_tf_latest": {
+    "stamp_s": 61.334,
+    "parent": "odom",
+    "child": "camera_color_optical_frame",
+    "translation": [
+      1.8276959980199765,
+      6.481995835889554e-07,
+      0.16001075624135774
+    ],
+    "rotation_xyzw": [
+      -0.5794369271665606,
+      0.5793781718618616,
+      -0.4052972315709283,
+      0.40534915256692244
+    ]
+  },
+  "capture_tf_nearest_delta_s": [
+    0.00999999999999801,
+    0.00999999999999801
+  ]
+}

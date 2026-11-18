@@ -1,0 +1,250 @@
+{
+  "status": "PASS",
+  "errors": [],
+  "task_id": "compose.dispatch-020789ffff",
+  "request_id": "957dfb7d-f93e-40e2-9f56-172e222fdf6e",
+  "response": {
+    "state": {
+      "booking": {
+        "id": "compose.dispatch-020789ffff",
+        "requester": "warehouse-phase0",
+        "unix_millis_earliest_start_time": 32510,
+        "unix_millis_request_time": 32510
+      },
+      "category": "compose",
+      "detail": {
+        "category": "warehouse_route",
+        "phases": [
+          {
+            "activity": {
+              "category": "go_to_place",
+              "description": {
+                "one_of": [
+                  {
+                    "waypoint": "a_top"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "activity": {
+              "category": "go_to_place",
+              "description": {
+                "one_of": [
+                  {
+                    "waypoint": "fork"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "activity": {
+              "category": "go_to_place",
+              "description": {
+                "one_of": [
+                  {
+                    "waypoint": "loading"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "dispatch": {
+        "errors": [],
+        "status": "queued"
+      },
+      "status": "queued",
+      "unix_millis_start_time": 32510
+    },
+    "success": true
+  },
+  "selected_path": [
+    "transfer",
+    "a_top",
+    "fork",
+    "loading"
+  ],
+  "physical_waypoints": [
+    "transfer",
+    "a_top",
+    "fork",
+    "loading"
+  ],
+  "nav2_goals": [
+    {
+      "wall_time": 1794943641.1521692,
+      "event": "nav2_terminal",
+      "generation": 1,
+      "target": [
+        12.0,
+        0.0,
+        3.141592653589793
+      ],
+      "goal_id": "ae563542705a4e4f9c837b1a27b09fd6",
+      "status": 4,
+      "activity": "<rmf_adapter.robot_update_handle.ActivityIdentifier object at 0x7fc6d8db17f0>"
+    },
+    {
+      "wall_time": 1794943641.2214317,
+      "event": "nav2_terminal",
+      "generation": 2,
+      "target": [
+        12.0,
+        0.0,
+        3.1415593012088916
+      ],
+      "goal_id": "71bc06e473a4418f8af4484e463e9de4",
+      "status": 4,
+      "activity": "<rmf_adapter.robot_update_handle.ActivityIdentifier object at 0x7fc6d0385870>"
+    },
+    {
+      "wall_time": 1794943684.4968276,
+      "event": "nav2_terminal",
+      "generation": 3,
+      "target": [
+        2.0,
+        0.0,
+        3.141592653589793
+      ],
+      "goal_id": "32faa0c094ba4ee78697867cb4de1fef",
+      "status": 4,
+      "activity": "<rmf_adapter.robot_update_handle.ActivityIdentifier object at 0x7fc6d0377570>"
+    },
+    {
+      "wall_time": 1794943684.5786977,
+      "event": "nav2_terminal",
+      "generation": 4,
+      "target": [
+        2.0,
+        0.0,
+        3.140694276923331
+      ],
+      "goal_id": "84780e79a01a433fbcfcad9dce1c6f0f",
+      "status": 4,
+      "activity": "<rmf_adapter.robot_update_handle.ActivityIdentifier object at 0x7fc6d037bd70>"
+    },
+    {
+      "wall_time": 1794943695.8570206,
+      "event": "nav2_terminal",
+      "generation": 5,
+      "target": [
+        0.0,
+        0.0,
+        3.141592653589793
+      ],
+      "goal_id": "1255d77a2ef4487daabaae88f48d0baf",
+      "status": 4,
+      "activity": "<rmf_adapter.robot_update_handle.ActivityIdentifier object at 0x7fc6d0340e70>"
+    }
+  ],
+  "itinerary_messages": 3,
+  "itinerary_topics": [
+    "/rmf_traffic/itinerary_set",
+    "/rmf_traffic/query_update_1"
+  ],
+  "schedule_mirror_messages": 147,
+  "maximum_schedule_centerline_distance_m": 5.48236388531332e-05,
+  "maximum_itinerary_centerline_distance_m": 5.48236388531332e-05,
+  "maximum_plan_centerline_distance_m": 2.719206749036112e-07,
+  "final_fleet": {
+    "task_id": "",
+    "mode": 0,
+    "x": 0.0553930290043354,
+    "y": -7.243583013405441e-07
+  },
+  "physical_samples": 3943,
+  "final_physical": {
+    "sim_s": 201.506,
+    "x": 0.05539302779766144,
+    "y": -7.243583006673033e-07,
+    "z": 0.010007135915666893,
+    "qx": 2.5484748482774704e-05,
+    "qy": -4.383416723154909e-09,
+    "qz": 0.999999999373323,
+    "qw": 2.4574003199470567e-05,
+    "yaw": 3.1415435055835648,
+    "roll": -7.514308869069701e-09,
+    "pitch": -5.096949717111304e-05,
+    "corridor_distance_m": 7.243583006673033e-07,
+    "support_error_m": 7.135915666893131e-06,
+    "speed_mps": 0.0,
+    "command_mps": 0.0,
+    "command_rad_s": 0.0,
+    "fault": null,
+    "wall_time": 1794943697.0353115
+  },
+  "semantic": {
+    "enabled": false
+  },
+  "rgbd": {
+    "rgb_samples": 1802,
+    "depth_samples": 1802,
+    "configured_rate_hz": 10,
+    "rgb_rate": {
+      "first_stamp_s": 21.4,
+      "last_stamp_s": 201.5,
+      "average_hz": 10.0,
+      "max_gap_s": 0.10000000000002274
+    },
+    "depth_rate": {
+      "first_stamp_s": 21.4,
+      "last_stamp_s": 201.5,
+      "average_hz": 10.0,
+      "max_gap_s": 0.10000000000002274
+    },
+    "camera_info_samples": 1802,
+    "rgb_latest": {
+      "stamp_s": 201.5,
+      "frame_id": "camera_color_optical_frame",
+      "width": 320,
+      "height": 240,
+      "encoding": "rgb8",
+      "step": 960,
+      "data_bytes": 230400
+    },
+    "depth_latest": {
+      "stamp_s": 201.5,
+      "frame_id": "camera_color_optical_frame",
+      "width": 320,
+      "height": 240,
+      "encoding": "32FC1",
+      "step": 1280,
+      "data_bytes": 307200
+    },
+    "camera_info": {
+      "stamp_s": 201.5,
+      "frame_id": "camera_color_optical_frame",
+      "width": 320,
+      "height": 240,
+      "fx": 277.1281295939317,
+      "fy": 277.1281295939317
+    },
+    "camera_tf_samples": 4201,
+    "camera_tf_latest": {
+      "stamp_s": 201.506,
+      "parent": "odom",
+      "child": "camera_color_optical_frame",
+      "translation": [
+        -0.05459932650209293,
+        4.680419471548621e-06,
+        0.16001274236551155
+      ],
+      "rotation_xyzw": [
+        -0.49999954212231135,
+        -0.4999749725025287,
+        0.5000004528675949,
+        0.5000250312542109
+      ]
+    },
+    "capture_tf_nearest_delta_s": [
+      0.006000000000000227,
+      0.006000000000000227
+    ]
+  },
+  "battery_state_samples": 717,
+  "scope": "simulation sensing and modeled battery telemetry; SAM3 warehouse semantic labels and electrical calibration remain unqualified"
+}

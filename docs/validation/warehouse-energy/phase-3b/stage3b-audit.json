@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "errors": [],
+  "held_out_missions": 27,
+  "recomputed": {
+    "physics_only_mission_mae_wh": 0.00301081,
+    "physics_plus_linear_mission_mae_wh": 0.00213308,
+    "physics_plus_xgboost_mission_mae_wh": 0.0006796,
+    "improvement_fraction_vs_physics": 0.774279,
+    "bounds_rejections": 0,
+    "learned_mode_coverage": "26/27",
+    "physics_fallback_coverage": "27/27"
+  },
+  "retrained_identical": true,
+  "scope": "independent reload-and-recompute audit of the frozen Stage 3B release over the Stage 3A dataset; modeled energy only"
+}

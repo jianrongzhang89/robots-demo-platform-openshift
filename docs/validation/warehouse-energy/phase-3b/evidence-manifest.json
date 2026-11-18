@@ -1,0 +1,43 @@
+{
+  "schema_version": "warehouse-phase3b-evidence-manifest-v1",
+  "scope": "Stage 3B offline training: frozen versioned residual-model release, uncertainty calibration, held-out evaluation, independent audit; modeled energy only",
+  "dataset": "../phase-3a/dataset/dataset-manifest.json",
+  "physics_model": "../../../../config/warehouse-energy/physics-model-v1.json",
+  "artifacts": [
+    {
+      "path": "config/warehouse-energy/energy-model-release-v1/release.json",
+      "description": "Frozen release: feature schema, hyperparameters, seed, versions, uncertainty calibration, bounds rule, digests",
+      "sha256": "c35ee5f215e2e533e3658a1a8fc388362bc2cfdfc2285c6bf7b1d3fb9e71fb51"
+    },
+    {
+      "path": "config/warehouse-energy/energy-model-release-v1/xgb-model.json",
+      "description": "Trained XGBoost residual booster artifact",
+      "sha256": "67e8a1d1042b048ced6876d71833528a98fe7fdc4c989f63a67b800b37838614"
+    },
+    {
+      "path": "config/warehouse-energy/energy-model-release-v1/linear-model.json",
+      "description": "Linear-residual comparison model (standardized ridge)",
+      "sha256": "57dc8a571e8a32529cd77aa1bcf97c87452b15c915674193550c0bf24a157cf3"
+    },
+    {
+      "path": "docs/validation/warehouse-energy/phase-3b/evaluation.json",
+      "description": "Held-out evaluation detail (opened once after freeze)",
+      "sha256": "9b01cb485e012f2761f768dc0dce3d71aa530513ce59cb1e545269879a3ed3b2"
+    },
+    {
+      "path": "docs/validation/warehouse-energy/phase-3b/stage3b-audit.json",
+      "description": "Independent reload-and-recompute audit with byte-identical retrain",
+      "sha256": "46adc18e434fe01b30c8ed0246939f71b95a4673c72f079f8e41d040841e857a"
+    },
+    {
+      "path": "docs/validation/warehouse-energy/phase-3b/phase-3b-report.md",
+      "description": "Stage 3B training implementation report",
+      "sha256": "7512c9c7c81053611ab39ece29cc2c462645c92bc95d82a0749ae2d08dbb09e5"
+    },
+    {
+      "path": "docs/validation/warehouse-energy/phase-3b/gate-result.json",
+      "description": "Stage 3B gate result summary",
+      "sha256": "a700dd2803cbe0a76f7109c4478ac68f4e75dcef9353a8220781e5aee43e8f3e"
+    }
+  ]
+}

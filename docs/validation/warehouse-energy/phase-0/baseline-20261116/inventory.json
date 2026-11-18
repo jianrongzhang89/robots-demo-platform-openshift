@@ -1,0 +1,36 @@
+{
+  "captured_at": "2026-11-16T14:40:54.008299+00:00",
+  "git_head": "81e869684647a50fc562032ac22790eca9bb6565",
+  "git_status": "?? config/warehouse-energy/\n?? docs/validation/warehouse-energy/\n?? docs/warehouse-ramp-energy-navigation-proposal.md\n?? scripts/warehouse-energy/\n",
+  "cluster": "https://api.ai-dev02.kni.syseng.devcluster.openshift.com:6443",
+  "namespace": "semantic-navigation",
+  "pod": "phase8-multilevel-hotel-85c7bd7b79-rlz5j",
+  "pod_uid": "49f9937a-6a21-4357-aa3a-2557b5862c16",
+  "images": [
+    {
+      "name": "hotel-nav2-rmf",
+      "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/phase8-multilevel-fix@sha256:46042806035753067de14010aff4eb5d2c63e929f7c5a93e1c139311ee06c99e",
+      "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/phase8-multilevel-fix@sha256:46042806035753067de14010aff4eb5d2c63e929f7c5a93e1c139311ee06c99e",
+      "ready": true,
+      "restartCount": 0
+    },
+    {
+      "name": "sam3-serving-client",
+      "image": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-cpu-adapter@sha256:20ea4f5e6bc30646f48b29895eb071d40403f8c20b0c1526aeacf06dce716d4b",
+      "imageID": "image-registry.openshift-image-registry.svc:5000/semantic-navigation/semantic-cpu-adapter@sha256:20ea4f5e6bc30646f48b29895eb071d40403f8c20b0c1526aeacf06dce716d4b",
+      "ready": false,
+      "restartCount": 0
+    }
+  ],
+  "helm": [
+    {
+      "name": "phase8-multilevel",
+      "namespace": "semantic-navigation",
+      "revision": "45",
+      "updated": "2026-11-12 14:25:02.684439 -0500 EST",
+      "status": "deployed",
+      "chart": "phase8-multilevel-demo-0.1.0",
+      "app_version": "phase8-multilevel"
+    }
+  ]
+}

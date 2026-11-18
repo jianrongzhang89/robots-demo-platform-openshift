@@ -1,0 +1,23 @@
+=== Energy-aware warehouse delivery demonstration ===
+[1] Briefing: candidate corridors and estimates
+    arm A (Distance baseline): selects route A (14 m, predicted round trip 1.0060 Wh, estimator physics)
+    arm B (Physics energy routing): selects route A (14 m, predicted round trip 1.0060 Wh, estimator physics)
+    arm C (Learned energy routing (served)): selects route A (14 m, predicted round trip 0.9380 Wh, estimator served)
+[2] Matched deliveries (round trips, 0.5 kg out, empty back)
+  >> delivery1-armA-out: roundtrip-out arm A payload 0.5 kg up
+  >> delivery1-armA-return: roundtrip-return arm A payload 0.0 kg down
+    delivery 1 (arm A, Distance baseline): route A, predicted 0.9504 Wh, consumed 0.8768 Wh, 314 s
+  >> delivery2-armB-out: roundtrip-out arm B payload 0.5 kg up
+  >> delivery2-armB-return: roundtrip-return arm B payload 0.0 kg down
+    delivery 2 (arm B, Physics energy routing): route A, predicted 0.9504 Wh, consumed 0.8764 Wh, 314 s
+  >> delivery3-armC-out: roundtrip-out arm C payload 0.5 kg up
+  >> delivery3-armC-return: roundtrip-return arm C payload 0.0 kg down
+    delivery 3 (arm C, Learned energy routing (served)): route A, predicted 0.8823 Wh, consumed 0.8769 Wh, 314 s
+[3] Payload sensitivity (served planning view)
+    payload 0.00 kg: selects route A (physics 0.4746 Wh, served 0.4405 Wh)
+    payload 0.25 kg: selects route A (physics 0.4749 Wh, served 0.4408 Wh)
+    payload 0.50 kg: selects route A (physics 0.4752 Wh, served 0.4412 Wh)
+[4] Resilience: serving endpoint unavailable (physics fallback)
+  >> fallback-armC-serving-unavailable: oneway arm C payload 0.5 kg up
+    fallback delivery: route A, 0.4402 Wh, estimator fallback
+=== demonstration complete: demo-evidence.json, demo-summary.html ===

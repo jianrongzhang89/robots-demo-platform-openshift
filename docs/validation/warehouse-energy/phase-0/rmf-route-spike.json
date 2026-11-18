@@ -1,0 +1,161 @@
+{
+  "status": "PASS",
+  "motion_dispatched": false,
+  "live_itinerary_agreement": "NOT_TESTED",
+  "direct_endpoint_plan": [
+    "loading",
+    "transfer"
+  ],
+  "checks": [
+    {
+      "route": "A",
+      "direction": "up",
+      "requested": [
+        "loading",
+        "fork",
+        "a_top",
+        "transfer"
+      ],
+      "planned": [
+        "loading",
+        "fork",
+        "a_top",
+        "transfer"
+      ],
+      "pass": true
+    },
+    {
+      "route": "A",
+      "direction": "down",
+      "requested": [
+        "transfer",
+        "a_top",
+        "fork",
+        "loading"
+      ],
+      "planned": [
+        "transfer",
+        "a_top",
+        "fork",
+        "loading"
+      ],
+      "pass": true
+    },
+    {
+      "route": "B",
+      "direction": "up",
+      "requested": [
+        "loading",
+        "fork",
+        "b_bottom",
+        "b_top",
+        "b_exit",
+        "transfer"
+      ],
+      "planned": [
+        "loading",
+        "fork",
+        "b_bottom",
+        "b_top",
+        "b_exit",
+        "transfer"
+      ],
+      "pass": true
+    },
+    {
+      "route": "B",
+      "direction": "down",
+      "requested": [
+        "transfer",
+        "b_exit",
+        "b_top",
+        "b_bottom",
+        "fork",
+        "loading"
+      ],
+      "planned": [
+        "transfer",
+        "b_exit",
+        "b_top",
+        "b_bottom",
+        "fork",
+        "loading"
+      ],
+      "pass": true
+    }
+  ],
+  "request_example": {
+    "type": "dispatch_task_request",
+    "request": {
+      "category": "compose",
+      "fleet_name": "warehouse_energy",
+      "requester": "warehouse-energy",
+      "description": {
+        "category": "warehouse_route_B",
+        "phases": [
+          {
+            "activity": {
+              "category": "go_to_place",
+              "description": {
+                "one_of": [
+                  {
+                    "waypoint": "fork"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "activity": {
+              "category": "go_to_place",
+              "description": {
+                "one_of": [
+                  {
+                    "waypoint": "b_bottom"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "activity": {
+              "category": "go_to_place",
+              "description": {
+                "one_of": [
+                  {
+                    "waypoint": "b_top"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "activity": {
+              "category": "go_to_place",
+              "description": {
+                "one_of": [
+                  {
+                    "waypoint": "b_exit"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "activity": {
+              "category": "go_to_place",
+              "description": {
+                "one_of": [
+                  {
+                    "waypoint": "transfer"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "fixture_sha256": "d56b9422075341be6543461fab64752a6253dbe4d1ce254e49d34b4185675228"
+}

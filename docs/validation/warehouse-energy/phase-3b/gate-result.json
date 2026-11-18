@@ -1,0 +1,52 @@
+{
+  "stage": "3B",
+  "status": "PASS",
+  "date": "2026-11-17",
+  "training": {
+    "environment": "pinned warehouse-qualification pod; python 3.12.3, numpy 1.26.4, scipy 1.11.4, vendored xgboost 2.1.4 (single thread)",
+    "seed": 17,
+    "target": "residual_target_Wh = observed_segment_Wh - physics_segment_Wh",
+    "features": 14,
+    "selection": "development-partition mission-energy MAE over a bounded hypergrid",
+    "selected_xgboost": {"max_depth": 4, "n_estimators": 40, "learning_rate": 0.1, "min_child_weight": 1},
+    "selected_ridge_lambda": 0.001,
+    "training_segments": 138,
+    "development_segments": 44
+  },
+  "uncertainty_calibration": {
+    "partition_missions": 13,
+    "allowance_learned_wh": 0.00471347,
+    "allowance_physics_fallback_wh": 0.037041,
+    "allowance_linear_wh": 0.00898018,
+    "method": "empirical 95th percentile of mission absolute error (higher interpolation)",
+    "small_sample_caveat": true
+  },
+  "held_out_evaluation": {
+    "partitions": "final_test: scripted payload 0.25 kg and navigation B-up-at-0.08 combinations",
+    "missions": 27,
+    "segments": 87,
+    "mission_mae_wh": {
+      "physics_only": 0.00301081,
+      "physics_plus_linear": 0.00213308,
+      "physics_plus_xgboost": 0.0006796
+    },
+    "improvement_fraction_vs_physics": {
+      "xgboost": 0.77428,
+      "linear": 0.29118
+    },
+    "bounds_rejections": 0,
+    "upper_estimate_coverage": {
+      "learned_mode": "26/27",
+      "physics_fallback": "27/27"
+    },
+    "test_opened_once_after_freeze": true
+  },
+  "freeze": {
+    "frozen_sha256": "288b38674dab867a61be51e2d7cd888a2c77c8d18aded70268cc13e8940f286b",
+    "release": "config/warehouse-energy/energy-model-release-v1/",
+    "artifacts": ["release.json", "xgb-model.json", "linear-model.json"]
+  },
+  "independent_audit": "PASS stage3b-audit.json; artifact reload through a separate inference path, full metric recomputation, and byte-identical retrain",
+  "scope": "simulation-trained residual model for the frozen warehouse fixture; modeled energy labels only; no route-choice or energy-saving claim",
+  "next_stage": "3C serving qualification may proceed"
+}

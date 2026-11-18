@@ -1,0 +1,21 @@
+# Build from a context containing this file's repository paths plus the
+# vendored xgboost 2.1.4 tree (wheel digest recorded in the Stage 3B/3C
+# reports). Reuses the pinned hotel runtime image so the serving Python,
+# numpy, and scipy match the training environment exactly. No runtime pip
+# install, downloads, or model fetches.
+FROM image-registry.openshift-image-registry.svc:5000/semantic-navigation/phase8-multilevel-fix@sha256:46042806035753067de14010aff4eb5d2c63e929f7c5a93e1c139311ee06c99e
+USER 0
+WORKDIR /app
+COPY apps/energy-predictor/predictor.py apps/energy-predictor/server.py apps/energy-predictor/model-manifest.json /app/
+COPY scripts/warehouse-energy/physics_model.py /app/physics_model.py
+COPY config/warehouse-energy/physics-model-v1.json /app/physics-model-v1.json
+COPY config/warehouse-energy/energy-model-release-v1/ /app/release/
+COPY vendor/xgboost/ /app/vendor/xgboost/
+COPY vendor/xgboost.libs/ /app/vendor/xgboost.libs/
+RUN python3 -c 'import hashlib,json,pathlib; files=("predictor.py","server.py","physics_model.py"); pathlib.Path("build-identity.json").write_text(json.dumps({"source_revision":"a4fd2c914b1eda7f6293a011f5c98ff02855f8bd","shared_sha256":{f:hashlib.sha256(pathlib.Path(f).read_bytes()).hexdigest() for f in files}},sort_keys=True))' \
+    && PYTHONPATH=/app:/app/vendor python3 -c 'import json; from predictor import EnergyPredictor; import xgboost; p=EnergyPredictor("/app/release","/app/physics-model-v1.json","/app/model-manifest.json",xgboost_module=xgboost); r=p.predict_segments([{"length_m":10.0,"ramp_run_m":10.0,"signed_rise_m":0.2,"speed_mps":0.1,"heading_change_rad":0.0,"planned_stops":0,"planned_dwell_s":13.5,"total_mass_kg":2.153,"class":"nav"}]); assert r and r[0]["predicted_wh"]>0; print(json.dumps(p.identity()))' \
+    && chmod -R a=rX /app
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/app:/app/vendor
+EXPOSE 8080 8443
+USER 1001
+ENTRYPOINT ["python3", "/app/server.py"]

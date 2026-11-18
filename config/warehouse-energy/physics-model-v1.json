@@ -1,0 +1,31 @@
+{
+  "schema_version": "warehouse-physics-model-v1",
+  "status": "frozen_for_stage_2",
+  "parameters": {
+    "rolling_resistance_coefficient": 0.00038,
+    "drive_efficiency": 0.435045,
+    "auxiliary_power_w": 10.004126
+  },
+  "force_model": "F = m*a + m*g*sin(theta) + Crr*m*g*cos(theta); traction power max(F*v, 0)/eta; no regeneration; constant auxiliary load",
+  "planning_assumptions": {
+    "speed_cap_mps": 0.1,
+    "acceleration_cap_mps2": 0.1,
+    "goal_transition_base_s": 13.5,
+    "rotate_to_heading_angular_vel_rad_s": 0.3,
+    "provenance": "speed/acceleration caps and rotation rate are frozen fixture and Nav2 controller settings; the per-goal transition allowance is a declared planning constant derived from the accepted Phase 1 repeated-run series mission windows (11.6-19.7 s overhead per intermediate goal including route-B rotations), not a fitted parameter"
+  },
+  "calibration": {
+    "runs": 36,
+    "data": "phase-0 qualification ramp matrix (36 complete fresh-world trials)",
+    "data_sha256": "4dcc2f27801e206afb13859936ee165ae6609527fa195b667e4cdcf8551e419a",
+    "observed_label": "modeled electrical Wh recomputed from raw actuator traces under the frozen Phase 1 telemetry accounting model",
+    "method": "rolling-resistance grid with analytic bounded least squares for (1/eta, auxiliary); complete-run separation",
+    "rmse_wh": 0.000276,
+    "max_abs_error_wh": 0.000741
+  },
+  "scope_limits": [
+    "Calibrated against modeled simulated telemetry, not physical battery measurements.",
+    "Valid only for the frozen warehouse fixture, robot, payloads, and surfaces.",
+    "Waypoint transition and rotation demand are declared planning allowances; their residual error is Stage 3B residual-learning material."
+  ]
+}

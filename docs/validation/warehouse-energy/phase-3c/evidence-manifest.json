@@ -1,0 +1,77 @@
+{
+  "schema_version": "warehouse-phase3c-evidence-manifest-v1",
+  "scope": "Stage 3C serving qualification: OpenShift AI CPU deployment of the frozen release behind mTLS, parity and fault gates, latency target",
+  "release": "../../../config/warehouse-energy/energy-model-release-v1/release.json",
+  "artifacts": [
+    {
+      "path": "docs/validation/warehouse-energy/phase-3c/phase-3c-report.md",
+      "description": "Stage 3C serving qualification report",
+      "sha256": "f4f7968c2728e60c8cc66921d9f99eb714193542b65bdc1bedeb63153ab4e764"
+    },
+    {
+      "path": "docs/validation/warehouse-energy/phase-3c/gate-result.json",
+      "description": "Stage 3C gate result summary",
+      "sha256": "f4b6e5b135b5bfd9fa8aaac6c66e7eea02906aace1e03d54a3ceb9bff341c1c6"
+    },
+    {
+      "path": "docs/validation/warehouse-energy/phase-3c/qualification-result.json",
+      "description": "Full qualification suite result: 11/11 checks",
+      "sha256": "2b7fb5f93f3cef7d1a8ae0b925891fcf6b8ad06337fe4f4115206bbc76eb37e8"
+    },
+    {
+      "path": "docs/validation/warehouse-energy/phase-3c/replay-batches.json",
+      "description": "Frozen replay batches with offline expectations (24 batches, 96 segments, 32-segment latency batch)",
+      "sha256": "9a906c587632209884138d85de930de19c9a443d62e53e0f116dad9f99142442"
+    },
+    {
+      "path": "docs/validation/warehouse-energy/phase-3c/deployment.json",
+      "description": "Deployed pod image identity and readiness evidence",
+      "sha256": "93aecba476291c34a110b7e9644e4cd5e5662abcc7745a15a93be8b680b75151"
+    },
+    {
+      "path": "apps/energy-predictor/predictor.py",
+      "description": "Serving predictor: validation, physics, features, residual, bounds",
+      "sha256": "fc22f1afdececf33d146d80a82bb601f88fdaf551614f9865ad0a76f5755185f"
+    },
+    {
+      "path": "apps/energy-predictor/server.py",
+      "description": "mTLS HTTPS serving wrapper",
+      "sha256": "a34a26e736a04a4a23e5307fd9aa1378db97726cc71e23df8aad429bc0e3be20"
+    },
+    {
+      "path": "apps/energy-predictor/model-manifest.json",
+      "description": "Fail-closed serving manifest",
+      "sha256": "435ef747f4f594d4d7296907957991d2cf71f7ff60534f9c7d90711ea05b9e19"
+    },
+    {
+      "path": "apps/energy-predictor/Containerfile",
+      "description": "Digest-pinned serving image build",
+      "sha256": "4f416b54a8efd27e35266a8b11b206d710a1e0b5ae576cdf6288dfcaabb099ec"
+    },
+    {
+      "path": "helm/warehouse-energy-demo/openshift-ai/render.py",
+      "description": "Serving deployment renderer (ServingRuntime, InferenceService, TLS Service, NetworkPolicy)",
+      "sha256": "8bf6bd882ff310d83f3029aa78a2718a16e2ede8ba94286459c9eb84915bf9f6"
+    },
+    {
+      "path": "scripts/warehouse-energy/provision_energy_serving_credentials.py",
+      "description": "mTLS credential provisioning (Secrets only, never committed)",
+      "sha256": "05a92121178c0afaba65e8a3ab01f7c162e3787b3d2dd77e4cf1c17f8f26f771"
+    },
+    {
+      "path": "scripts/warehouse-energy/energy_serving_client.py",
+      "description": "Robot-side mTLS client with validation, cache, and physics fallback",
+      "sha256": "bc5e89afc7515d2b976ec9bef5637b9e370a2b13a6b076267e1a003a06905e5e"
+    },
+    {
+      "path": "scripts/warehouse-energy/qualify_energy_serving.py",
+      "description": "Stage 3C qualification suite",
+      "sha256": "aaf4efb862c0518a9fa69f05ed09e6e993bb46d31e3e1e4648cf03e231a0112c"
+    },
+    {
+      "path": "scripts/warehouse-energy/build_energy_replay.py",
+      "description": "Replay batch builder with offline expectations",
+      "sha256": "80dd83ec4d43f2a59874a16f1ed3c5bfe2001f96b880df09def05be04d844f4b"
+    }
+  ]
+}

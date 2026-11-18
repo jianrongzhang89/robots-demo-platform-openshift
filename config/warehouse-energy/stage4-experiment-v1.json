@@ -1,0 +1,45 @@
+{
+  "schema_version": "warehouse-stage4-experiment-v1",
+  "status": "frozen_before_execution",
+  "frozen_date": "2026-11-17",
+  "arms": {
+    "A": "shortest feasible distance; energy logged only",
+    "B": "minimum predicted mission energy; calibrated physics estimator",
+    "C": "minimum predicted mission energy; served physics-plus-XGBoost with documented fallback"
+  },
+  "strata": {
+    "payloads_kg": [0.0, 0.25, 0.5],
+    "directions": ["up", "down"],
+    "surface": "single qualified surface on both ramps; the proposal's second surface is not qualified, so the pilot executes 6 strata instead of 12 (90 one-way missions instead of 180)"
+  },
+  "one_way_triplets_per_stratum": 5,
+  "round_trip": {
+    "triplets": 5,
+    "outbound_payload_kg": 0.5,
+    "return_payload_kg": 0.0,
+    "note": "payload changes only at fresh-world initialization in the frozen fixture; round-trip energy and reserve are chained arithmetically across the two legs"
+  },
+  "planned_speed_mps": 0.1,
+  "randomization": {
+    "seed": 17,
+    "method": "seeded shuffle of triplet-internal arm order, stratum order, and triplet order; identical conditions within each triplet"
+  },
+  "fallback_demonstration": {
+    "arm": "C",
+    "condition": "serving endpoint unreachable at planning time",
+    "expectation": "documented physics fallback selection; mission completes or is rejected per feasibility"
+  },
+  "criteria": {
+    "motion_and_task_completion": "all missions complete or enter the expected controlled failure state; zero collisions, ramp departures, or hard-limit violations",
+    "route_coordination": "RMF itinerary, selected ramp, Nav2 goals, and observed trajectory agree in every run",
+    "prediction_mae_improvement_fraction": 0.2,
+    "ai_energy_improvement_fraction": 0.05,
+    "paired_ci_excluding_zero": true,
+    "mission_upper_coverage_fraction": 0.95,
+    "maximum_time_increase_fraction_vs_A": 0.1,
+    "route_agreement_fraction": 1.0,
+    "reserve_and_deadline": "no battery-reserve violation; all routes meet the frozen deadlines",
+    "legitimate_outcomes": "prediction improvement without route-energy benefit is a recorded result, not a failure"
+  },
+  "scope": "simulation comparative demonstration over modeled energy; no physical battery-saving claim"
+}

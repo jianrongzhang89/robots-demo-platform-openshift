@@ -1,0 +1,216 @@
+{
+  "status": "FAIL",
+  "errors": [
+    "fleet/physics/dispatcher/RGB-D startup",
+    "physical ordered waypoint mismatch: []",
+    "Nav2 ordered target mismatch",
+    "RMF itinerary outside selected corridor or missing",
+    "accepted schedule mirror outside selected corridor or missing",
+    "Nav2 plan outside selected corridor or missing",
+    "live SAM3 mask/timing outputs missing",
+    "SAM3 produced no avoid_target pixels for the red mat fixture",
+    "SAM3 did not reach a valid ready state",
+    "task not observed in fleet state",
+    "missing/failed correlated Nav2 terminals",
+    "itinerary missing a_top",
+    "accepted schedule missing a_top",
+    "itinerary missing fork",
+    "accepted schedule missing fork",
+    "itinerary missing loading",
+    "accepted schedule missing loading"
+  ],
+  "task_id": null,
+  "request_id": null,
+  "response": null,
+  "selected_path": [
+    "transfer",
+    "a_top",
+    "fork",
+    "loading"
+  ],
+  "physical_waypoints": [],
+  "nav2_goals": [],
+  "itinerary_messages": 0,
+  "itinerary_topics": [
+    "/rmf_traffic/itinerary_set",
+    "/rmf_traffic/query_update_1"
+  ],
+  "schedule_mirror_messages": 4,
+  "maximum_schedule_centerline_distance_m": 999,
+  "maximum_itinerary_centerline_distance_m": 999,
+  "maximum_plan_centerline_distance_m": 999,
+  "final_fleet": {
+    "task_id": "",
+    "mode": 0,
+    "x": 14.0,
+    "y": 0.0
+  },
+  "physical_samples": 0,
+  "final_physical": null,
+  "semantic": {
+    "enabled": true,
+    "prompt": "red mat",
+    "policy": "avoid-target/v1",
+    "label_info": {
+      "active_labels": [
+        0,
+        2
+      ],
+      "generation": 1,
+      "labels": {
+        "0": "unobserved",
+        "1": "traversable",
+        "2": "avoid_target"
+      },
+      "policy": "avoid-target/v1",
+      "prompt": "red mat",
+      "stream_epoch": "ac61d6c2-c755-4a0d-8071-e12c996d9330"
+    },
+    "mask_samples": 0,
+    "nonempty_target_masks": 0,
+    "saved_rgb_mask_pairs": 0,
+    "timing_samples": 0,
+    "status": {
+      "approved_prompts": [
+        "red mat"
+      ],
+      "backend": "http",
+      "backend_in_flight": 0,
+      "capture_trace_required": true,
+      "clock_uncertainty_ms": 2.0,
+      "confidence_threshold": 0.5,
+      "deployment_identity": {
+        "container_digest": "sha256:f9bcc273a164f741426079ccf4c9d2269c9ec5e9530845029e593bf466a3aa2e",
+        "model_name": "sam3-mat-v1",
+        "policy": "avoid-target/v1",
+        "precision": "bfloat16",
+        "prompt": "red mat",
+        "schema": "semantic-deployment/v1",
+        "shared_sha256": {
+          "inference_contract.py": "d238d2490f826b6fbb70f07aa5579492dc425e8c858b780c8216679f121ffdef",
+          "sam3_backend.py": "3d83819971704e8ce642db98972194996307b314bb73cbb44257384e45714761",
+          "sam3_runtime_core.py": "683cf53a5b6378fa72d0cefe404bd899039b1420b4d5a2e7cfe3faecaf57085f"
+        },
+        "source_revision": "0570b3a5be9c4e694f23d85232fb55f4a6f1f7fc",
+        "threshold": 0.5,
+        "versions": {
+          "decoder": "sam3-binary-instances/v1",
+          "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+          "preprocess": "sam3-pil-rgb/v1"
+        },
+        "weights_sha256": "9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e"
+      },
+      "emitted_results": 0,
+      "input_queue_depths": {
+        "camera_info": 20,
+        "depth": 0,
+        "rgb": 0
+      },
+      "input_queue_drops": 4827,
+      "last_result": null,
+      "last_valid_result_age_ms": null,
+      "max_work_wait_ms": 40.0,
+      "model": "facebook/sam3-original",
+      "model_revision": "3c879f39826c281e95690f02c7821c4de09afae7",
+      "output_prefix": "/robot_1/semantic",
+      "paired_triplets": 0,
+      "policy": "avoid-target/v1",
+      "policy_generation": 1,
+      "prompt": "red mat",
+      "prompt_transition_enabled": false,
+      "prompt_transition_generation": null,
+      "prompt_transition_ready": true,
+      "ready": false,
+      "reason": "awaiting_first_valid_result",
+      "robot_id": "robot_1",
+      "source_epoch": null,
+      "state": "not_ready",
+      "status_wall_ns": 1794852932158678977,
+      "stream_epoch": "ac61d6c2-c755-4a0d-8071-e12c996d9330",
+      "stream_id": "camera/color",
+      "timestamp_discards": {
+        "depth": 0,
+        "info": 0,
+        "rgb": 0
+      },
+      "trace_errors": 0,
+      "versions": {
+        "decoder": "sam3-binary-instances/v1",
+        "model": "3c879f39826c281e95690f02c7821c4de09afae7",
+        "preprocess": "sam3-pil-rgb/v1"
+      },
+      "work_queue_depth": 0,
+      "work_queue_drops": 0,
+      "work_wait_drops": 0
+    },
+    "timing_artifact": "semantic-timing.jsonl",
+    "mask_artifact": "semantic-masks.jsonl"
+  },
+  "rgbd": {
+    "rgb_samples": 4804,
+    "depth_samples": 4804,
+    "configured_rate_hz": 10,
+    "rgb_rate": {
+      "first_stamp_s": 22.0,
+      "last_stamp_s": 502.3,
+      "average_hz": 10.0,
+      "max_gap_s": 0.10000000000002274
+    },
+    "depth_rate": {
+      "first_stamp_s": 22.0,
+      "last_stamp_s": 502.3,
+      "average_hz": 10.0,
+      "max_gap_s": 0.10000000000002274
+    },
+    "camera_info_samples": 4804,
+    "rgb_latest": {
+      "stamp_s": 502.3,
+      "frame_id": "camera_color_optical_frame",
+      "width": 320,
+      "height": 240,
+      "encoding": "rgb8",
+      "step": 960,
+      "data_bytes": 230400
+    },
+    "depth_latest": {
+      "stamp_s": 502.3,
+      "frame_id": "camera_color_optical_frame",
+      "width": 320,
+      "height": 240,
+      "encoding": "32FC1",
+      "step": 1280,
+      "data_bytes": 307200
+    },
+    "camera_info": {
+      "stamp_s": 502.3,
+      "frame_id": "camera_color_optical_frame",
+      "width": 320,
+      "height": 240,
+      "fx": 277.1281295939317,
+      "fy": 277.1281295939317
+    },
+    "camera_tf_samples": 10272,
+    "camera_tf_latest": {
+      "stamp_s": 502.354,
+      "parent": "odom",
+      "child": "camera_color_optical_frame",
+      "translation": [
+        13.890008125608912,
+        -9.797280412452878e-10,
+        0.360011896494019
+      ],
+      "rotation_xyzw": [
+        -0.5794070456381962,
+        -0.5794070481200703,
+        0.4053239107048086,
+        0.4053239142520018
+      ]
+    },
+    "capture_tf_nearest_delta_s": [
+      0.012000000000000455,
+      0.012000000000000455
+    ]
+  },
+  "battery_state_samples": 1916,
+  "scope": "simulation sensing and modeled battery telemetry; SAM3 warehouse semantic labels and electrical calibration remain unqualified"
+}

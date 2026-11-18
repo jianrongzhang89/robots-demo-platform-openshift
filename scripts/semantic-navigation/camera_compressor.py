@@ -10,12 +10,14 @@ import os
 import json
 import time
 import threading
+import uuid
 from collections import OrderedDict, deque
 from rclpy.node import Node
 from rclpy.executors import ExternalShutdownException
 from rclpy.qos import QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import CompressedImage, Image
 from std_msgs.msg import String
+from rosgraph_msgs.msg import Clock
 
 from rgbd_pairing import drain_synchronized_pairs
 from camera_qos import subscription_history_depth
@@ -53,6 +55,11 @@ class CameraCompressor(Node):
         if self.raw_transport not in ("ros", "gz"):
             raise ValueError("SEMANTIC_RAW_INPUT must explicitly select ros or gz")
         self.trace_pub = self.create_publisher(String, "/robot_1/camera/compression_trace", 20)
+        self.capture_pub = self.create_publisher(String, "/robot_1/camera/capture_trace", 20)
+        self.source_epoch = str(uuid.uuid4())
+        self.source_sequence = 0
+        self.last_clock_ns = None
+        self.create_subscription(Clock, "/clock", self.on_clock, 10)
         self.receipts = {"rgb": OrderedDict(), "depth": OrderedDict()}
         self.rgb_queue: deque[Image] = deque(maxlen=10)
         self.depth_queue: deque[Image] = deque(maxlen=10)
@@ -130,7 +137,29 @@ class CameraCompressor(Node):
     def stamp_ns(msg: Image) -> int:
         return msg.header.stamp.sec * 1_000_000_000 + msg.header.stamp.nanosec
 
+    def on_clock(self, message):
+        stamp = message.clock.sec * 1_000_000_000 + message.clock.nanosec
+        if self.last_clock_ns is not None and stamp < self.last_clock_ns:
+            self.source_epoch = str(uuid.uuid4())
+            self.source_sequence = 0
+        self.last_clock_ns = stamp
+
+    def publish_capture_trace(self, message):
+        # Gazebo does not expose a wall-clock exposure timestamp. Record the
+        # first ROS receipt as the simulator capture proxy and preserve that
+        # provenance explicitly in trial evidence.
+        capture_wall_ns = time.time_ns()
+        self.source_sequence += 1
+        trace = {"schema": "semantic-capture/v1", "source_epoch": self.source_epoch,
+            "sequence": self.source_sequence, "stamp_ns": self.stamp_ns(message),
+            "capture_wall_ns": capture_wall_ns, "rendered_wall_ns": capture_wall_ns,
+            "source_publish_wall_ns": 0, "render_duration_ns": 0, "source_duration_ns": 0}
+        trace["source_publish_wall_ns"] = time.time_ns()
+        trace["source_duration_ns"] = trace["source_publish_wall_ns"] - capture_wall_ns
+        self.capture_pub.publish(String(data=json.dumps(trace, sort_keys=True)))
+
     def rgb_cb(self, msg: Image):
+        self.publish_capture_trace(msg)
         self.record_receipt("rgb", msg)
         self.input_frames["rgb"] += 1
         if len(self.rgb_queue) == self.rgb_queue.maxlen:

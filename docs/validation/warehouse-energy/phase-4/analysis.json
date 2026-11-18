@@ -1,0 +1,257 @@
+{
+  "status": "FAIL",
+  "errors": [],
+  "trials": {
+    "total": 121,
+    "passed": 121,
+    "rejected": 0,
+    "oneway_by_arm": {
+      "A": 30,
+      "B": 30,
+      "C": 31
+    },
+    "matched_triplets": 30,
+    "complete_roundtrips": 15
+  },
+  "checks": {
+    "motion_and_task_completion": {
+      "status": "PASS",
+      "passed_trials": 121,
+      "rejected_trials": 0
+    },
+    "prediction_mae_improvement": {
+      "status": "PASS",
+      "arm_b_mae_wh": 0.035405,
+      "arm_c_served_mae_wh": 0.001138,
+      "improvement_fraction": 0.9679,
+      "target": 0.2
+    },
+    "uncertainty_coverage": {
+      "status": "PASS",
+      "served_mode": 1.0,
+      "physics_mode": 1.0,
+      "target": 0.95
+    },
+    "route_coordination": {
+      "status": "PASS",
+      "route_agreement_fraction": 1.0
+    },
+    "mission_utility_time": {
+      "status": "PASS",
+      "mean_duration_s": {
+        "A": 157.2,
+        "B": 157.2,
+        "C": 157.2
+      },
+      "time_increase_fraction_c_vs_a": 0.0002
+    },
+    "added_ai_value_energy": {
+      "status": "FAIL",
+      "aggregate_mission_wh": {
+        "B": 0.438262,
+        "C": 0.438349
+      },
+      "improvement_fraction": -0.0002,
+      "paired_c_vs_b_wh": {
+        "n": 30,
+        "mean": 8.72e-05,
+        "ci95": [
+          -1.266e-05,
+          0.00018706
+        ],
+        "sd": 0.00026744
+      },
+      "target": 0.05
+    },
+    "energy_aware_routing_b_vs_a": {
+      "paired_b_minus_a_wh": {
+        "n": 30,
+        "mean": 3.093e-05,
+        "ci95": [
+          -8.87e-05,
+          0.00015057
+        ],
+        "sd": 0.00032039
+      },
+      "note": "reported independently; not attributed to AI"
+    },
+    "fallback_demonstration": {
+      "status": "PASS",
+      "trials": [
+        "fallback-armC-serving-unavailable"
+      ],
+      "estimator_modes": [
+        "fallback"
+      ]
+    }
+  },
+  "roundtrips": [
+    {
+      "key": "rt-t0-armA",
+      "arm": "A",
+      "route": "A",
+      "observed_wh": 0.87714,
+      "predicted_wh": 0.950408,
+      "chained_final_soc": 0.776446368524,
+      "duration_s": 314.5,
+      "estimator_mode": "physics",
+      "upper_covers": true
+    },
+    {
+      "key": "rt-t0-armB",
+      "arm": "B",
+      "route": "A",
+      "observed_wh": 0.87651,
+      "predicted_wh": 0.950408,
+      "chained_final_soc": 0.776455722372,
+      "duration_s": 314.3,
+      "estimator_mode": "physics",
+      "upper_covers": true
+    },
+    {
+      "key": "rt-t0-armC",
+      "arm": "C",
+      "route": "A",
+      "observed_wh": 0.877059,
+      "predicted_wh": 0.882302,
+      "chained_final_soc": 0.776509812956,
+      "duration_s": 314.5,
+      "estimator_mode": "served",
+      "upper_covers": true
+    },
+    {
+      "key": "rt-t1-armA",
+      "arm": "A",
+      "route": "A",
+      "observed_wh": 0.876708,
+      "predicted_wh": 0.950408,
+      "chained_final_soc": 0.77654131232,
+      "duration_s": 314.4,
+      "estimator_mode": "physics",
+      "upper_covers": true
+    },
+    {
+      "key": "rt-t1-armB",
+      "arm": "B",
+      "route": "A",
+      "observed_wh": 0.8767,
+      "predicted_wh": 0.950408,
+      "chained_final_soc": 0.776517033447,
+      "duration_s": 314.4,
+      "estimator_mode": "physics",
+      "upper_covers": true
+    },
+    {
+      "key": "rt-t1-armC",
+      "arm": "C",
+      "route": "A",
+      "observed_wh": 0.876898,
+      "predicted_wh": 0.882302,
+      "chained_final_soc": 0.776453474256,
+      "duration_s": 314.4,
+      "estimator_mode": "served",
+      "upper_covers": true
+    },
+    {
+      "key": "rt-t2-armA",
+      "arm": "A",
+      "route": "A",
+      "observed_wh": 0.876336,
+      "predicted_wh": 0.950408,
+      "chained_final_soc": 0.776617155769,
+      "duration_s": 314.2,
+      "estimator_mode": "physics",
+      "upper_covers": true
+    },
+    {
+      "key": "rt-t2-armB",
+      "arm": "B",
+      "route": "A",
+      "observed_wh": 0.876607,
+      "predicted_wh": 0.950408,
+      "chained_final_soc": 0.776578283658,
+      "duration_s": 314.4,
+      "estimator_mode": "physics",
+      "upper_covers": true
+    },
+    {
+      "key": "rt-t2-armC",
+      "arm": "C",
+      "route": "A",
+      "observed_wh": 0.876317,
+      "predicted_wh": 0.882302,
+      "chained_final_soc": 0.776424307892,
+      "duration_s": 314.2,
+      "estimator_mode": "served",
+      "upper_covers": true
+    },
+    {
+      "key": "rt-t3-armA",
+      "arm": "A",
+      "route": "A",
+      "observed_wh": 0.87685,
+      "predicted_wh": 0.950408,
+      "chained_final_soc": 0.776565655037,
+      "duration_s": 314.4,
+      "estimator_mode": "physics",
+      "upper_covers": true
+    },
+    {
+      "key": "rt-t3-armB",
+      "arm": "B",
+      "route": "A",
+      "observed_wh": 0.876732,
+      "predicted_wh": 0.950408,
+      "chained_final_soc": 0.77651942032,
+      "duration_s": 314.4,
+      "estimator_mode": "physics",
+      "upper_covers": true
+    },
+    {
+      "key": "rt-t3-armC",
+      "arm": "C",
+      "route": "A",
+      "observed_wh": 0.876601,
+      "predicted_wh": 0.882302,
+      "chained_final_soc": 0.776651353534,
+      "duration_s": 314.3,
+      "estimator_mode": "served",
+      "upper_covers": true
+    },
+    {
+      "key": "rt-t4-armA",
+      "arm": "A",
+      "route": "A",
+      "observed_wh": 0.876223,
+      "predicted_wh": 0.950408,
+      "chained_final_soc": 0.776565625809,
+      "duration_s": 314.2,
+      "estimator_mode": "physics",
+      "upper_covers": true
+    },
+    {
+      "key": "rt-t4-armB",
+      "arm": "B",
+      "route": "A",
+      "observed_wh": 0.876783,
+      "predicted_wh": 0.950408,
+      "chained_final_soc": 0.776565451909,
+      "duration_s": 314.4,
+      "estimator_mode": "physics",
+      "upper_covers": true
+    },
+    {
+      "key": "rt-t4-armC",
+      "arm": "C",
+      "route": "A",
+      "observed_wh": 0.876626,
+      "predicted_wh": 0.882302,
+      "chained_final_soc": 0.776568133566,
+      "duration_s": 314.3,
+      "estimator_mode": "served",
+      "upper_covers": true
+    }
+  ],
+  "ai_value_decision": "PREDICTION RESULT ONLY: arm C materially improves mission-energy prediction over arm B, but produces no route-energy benefit in this fixture because every arm selects the same (energy-optimal) corridor. Per the proposal this is a recorded research outcome, not a failure; an energy-routing benefit requires conditions where the estimators disagree on the chosen corridor (for example a qualified second surface or a fixture change).",
+  "scope": "Stage 4 comparative demonstration over modeled simulated energy; no physical battery-saving claim"
+}

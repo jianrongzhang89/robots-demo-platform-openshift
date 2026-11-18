@@ -1,0 +1,47 @@
+{
+  "stage": "3A",
+  "status": "PASS",
+  "date": "2026-11-17",
+  "sweep": {
+    "runs": 96,
+    "scripted_runs": 72,
+    "nav_runs": 24,
+    "trials_passed": 96,
+    "rejected_runs": 0,
+    "wall_duration": "about 2h04m",
+    "conditions": {
+      "routes": ["A", "B"],
+      "directions": ["up", "down"],
+      "payloads_kg": [0.0, 0.25, 0.5],
+      "speeds_mps": [0.06, 0.08, 0.1],
+      "stop_profiles": ["none", "mid-ramp stop with 3 s hold"],
+      "classes": ["scripted", "nav"]
+    }
+  },
+  "dataset": {
+    "version": "warehouse-stage3-dataset-v1",
+    "segments": 312,
+    "ramp_segments": 96,
+    "label_definition": "modeled Wh from the observation-only plugin trace under the frozen Phase 1 accounting model, segmented between consecutive waypoint or ramp-boundary crossings",
+    "residuals": {
+      "scripted": {"segments": 216, "mean_wh": -0.000004, "mae_wh": 0.000246},
+      "nav": {"segments": 96, "mean_wh": -0.00803, "mae_wh": 0.00840},
+      "interpretation": "navigation residuals are the structured goal-transition correction the Stage 3B residual learner targets"
+    },
+    "partitions": {
+      "residual_train": {"runs": 42, "segments": 138},
+      "development": {"runs": 14, "segments": 44},
+      "uncertainty_calibration": {"runs": 13, "segments": 43},
+      "final_test": {"runs": 27, "segments": 87}
+    },
+    "held_out_combinations": [
+      {"class": "scripted", "payload_kg": 0.25},
+      {"class": "nav", "route": "B", "direction": "up", "speed_mps": 0.08}
+    ],
+    "raw_archive_sha256": "32e5eafaf53e72017b62a055930442b035b0df72a359a56331a4c2815ba02d35"
+  },
+  "independent_audit": "PASS dataset/stage3-audit.json recomputes all labels and physics estimates from raw traces and verifies partition integrity",
+  "infrastructure_observations": "pre-fix first launch failed on a Gazebo partition mismatch (preserved, excluded); detached sweep execution survives exec connection drops",
+  "scope": "simulation modeled-energy dataset for the frozen warehouse fixture; no physical electrical calibration, no trained model, no energy-saving claim",
+  "next_stage": "3B offline training may proceed"
+}

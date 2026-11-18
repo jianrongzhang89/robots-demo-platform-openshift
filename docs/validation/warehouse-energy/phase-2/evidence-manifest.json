@@ -1,0 +1,142 @@
+{
+  "schema_version": "warehouse-phase2-evidence-manifest-v1",
+  "scope": "Stage 2 physics calibration and routing: frozen physics model, planning-time route selection with reserve/deadline gates, arm A/B trials, exclusion and rejection scenarios; modeled energy only",
+  "frozen_model": "../../../config/warehouse-energy/physics-model-v1.json",
+  "artifacts": [
+    {
+      "path": "calibration/calibration-report.json",
+      "description": "Independent physics calibration report over the 36 Phase 0 calibration runs",
+      "sha256": "7a7add2e756c04882463a5ed05e4f86de4b310c6d984dbc52819de07ab109f5a"
+    },
+    {
+      "path": "series/stage2-audit.json",
+      "description": "Independent series audit: selection recomputation, mission-window reconciliation, corridor/reserve/deadline checks",
+      "sha256": "fc21f8e26b4fc90a15a854737a20d22c16c4af33fa1a006b9d6b9c7231830ceb"
+    },
+    {
+      "path": "series/armA-r1/route-selection.json",
+      "description": "Arm A planning-time route selection (repeat 1)",
+      "sha256": "b2130ef631b82f3ce5463b98d2b2f2ad6f8215cf14630fc39cee34b642dfbbb0"
+    },
+    {
+      "path": "series/armA-r1/stage2-result.json",
+      "description": "Arm A trial 1 result with prediction-versus-observation comparison",
+      "sha256": "555172689ebf8ffac84d615c60cf23d7cc2c2722d6da4e49a14e2ea2247b494a"
+    },
+    {
+      "path": "series/armA-r1/result.json",
+      "description": "Arm A trial 1 RMF/Nav2 navigation audit",
+      "sha256": "b49873115c7397463fd16bc9f6eebe58fc2c5cbaaab20d7fadd85055c0365b2d"
+    },
+    {
+      "path": "series/armA-r2/route-selection.json",
+      "description": "Arm A planning-time route selection (repeat 2)",
+      "sha256": "b2130ef631b82f3ce5463b98d2b2f2ad6f8215cf14630fc39cee34b642dfbbb0"
+    },
+    {
+      "path": "series/armA-r2/stage2-result.json",
+      "description": "Arm A trial 2 result with prediction-versus-observation comparison",
+      "sha256": "20f2a1236d5a7e84f3a5a125ffdc2fea26d864882d73a337e407b6db6ea97b1c"
+    },
+    {
+      "path": "series/armA-r2/result.json",
+      "description": "Arm A trial 2 RMF/Nav2 navigation audit",
+      "sha256": "4ea5a93096184fdf3666a2ed0bb735d9d0aa45c490403fdfeebd9149102a51a1"
+    },
+    {
+      "path": "series/armA-r3/route-selection.json",
+      "description": "Arm A planning-time route selection (repeat 3)",
+      "sha256": "b2130ef631b82f3ce5463b98d2b2f2ad6f8215cf14630fc39cee34b642dfbbb0"
+    },
+    {
+      "path": "series/armA-r3/stage2-result.json",
+      "description": "Arm A trial 3 result with prediction-versus-observation comparison",
+      "sha256": "85191bac45414bcfce637668eb3d7f537d35033c9797880a98b03b030eb2dfab"
+    },
+    {
+      "path": "series/armA-r3/result.json",
+      "description": "Arm A trial 3 RMF/Nav2 navigation audit",
+      "sha256": "570d6a49fb0578da221cac144cf0186972e4d8d9b2f4a21506c88b1c07acf93b"
+    },
+    {
+      "path": "series/armB-r1/route-selection.json",
+      "description": "Arm B planning-time route selection (repeat 1)",
+      "sha256": "4dd4d8595a4cbf0792523ff34448515731a22d922391a82ffbb08ef56c5bf8ef"
+    },
+    {
+      "path": "series/armB-r1/stage2-result.json",
+      "description": "Arm B trial 1 result with prediction-versus-observation comparison",
+      "sha256": "baf499058cc241ea50d6caf22de6ad890dcaa34ca1d7c2e8c5f6c7450efe0aa0"
+    },
+    {
+      "path": "series/armB-r1/result.json",
+      "description": "Arm B trial 1 RMF/Nav2 navigation audit",
+      "sha256": "13afadddc49c53c5889e0828c3f93b9722275c113471e61a0b60e2177e96f85c"
+    },
+    {
+      "path": "series/armB-r2/route-selection.json",
+      "description": "Arm B planning-time route selection (repeat 2)",
+      "sha256": "4dd4d8595a4cbf0792523ff34448515731a22d922391a82ffbb08ef56c5bf8ef"
+    },
+    {
+      "path": "series/armB-r2/stage2-result.json",
+      "description": "Arm B trial 2 result with prediction-versus-observation comparison",
+      "sha256": "a4538e61a2d40d2d51e2f980000337946f8c6ab529ff47a3dfe7e1bab1f2f637"
+    },
+    {
+      "path": "series/armB-r2/result.json",
+      "description": "Arm B trial 2 RMF/Nav2 navigation audit",
+      "sha256": "69dcc09bcfd880cd768c033d2c222d022a8300883afd565bfb21d59163a4417f"
+    },
+    {
+      "path": "series/armB-r3/route-selection.json",
+      "description": "Arm B planning-time route selection (repeat 3)",
+      "sha256": "4dd4d8595a4cbf0792523ff34448515731a22d922391a82ffbb08ef56c5bf8ef"
+    },
+    {
+      "path": "series/armB-r3/stage2-result.json",
+      "description": "Arm B trial 3 result with prediction-versus-observation comparison",
+      "sha256": "3c24ddb2d2ada7db1f186e853324c790ffc75d0bd2b1a4a24c9d233cc17cebf0"
+    },
+    {
+      "path": "series/armB-r3/result.json",
+      "description": "Arm B trial 3 RMF/Nav2 navigation audit",
+      "sha256": "8fb47233bc657d9ebc11a678899b043b317c99fc8458abfa50aa3feb6f017612"
+    },
+    {
+      "path": "series/armB-excluded-A-r1/route-selection.json",
+      "description": "Route-A exclusion scenario planning-time selection (route B)",
+      "sha256": "e8b4fb77e79264e72610cbc433b135baef6ff6ec0d1ecf4b682183c8ef91ff61"
+    },
+    {
+      "path": "series/armB-excluded-A-r1/stage2-result.json",
+      "description": "Route-A exclusion scenario result: route B selected and executed",
+      "sha256": "dad53360832382a651924caa144d9a39ad254d56316ca607390cc954a8750631"
+    },
+    {
+      "path": "series/armB-excluded-A-r1/result.json",
+      "description": "Route-A exclusion scenario RMF/Nav2 navigation audit",
+      "sha256": "b609f49f5be0aa7d90af829587f775ebf5c4e1c35637982d68f2869d8f3125c4"
+    },
+    {
+      "path": "series/rejected-low-soc/route-selection.json",
+      "description": "Low-SOC rejection scenario: infeasible mission with explicit reserve reason",
+      "sha256": "5a84c9df7f2f0b38dd97f3815cbd04e5cc583ab85e6040d67f7468e2cf66977e"
+    },
+    {
+      "path": "series/rejected-low-soc/stage2-result.json",
+      "description": "Low-SOC rejection result: no motion, no dispatched task",
+      "sha256": "973e3c7e856b1632228c6e0bffaa1c1f589f2fe98d871120e527da80d6ede633"
+    },
+    {
+      "path": "phase-2-report.md",
+      "description": "Stage 2 implementation report",
+      "sha256": "82242124f2a1ac60b0bb6f90670f97063846cb16fce61a3879dda5187a77ca46"
+    },
+    {
+      "path": "gate-result.json",
+      "description": "Stage 2 gate result summary",
+      "sha256": "4703b0de6238edc045acdd84ca565005b535b9fe128c02b66525c9865009a33a"
+    }
+  ]
+}

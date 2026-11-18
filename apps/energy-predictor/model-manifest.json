@@ -1,0 +1,18 @@
+{
+  "schema": "energy-predictor-manifest/v1",
+  "model_name": "energy-predictor-v1",
+  "release_schema": "warehouse-energy-model-release-v1",
+  "frozen_sha256": "288b38674dab867a61be51e2d7cd888a2c77c8d18aded70268cc13e8940f286b",
+  "xgb_model_sha256": "67e8a1d1042b048ced6876d71833528a98fe7fdc4c989f63a67b800b37838614",
+  "linear_model_sha256": "57dc8a571e8a32529cd77aa1bcf97c87452b15c915674193550c0bf24a157cf3",
+  "physics_model_sha256": "608330117e6470cd0fb7f97f43f20c8cca37d6723460b6f423e36651d6f4636d",
+  "batch_limit": 32,
+  "graph_version": "warehouse-fixture-v1",
+  "robot_allowlist": {
+    "warehouse-bounded-differential-drive-v1": [
+      1.6,
+      2.2
+    ]
+  },
+  "scope": "simulation-trained residual model for the frozen warehouse fixture; modeled energy only"
+}

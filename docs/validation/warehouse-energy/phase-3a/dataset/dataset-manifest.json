@@ -1,0 +1,102 @@
+{
+  "schema_version": "warehouse-stage3-dataset-v1",
+  "dataset_status": "collected_pending_stage3b_training",
+  "runs": 96,
+  "segments": 312,
+  "rejected_runs": [],
+  "partition_counts": {
+    "residual_train": 42,
+    "uncertainty_calibration": 13,
+    "development": 14,
+    "final_test": 27
+  },
+  "partition_rules": {
+    "final_test": [
+      {
+        "class": "scripted",
+        "payload_kg": 0.25
+      },
+      {
+        "class": "nav",
+        "route": "B",
+        "direction": "up",
+        "speed_mps": 0.08
+      }
+    ],
+    "deterministic_split": {
+      "rule": "first byte of sha256(run_id) modulo 10",
+      "residual_train": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "development": [
+        6,
+        7
+      ],
+      "uncertainty_calibration": [
+        8,
+        9
+      ]
+    },
+    "complete_run_separation": true,
+    "seed_note": "the pinned fixture is deterministic (Phase 0 finding); repeat variation comes from real-time-factor wall-clock jitter, not seeds"
+  },
+  "sweep_design": {
+    "scripted": {
+      "routes": [
+        "A",
+        "B"
+      ],
+      "directions": [
+        "up",
+        "down"
+      ],
+      "payloads_kg": [
+        0.0,
+        0.25,
+        0.5
+      ],
+      "speeds_mps": [
+        0.06,
+        0.08,
+        0.1
+      ],
+      "stop_profiles": [
+        {
+          "stops": 0
+        },
+        {
+          "stops": 1,
+          "hold_s": 3.0
+        }
+      ],
+      "repeats": 1
+    },
+    "nav": {
+      "routes": [
+        "A",
+        "B"
+      ],
+      "directions": [
+        "up",
+        "down"
+      ],
+      "payloads_kg": [
+        0.0,
+        0.25,
+        0.5
+      ],
+      "speeds_mps": [
+        0.08,
+        0.1
+      ],
+      "repeats": 1
+    }
+  },
+  "scope": "simulated modeled-energy labels for the frozen warehouse fixture; planning-time features, frozen physics estimates, and residuals; no physical electrical calibration",
+  "label_definition": "observed modeled Wh from the observation-only plugin trace under the frozen Phase 1 accounting model, segmented between consecutive waypoint or ramp-boundary crossings"
+}

@@ -1,0 +1,59 @@
+rmf_fleet:
+  name: warehouse_energy
+  limits:
+    linear:
+    - 0.1
+    - 0.1
+    angular:
+    - 0.45
+    - 0.7
+  profile:
+    footprint: 0.246
+    vicinity: 0.5
+  reversible: false
+  battery_system:
+    voltage: 12.0
+    capacity: 2.0
+    charging_current: 1.0
+  mechanical_system:
+    mass: 2.153
+    moment_of_inertia: 0.02
+    friction_coefficient: 0.02
+  ambient_system:
+    power: 2.0
+  tool_system:
+    power: 0.0
+  recharge_threshold: 0.2
+  recharge_soc: 0.8
+  account_for_battery_drain: false
+  publish_fleet_state: 0.25
+  task_capabilities:
+    loop: true
+    delivery: true
+  finishing_request: nothing
+  responsive_wait: false
+  robots:
+    robot_1:
+      charger: charger
+      responsive_wait: false
+  robot_state_update_frequency: 4.0
+reference_coordinates:
+  warehouse:
+    rmf:
+    - - 0
+      - 0
+    - - 1
+      - 0
+    - - 0
+      - 1
+    - - 1
+      - 1
+    robot:
+    - - 0
+      - 0
+    - - 1
+      - 0
+    - - 0
+      - 1
+    - - 1
+      - 1

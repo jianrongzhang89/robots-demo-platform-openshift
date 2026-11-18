@@ -1,0 +1,68 @@
+{
+  "schema_version": "warehouse-phase4-evidence-manifest-v1",
+  "scope": "Stage 4 comparative demonstration: frozen A/B/C experiment, round-trip evaluation, fallback demonstration, operator-view selection records, independent audit, explicit AI-value decision",
+  "experiment": "../../../config/warehouse-energy/stage4-experiment-v1.json",
+  "release": "../../../config/warehouse-energy/energy-model-release-v1/release.json",
+  "artifacts": [
+    {
+      "path": "docs/validation/warehouse-energy/phase-4/phase-4-report.md",
+      "description": "Stage 4 comparative demonstration report with the explicit AI-value decision",
+      "sha256": "486dfd7d36025deaa0f80c45c6e47a94dbea63f4ff4c29b6ea27baa859ed515d"
+    },
+    {
+      "path": "docs/validation/warehouse-energy/phase-4/gate-result.json",
+      "description": "Stage 4 gate result summary",
+      "sha256": "e3314f607c8249b4df9455d20d607b5e74959e54a89adf9add8b38dcefc98b81"
+    },
+    {
+      "path": "docs/validation/warehouse-energy/phase-4/analysis.json",
+      "description": "Full analysis: paired statistics, coverage, criteria, decision",
+      "sha256": "036de428fb898a785daa10a568942fe2cddae14ed790f059e55415dc284e15cd"
+    },
+    {
+      "path": "docs/validation/warehouse-energy/phase-4/stage4-audit.json",
+      "description": "Independent audit: observations, predictions, chaining, statistics",
+      "sha256": "694a99419f0d454bc510e15c1583f601bab61feef2762609bd21fd2141809c6a"
+    },
+    {
+      "path": "docs/validation/warehouse-energy/phase-4/trial-order.json",
+      "description": "Frozen deterministic seeded trial order (121 missions)",
+      "sha256": "bbdf4b67cc34401a1aab7eb6f1cbf6fd34b1ce123c59ea267dc4fde21fcca2e5"
+    },
+    {
+      "path": "docs/validation/warehouse-energy/phase-4/served-expectations.json",
+      "description": "Frozen offline served-prediction expectations for the selector request set",
+      "sha256": "7286bcddde74a650f9263f973903520e381392963ddc0186944df8462eaacefb"
+    },
+    {
+      "path": "docs/validation/warehouse-energy/phase-4/series/series-summary.json",
+      "description": "Series execution summary (121 trials, zero failures)",
+      "sha256": "680c8e61d1ae46b08af7e441396dfc6722912a9763ea9c8934de24e313c5cb3b"
+    },
+    {
+      "path": "docs/validation/warehouse-energy/phase-4/series/series-progress.json",
+      "description": "Per-trial execution log with timestamps",
+      "sha256": "9bf74f63a20e492bcff73e60547e1abb5f1e65de9da163e4ed94c942e207b134"
+    },
+    {
+      "path": "docs/validation/warehouse-energy/phase-4/series-execution.out",
+      "description": "Series runner stdout from the stage-4 pod",
+      "sha256": "0720207af80140f7d7cf5347656949491d5cb030f0f4191d158bd6a06de256c4"
+    },
+    {
+      "path": "series/<trial>/",
+      "description": "363 loose per-trial selection, stage-4 result, and navigation audit records (aggregate sha256)",
+      "sha256": "93c343686bad375895e181606036c45fb9d0583054ce461b9ba316ff47b74c84"
+    }
+  ],
+  "removed_raw_archives": {
+    "note": "Raw trace archives were generated and SHA-256-recorded during execution, then removed from the repository to save storage. Regenerate them with the sweep commands documented in scripts/warehouse-energy/README.md and this directory README.",
+    "entries": [
+      {
+        "path": "docs/validation/warehouse-energy/phase-4/stage4-series-v1.tar.gz",
+        "description": "Raw evidence archive: all 121 trials with full traces (241 MB)",
+        "sha256": "caea662aa87e57b2db185f1cbc6b354bdb2fc0a09d5f81c798125b9bba8829fa"
+      }
+    ]
+  }
+}

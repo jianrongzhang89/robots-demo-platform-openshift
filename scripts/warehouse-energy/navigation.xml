@@ -1,0 +1,10 @@
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <PipelineSequence>
+      <DistanceController distance="0.20">
+        <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
+      </DistanceController>
+      <FollowPath path="{path}" controller_id="FollowPath" goal_checker_id="general_goal_checker"/>
+    </PipelineSequence>
+  </BehaviorTree>
+</root>

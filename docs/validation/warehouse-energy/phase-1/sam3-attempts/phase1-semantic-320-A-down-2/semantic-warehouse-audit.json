@@ -1,0 +1,44 @@
+{
+  "status": "FAIL",
+  "errors": [
+    "RMF/Nav2 route did not complete successfully",
+    "one or more Nav2 route goals failed"
+  ],
+  "scope": "one simulated A-down semantic obstacle/distractor route; no physical electrical calibration",
+  "route": "A",
+  "direction": "down",
+  "task_id": "compose.dispatch-daf3933e8e",
+  "prompt": "red mat",
+  "policy": "avoid-target/v1",
+  "active_labels": [
+    0,
+    2
+  ],
+  "target_cost": 254,
+  "costmap_accepted_count_max": 241,
+  "costmap_projected_cells_max": 169,
+  "nonempty_target_masks": 19,
+  "mask_samples": 321,
+  "saved_rgb_mask_pairs": 19,
+  "mask_red_pixel_precision_min_mean": [
+    0.9992498124531133,
+    0.9999605164449008
+  ],
+  "mask_red_pixel_coverage_min_mean": [
+    0.9960199004975124,
+    0.9971068901705116
+  ],
+  "nonzero_mask_robot_x_range": [
+    6.42789033245837,
+    6.798863332928566
+  ],
+  "max_plan_centerline_distance_m": 2.719206749036112e-07,
+  "max_physical_corridor_distance_m": 0.0003906186023908364,
+  "nav2_goal_statuses": [
+    4,
+    4,
+    6
+  ],
+  "rgb_hz": 10.0,
+  "depth_hz": 10.0
+}

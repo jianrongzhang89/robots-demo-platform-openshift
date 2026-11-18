@@ -1,0 +1,32 @@
+{
+  "stage": 4,
+  "status": "COMPLETE",
+  "date": "2026-11-17",
+  "experiment": {
+    "arms": ["A distance", "B physics", "C served physics-plus-XGBoost"],
+    "strata": 6,
+    "one_way_missions": 90,
+    "round_trips": 15,
+    "fallback_demonstrations": 1,
+    "total_missions": 121,
+    "failures": 0,
+    "randomization": "deterministic seeded order (seed 17)",
+    "surface_deviation": "single qualified surface; 6 strata instead of the 12-strata plan"
+  },
+  "results": {
+    "motion_and_task_completion": "PASS 121/121",
+    "route_coordination": "PASS 100 percent agreement",
+    "prediction_mae_improvement": {"status": "PASS", "arm_b_mae_wh": 0.035405, "arm_c_served_mae_wh": 0.001138, "improvement_fraction": 0.9679, "target": 0.2},
+    "uncertainty_coverage": {"status": "PASS", "served_mode": 1.0, "physics_mode": 1.0, "target": 0.95},
+    "mission_utility_time": {"status": "PASS", "time_increase_fraction_c_vs_a": 0.0002, "target": 0.1},
+    "added_ai_value_energy": {"status": "NOT_MET_LEGITIMATE_OUTCOME", "improvement_fraction": -0.0002, "paired_ci95_wh": [-0.00001266, 0.00018706], "reason": "all arms select the same energy-optimal corridor in this fixture"},
+    "energy_aware_routing_b_vs_a": {"paired_mean_wh": 0.0000309, "ci95_wh": [-0.0000887, 0.00015057], "interpretation": "distance-shortest and energy-optimal corridors coincide"},
+    "fallback_demonstration": "PASS",
+    "round_trip_means_wh": {"A": 0.8767, "B": 0.8767, "C": 0.8767},
+    "one_way_means_wh": {"A": 0.4382, "B": 0.4383, "C": 0.4383}
+  },
+  "ai_value_decision": "PREDICTION RESULT ONLY: arm C improves mission-energy prediction 96.8 percent over arm B but yields no route-energy benefit in this fixture; retain the physics planner for route selection and the served predictor where prediction accuracy matters",
+  "independent_audit": "PASS stage4-audit.json: observations, physics and served predictions (80 route-level checks against frozen expectations), round-trip chaining, and analyzer statistics all reconcile",
+  "scope": "simulation comparative demonstration over modeled energy; no physical battery-saving claim; Stage 5 hardware study remains a separate follow-on",
+  "approved_scope_status": "Stages 0 through 4 complete"
+}

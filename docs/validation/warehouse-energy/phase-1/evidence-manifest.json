@@ -1,0 +1,163 @@
+{
+  "schema_version": "warehouse-phase1-evidence-manifest-v1",
+  "scope": "simulation RGB-D transport and modeled battery telemetry at 320x240 across all four route/directions; bounded SAM3 red-mat avoidance on one run per route/direction; no physical electrical calibration",
+  "artifacts": [
+    {
+      "path": "camera-320x240-A-down/phase1-audit.json",
+      "description": "Independent 320x240 A-down arithmetic, RGB-D, and capture-time TF audit",
+      "sha256": "f6e9e289405d0bfe8b41fadb90a907b672194103e77a7490318368ffb176f022"
+    },
+    {
+      "path": "camera-320x240-A-down/result.json",
+      "description": "Integrated 320x240 A-down RMF/Nav2 sensing and modeled-energy route evidence",
+      "sha256": "aa822ccd01d3cae1527e0c003f82eb64770b0022dbe55f52a3a3e87e3ec4d932"
+    },
+    {
+      "path": "camera-320x240-A-up/phase1-audit.json",
+      "sha256": "c907e0f3f6f76836cbaa213f49e178f2a2afda7d729ae6a3bbc6404a8a713a9a",
+      "description": "Independent arithmetic and RGB-D transport audit for the 320x240 integrated route"
+    },
+    {
+      "path": "camera-320x240-A-up/result.json",
+      "sha256": "dd66de92d5bd67d8083d67d6bc98c7b1b16a9e732ec93e3c32d31272df06f3a2",
+      "description": "Integrated A-up route at 320x240; 10 Hz RGB-D, full-pose camera TF, RMF/Nav2 motion and modeled energy telemetry"
+    },
+    {
+      "path": "camera-320x240-B-down/phase1-audit.json",
+      "description": "Independent 320x240 B-down arithmetic, RGB-D, and capture-time TF audit",
+      "sha256": "245f93439674cbbf0e3afd5aa8faa265b7d06e2843040412b669bb3fc8394a88"
+    },
+    {
+      "path": "camera-320x240-B-down/result.json",
+      "description": "Integrated 320x240 B-down RMF/Nav2 sensing and modeled-energy route evidence",
+      "sha256": "2b8b3438afd4333326237b2cb4e592243bf671bb9e1a655eb1d6308eecacebe8"
+    },
+    {
+      "path": "camera-320x240-B-up/phase1-audit.json",
+      "description": "Independent 320x240 B-up arithmetic, RGB-D, and capture-time TF audit",
+      "sha256": "8a9353811c55fb09bd7c74a8220445f7603856c99e99950609c39f6e703b1ab2"
+    },
+    {
+      "path": "camera-320x240-B-up/result.json",
+      "description": "Integrated 320x240 B-up RMF/Nav2 sensing and modeled-energy route evidence",
+      "sha256": "62bb2b50804b60c929746bca06ba55c4305a8c90dd19fe39c877c3d6f802a9fe"
+    },
+    {
+      "path": "camera-320x240-series-audit.json",
+      "description": "Four-route/direction 320x240 RGB-D, capture-time TF, modeled Wh/SOC, and independent arithmetic audit summary",
+      "sha256": "6c2916d2eddcd360d2723d02ddf224a6e49d11d9b2ee58152bf3bbe116511902"
+    },
+    {
+      "path": "camera-tf-preflight-audit.json",
+      "sha256": "6a5c8e14ffa98fe3aff0a029121c49939222402e81f651d719854d47602f41e1",
+      "description": "Independent trace and capture-time TF audit from a complete A-up task"
+    },
+    {
+      "path": "development-attempts.md",
+      "description": "Explains attempts excluded from the Phase 1 PASS set",
+      "sha256": "2d43f5cb418524a8ad1a58ba2b676431695fb2c34d81b08b04a5e090421e6cda"
+    },
+    {
+      "path": "gate-result.json",
+      "description": "Phase 1 partial gate status, four-route 320x240 sensing and bounded semantic passes, and remaining repeatability/resolution work",
+      "sha256": "f07a58952cccc8f4ccaf36368c050c36c0a168022b105f51c7b31ff1b37703a3"
+    },
+    {
+      "path": "phase1-series-audit.json",
+      "sha256": "c33a530cb273e6d19b88531f389591b7bec217b3e853817b042cba3212fa9472",
+      "description": "Independent arithmetic and RGB-D transport audit for the four-case series; TF witness is audited in the included A-up preflight"
+    },
+    {
+      "path": "sam3-attempts/phase1-semantic-320-A-down-3/phase1-audit.json",
+      "description": "Independent A-down modeled energy/SOC and RGB-D arithmetic audit",
+      "sha256": "ab5cf8bb0b13c611fb919f197269b5a8904a4c3f60d927d6319c95b388522c3d"
+    },
+    {
+      "path": "sam3-attempts/phase1-semantic-320-A-down-3/result.json",
+      "description": "Integrated A-down SAM3 semantic route, RMF/Nav2 completion, and paired RGB/mask evidence",
+      "sha256": "4111892f22c94e684f87a53f6f190f7eaf1f64de73d838821860d100426a1df7"
+    },
+    {
+      "path": "sam3-attempts/phase1-semantic-320-A-down-3/semantic-warehouse-audit.json",
+      "description": "Independent A-down mask-to-RGB, costmap projection, unchanged motion settings, and corridor audit",
+      "sha256": "afeead4742503f4e9ae3501f9338fe08a13ff413106c4d4c9d24cfb9c2238eb1"
+    },
+    {
+      "path": "sam3-attempts/phase1-semantic-320-A-up-11/phase1-audit.json",
+      "sha256": "fde577087bd0d70c9a0fb867d775a5c7803bfee5d620fb19ec5cbb85b9046bef",
+      "description": "Independent modeled energy/SOC arithmetic and RGB-D transport audit for the semantic route"
+    },
+    {
+      "path": "sam3-attempts/phase1-semantic-320-A-up-11/result.json",
+      "sha256": "d642445cb385c23f6917d9e2e93d013e05fd370850bb26d613e495c9a438a55e",
+      "description": "Successful integrated A-up red-mat semantic run with pinned SAM3 endpoint, paired RGB/mask evidence, RMF/Nav2 completion, and 10 Hz RGB-D"
+    },
+    {
+      "path": "sam3-attempts/phase1-semantic-320-A-up-11/semantic-warehouse-audit.json",
+      "sha256": "016778d02ba04c9a579b0f39007905c30ee810788ca83e6b4cc6cd678270dacd",
+      "description": "Independent semantic label, mask-to-RGB, costmap projection, unchanged motion settings, and corridor audit"
+    },
+    {
+      "path": "sam3-attempts/phase1-semantic-320-A-up-12/phase1-audit.json",
+      "description": "Independent A-up modeled energy/SOC and RGB-D arithmetic audit",
+      "sha256": "0d1f59f6927df97e57b1fd0615ff58a7daf0db440a5083e9efb68aa216b03662"
+    },
+    {
+      "path": "sam3-attempts/phase1-semantic-320-A-up-12/result.json",
+      "description": "Integrated A-up SAM3 semantic route, RMF/Nav2 completion, and paired RGB/mask evidence",
+      "sha256": "4a5a13394acd2e4ac43c076a67bd2dc86b919b17fdef14039ea5224c9dbfd245"
+    },
+    {
+      "path": "sam3-attempts/phase1-semantic-320-A-up-12/semantic-warehouse-audit.json",
+      "description": "Independent A-up mask-to-RGB, costmap projection, unchanged motion settings, and corridor audit",
+      "sha256": "2c8ebe02808b7205cfdc632b66c2363b0905ae4eb2341c2f29396010e5688648"
+    },
+    {
+      "path": "sam3-attempts/phase1-semantic-320-B-down-1/phase1-audit.json",
+      "description": "Independent B-down modeled energy/SOC and RGB-D arithmetic audit",
+      "sha256": "f1efed15cfc3686e4bce43739f348997307b1306dd2742f43873e76d1a7d20bf"
+    },
+    {
+      "path": "sam3-attempts/phase1-semantic-320-B-down-1/result.json",
+      "description": "Integrated B-down SAM3 semantic route, RMF/Nav2 completion, and paired RGB/mask evidence",
+      "sha256": "2bd151cd0fb928f72eb93b7c18662a7d11cd21f9c8e7eed45f9cbe0bdb7d3cd6"
+    },
+    {
+      "path": "sam3-attempts/phase1-semantic-320-B-down-1/semantic-warehouse-audit.json",
+      "description": "Independent B-down mask-to-RGB, costmap projection, unchanged motion settings, and corridor audit",
+      "sha256": "3af8c90c8c8571de645cc9391b1186d6ce7ec53c8568cd37c5b4a7aa3a7d1480"
+    },
+    {
+      "path": "sam3-attempts/phase1-semantic-320-B-up-1/phase1-audit.json",
+      "description": "Independent B-up modeled energy/SOC and RGB-D arithmetic audit",
+      "sha256": "2116e50717f477c71e66eab2051de15d004cc89e2b5e59d2b8f02168cee22365"
+    },
+    {
+      "path": "sam3-attempts/phase1-semantic-320-B-up-1/result.json",
+      "description": "Integrated B-up SAM3 semantic route, RMF/Nav2 completion, and paired RGB/mask evidence",
+      "sha256": "21288657ac5b89a93990eaa020deb6d0207e3cff6318fbeba1b7108ba12ddaf8"
+    },
+    {
+      "path": "sam3-attempts/phase1-semantic-320-B-up-1/semantic-warehouse-audit.json",
+      "description": "Independent B-up mask-to-RGB, costmap projection, unchanged motion settings, and corridor audit",
+      "sha256": "47127f6d51d68245ac7a70efb7dbd7ad6a610ec0b1d7f3e1ce36209f4d3e27c2"
+    },
+    {
+      "path": "semantic-warehouse-series-audit.json",
+      "description": "Four-route/direction bounded SAM3 red-mat and global costmap semantic audit summary at 320x240",
+      "sha256": "4913fedbe92be040267f9207ce373eb79d870879400e0b5596e7191d8d1c6aa5"
+    }
+  ],
+  "runtime": "warehouse-energy/warehouse-qualification for sensing runs; isolated warehouse-phase1-sam3 pod with pinned Phase 0 runtime and pinned SAM3 adapter for semantic runs",
+  "namespace_isolation": "No transport bridge to the hotel demo; semantic qualification used a dedicated pod and ROS/Gazebo partitions.",
+  "removed_raw_archives": {
+    "note": "Raw trace archives were generated and SHA-256-recorded during execution, then removed from the repository to save storage. Regenerate them with the sweep commands documented in scripts/warehouse-energy/README.md and this directory README.",
+    "entries": [
+      {
+        "path": "phase1-telemetry-series-v1.tar.gz",
+        "sha256": "d85a106e161734a2cc5b3cfa40574a06c6fab9df477c2593a15d0f6010390724",
+        "description": "Four-route/direction raw evidence, A-up full-pose camera TF preflight, and excluded development attempts"
+      }
+    ]
+  }
+}

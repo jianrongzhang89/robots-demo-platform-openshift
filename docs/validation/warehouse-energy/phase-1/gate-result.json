@@ -1,0 +1,149 @@
+{
+  "stage": 1,
+  "status": "PASS",
+  "accepted": true,
+  "accepted_date": "2026-11-17",
+  "date": "2026-11-16/17",
+  "rgbd_transport": "PASS_4_OF_4_AT_320X240_10HZ; 640X480_BELOW_10HZ_TARGET",
+  "rgbd_configured_rate_hz": 10,
+  "rgbd_observed_average_rate_hz_640x480": {
+    "rgb": [
+      3.1,
+      4.5
+    ],
+    "depth": [
+      2.7,
+      3.2
+    ]
+  },
+  "rgbd_observed_average_rate_hz_320x240": {
+    "rgb": 10.0,
+    "depth": 10.0,
+    "route_directions": "PASS_4_OF_4"
+  },
+  "rgbd_320x240_max_gap_s": {
+    "rgb": 0.1,
+    "depth": 0.1
+  },
+  "capture_time_camera_tf": "PASS_4_OF_4_AT_320X240",
+  "modeled_electrical_energy_and_soc": "PASS_4_OF_4_AT_640X480_AND_4_OF_4_AT_320X240_WITH_INDEPENDENT_ARITHMETIC_AUDITS",
+  "rmf_soc_propagation": "PASS_4_OF_4_ROUTE_DIRECTIONS_AT_640X480; PASS_4_OF_4_AT_320X240",
+  "warehouse_sam3_semantic_constraints": "PASS_BOUNDED_4_OF_4_ROUTE_DIRECTIONS_AT_320X240_SINGLE_RUNS_PLUS_THREE_AUDITED_REPEATS_PER_ROUTE_DIRECTION",
+  "semantic_repeatability": {
+    "status": "PASS",
+    "date": "2026-11-16/17",
+    "resolution": "320x240",
+    "repeats_per_route_direction": 3,
+    "audited_passes": {
+      "A-up": 3,
+      "A-down": 3,
+      "B-up": 3,
+      "B-down": 3
+    },
+    "fixture_amendment": "The B-route red-mat center moved from [7.0, 6.3] to [7.0, 6.5] m after the original position reproducibly blocked the B-up planner (three genuine planner blocks in eight attempts, 0.75 m free strip). The amended position leaves a 0.95 m free strip, mirroring the A-route fix; prompt, policy, controller, planner, costmap, camera, and endpoint settings are unchanged and the A-route fixture is untouched.",
+    "cross_run_modeled_wh_range": {
+      "A-up": [0.594, 0.629],
+      "A-down": [0.593, 0.61],
+      "B-up": [1.518, 1.544],
+      "B-down": [1.513, 1.528]
+    },
+    "series_minimum_mask_precision": 0.9673,
+    "series_minimum_mask_coverage": 0.991,
+    "series_maximum_plan_centerline_distance_m": 0.465,
+    "series_maximum_physical_corridor_distance_m": 0.316,
+    "all_nav2_route_goals_succeeded_in_audited_trials": true,
+    "b_up_amended_plan_centerline_max_m": 0.276,
+    "preserved_development_attempts": 15,
+    "evidence": [
+      "sam3-repeatability/semantic-repeatability-audit.json",
+      "sam3-repeatability/development-attempts.md",
+      "sam3-repeatability/README.md",
+      "sam3-repeatability-b-amended/README.md",
+      "sam3-repeatability-b-amended/development-attempts.md"
+    ],
+    "infrastructure_observations": [
+      "Pinned model server single-admission design returns HTTP 429 for concurrent arrivals; the trial's final semantic status snapshot can record a rejected request although valid results flowed throughout the run (four otherwise-complete trials excluded for this reason alone).",
+      "Eight trials across both series excluded for transient Nav2 global-costmap update timeouts at RTF 3, concentrated on route B.",
+      "Trial processes exit but are not reaped by the container's PID 1, leaving inert zombie entries."
+    ]
+  },
+  "warehouse_sam3_qualification": {
+    "status": "PASS_BOUNDED_4_OF_4_SINGLE_RUNS",
+    "route_directions": [
+      "A-up",
+      "A-down",
+      "B-up",
+      "B-down"
+    ],
+    "resolution": "320x240",
+    "prompt": "red mat",
+    "policy": "avoid-target/v1",
+    "target_cost": 254,
+    "semantic_fixtures": {
+      "A_red_mat_center_m": [
+        4.5,
+        0.5
+      ],
+      "B_red_mat_center_m": [
+        7.0,
+        6.3
+      ],
+      "A_neutral_distractor_center_m": [
+        8.0,
+        -0.3
+      ],
+      "B_neutral_distractor_center_m": [
+        12.0,
+        5.7
+      ]
+    },
+    "minimum_mask_precision_against_visible_red_pixels": 0.9755434782608695,
+    "minimum_visible_red_pixel_coverage": 0.9925213675213675,
+    "all_nav2_route_goals_succeeded": true,
+    "maximum_plan_centerline_distance_m": 0.4645796457615461,
+    "maximum_physical_corridor_distance_m": 0.3239313446755263,
+    "controller_planner_bt_and_local_costmap_unchanged": true,
+    "timing_provenance": "Gazebo exposure wall time is unavailable; semantic capture trace uses source ROS receipt time as a proxy.",
+    "remaining_scope": "Other objects and 640x480 semantic behavior remain unqualified.",
+    "case_audits": {
+      "A-up": "sam3-attempts/phase1-semantic-320-A-up-12/semantic-warehouse-audit.json",
+      "A-down": "sam3-attempts/phase1-semantic-320-A-down-3/semantic-warehouse-audit.json",
+      "B-up": "sam3-attempts/phase1-semantic-320-B-up-1/semantic-warehouse-audit.json",
+      "B-down": "sam3-attempts/phase1-semantic-320-B-down-1/semantic-warehouse-audit.json"
+    }
+  },
+  "physical_electrical_calibration": "OUT_OF_SCOPE_SIMULATION_ONLY",
+  "energy_saving_claim": false,
+  "assumptions": {
+    "drive_efficiency": 0.6,
+    "auxiliary_power_w": 10.0,
+    "battery_capacity_wh": 24.0,
+    "initial_soc_fraction": 0.8,
+    "regeneration_credit": false,
+    "status": "DESIGN_ASSUMPTIONS_NOT_MEASURED_OR_CALIBRATED"
+  },
+  "evidence": "phase1-telemetry-series-v1.tar.gz",
+  "next_work": [
+    "Evaluate additional warehouse objects under separately frozen prompts and label policies.",
+    "Qualify 640x480 throughput and semantic behavior separately if that resolution is required.",
+    "With the semantic repeatability gate now passing, proceed to Stage 2 physics calibration and energy-aware route selection."
+  ],
+  "rgbd_320x240_capture_tf_max_delta_s": {
+    "A-up": 0.002,
+    "A-down": 0.01,
+    "B-up": 0.018,
+    "B-down": 0.0
+  },
+  "evidence_320x240": [
+    "camera-320x240-series-audit.json",
+    "semantic-warehouse-series-audit.json",
+    "sam3-repeatability/semantic-repeatability-audit.json"
+  ],
+  "semantic_fixture_amendment": {
+    "date": "2026-11-17",
+    "b_red_mat_center_m": [7.0, 6.5],
+    "previous_b_red_mat_center_m": [7.0, 6.3],
+    "rationale": "The previous position left a 0.75 m free strip and reproducibly blocked the B-up planner; the amendment widens it to 0.95 m, mirroring the A-route fix.",
+    "evidence": "sam3-repeatability-b-amended/"
+  }
+}

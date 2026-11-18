@@ -1,0 +1,48 @@
+{
+  "stage": 2,
+  "status": "PASS",
+  "date": "2026-11-17",
+  "physics_calibration": {
+    "status": "PASS",
+    "runs": 36,
+    "data": "phase-0 qualification ramp matrix (complete runs)",
+    "frozen_parameters": {
+      "rolling_resistance_coefficient": 0.00038,
+      "drive_efficiency": 0.435045,
+      "auxiliary_power_w": 10.004126
+    },
+    "rmse_wh": 0.000276,
+    "max_abs_error_wh": 0.000741,
+    "identifiability": "rolling resistance and drive efficiency jointly weakly identified (traction is 0-0.75 percent of modeled energy); telemetry-consistent alternative documented",
+    "pod_reproduction": "byte-identical model SHA-256 608330117e6470cd0fb7f97f43f20c8cca37d6723460b6f423e36651d6f4636d"
+  },
+  "route_selection": {
+    "armA_objective": "minimum feasible distance",
+    "armB_objective": "minimum predicted mission energy",
+    "selected_route_both_arms": "A",
+    "route_divergence": "not present at the frozen same-surface fixture; physics result, not a gate failure",
+    "feasibility_gates": "900 s one-way deadline and SOC >= 0.20 after mission plus minimum-energy charger access over routes available at planning time"
+  },
+  "live_series": {
+    "trials": 8,
+    "motion_trials_passed": 7,
+    "rejection_scenarios_passed": 1,
+    "prediction_mae_wh": 0.00896,
+    "prediction_rmse_wh": 0.01022,
+    "prediction_max_abs_error_wh": 0.01826,
+    "prediction_error_fraction_range": [-0.031, 0.018],
+    "observed_duration_range_s": [164.8, 506.2],
+    "deadline_one_way_s": 900,
+    "observed_final_soc_range": [0.7376, 0.7771],
+    "reserve_minimum": 0.2,
+    "maximum_plan_centerline_deviation_m": 0.05,
+    "maximum_itinerary_centerline_deviation_m": 0.0137,
+    "maximum_schedule_mirror_deviation_m": 0.0137,
+    "corridor_envelope_m": 0.71,
+    "exclusion_scenario": "PASS route A excluded at planning time; route B selected and executed",
+    "rejection_scenario": "PASS low-SOC mission refused before motion with explicit reserve reason"
+  },
+  "independent_audit": "PASS series/stage2-audit.json re-derives selections and mission windows from raw traces",
+  "scope": "simulation physics routing over modeled energy; no physical electrical calibration, learned model, model serving, or energy-saving claim",
+  "next_stage": "3A simulation dataset collection may proceed"
+}

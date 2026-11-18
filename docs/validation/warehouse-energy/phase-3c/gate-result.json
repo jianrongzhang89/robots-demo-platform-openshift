@@ -1,0 +1,49 @@
+{
+  "stage": "3C",
+  "status": "PASS",
+  "date": "2026-11-17",
+  "deployment": {
+    "model_name": "energy-predictor-v1",
+    "namespace": "semantic-model-serving",
+    "image_digest": "sha256:8bdcea5312a96bdff5b87dd661392e0f919610c61e087083263ac22ce8d73cd6",
+    "image_verified_from_pod_status": true,
+    "inferenceservice_ready": true,
+    "replicas": 1,
+    "resources": {"requests": {"cpu": "500m", "memory": "1Gi"}, "limits": {"cpu": "2", "memory": "4Gi"}},
+    "data_port": 8090,
+    "service": "energy-predictor-v1-tls.semantic-model-serving.svc:8443",
+    "mtls": "client certificates required on the data port; health unauthenticated on 8080",
+    "network_isolation": "ingress only from labeled clients in semantic-navigation and warehouse-energy",
+    "platform_adaptation": "OpenShift AI 3.5.2 injects a kube-rbac-proxy on pod port 8443; the mTLS data port listens on 8090 and the TLS Service targets it directly"
+  },
+  "qualification": {
+    "checks": 11,
+    "passed": 11,
+    "parity": {
+      "batches": 24,
+      "segments": 96,
+      "tolerance_wh": 1e-9,
+      "combined_prediction": "PASS",
+      "physics": "PASS"
+    },
+    "fault_tests": {
+      "wrong_model_version": "PASS",
+      "out_of_envelope_input": "PASS",
+      "oversized_batch": "PASS",
+      "malformed_response": "PASS",
+      "stale_generation": "PASS",
+      "unavailable_endpoint_fallback": "PASS"
+    },
+    "latency": {
+      "requests": 100,
+      "batch_segments": 32,
+      "p95_s": 0.0695,
+      "max_s": 0.0989,
+      "target_p95_s": 0.25,
+      "deadline_s": 1.0
+    },
+    "cache": "PASS identical inputs reused across planning generations"
+  },
+  "scope": "serving qualification of the frozen Stage 3B release over modeled energy predictions; no route-choice or energy-saving claim",
+  "next_stage": "4 comparative demonstration may proceed"
+}

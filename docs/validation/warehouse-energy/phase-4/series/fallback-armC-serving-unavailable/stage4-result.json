@@ -1,0 +1,131 @@
+{
+  "status": "PASS",
+  "errors": [],
+  "arm": "C",
+  "mission": "oneway",
+  "payload_kg": 0.5,
+  "direction": "up",
+  "selected_route": "A",
+  "selection": {
+    "arm": "C",
+    "payload_kg": 0.5,
+    "initial_soc": 0.8,
+    "direction": "up",
+    "excluded_routes": [],
+    "round_trip_return_payload_kg": null,
+    "routes": {
+      "A": {
+        "path": [
+          "loading",
+          "fork",
+          "a_top",
+          "transfer"
+        ],
+        "distance_m": 14.0,
+        "predicted_mission_wh": 0.475204,
+        "predicted_duration_s": 170.0,
+        "round_trip_predicted_total_wh": null,
+        "charger_access_wh": 0.568348,
+        "uncertainty_allowance_wh": 0.037041,
+        "predicted_final_soc": 0.754975,
+        "estimator_mode": "fallback",
+        "feasible": true,
+        "violations": []
+      },
+      "B": {
+        "path": [
+          "loading",
+          "fork",
+          "b_bottom",
+          "b_top",
+          "b_exit",
+          "transfer"
+        ],
+        "distance_m": 42.0,
+        "predicted_mission_wh": 1.392251,
+        "predicted_duration_s": 499.96,
+        "round_trip_predicted_total_wh": null,
+        "charger_access_wh": 0.568348,
+        "uncertainty_allowance_wh": 0.037041,
+        "predicted_final_soc": 0.716765,
+        "estimator_mode": "fallback",
+        "feasible": true,
+        "violations": []
+      }
+    },
+    "tie_energy_wh": 0.01,
+    "selected_route": "A",
+    "rejection_reason": null,
+    "status": "SELECTED",
+    "mission": "oneway",
+    "operator_view": {
+      "warehouse": "frozen warehouse fixture v1",
+      "candidate_routes": {
+        "A": {
+          "distance_m": 14.0,
+          "predicted_mission_wh": 0.475204,
+          "predicted_duration_s": 170.0,
+          "round_trip_predicted_total_wh": null,
+          "uncertainty_allowance_wh": 0.037041,
+          "predicted_final_soc": 0.754975,
+          "feasible": true,
+          "estimator_mode": "fallback"
+        },
+        "B": {
+          "distance_m": 42.0,
+          "predicted_mission_wh": 1.392251,
+          "predicted_duration_s": 499.96,
+          "round_trip_predicted_total_wh": null,
+          "uncertainty_allowance_wh": 0.037041,
+          "predicted_final_soc": 0.716765,
+          "feasible": true,
+          "estimator_mode": "fallback"
+        }
+      },
+      "battery_reserve_minimum": 0.2,
+      "deadline_one_way_s": 900,
+      "selected_route": "A",
+      "arm": "C",
+      "serving": {
+        "mode": "unavailable_fallback",
+        "endpoint": "https://192.0.2.1:8443",
+        "model_version": "energy-predictor-v1",
+        "frozen_sha256": "288b38674dab867a61be51e2d7cd888a2c77c8d18aded70268cc13e8940f286b"
+      }
+    },
+    "fixture_sha256": "1216c321fecd570c991184981c7fe3eddc20b0812a239034ef8317955e56a13e",
+    "scope": "Stage 4 comparative demonstration selection; modeled energy only"
+  },
+  "trial_status": "PASS",
+  "task_id": "compose.dispatch-34f81b61a4",
+  "prediction": {
+    "predicted_mission_wh": 0.475204,
+    "predicted_duration_s": 170.0,
+    "predicted_final_soc": 0.754975,
+    "estimator_mode": "fallback",
+    "uncertainty_allowance_wh": 0.037041
+  },
+  "observation": {
+    "mission_window_sim_s": [
+      34.984,
+      192.358
+    ],
+    "observed_duration_s": 157.4,
+    "observed_mission_wh": 0.440461,
+    "post_arrival_idle_wh": 0.026009,
+    "observed_mission_traction_j": 7.116,
+    "observed_final_soc": 0.776515139606,
+    "nav2_goal_submissions": 5
+  },
+  "prediction_error_wh": -0.034743,
+  "prediction_error_fraction": -0.0789,
+  "upper_estimate_wh": 0.512245,
+  "upper_estimate_covers_observation": true,
+  "serving": {
+    "mode": "unavailable_fallback",
+    "endpoint": "https://192.0.2.1:8443",
+    "model_version": "energy-predictor-v1",
+    "frozen_sha256": "288b38674dab867a61be51e2d7cd888a2c77c8d18aded70268cc13e8940f286b"
+  },
+  "scope": "Stage 4 comparative demonstration; modeled energy only; no physical calibration or energy-saving claim"
+}

@@ -1,0 +1,112 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "check": "model_identity",
+      "status": "PASS",
+      "detail": {
+        "frozen_sha256": "288b38674dab867a61be51e2d7cd888a2c77c8d18aded70268cc13e8940f286b",
+        "batch_limit": 32
+      }
+    },
+    {
+      "check": "offline_server_prediction_parity",
+      "status": "PASS",
+      "detail": {
+        "batches": 24,
+        "segments": 96,
+        "tolerance_wh": 1e-09,
+        "errors": []
+      }
+    },
+    {
+      "check": "local_server_physics_parity",
+      "status": "PASS",
+      "detail": {
+        "note": "served physics equals the dataset's frozen local physics values within the same tolerance"
+      }
+    },
+    {
+      "check": "wrong_model_version_rejected",
+      "status": "PASS",
+      "detail": {
+        "http": 400,
+        "status": "invalid_input"
+      }
+    },
+    {
+      "check": "out_of_envelope_input_rejected",
+      "status": "PASS",
+      "detail": {
+        "http": 400,
+        "status": "invalid_input",
+        "reason": "unsupported schema"
+      }
+    },
+    {
+      "check": "oversized_batch_rejected",
+      "status": "PASS",
+      "detail": {
+        "http": 400,
+        "status": "invalid_input",
+        "batch": 33
+      }
+    },
+    {
+      "check": "malformed_response_rejection",
+      "status": "PASS",
+      "detail": {
+        "missing_deployment": "rejected: deployment identity missing",
+        "wrong_frozen_sha": "rejected: deployment identity mismatch: frozen_sha256",
+        "stale_generation": "rejected: stale planning generation",
+        "request_id_mismatch": "rejected: response request identity mismatch",
+        "non_finite_prediction": "rejected: non-finite predicted_wh",
+        "segment_count_mismatch": "rejected: segment count mismatch",
+        "wrong_allowance": "rejected: fallback allowance mismatch"
+      }
+    },
+    {
+      "check": "unavailable_endpoint_physics_fallback",
+      "status": "PASS",
+      "detail": {
+        "mode": "fallback",
+        "allowance_wh": 0.037041
+      }
+    },
+    {
+      "check": "cache_reuse_new_generation",
+      "status": "PASS",
+      "detail": {
+        "cached": true,
+        "mode": "served"
+      }
+    },
+    {
+      "check": "latency_target",
+      "status": "PASS",
+      "detail": {
+        "requests": 100,
+        "p95_s": 0.0695,
+        "max_s": 0.0989,
+        "target_p95_s": 0.25,
+        "deadline_s": 1.0,
+        "batch_segments": 32
+      }
+    },
+    {
+      "check": "latency_batch_parity",
+      "status": "PASS",
+      "detail": {
+        "segments": 32
+      }
+    }
+  ],
+  "endpoint": "https://energy-predictor-v1-tls.semantic-model-serving.svc:8443",
+  "identity": {
+    "model_name": "energy-predictor-v1",
+    "frozen_sha256": "288b38674dab867a61be51e2d7cd888a2c77c8d18aded70268cc13e8940f286b",
+    "xgb_model_sha256": "67e8a1d1042b048ced6876d71833528a98fe7fdc4c989f63a67b800b37838614",
+    "physics_model_sha256": "608330117e6470cd0fb7f97f43f20c8cca37d6723460b6f423e36651d6f4636d"
+  },
+  "scope": "serving qualification over modeled energy predictions for the frozen warehouse fixture; no physical calibration or energy-saving claim"
+}

@@ -1,0 +1,426 @@
+{
+  "status": "PASS",
+  "frozen_parameters": {
+    "rolling_resistance_coefficient": 0.00038,
+    "drive_efficiency": 0.435045,
+    "auxiliary_power_w": 10.004126
+  },
+  "rmse_wh": 0.000276,
+  "max_abs_error_wh": 0.000741,
+  "identifiability": {
+    "traction_energy_share_min": -0.0004,
+    "traction_energy_share_max": 0.0075,
+    "statement": "Traction is a small share of modeled energy, so rolling resistance and drive efficiency are jointly weakly identified: a valley of solutions fits all 36 runs within the reported error. The frozen point is the unconstrained least-squares minimum.",
+    "telemetry_consistent_alternative": {
+      "drive_efficiency_fixed": 0.6,
+      "rolling_resistance_coefficient": 0.00526,
+      "auxiliary_power_w": 10.002346,
+      "note": "efficiency fixed at the frozen Phase 1 telemetry constant; the fitted rolling resistance then reproduces the declared simulator wheel joint friction (2 x 0.001 Nm / 0.033 m)"
+    }
+  },
+  "runs": [
+    {
+      "run": "A-down-p0-r1",
+      "route": "A",
+      "direction": "down",
+      "payload_kg": 0.0,
+      "observed_wh": 0.369145,
+      "predicted_wh": 0.369333,
+      "error_wh": 0.000188,
+      "observed_trace_duration_s": 132.9,
+      "planned_duration_s": 132.9
+    },
+    {
+      "run": "A-down-p0-r2",
+      "route": "A",
+      "direction": "down",
+      "payload_kg": 0.0,
+      "observed_wh": 0.36943,
+      "predicted_wh": 0.369333,
+      "error_wh": -9.7e-05,
+      "observed_trace_duration_s": 133.0,
+      "planned_duration_s": 132.9
+    },
+    {
+      "run": "A-down-p0-r3",
+      "route": "A",
+      "direction": "down",
+      "payload_kg": 0.0,
+      "observed_wh": 0.369483,
+      "predicted_wh": 0.369333,
+      "error_wh": -0.000151,
+      "observed_trace_duration_s": 133.0,
+      "planned_duration_s": 132.9
+    },
+    {
+      "run": "A-down-p0.25-r1",
+      "route": "A",
+      "direction": "down",
+      "payload_kg": 0.25,
+      "observed_wh": 0.36925,
+      "predicted_wh": 0.369335,
+      "error_wh": 8.4e-05,
+      "observed_trace_duration_s": 132.9,
+      "planned_duration_s": 132.9
+    },
+    {
+      "run": "A-down-p0.25-r2",
+      "route": "A",
+      "direction": "down",
+      "payload_kg": 0.25,
+      "observed_wh": 0.369367,
+      "predicted_wh": 0.369335,
+      "error_wh": -3.2e-05,
+      "observed_trace_duration_s": 132.9,
+      "planned_duration_s": 132.9
+    },
+    {
+      "run": "A-down-p0.25-r3",
+      "route": "A",
+      "direction": "down",
+      "payload_kg": 0.25,
+      "observed_wh": 0.369601,
+      "predicted_wh": 0.369335,
+      "error_wh": -0.000266,
+      "observed_trace_duration_s": 133.0,
+      "planned_duration_s": 132.9
+    },
+    {
+      "run": "A-down-p0.5-r1",
+      "route": "A",
+      "direction": "down",
+      "payload_kg": 0.5,
+      "observed_wh": 0.369602,
+      "predicted_wh": 0.369337,
+      "error_wh": -0.000265,
+      "observed_trace_duration_s": 133.0,
+      "planned_duration_s": 132.9
+    },
+    {
+      "run": "A-down-p0.5-r2",
+      "route": "A",
+      "direction": "down",
+      "payload_kg": 0.5,
+      "observed_wh": 0.370077,
+      "predicted_wh": 0.369337,
+      "error_wh": -0.000741,
+      "observed_trace_duration_s": 133.2,
+      "planned_duration_s": 132.9
+    },
+    {
+      "run": "A-down-p0.5-r3",
+      "route": "A",
+      "direction": "down",
+      "payload_kg": 0.5,
+      "observed_wh": 0.369313,
+      "predicted_wh": 0.369337,
+      "error_wh": 2.3e-05,
+      "observed_trace_duration_s": 132.9,
+      "planned_duration_s": 132.9
+    },
+    {
+      "run": "A-up-p0-r1",
+      "route": "A",
+      "direction": "up",
+      "payload_kg": 0.0,
+      "observed_wh": 0.37186,
+      "predicted_wh": 0.371442,
+      "error_wh": -0.000419,
+      "observed_trace_duration_s": 133.2,
+      "planned_duration_s": 132.9
+    },
+    {
+      "run": "A-up-p0-r2",
+      "route": "A",
+      "direction": "up",
+      "payload_kg": 0.0,
+      "observed_wh": 0.37162,
+      "predicted_wh": 0.371442,
+      "error_wh": -0.000178,
+      "observed_trace_duration_s": 133.1,
+      "planned_duration_s": 132.9
+    },
+    {
+      "run": "A-up-p0-r3",
+      "route": "A",
+      "direction": "up",
+      "payload_kg": 0.0,
+      "observed_wh": 0.371565,
+      "predicted_wh": 0.371442,
+      "error_wh": -0.000123,
+      "observed_trace_duration_s": 133.1,
+      "planned_duration_s": 132.9
+    },
+    {
+      "run": "A-up-p0.25-r1",
+      "route": "A",
+      "direction": "up",
+      "payload_kg": 0.25,
+      "observed_wh": 0.371796,
+      "predicted_wh": 0.371763,
+      "error_wh": -3.3e-05,
+      "observed_trace_duration_s": 133.1,
+      "planned_duration_s": 132.9
+    },
+    {
+      "run": "A-up-p0.25-r2",
+      "route": "A",
+      "direction": "up",
+      "payload_kg": 0.25,
+      "observed_wh": 0.371794,
+      "predicted_wh": 0.371763,
+      "error_wh": -3.2e-05,
+      "observed_trace_duration_s": 133.1,
+      "planned_duration_s": 132.9
+    },
+    {
+      "run": "A-up-p0.25-r3",
+      "route": "A",
+      "direction": "up",
+      "payload_kg": 0.25,
+      "observed_wh": 0.371854,
+      "predicted_wh": 0.371763,
+      "error_wh": -9.1e-05,
+      "observed_trace_duration_s": 133.1,
+      "planned_duration_s": 132.9
+    },
+    {
+      "run": "A-up-p0.5-r1",
+      "route": "A",
+      "direction": "up",
+      "payload_kg": 0.5,
+      "observed_wh": 0.371966,
+      "predicted_wh": 0.372084,
+      "error_wh": 0.000118,
+      "observed_trace_duration_s": 133.1,
+      "planned_duration_s": 132.9
+    },
+    {
+      "run": "A-up-p0.5-r2",
+      "route": "A",
+      "direction": "up",
+      "payload_kg": 0.5,
+      "observed_wh": 0.371789,
+      "predicted_wh": 0.372084,
+      "error_wh": 0.000295,
+      "observed_trace_duration_s": 133.0,
+      "planned_duration_s": 132.9
+    },
+    {
+      "run": "A-up-p0.5-r3",
+      "route": "A",
+      "direction": "up",
+      "payload_kg": 0.5,
+      "observed_wh": 0.371908,
+      "predicted_wh": 0.372084,
+      "error_wh": 0.000175,
+      "observed_trace_duration_s": 133.1,
+      "planned_duration_s": 132.9
+    },
+    {
+      "run": "B-down-p0-r1",
+      "route": "B",
+      "direction": "down",
+      "payload_kg": 0.0,
+      "observed_wh": 0.647284,
+      "predicted_wh": 0.647225,
+      "error_wh": -5.9e-05,
+      "observed_trace_duration_s": 233.0,
+      "planned_duration_s": 232.9
+    },
+    {
+      "run": "B-down-p0-r2",
+      "route": "B",
+      "direction": "down",
+      "payload_kg": 0.0,
+      "observed_wh": 0.64669,
+      "predicted_wh": 0.647225,
+      "error_wh": 0.000535,
+      "observed_trace_duration_s": 232.8,
+      "planned_duration_s": 232.9
+    },
+    {
+      "run": "B-down-p0-r3",
+      "route": "B",
+      "direction": "down",
+      "payload_kg": 0.0,
+      "observed_wh": 0.646756,
+      "predicted_wh": 0.647225,
+      "error_wh": 0.000469,
+      "observed_trace_duration_s": 232.8,
+      "planned_duration_s": 232.9
+    },
+    {
+      "run": "B-down-p0.25-r1",
+      "route": "B",
+      "direction": "down",
+      "payload_kg": 0.25,
+      "observed_wh": 0.647745,
+      "predicted_wh": 0.647227,
+      "error_wh": -0.000518,
+      "observed_trace_duration_s": 233.2,
+      "planned_duration_s": 232.9
+    },
+    {
+      "run": "B-down-p0.25-r2",
+      "route": "B",
+      "direction": "down",
+      "payload_kg": 0.25,
+      "observed_wh": 0.647217,
+      "predicted_wh": 0.647227,
+      "error_wh": 1e-05,
+      "observed_trace_duration_s": 233.0,
+      "planned_duration_s": 232.9
+    },
+    {
+      "run": "B-down-p0.25-r3",
+      "route": "B",
+      "direction": "down",
+      "payload_kg": 0.25,
+      "observed_wh": 0.646988,
+      "predicted_wh": 0.647227,
+      "error_wh": 0.00024,
+      "observed_trace_duration_s": 232.9,
+      "planned_duration_s": 232.9
+    },
+    {
+      "run": "B-down-p0.5-r1",
+      "route": "B",
+      "direction": "down",
+      "payload_kg": 0.5,
+      "observed_wh": 0.646757,
+      "predicted_wh": 0.647229,
+      "error_wh": 0.000473,
+      "observed_trace_duration_s": 232.8,
+      "planned_duration_s": 232.9
+    },
+    {
+      "run": "B-down-p0.5-r2",
+      "route": "B",
+      "direction": "down",
+      "payload_kg": 0.5,
+      "observed_wh": 0.647511,
+      "predicted_wh": 0.647229,
+      "error_wh": -0.000282,
+      "observed_trace_duration_s": 233.1,
+      "planned_duration_s": 232.9
+    },
+    {
+      "run": "B-down-p0.5-r3",
+      "route": "B",
+      "direction": "down",
+      "payload_kg": 0.5,
+      "observed_wh": 0.647212,
+      "predicted_wh": 0.647229,
+      "error_wh": 1.7e-05,
+      "observed_trace_duration_s": 233.0,
+      "planned_duration_s": 232.9
+    },
+    {
+      "run": "B-up-p0-r1",
+      "route": "B",
+      "direction": "up",
+      "payload_kg": 0.0,
+      "observed_wh": 0.649227,
+      "predicted_wh": 0.649374,
+      "error_wh": 0.000147,
+      "observed_trace_duration_s": 232.9,
+      "planned_duration_s": 232.9
+    },
+    {
+      "run": "B-up-p0-r2",
+      "route": "B",
+      "direction": "up",
+      "payload_kg": 0.0,
+      "observed_wh": 0.649804,
+      "predicted_wh": 0.649374,
+      "error_wh": -0.00043,
+      "observed_trace_duration_s": 233.2,
+      "planned_duration_s": 232.9
+    },
+    {
+      "run": "B-up-p0-r3",
+      "route": "B",
+      "direction": "up",
+      "payload_kg": 0.0,
+      "observed_wh": 0.649394,
+      "predicted_wh": 0.649374,
+      "error_wh": -2.1e-05,
+      "observed_trace_duration_s": 233.0,
+      "planned_duration_s": 232.9
+    },
+    {
+      "run": "B-up-p0.25-r1",
+      "route": "B",
+      "direction": "up",
+      "payload_kg": 0.25,
+      "observed_wh": 0.64987,
+      "predicted_wh": 0.649701,
+      "error_wh": -0.000169,
+      "observed_trace_duration_s": 233.1,
+      "planned_duration_s": 232.9
+    },
+    {
+      "run": "B-up-p0.25-r2",
+      "route": "B",
+      "direction": "up",
+      "payload_kg": 0.25,
+      "observed_wh": 0.649744,
+      "predicted_wh": 0.649701,
+      "error_wh": -4.3e-05,
+      "observed_trace_duration_s": 233.1,
+      "planned_duration_s": 232.9
+    },
+    {
+      "run": "B-up-p0.25-r3",
+      "route": "B",
+      "direction": "up",
+      "payload_kg": 0.25,
+      "observed_wh": 0.649807,
+      "predicted_wh": 0.649701,
+      "error_wh": -0.000106,
+      "observed_trace_duration_s": 233.1,
+      "planned_duration_s": 232.9
+    },
+    {
+      "run": "B-up-p0.5-r1",
+      "route": "B",
+      "direction": "up",
+      "payload_kg": 0.5,
+      "observed_wh": 0.649616,
+      "predicted_wh": 0.650028,
+      "error_wh": 0.000411,
+      "observed_trace_duration_s": 232.9,
+      "planned_duration_s": 232.9
+    },
+    {
+      "run": "B-up-p0.5-r2",
+      "route": "B",
+      "direction": "up",
+      "payload_kg": 0.5,
+      "observed_wh": 0.64981,
+      "predicted_wh": 0.650028,
+      "error_wh": 0.000217,
+      "observed_trace_duration_s": 233.0,
+      "planned_duration_s": 232.9
+    },
+    {
+      "run": "B-up-p0.5-r3",
+      "route": "B",
+      "direction": "up",
+      "payload_kg": 0.5,
+      "observed_wh": 0.650037,
+      "predicted_wh": 0.650028,
+      "error_wh": -9e-06,
+      "observed_trace_duration_s": 233.1,
+      "planned_duration_s": 232.9
+    }
+  ],
+  "scope": "simulation-consistency calibration against the frozen Phase 1 modeled-telemetry label; not a physical electrical calibration",
+  "inputs": {
+    "matrix": "/private/var/folders/h5/rrdx60797v1dsz1ggq0tg81m0000gp/T/opencode/stage2-calib/matrix-v1",
+    "matrix_sha256": "4dcc2f27801e206afb13859936ee165ae6609527fa195b667e4cdcf8551e419a",
+    "accounting": "config/warehouse-energy/phase1-telemetry-v1.json",
+    "fixture_sha256": "1216c321fecd570c991184981c7fe3eddc20b0812a239034ef8317955e56a13e"
+  }
+}

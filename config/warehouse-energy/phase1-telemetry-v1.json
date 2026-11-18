@@ -1,0 +1,33 @@
+{
+  "schema_version": "warehouse-phase1-telemetry-v1",
+  "status": "simulation_design_model_not_hardware_calibrated",
+  "battery_boundary": "simulated robot battery terminals",
+  "camera": {
+    "kind": "Gazebo RGB-D camera",
+    "topic_root": "/robot_1/camera",
+    "rate_hz": 10,
+    "image_size_px": [640, 480],
+    "horizontal_fov_rad": 1.04719755,
+    "clip_m": [0.15, 5.0],
+    "purpose": "warehouse observation and downstream semantic inference input",
+    "semantic_labels_qualified": false
+  },
+  "electrical_model": {
+    "sample_hz": 50,
+    "wheel_mechanical_power_w": "max(torque_nm * angular_velocity_rad_s, 0) per wheel",
+    "drive_efficiency": 0.6,
+    "auxiliary_power_w": 10,
+    "battery_capacity_wh": 24,
+    "initial_soc_fraction": 0.8,
+    "regeneration": false,
+    "integral": "sum((positive wheel mechanical power / drive efficiency + auxiliary power) * dt / 3600)",
+    "voltage_current_trace": false,
+    "parameter_provenance": "fixture sensitivity design values; not measured or calibrated robot electrical characteristics"
+  },
+  "limitations": [
+    "Wheel joint effort and speed are simulated dynamics outputs, not measured motor current.",
+    "The 60 percent drivetrain efficiency, 10 W auxiliary load, 24 Wh battery, and initial SOC are design assumptions.",
+    "Downhill regeneration receives no credit; negative wheel mechanical power is excluded from drive draw.",
+    "This trace supports modeled-energy accounting and SOC software integration only; it does not establish physical Wh accuracy or battery savings."
+  ]
+}

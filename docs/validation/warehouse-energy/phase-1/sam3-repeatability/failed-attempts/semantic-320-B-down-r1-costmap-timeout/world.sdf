@@ -1,0 +1,573 @@
+<?xml version='1.0' encoding='utf-8'?>
+<sdf version="1.9">
+  <world name="warehouse">
+    <physics name="step" type="ignored">
+      <max_step_size>0.002</max_step_size>
+      <real_time_factor>3</real_time_factor>
+      <real_time_update_rate>1500.0</real_time_update_rate>
+    </physics>
+    <gravity>0 0 -9.80665</gravity>
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics" />
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands" />
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster" />
+    <scene>
+      <ambient>1 1 1</ambient>
+      <background>0.8 0.8 0.8</background>
+    </scene>
+    <light type="directional" name="warehouse_sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>1 1 1 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.09</constant>
+        <linear>0.001</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+    <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <model name="ground">
+      <static>true</static>
+      <pose>10 3 -0.05 0 0 0</pose>
+      <link name="surface">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>32 16 0.1</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>32 16 0.1</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="upper_a">
+      <static>true</static>
+      <pose>17.5 0 0.15000000000000002 0 0 0</pose>
+      <link name="surface">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>11 1.5 0.1</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>11 1.5 0.1</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="upper_b_exit">
+      <static>true</static>
+      <pose>22 2.25 0.15000000000000002 0 0 0</pose>
+      <link name="surface">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>1.5 6.0 0.1</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>1.5 6.0 0.1</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="upper_b_pad">
+      <static>true</static>
+      <pose>22.75 6 0.15000000000000002 0 0 0</pose>
+      <link name="surface">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>1.5 1.5 0.1</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>1.5 1.5 0.1</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="ramp_A">
+      <static>true</static>
+      <pose>2 0 0 0 0 0</pose>
+      <link name="surface">
+        <collision name="collision">
+          <geometry>
+            <mesh>
+              <uri>/work/phase1-repeat-series/semantic-320-B-down-r1/ramp_A.obj</uri>
+            </mesh>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>/work/phase1-repeat-series/semantic-320-B-down-r1/ramp_A.obj</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="ramp_B">
+      <static>true</static>
+      <pose>2 6 0 0 0 0</pose>
+      <link name="surface">
+        <collision name="collision">
+          <geometry>
+            <mesh>
+              <uri>/work/phase1-repeat-series/semantic-320-B-down-r1/ramp_B.obj</uri>
+            </mesh>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>/work/phase1-repeat-series/semantic-320-B-down-r1/ramp_B.obj</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="robot_1" canonical_link="base_link">
+      <pose>14 0 0.22 0 0 0.0</pose>
+      <link name="base_footprint">
+        <inertial>
+          <mass>0.1</mass>
+          <inertia>
+            <ixx>0.001</ixx>
+            <iyy>0.001</iyy>
+            <izz>0.001</izz>
+          </inertia>
+        </inertial>
+      </link>
+      <link name="base_link">
+        <inertial>
+          <mass>1.37</mass>
+          <inertia>
+            <ixx>0.0087</ixx>
+            <iyy>0.0086</iyy>
+            <izz>0.0146</izz>
+          </inertia>
+        </inertial>
+        <collision name="base_collision">
+          <pose>-0.032 0 0.07 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.28 0.31 0.14</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="base_visual">
+          <pose>-0.032 0 0.07 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.28 0.31 0.14</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.0 0.0 1.0 1</ambient>
+            <diffuse>0.0 0.0 1.0 1</diffuse>
+          </material>
+        </visual>
+      </link>
+      <link name="wheel_left_link">
+        <pose>0 0.144 0.023 -1.57 0 0</pose>
+        <inertial>
+          <mass>0.028</mass>
+          <inertia>
+            <ixx>1.1e-5</ixx>
+            <iyy>1.1e-5</iyy>
+            <izz>2.1e-5</izz>
+          </inertia>
+        </inertial>
+        <collision name="left_wheel_collision">
+          <geometry>
+            <cylinder>
+              <radius>0.033</radius>
+              <length>0.018</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>1.0</mu>
+                <mu2>1.0</mu2>
+              </ode>
+              <bullet>
+                <friction>1.0</friction>
+                <friction2>1.0</friction2>
+              </bullet>
+            </friction>
+          </surface>
+        </collision>
+        <visual name="left_wheel_visual">
+          <geometry>
+            <cylinder>
+              <radius>0.033</radius>
+              <length>0.018</length>
+            </cylinder>
+          </geometry>
+        </visual>
+      </link>
+      <link name="wheel_right_link">
+        <pose>0 -0.144 0.023 -1.57 0 0</pose>
+        <inertial>
+          <mass>0.028</mass>
+          <inertia>
+            <ixx>1.1e-5</ixx>
+            <iyy>1.1e-5</iyy>
+            <izz>2.1e-5</izz>
+          </inertia>
+        </inertial>
+        <collision name="right_wheel_collision">
+          <geometry>
+            <cylinder>
+              <radius>0.033</radius>
+              <length>0.018</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>1.0</mu>
+                <mu2>1.0</mu2>
+              </ode>
+              <bullet>
+                <friction>1.0</friction>
+                <friction2>1.0</friction2>
+              </bullet>
+            </friction>
+          </surface>
+        </collision>
+        <visual name="right_wheel_visual">
+          <geometry>
+            <cylinder>
+              <radius>0.033</radius>
+              <length>0.018</length>
+            </cylinder>
+          </geometry>
+        </visual>
+      </link>
+      <link name="base_scan">
+        <pose>-0.032 0 0.172 0 0 0</pose>
+        <inertial>
+          <mass>0.114</mass>
+          <inertia>
+            <ixx>0.001</ixx>
+            <iyy>0.001</iyy>
+            <izz>0.001</izz>
+          </inertia>
+        </inertial>
+        <collision name="lidar_collision">
+          <geometry>
+            <cylinder>
+              <radius>0.0508</radius>
+              <length>0.055</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="lidar_visual">
+          <geometry>
+            <cylinder>
+              <radius>0.0508</radius>
+              <length>0.055</length>
+            </cylinder>
+          </geometry>
+        </visual>
+      </link>
+      <link name="imu_link">
+        <pose>0 0 0.068 0 0 0</pose>
+        <inertial>
+          <mass>0.001</mass>
+          <inertia>
+            <ixx>0.0001</ixx>
+            <iyy>0.0001</iyy>
+            <izz>0.0001</izz>
+          </inertia>
+        </inertial>
+      </link>
+      <joint name="base_joint" type="fixed">
+        <parent>base_footprint</parent>
+        <child>base_link</child>
+      </joint>
+      <joint name="left_wheel_joint" type="revolute">
+        <parent>base_link</parent>
+        <child>wheel_left_link</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-1e16</lower>
+            <upper>1e16</upper>
+            <effort>0.08</effort>
+            <velocity>8.0</velocity>
+          </limit>
+          <dynamics>
+            <friction>0.001</friction>
+          </dynamics>
+        </axis>
+      </joint>
+      <joint name="right_wheel_joint" type="revolute">
+        <parent>base_link</parent>
+        <child>wheel_right_link</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-1e16</lower>
+            <upper>1e16</upper>
+            <effort>0.08</effort>
+            <velocity>8.0</velocity>
+          </limit>
+          <dynamics>
+            <friction>0.001</friction>
+          </dynamics>
+        </axis>
+      </joint>
+      <joint name="lidar_joint" type="fixed">
+        <parent>base_link</parent>
+        <child>base_scan</child>
+      </joint>
+      <joint name="imu_joint" type="fixed">
+        <parent>base_link</parent>
+        <child>imu_link</child>
+      </joint>
+      <link name="camera_link">
+        <pose relative_to="base_link">0.11 0 0.15 0 0 0</pose>
+        <inertial>
+          <mass>0.01</mass>
+          <inertia>
+            <ixx>0.00001</ixx>
+            <iyy>0.00001</iyy>
+            <izz>0.00001</izz>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyz>0</iyz>
+          </inertia>
+        </inertial>
+        <sensor name="rgbd_camera" type="rgbd_camera">
+          <pose>0 0 0 0 0.35 0</pose>
+          <always_on>false</always_on>
+          <update_rate>10</update_rate>
+          <topic>/robot_1/camera</topic>
+          <gz_frame_id>camera_color_optical_frame</gz_frame_id>
+          <camera>
+            <horizontal_fov>1.04719755</horizontal_fov>
+            <image>
+              <width>320</width>
+              <height>240</height>
+              <format>R8G8B8</format>
+            </image>
+            <clip>
+              <near>0.15</near>
+              <far>5.0</far>
+            </clip>
+          </camera>
+          <visualize>false</visualize>
+        </sensor>
+      </link>
+      <joint name="camera_joint" type="fixed">
+        <parent>base_link</parent>
+        <child>camera_link</child>
+      </joint>
+      <link name="rear_left_caster">
+        <pose>-0.14 0.064 -0.005 0 0 0</pose>
+        <inertial>
+          <mass>0.001</mass>
+          <inertia>
+            <ixx>1e-8</ixx>
+            <iyy>1e-8</iyy>
+            <izz>1e-8</izz>
+          </inertia>
+        </inertial>
+        <collision name="support">
+          <geometry>
+            <sphere>
+              <radius>0.005</radius>
+            </sphere>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>1</mu>
+                <mu2>1</mu2>
+              </ode>
+              <bullet>
+                <friction>1</friction>
+                <friction2>1</friction2>
+              </bullet>
+            </friction>
+          </surface>
+        </collision>
+        <visual name="support">
+          <geometry>
+            <sphere>
+              <radius>0.005</radius>
+            </sphere>
+          </geometry>
+        </visual>
+      </link>
+      <joint name="rear_left_caster_joint" type="ball">
+        <parent>base_link</parent>
+        <child>rear_left_caster</child>
+      </joint>
+      <link name="rear_right_caster">
+        <pose>-0.14 -0.064 -0.005 0 0 0</pose>
+        <inertial>
+          <mass>0.001</mass>
+          <inertia>
+            <ixx>1e-8</ixx>
+            <iyy>1e-8</iyy>
+            <izz>1e-8</izz>
+          </inertia>
+        </inertial>
+        <collision name="support">
+          <geometry>
+            <sphere>
+              <radius>0.005</radius>
+            </sphere>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>1</mu>
+                <mu2>1</mu2>
+              </ode>
+              <bullet>
+                <friction>1</friction>
+                <friction2>1</friction2>
+              </bullet>
+            </friction>
+          </surface>
+        </collision>
+        <visual name="support">
+          <geometry>
+            <sphere>
+              <radius>0.005</radius>
+            </sphere>
+          </geometry>
+        </visual>
+      </link>
+      <joint name="rear_right_caster_joint" type="ball">
+        <parent>base_link</parent>
+        <child>rear_right_caster</child>
+      </joint>
+      <plugin filename="gz-sim-joint-controller-system" name="gz::sim::systems::JointController">
+        <joint_name>left_wheel_joint</joint_name>
+        <topic>/warehouse/left/cmd_vel</topic>
+        <use_force_commands>true</use_force_commands>
+        <p_gain>0.05</p_gain>
+        <i_gain>0.1</i_gain>
+        <i_max>0.08</i_max>
+        <i_min>-0.08</i_min>
+        <cmd_max>0.08</cmd_max>
+        <cmd_min>-0.08</cmd_min>
+      </plugin>
+      <plugin filename="gz-sim-joint-controller-system" name="gz::sim::systems::JointController">
+        <joint_name>right_wheel_joint</joint_name>
+        <topic>/warehouse/right/cmd_vel</topic>
+        <use_force_commands>true</use_force_commands>
+        <p_gain>0.05</p_gain>
+        <i_gain>0.1</i_gain>
+        <i_max>0.08</i_max>
+        <i_min>-0.08</i_min>
+        <cmd_max>0.08</cmd_max>
+        <cmd_min>-0.08</cmd_min>
+      </plugin>
+      <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher" />
+      <plugin filename="/work/libWarehouseTelemetry.so" name="WarehouseTelemetry" />
+      <link name="camera_color_optical_frame" />
+      <joint name="camera_color_optical_joint" type="fixed">
+        <parent>camera_link</parent>
+        <child>camera_color_optical_frame</child>
+        <pose>0 0 0 -1.57079632679 0 -1.57079632679</pose>
+      </joint>
+      <link name="payload">
+        <pose>-0.06 0 0.165 0 0 0</pose>
+        <inertial>
+          <mass>0.5</mass>
+          <inertia>
+            <ixx>0.0005208333333333333</ixx>
+            <iyy>0.0005208333333333333</iyy>
+            <izz>0.0008333333333333334</izz>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyz>0</iyz>
+          </inertia>
+        </inertial>
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>0.1 0.1 0.05</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.1 0.1 0.05</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+      <joint name="payload_fixed" type="fixed">
+        <parent>base_link</parent>
+        <child>payload</child>
+      </joint>
+    </model>
+    <model name="semantic_red_mat">
+      <static>true</static>
+      <pose>7.0 6.3 0.059368421052631584 0 0 0</pose>
+      <link name="visual_only">
+        <visual name="mat">
+          <geometry>
+            <box>
+              <size>0.75 0.60 0.02</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.85 0.08 0.06 1</ambient>
+            <diffuse>0.85 0.08 0.06 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="semantic_neutral_distractor">
+      <static>true</static>
+      <pose>12.0 5.7 0.11199999999999999 0 0 0</pose>
+      <link name="visual_only">
+        <visual name="mat">
+          <geometry>
+            <box>
+              <size>0.75 0.60 0.02</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.55 0.52 0.45 1</ambient>
+            <diffuse>0.55 0.52 0.45 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+  </world>
+</sdf>

@@ -1,0 +1,63 @@
+{
+  "schema_version": "warehouse-phase3a-evidence-manifest-v1",
+  "scope": "Stage 3A simulation dataset: 96 instrumented sweep runs, 312 labeled segments, frozen complete-run partitions, independent audit; modeled energy only",
+  "dataset_design": "../../../config/warehouse-energy/stage3-dataset-design-v1.json",
+  "physics_model": "../../../config/warehouse-energy/physics-model-v1.json",
+  "artifacts": [
+    {
+      "path": "phase-3a-report.md",
+      "description": "Stage 3A dataset implementation report",
+      "sha256": "2fd8307ef62372eb16146640bbba2c620b24e76e0cc2bb91896e503060e2f94d"
+    },
+    {
+      "path": "gate-result.json",
+      "description": "Stage 3A gate result summary",
+      "sha256": "a9c0525182c78e5545655cd1f8f367cefd803def3ae5f89104aa68dd2e1ac502"
+    },
+    {
+      "path": "raw-sweep.out",
+      "description": "Sweep execution log from the pinned pod",
+      "sha256": "37261132bc7d9c124109676027c8c161d7a8b9b34f5ef39eb5081f5b18359d98"
+    },
+    {
+      "path": "dataset/dataset-manifest.json",
+      "description": "Frozen dataset manifest with partition rules and counts",
+      "sha256": "88ca3e0fef72f7d4fa1a8cf9e5e985f10c717868b1c2d8d79680ad833c875cd3"
+    },
+    {
+      "path": "dataset/segments.jsonl",
+      "description": "312 segment rows: planning-time features, observed Wh, physics estimate, residual",
+      "sha256": "a8802f918fc28d6bb1e6801273c16b7b44f2f0b91da4cdff394d9feb8c9b8064"
+    },
+    {
+      "path": "dataset/runs.jsonl",
+      "description": "96 run-level rows with conditions, partitions, and totals",
+      "sha256": "2c9c9af36c829581d98a523021e6e64512d3c45a504753f77591dca2e69fc883"
+    },
+    {
+      "path": "dataset/stage3-audit.json",
+      "description": "Independent data-quality audit",
+      "sha256": "503a0f926b4d1693f8acc85a786b402823f82b97ed3b2057c0d79d2d4b6121f1"
+    },
+    {
+      "path": "failed-attempts/README.md",
+      "description": "Preserved pre-fix infrastructure and build-iteration failures",
+      "sha256": "4f342f6b0dc7dbcf22f7e12dbb891adaceb94a67612930bce02543094e08c8ab"
+    },
+    {
+      "path": "failed-attempts/first-launch-result.json",
+      "description": "Result of the partition-mismatch first launch attempt",
+      "sha256": "a6882dd734c734b71fc6c2576c8e54001605716b68421adc4a1bca0162ea6ce6"
+    }
+  ],
+  "removed_raw_archives": {
+    "note": "Raw trace archives were generated and SHA-256-recorded during execution, then removed from the repository to save storage. Regenerate them with the sweep commands documented in scripts/warehouse-energy/README.md and this directory README.",
+    "entries": [
+      {
+        "path": "stage3-raw-v1.tar.gz",
+        "description": "Raw evidence archive: 96 sweep runs (scripted and navigation classes)",
+        "sha256": "32e5eafaf53e72017b62a055930442b035b0df72a359a56331a4c2815ba02d35"
+      }
+    ]
+  }
+}

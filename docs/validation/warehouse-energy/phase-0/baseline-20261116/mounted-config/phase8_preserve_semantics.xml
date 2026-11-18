@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- Preserve admitted static mat observations during planner delays.
+     Floor transitions still clear layers through lifecycle/map changes. -->
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <PipelineSequence name="PlanAndFollowWithSemanticMemory">
+      <DistanceController distance="0.20">
+        <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
+      </DistanceController>
+      <FollowPath path="{path}" controller_id="FollowPath" goal_checker_id="general_goal_checker"/>
+    </PipelineSequence>
+  </BehaviorTree>
+</root>

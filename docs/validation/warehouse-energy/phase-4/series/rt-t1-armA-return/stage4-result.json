@@ -1,0 +1,127 @@
+{
+  "status": "PASS",
+  "errors": [],
+  "arm": "A",
+  "mission": "roundtrip-return",
+  "payload_kg": 0.0,
+  "direction": "down",
+  "selected_route": "A",
+  "selection": {
+    "arm": "A",
+    "payload_kg": 0.5,
+    "initial_soc": 0.8,
+    "direction": "up",
+    "excluded_routes": [],
+    "round_trip_return_payload_kg": 0.0,
+    "routes": {
+      "A": {
+        "path": [
+          "loading",
+          "fork",
+          "a_top",
+          "transfer"
+        ],
+        "distance_m": 14.0,
+        "predicted_mission_wh": 0.475204,
+        "predicted_duration_s": 170.0,
+        "round_trip_predicted_total_wh": 1.006023,
+        "charger_access_wh": 0.05837,
+        "uncertainty_allowance_wh": 0.037041,
+        "predicted_final_soc": 0.756539,
+        "estimator_mode": "physics",
+        "feasible": true,
+        "violations": []
+      },
+      "B": {
+        "path": [
+          "loading",
+          "fork",
+          "b_bottom",
+          "b_top",
+          "b_exit",
+          "transfer"
+        ],
+        "distance_m": 42.0,
+        "predicted_mission_wh": 1.392251,
+        "predicted_duration_s": 499.94,
+        "round_trip_predicted_total_wh": 2.84004,
+        "charger_access_wh": 0.05837,
+        "uncertainty_allowance_wh": 0.037041,
+        "predicted_final_soc": 0.680122,
+        "estimator_mode": "physics",
+        "feasible": true,
+        "violations": []
+      }
+    },
+    "tie_energy_wh": 0.01,
+    "selected_route": "A",
+    "rejection_reason": null,
+    "status": "SELECTED",
+    "mission": "roundtrip-return",
+    "operator_view": {
+      "warehouse": "frozen warehouse fixture v1",
+      "candidate_routes": {
+        "A": {
+          "distance_m": 14.0,
+          "predicted_mission_wh": 0.475204,
+          "predicted_duration_s": 170.0,
+          "round_trip_predicted_total_wh": 1.006023,
+          "uncertainty_allowance_wh": 0.037041,
+          "predicted_final_soc": 0.756539,
+          "feasible": true,
+          "estimator_mode": "physics"
+        },
+        "B": {
+          "distance_m": 42.0,
+          "predicted_mission_wh": 1.392251,
+          "predicted_duration_s": 499.94,
+          "round_trip_predicted_total_wh": 2.84004,
+          "uncertainty_allowance_wh": 0.037041,
+          "predicted_final_soc": 0.680122,
+          "feasible": true,
+          "estimator_mode": "physics"
+        }
+      },
+      "battery_reserve_minimum": 0.2,
+      "deadline_one_way_s": 900,
+      "selected_route": "A",
+      "arm": "A",
+      "serving": {
+        "mode": "not_used",
+        "endpoint": null
+      }
+    },
+    "fixture_sha256": "1216c321fecd570c991184981c7fe3eddc20b0812a239034ef8317955e56a13e",
+    "scope": "Stage 4 comparative demonstration selection; modeled energy only"
+  },
+  "trial_status": "PASS",
+  "task_id": "compose.dispatch-73eaf65fad",
+  "prediction": {
+    "predicted_mission_wh": 0.475204,
+    "predicted_duration_s": 170.0,
+    "predicted_final_soc": 0.756539,
+    "estimator_mode": "physics",
+    "uncertainty_allowance_wh": 0.037041
+  },
+  "observation": {
+    "mission_window_sim_s": [
+      35.218,
+      192.4
+    ],
+    "observed_duration_s": 157.2,
+    "observed_mission_wh": 0.436783,
+    "post_arrival_idle_wh": 0.028409,
+    "observed_mission_traction_j": 0.323,
+    "observed_final_soc": 0.77654131232,
+    "nav2_goal_submissions": 5
+  },
+  "prediction_error_wh": -0.038421,
+  "prediction_error_fraction": -0.088,
+  "upper_estimate_wh": 0.512245,
+  "upper_estimate_covers_observation": true,
+  "serving": {
+    "mode": "not_used",
+    "endpoint": null
+  },
+  "scope": "Stage 4 comparative demonstration; modeled energy only; no physical calibration or energy-saving claim"
+}
