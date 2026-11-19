@@ -6,6 +6,8 @@ evidence committed and reproducible.
 **Companion proposal:** [warehouse-ramp-energy-navigation-proposal.md](warehouse-ramp-energy-navigation-proposal.md)
 — the approved design, assumptions, and claim boundaries.
 
+For field studies, public models, hardware telemetry, and proposed customer pilots, see [Energy-aware routing for mixed robot fleets](robot-energy-optimization-research.md).
+
 ---
 
 ## Executive summary
